@@ -1,0 +1,696 @@
+﻿File: MetaMorpheusC++\TaskLayer\CalibrationTask\CalibrationTask.cpp
+Line Number: 252
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete fileSpecificParams' statement was not added since fileSpecificParams was passed to a method or constructor. Handle memory management manually.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\CalibrationTask\CalibrationTask.h
+Line Number: 13
+Message: //C# TO C++ CONVERTER NOTE: Forward class declarations:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\EventArgs\XmlForTaskListEventArgs.h
+Line Number: 5
+Message: //C# TO C++ CONVERTER NOTE: Forward class declarations:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\EverythingRunnerEngine.cpp
+Line Number: 37
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\EverythingRunnerEngine.cpp
+Line Number: 113
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\EverythingRunnerEngine.cpp
+Line Number: 118
+Message: //C# TO C++ CONVERTER NOTE: The following 'using' block is replaced by its C++ equivalent:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\EverythingRunnerEngine.h
+Line Number: 11
+Message: //C# TO C++ CONVERTER NOTE: Forward class declarations:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\GPTMDTask\GPTMDTask.cpp
+Line Number: 151
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete searchMode' statement was not added since searchMode was passed to a method or constructor. Handle memory management manually.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\GPTMDTask\GPTMDTask.cpp
+Line Number: 160
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete searchMode' statement was not added since searchMode was passed to a method or constructor. Handle memory management manually.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\GPTMDTask\GPTMDTask.cpp
+Line Number: 226
+Message: //C# TO C++ CONVERTER TODO TASK: There is no direct native C++ equivalent to this .NET String method:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\GPTMDTask\GPTMDTask.cpp
+Line Number: 312
+Message: //C# TO C++ CONVERTER NOTE: The following 'using' block is replaced by its C++ equivalent:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\GPTMDTask\GPTMDTask.cpp
+Line Number: 383
+Message: //C# TO C++ CONVERTER TODO TASK: C++ does not have an equivalent to the C# 'yield' keyword:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\GPTMDTask\GPTMDTask.h
+Line Number: 17
+Message: //C# TO C++ CONVERTER NOTE: Forward class declarations:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\MetaMorpheusTask.cpp
+Line Number: 254
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete returnParams' statement was not added since returnParams was used in a 'return' or 'throw' statement.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\MetaMorpheusTask.cpp
+Line Number: 263
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\MetaMorpheusTask.cpp
+Line Number: 282
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\MetaMorpheusTask.cpp
+Line Number: 305
+Message: //C# TO C++ CONVERTER NOTE: The following 'using' block is replaced by its C++ equivalent:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\MetaMorpheusTask.cpp
+Line Number: 310
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\MetaMorpheusTask.cpp
+Line Number: 323
+Message: //C# TO C++ CONVERTER NOTE: The following 'using' block is replaced by its C++ equivalent:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\MetaMorpheusTask.cpp
+Line Number: 341
+Message: //C# TO C++ CONVERTER NOTE: The following 'using' block is replaced by its C++ equivalent:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\MetaMorpheusTask.cpp
+Line Number: 400
+Message: //C# TO C++ CONVERTER TODO TASK: There is no direct native C++ equivalent to this .NET String method:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\MetaMorpheusTask.cpp
+Line Number: 403
+Message: //C# TO C++ CONVERTER TODO TASK: There is no direct native C++ equivalent to this .NET String method:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\MetaMorpheusTask.cpp
+Line Number: 468
+Message: //C# TO C++ CONVERTER NOTE: The following 'using' block is replaced by its C++ equivalent:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\MetaMorpheusTask.cpp
+Line Number: 475
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\MetaMorpheusTask.cpp
+Line Number: 541
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\MetaMorpheusTask.cpp
+Line Number: 559
+Message: //C# TO C++ CONVERTER TODO TASK: C++ does not have an equivalent to the C# 'yield' keyword:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\MetaMorpheusTask.cpp
+Line Number: 565
+Message: //C# TO C++ CONVERTER NOTE: The following 'using' block is replaced by its C++ equivalent:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\MetaMorpheusTask.cpp
+Line Number: 569
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\MetaMorpheusTask.cpp
+Line Number: 583
+Message: //C# TO C++ CONVERTER NOTE: The following 'using' block is replaced by its C++ equivalent:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\MetaMorpheusTask.cpp
+Line Number: 598
+Message: //C# TO C++ CONVERTER NOTE: The following 'using' block is replaced by its C++ equivalent:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\MetaMorpheusTask.cpp
+Line Number: 653
+Message: //C# TO C++ CONVERTER NOTE: The following 'using' block is replaced by its C++ equivalent:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\MetaMorpheusTask.cpp
+Line Number: 668
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\MetaMorpheusTask.cpp
+Line Number: 714
+Message: //C# TO C++ CONVERTER NOTE: The following 'using' block is replaced by its C++ equivalent:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\MetaMorpheusTask.cpp
+Line Number: 746
+Message: //C# TO C++ CONVERTER NOTE: The following 'using' block is replaced by its C++ equivalent:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\MetaMorpheusTask.cpp
+Line Number: 758
+Message: //C# TO C++ CONVERTER NOTE: The following 'using' block is replaced by its C++ equivalent:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\MetaMorpheusTask.h
+Line Number: 16
+Message: //C# TO C++ CONVERTER NOTE: Forward class declarations:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\MetaMorpheusTask.h
+Line Number: 137
+Message: //C# TO C++ CONVERTER TODO TASK: Methods returning tuples are not converted by C# to C++ Converter:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\MyFileManager.cpp
+Line Number: 79
+Message: //C# TO C++ CONVERTER TODO TASK: The following .NET 'String.Equals' reference is not converted:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\MyFileManager.cpp
+Line Number: 84
+Message: //C# TO C++ CONVERTER TODO TASK: The following .NET 'String.Equals' reference is not converted:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\MyFileManager.cpp
+Line Number: 98
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete filter' statement was not added since filter was passed to a method or constructor. Handle memory management manually.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\MyFileManager.cpp
+Line Number: 102
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete filter' statement was not added since filter was passed to a method or constructor. Handle memory management manually.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\MyFileManager.h
+Line Number: 10
+Message: //C# TO C++ CONVERTER NOTE: Forward class declarations:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\MyTaskResults.cpp
+Line Number: 34
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\MyTaskResults.h
+Line Number: 7
+Message: //C# TO C++ CONVERTER NOTE: Forward class declarations:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\PepXMLWriter.cpp
+Line Number: 63
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\PepXMLWriter.cpp
+Line Number: 72
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\PepXMLWriter.cpp
+Line Number: 77
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\PepXMLWriter.cpp
+Line Number: 82
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\PepXMLWriter.cpp
+Line Number: 87
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\PepXMLWriter.cpp
+Line Number: 92
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\PepXMLWriter.cpp
+Line Number: 108
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\PepXMLWriter.cpp
+Line Number: 116
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\PepXMLWriter.cpp
+Line Number: 148
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\PepXMLWriter.cpp
+Line Number: 167
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\PepXMLWriter.cpp
+Line Number: 171
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete pepXmlMod' statement was not added since pepXmlMod was passed to a method or constructor. Handle memory management manually.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\PepXMLWriter.cpp
+Line Number: 182
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\PepXMLWriter.cpp
+Line Number: 184
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\PepXMLWriter.cpp
+Line Number: 202
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete searchHit' statement was not added since searchHit was passed to a method or constructor. Handle memory management manually.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\PepXMLWriter.cpp
+Line Number: 208
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\PepXMLWriter.cpp
+Line Number: 213
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\PepXMLWriter.cpp
+Line Number: 227
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete writer' statement was not added since writer was passed to a method or constructor. Handle memory management manually.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\PepXMLWriter.cpp
+Line Number: 228
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete _pepxml' statement was not added since _pepxml was passed to a method or constructor. Handle memory management manually.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\PepXMLWriter.h
+Line Number: 8
+Message: //C# TO C++ CONVERTER NOTE: Forward class declarations:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\SearchTask\MzIdentMLWriter.cpp
+Line Number: 237
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete utf8EmitBOM' statement was not added since utf8EmitBOM was assigned to another object. Handle memory management manually.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\SearchTask\MzIdentMLWriter.cpp
+Line Number: 268
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\SearchTask\MzIdentMLWriter.cpp
+Line Number: 293
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\SearchTask\MzIdentMLWriter.cpp
+Line Number: 295
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\SearchTask\MzIdentMLWriter.cpp
+Line Number: 396
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\SearchTask\MzIdentMLWriter.cpp
+Line Number: 405
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\SearchTask\MzIdentMLWriter.cpp
+Line Number: 415
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\SearchTask\MzIdentMLWriter.cpp
+Line Number: 424
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\SearchTask\MzIdentMLWriter.cpp
+Line Number: 465
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\SearchTask\MzIdentMLWriter.cpp
+Line Number: 477
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\SearchTask\MzIdentMLWriter.cpp
+Line Number: 531
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\SearchTask\MzIdentMLWriter.cpp
+Line Number: 574
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete _mzid' statement was not added since _mzid was passed to a method or constructor. Handle memory management manually.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\SearchTask\MzIdentMLWriter.cpp
+Line Number: 576
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete settings' statement was not added since settings was passed to a method or constructor. Handle memory management manually.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\SearchTask\MzIdentMLWriter.cpp
+Line Number: 577
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete utf8EmitBOM' statement was not added since utf8EmitBOM was assigned to another object. Handle memory management manually.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\SearchTask\MzIdentMLWriter.h
+Line Number: 10
+Message: //C# TO C++ CONVERTER NOTE: Forward class declarations:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\SearchTask\PostSearchAnalysisParameters.h
+Line Number: 8
+Message: //C# TO C++ CONVERTER NOTE: Forward class declarations:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\SearchTask\PostSearchAnalysisTask.cpp
+Line Number: 335
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete flashLfqProteinGroup' statement was not added since flashLfqProteinGroup was passed to a method or constructor. Handle memory management manually.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\SearchTask\PostSearchAnalysisTask.cpp
+Line Number: 491
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete undefinedPg' statement was not added since undefinedPg was passed to a method or constructor. Handle memory management manually.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\SearchTask\PostSearchAnalysisTask.cpp
+Line Number: 514
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete myTreeStructure' statement was not added since myTreeStructure was passed to a method or constructor. Handle memory management manually.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\SearchTask\PostSearchAnalysisTask.cpp
+Line Number: 1052
+Message: //C# TO C++ CONVERTER NOTE: The following 'using' block is replaced by its C++ equivalent:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\SearchTask\PostSearchAnalysisTask.cpp
+Line Number: 1062
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\SearchTask\PostSearchAnalysisTask.cpp
+Line Number: 1094
+Message: //C# TO C++ CONVERTER NOTE: The following 'using' block is replaced by its C++ equivalent:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\SearchTask\PostSearchAnalysisTask.cpp
+Line Number: 1119
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\SearchTask\PostSearchAnalysisTask.cpp
+Line Number: 1121
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\SearchTask\PostSearchAnalysisTask.cpp
+Line Number: 1132
+Message: //C# TO C++ CONVERTER NOTE: The following 'using' block is replaced by its C++ equivalent:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\SearchTask\PostSearchAnalysisTask.h
+Line Number: 15
+Message: //C# TO C++ CONVERTER NOTE: Forward class declarations:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\SearchTask\SearchTask.cpp
+Line Number: 232
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete indexEngine' statement was not added since indexEngine was passed to a method or constructor. Handle memory management manually.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\SearchTask\SearchTask.cpp
+Line Number: 283
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete indexEngine' statement was not added since indexEngine was passed to a method or constructor. Handle memory management manually.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\SearchTask\SearchTask.cpp
+Line Number: 355
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete parameters' statement was not added since parameters was assigned to another object. Handle memory management manually.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\SearchTask\SearchTask.cpp
+Line Number: 356
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete myFileManager' statement was not added since myFileManager was assigned to another object. Handle memory management manually.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\SearchTask\SearchTask.cpp
+Line Number: 392
+Message: //C# TO C++ CONVERTER NOTE: The following 'switch' operated on a string variable and was converted to C++ 'if-else' logic:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\SearchTask\SearchTask.cpp
+Line Number: 400
+Message: //C# TO C++ CONVERTER TODO TASK: There is no direct native C++ equivalent to this .NET String method:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\SearchTask\SearchTask.cpp
+Line Number: 406
+Message: //C# TO C++ CONVERTER TODO TASK: There is no direct native C++ equivalent to this .NET String method:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\SearchTask\SearchTask.cpp
+Line Number: 455
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete massDiffAcceptor' statement was not added since massDiffAcceptor was used in a 'return' or 'throw' statement.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\SearchTask\SearchTask.h
+Line Number: 17
+Message: //C# TO C++ CONVERTER NOTE: Forward class declarations:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 151
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete indexEngine' statement was not added since indexEngine was passed to a method or constructor. Handle memory management manually.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 157
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete crosslinker' statement was not added since crosslinker was passed to a method or constructor. Handle memory management manually.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 177
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete crosslinker' statement was not added since crosslinker was passed to a method or constructor. Handle memory management manually.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 226
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete crosslinker' statement was not added since crosslinker was passed to a method or constructor. Handle memory management manually.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 235
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete crosslinker' statement was not added since crosslinker was passed to a method or constructor. Handle memory management manually.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 254
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete crosslinker' statement was not added since crosslinker was passed to a method or constructor. Handle memory management manually.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 263
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete crosslinker' statement was not added since crosslinker was passed to a method or constructor. Handle memory management manually.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 276
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete crosslinker' statement was not added since crosslinker was passed to a method or constructor. Handle memory management manually.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 288
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete crosslinker' statement was not added since crosslinker was passed to a method or constructor. Handle memory management manually.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 296
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete crosslinker' statement was not added since crosslinker was passed to a method or constructor. Handle memory management manually.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 308
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete crosslinker' statement was not added since crosslinker was passed to a method or constructor. Handle memory management manually.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 316
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete crosslinker' statement was not added since crosslinker was passed to a method or constructor. Handle memory management manually.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 328
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete crosslinker' statement was not added since crosslinker was passed to a method or constructor. Handle memory management manually.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 339
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete crosslinker' statement was not added since crosslinker was passed to a method or constructor. Handle memory management manually.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 345
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete crosslinker' statement was not added since crosslinker was passed to a method or constructor. Handle memory management manually.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 351
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete crosslinker' statement was not added since crosslinker was passed to a method or constructor. Handle memory management manually.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 357
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete crosslinker' statement was not added since crosslinker was passed to a method or constructor. Handle memory management manually.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 363
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete crosslinker' statement was not added since crosslinker was passed to a method or constructor. Handle memory management manually.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 377
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete crosslinker' statement was not added since crosslinker was passed to a method or constructor. Handle memory management manually.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 384
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete crosslinker' statement was not added since crosslinker was passed to a method or constructor. Handle memory management manually.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 473
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete crosslinker' statement was not added since crosslinker was used in a 'return' or 'throw' statement.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 484
+Message: //C# TO C++ CONVERTER NOTE: The following 'using' block is replaced by its C++ equivalent:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 503
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 516
+Message: //C# TO C++ CONVERTER NOTE: The following 'using' block is replaced by its C++ equivalent:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 532
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 579
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 598
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 628
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 633
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 642
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 647
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 652
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 657
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 662
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 674
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 682
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 714
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 732
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 736
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete mod' statement was not added since mod was passed to a method or constructor. Handle memory management manually.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 744
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 746
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 758
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 762
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 767
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete searchHit' statement was not added since searchHit was passed to a method or constructor. Handle memory management manually.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 788
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 794
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 796
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 808
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 812
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 817
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete searchHit' statement was not added since searchHit was passed to a method or constructor. Handle memory management manually.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 818
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete mod' statement was not added since mod was passed to a method or constructor. Handle memory management manually.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 829
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 833
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete modBeta' statement was not added since modBeta was passed to a method or constructor. Handle memory management manually.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 838
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 840
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 851
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 855
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 860
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 862
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 873
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 877
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 898
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 902
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 907
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete searchHit' statement was not added since searchHit was passed to a method or constructor. Handle memory management manually.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 916
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 920
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 927
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 929
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 945
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 949
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 954
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete searchHit' statement was not added since searchHit was passed to a method or constructor. Handle memory management manually.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 962
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 967
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 982
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete writer' statement was not added since writer was passed to a method or constructor. Handle memory management manually.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.cpp
+Line Number: 983
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete _pepxml' statement was not added since _pepxml was passed to a method or constructor. Handle memory management manually.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\TaskLayer\XLSearchTask\TaskLayer.XLSearchTask.h
+Line Number: 14
+Message: //C# TO C++ CONVERTER NOTE: Forward class declarations:
+--------------------------------------------------------------------------------------

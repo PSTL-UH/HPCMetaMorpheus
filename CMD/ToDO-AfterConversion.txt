@@ -1,0 +1,12 @@
+﻿File: MetaMorpheusC++\CMD\Program.cpp
+Line Number: 102
+Message: //C# TO C++ CONVERTER NOTE: The following 'switch' operated on a string variable and was converted to C++ 'if-else' logic:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\CMD\Program.cpp
+Line Number: 142
+Message: //C# TO C++ CONVERTER NOTE: The following 'switch' operated on a string variable and was converted to C++ 'if-else' logic:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\CMD\Program.h
+Line Number: 11
+Message: //C# TO C++ CONVERTER NOTE: Forward class declarations:
+--------------------------------------------------------------------------------------

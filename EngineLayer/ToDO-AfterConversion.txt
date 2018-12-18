@@ -1,0 +1,568 @@
+﻿File: MetaMorpheusC++\EngineLayer\Calibration\CalibrationEngine.h
+Line Number: 9
+Message: //C# TO C++ CONVERTER NOTE: Forward class declarations:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\Calibration\DataPointAcquisitionEngine.h
+Line Number: 10
+Message: //C# TO C++ CONVERTER NOTE: Forward class declarations:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\Calibration\DataPointAcquisitionEngine.h
+Line Number: 47
+Message: //C# TO C++ CONVERTER TODO TASK: Methods returning tuples are not converted by C# to C++ Converter:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\Calibration\DataPointAquisitionResults.cpp
+Line Number: 117
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\Calibration\DataPointAquisitionResults.h
+Line Number: 10
+Message: //C# TO C++ CONVERTER NOTE: Forward class declarations:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\Calibration\LabeledDataPoint.h
+Line Number: 3
+Message: //C# TO C++ CONVERTER NOTE: Forward class declarations:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\ClassicSearch\ClassicSearchEngine.cpp
+Line Number: 149
+Message: //C# TO C++ CONVERTER TODO TASK: C++ does not have an equivalent to the C# 'yield' keyword:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\ClassicSearch\ClassicSearchEngine.h
+Line Number: 9
+Message: //C# TO C++ CONVERTER NOTE: Forward class declarations:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\CommonParameters.cpp
+Line Number: 83
+Message: //C# TO C++ CONVERTER TODO TASK: Local functions are not converted by C# to C++ Converter:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\CommonParameters.cpp
+Line Number: 113
+Message: //C# TO C++ CONVERTER TODO TASK: Local functions are not converted by C# to C++ Converter:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\CommonParameters.cpp
+Line Number: 124
+Message: //C# TO C++ CONVERTER TODO TASK: Local functions are not converted by C# to C++ Converter:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\CrosslinkSearch\CrosslinkedPeptides.cpp
+Line Number: 59
+Message: //C# TO C++ CONVERTER TODO TASK: C++ does not have an equivalent to the C# 'yield' keyword:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\CrosslinkSearch\CrosslinkedPeptides.cpp
+Line Number: 101
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete combined' statement was not added since combined was passed to a method or constructor. Handle memory management manually.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\CrosslinkSearch\CrosslinkedPeptides.cpp
+Line Number: 108
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete combined' statement was not added since combined was passed to a method or constructor. Handle memory management manually.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\CrosslinkSearch\CrosslinkedPeptides.cpp
+Line Number: 138
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete combined' statement was not added since combined was passed to a method or constructor. Handle memory management manually.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\CrosslinkSearch\CrosslinkedPeptides.cpp
+Line Number: 146
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete combined' statement was not added since combined was passed to a method or constructor. Handle memory management manually.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\CrosslinkSearch\CrosslinkedPeptides.h
+Line Number: 9
+Message: //C# TO C++ CONVERTER NOTE: Forward class declarations:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\CrosslinkSearch\CrosslinkSearchEngine.cpp
+Line Number: 161
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete psmCrossSingle' statement was not added since psmCrossSingle was passed to a method or constructor. Handle memory management manually.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\CrosslinkSearch\CrosslinkSearchEngine.cpp
+Line Number: 388
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete localizedBeta' statement was not added since localizedBeta was assigned to another object. Handle memory management manually.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\CrosslinkSearch\CrosslinkSearchEngine.cpp
+Line Number: 389
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete localizedAlpha' statement was not added since localizedAlpha was assigned to an outer scope variable. Handle memory management manually.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\CrosslinkSearch\CrosslinkSearchEngine.cpp
+Line Number: 441
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete localizedPeptide' statement was not added since localizedPeptide was assigned to an outer scope variable. Handle memory management manually.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\CrosslinkSearch\CrosslinkSearchEngine.cpp
+Line Number: 467
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete csm' statement was not added since csm was used in a 'return' or 'throw' statement.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\CrosslinkSearch\CrosslinkSearchEngine.cpp
+Line Number: 502
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete csm' statement was not added since csm was used in a 'return' or 'throw' statement.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\CrosslinkSearch\CrosslinkSearchEngine.h
+Line Number: 11
+Message: //C# TO C++ CONVERTER NOTE: Forward class declarations:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\CrosslinkSearch\CrosslinkSpectralMatch.cpp
+Line Number: 306
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\CrosslinkSearch\CrosslinkSpectralMatch.cpp
+Line Number: 355
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\CrosslinkSearch\CrosslinkSpectralMatch.cpp
+Line Number: 386
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\CrosslinkSearch\CrosslinkSpectralMatch.h
+Line Number: 11
+Message: //C# TO C++ CONVERTER NOTE: Forward class declarations:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\EventArgs\SingleEngineEventArgs.h
+Line Number: 3
+Message: //C# TO C++ CONVERTER NOTE: Forward class declarations:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\EventArgs\SingleEngineFinishedEventArgs.cpp
+Line Number: 14
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\EventArgs\SingleEngineFinishedEventArgs.h
+Line Number: 5
+Message: //C# TO C++ CONVERTER NOTE: Forward class declarations:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\FdrAnalysis\FdrAnalysisEngine.cpp
+Line Number: 28
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete myAnalysisResults' statement was not added since myAnalysisResults was passed to a method or constructor. Handle memory management manually.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\FdrAnalysis\FdrAnalysisEngine.cpp
+Line Number: 32
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete myAnalysisResults' statement was not added since myAnalysisResults was passed to a method or constructor. Handle memory management manually.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\FdrAnalysis\FdrAnalysisEngine.h
+Line Number: 12
+Message: //C# TO C++ CONVERTER NOTE: Forward class declarations:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\FdrAnalysis\FdrAnalysisResults.cpp
+Line Number: 37
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\FdrAnalysis\FdrAnalysisResults.h
+Line Number: 8
+Message: //C# TO C++ CONVERTER NOTE: Forward class declarations:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\GlobalVariables.cpp
+Line Number: 27
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\GlobalVariables.cpp
+Line Number: 97
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\GlobalVariables.cpp
+Line Number: 197
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\GlobalVariables.cpp
+Line Number: 217
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\GlobalVariables.h
+Line Number: 11
+Message: //C# TO C++ CONVERTER NOTE: Forward class declarations:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\Gptmd\GptmdEngine.cpp
+Line Number: 25
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\Gptmd\GptmdEngine.cpp
+Line Number: 34
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\Gptmd\GptmdEngine.cpp
+Line Number: 37
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\Gptmd\GptmdEngine.cpp
+Line Number: 178
+Message: //C# TO C++ CONVERTER TODO TASK: C++ does not have an equivalent to the C# 'yield' keyword:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\Gptmd\GptmdEngine.cpp
+Line Number: 192
+Message: //C# TO C++ CONVERTER TODO TASK: C++ does not have an equivalent to the C# 'yield' keyword:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\Gptmd\GptmdEngine.cpp
+Line Number: 208
+Message: //C# TO C++ CONVERTER TODO TASK: C++ does not have an equivalent to the C# 'yield' keyword:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\Gptmd\GptmdEngine.cpp
+Line Number: 213
+Message: //C# TO C++ CONVERTER TODO TASK: C++ does not have an equivalent to the C# 'yield' keyword:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\Gptmd\GptmdEngine.h
+Line Number: 11
+Message: //C# TO C++ CONVERTER NOTE: Forward class declarations:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\Gptmd\GptmdResults.cpp
+Line Number: 28
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\Gptmd\GptmdResults.h
+Line Number: 10
+Message: //C# TO C++ CONVERTER NOTE: Forward class declarations:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\HistogramAnalysis\Bin.cpp
+Line Number: 244
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\HistogramAnalysis\Bin.h
+Line Number: 9
+Message: //C# TO C++ CONVERTER NOTE: Forward class declarations:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\HistogramAnalysis\BinTreeStructure.h
+Line Number: 12
+Message: //C# TO C++ CONVERTER NOTE: Forward class declarations:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\Indexing\IndexingEngine.h
+Line Number: 12
+Message: //C# TO C++ CONVERTER NOTE: Forward class declarations:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\Indexing\IndexingResults.cpp
+Line Number: 51
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\Indexing\IndexingResults.h
+Line Number: 8
+Message: //C# TO C++ CONVERTER NOTE: Forward class declarations:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\Localization\LocalizationEngine.cpp
+Line Number: 60
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete scanWithSpecificMass' statement was not added since scanWithSpecificMass was passed to a method or constructor. Handle memory management manually.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\Localization\LocalizationEngine.h
+Line Number: 7
+Message: //C# TO C++ CONVERTER NOTE: Forward class declarations:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\Localization\LocalizationEngineResults.h
+Line Number: 5
+Message: //C# TO C++ CONVERTER NOTE: Forward class declarations:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\MetaDraw\MetaDrawPsm.cpp
+Line Number: 335
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete p' statement was not added since p was passed to a method or constructor. Handle memory management manually.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\MetaDraw\MetaDrawPsm.cpp
+Line Number: 336
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete t' statement was not added since t was passed to a method or constructor. Handle memory management manually.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\MetaDraw\TsvResultReader.h
+Line Number: 8
+Message: //C# TO C++ CONVERTER NOTE: Forward class declarations:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\MetaMorpheusEngine.h
+Line Number: 9
+Message: //C# TO C++ CONVERTER NOTE: Forward class declarations:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\MetaMorpheusEngineResults.h
+Line Number: 6
+Message: //C# TO C++ CONVERTER NOTE: Forward class declarations:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\MetaMorpheusException.h
+Line Number: 9
+Message: //C# TO C++ CONVERTER NOTE: The following .NET attribute has no direct equivalent in native C++:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\ModernSearch\ModernSearchEngine.h
+Line Number: 9
+Message: //C# TO C++ CONVERTER NOTE: Forward class declarations:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\ModificationAnalysis\ModificationAnalysisEngine.cpp
+Line Number: 214
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete myAnalysisResults' statement was not added since myAnalysisResults was used in a 'return' or 'throw' statement.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\ModificationAnalysis\ModificationAnalysisEngine.h
+Line Number: 9
+Message: //C# TO C++ CONVERTER NOTE: Forward class declarations:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\ModificationAnalysis\ModificationAnalysisResults.cpp
+Line Number: 67
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\ModificationAnalysis\ModificationAnalysisResults.h
+Line Number: 8
+Message: //C# TO C++ CONVERTER NOTE: Forward class declarations:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\Ms2ScanWithSpecificMass.h
+Line Number: 10
+Message: //C# TO C++ CONVERTER NOTE: Forward class declarations:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\NonSpecificEnzymeSearch\NonSpecificEnzymeSearchEngine.h
+Line Number: 12
+Message: //C# TO C++ CONVERTER NOTE: Forward class declarations:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\PeptideSpectralMatch.cpp
+Line Number: 540
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\PeptideSpectralMatch.cpp
+Line Number: 542
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\PeptideSpectralMatch.cpp
+Line Number: 544
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\PeptideSpectralMatch.cpp
+Line Number: 546
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\PeptideSpectralMatch.cpp
+Line Number: 548
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\PeptideSpectralMatch.cpp
+Line Number: 550
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\PeptideSpectralMatch.cpp
+Line Number: 552
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\PeptideSpectralMatch.cpp
+Line Number: 554
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\PeptideSpectralMatch.cpp
+Line Number: 556
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\PeptideSpectralMatch.cpp
+Line Number: 558
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\PeptideSpectralMatch.cpp
+Line Number: 564
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\PeptideSpectralMatch.cpp
+Line Number: 830
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\PeptideSpectralMatch.cpp
+Line Number: 838
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\PeptideSpectralMatch.cpp
+Line Number: 842
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\PeptideSpectralMatch.cpp
+Line Number: 846
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\PeptideSpectralMatch.cpp
+Line Number: 850
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\PeptideSpectralMatch.cpp
+Line Number: 864
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\PeptideSpectralMatch.cpp
+Line Number: 870
+Message: //C# TO C++ CONVERTER TODO TASK: The following lambda expression could not be converted:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\PeptideSpectralMatch.cpp
+Line Number: 881
+Message: //C# TO C++ CONVERTER TODO TASK: Local functions are not converted by C# to C++ Converter:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\PeptideSpectralMatch.h
+Line Number: 13
+Message: //C# TO C++ CONVERTER NOTE: Forward class declarations:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\PeptideSpectralMatch.h
+Line Number: 172
+Message: //C# TO C++ CONVERTER TODO TASK: The following line could not be converted:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\PeptideSpectralMatch.h
+Line Number: 178
+Message: //C# TO C++ CONVERTER TODO TASK: The following line could not be converted:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\PeptideSpectralMatch.h
+Line Number: 188
+Message: //C# TO C++ CONVERTER TODO TASK: Methods returning tuples are not converted by C# to C++ Converter:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\PeptideSpectralMatch.h
+Line Number: 232
+Message: //C# TO C++ CONVERTER TODO TASK: Methods returning tuples are not converted by C# to C++ Converter:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\PeptideSpectralMatch.h
+Line Number: 260
+Message: //C# TO C++ CONVERTER TODO TASK: Methods returning tuples are not converted by C# to C++ Converter:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\PeptideSpectralMatch.h
+Line Number: 275
+Message: //C# TO C++ CONVERTER TODO TASK: Methods returning tuples are not converted by C# to C++ Converter:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\PeptideSpectralMatch.h
+Line Number: 290
+Message: //C# TO C++ CONVERTER TODO TASK: Methods returning tuples are not converted by C# to C++ Converter:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\PeptideSpectralMatch.h
+Line Number: 306
+Message: //C# TO C++ CONVERTER TODO TASK: Methods returning tuples are not converted by C# to C++ Converter:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\PeptideSpectralMatch.h
+Line Number: 323
+Message: //C# TO C++ CONVERTER TODO TASK: Methods returning tuples are not converted by C# to C++ Converter:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\PeptideSpectralMatch.h
+Line Number: 346
+Message: //C# TO C++ CONVERTER TODO TASK: The following line could not be converted:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\PeptideSpectralMatch.h
+Line Number: 349
+Message: //C# TO C++ CONVERTER TODO TASK: The following line could not be converted:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\PeptideSpectralMatch.h
+Line Number: 358
+Message: //C# TO C++ CONVERTER TODO TASK: The following line could not be converted:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\PeptideSpectralMatch.h
+Line Number: 367
+Message: //C# TO C++ CONVERTER TODO TASK: The following line could not be converted:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\PeptideSpectralMatch.h
+Line Number: 376
+Message: //C# TO C++ CONVERTER TODO TASK: The following line could not be converted:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\PeptideSpectralMatch.h
+Line Number: 379
+Message: //C# TO C++ CONVERTER TODO TASK: The following line could not be converted:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\PrecursorSearchModes\DotMassDiffAcceptor.cpp
+Line Number: 42
+Message: //C# TO C++ CONVERTER TODO TASK: C++ does not have an equivalent to the C# 'yield' keyword:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\PrecursorSearchModes\DotMassDiffAcceptor.cpp
+Line Number: 51
+Message: //C# TO C++ CONVERTER TODO TASK: C++ does not have an equivalent to the C# 'yield' keyword:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\PrecursorSearchModes\DotMassDiffAcceptor.cpp
+Line Number: 58
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\PrecursorSearchModes\DotMassDiffAcceptor.cpp
+Line Number: 64
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\PrecursorSearchModes\DotMassDiffAcceptor.h
+Line Number: 7
+Message: //C# TO C++ CONVERTER NOTE: Forward class declarations:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\PrecursorSearchModes\IntervalMassDiffAcceptor.h
+Line Number: 7
+Message: //C# TO C++ CONVERTER NOTE: Forward class declarations:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\PrecursorSearchModes\LowTheoreticalDiffAcceptor.cpp
+Line Number: 21
+Message: //C# TO C++ CONVERTER TODO TASK: C++ does not have an equivalent to the C# 'yield' keyword:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\PrecursorSearchModes\LowTheoreticalDiffAcceptor.cpp
+Line Number: 28
+Message: //C# TO C++ CONVERTER TODO TASK: C++ does not have an equivalent to the C# 'yield' keyword:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\PrecursorSearchModes\LowTheoreticalDiffAcceptor.h
+Line Number: 8
+Message: //C# TO C++ CONVERTER NOTE: Forward class declarations:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\PrecursorSearchModes\MassDiffAcceptor.h
+Line Number: 6
+Message: //C# TO C++ CONVERTER NOTE: Forward class declarations:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\PrecursorSearchModes\OpenMassDiffAcceptor.cpp
+Line Number: 21
+Message: //C# TO C++ CONVERTER TODO TASK: C++ does not have an equivalent to the C# 'yield' keyword:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\PrecursorSearchModes\OpenMassDiffAcceptor.cpp
+Line Number: 28
+Message: //C# TO C++ CONVERTER TODO TASK: C++ does not have an equivalent to the C# 'yield' keyword:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\PrecursorSearchModes\OpenMassDiffAcceptor.h
+Line Number: 8
+Message: //C# TO C++ CONVERTER NOTE: Forward class declarations:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\PrecursorSearchModes\SingleAbsoluteAroundZeroMassDiffAcceptor.cpp
+Line Number: 21
+Message: //C# TO C++ CONVERTER TODO TASK: C++ does not have an equivalent to the C# 'yield' keyword:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\PrecursorSearchModes\SingleAbsoluteAroundZeroMassDiffAcceptor.cpp
+Line Number: 28
+Message: //C# TO C++ CONVERTER TODO TASK: C++ does not have an equivalent to the C# 'yield' keyword:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\PrecursorSearchModes\SingleAbsoluteAroundZeroMassDiffAcceptor.h
+Line Number: 8
+Message: //C# TO C++ CONVERTER NOTE: Forward class declarations:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\PrecursorSearchModes\SinglePpmAroundZeroMassDiffAcceptor.cpp
+Line Number: 22
+Message: //C# TO C++ CONVERTER TODO TASK: C++ does not have an equivalent to the C# 'yield' keyword:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\PrecursorSearchModes\SinglePpmAroundZeroMassDiffAcceptor.cpp
+Line Number: 30
+Message: //C# TO C++ CONVERTER TODO TASK: C++ does not have an equivalent to the C# 'yield' keyword:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\PrecursorSearchModes\SinglePpmAroundZeroMassDiffAcceptor.h
+Line Number: 8
+Message: //C# TO C++ CONVERTER NOTE: Forward class declarations:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\ProteinParsimony\ProteinGroup.cpp
+Line Number: 692
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\ProteinParsimony\ProteinGroup.cpp
+Line Number: 704
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete sequenceCoverageDisplay' statement was not added since sequenceCoverageDisplay was passed to a method or constructor. Handle memory management manually.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\ProteinParsimony\ProteinGroup.cpp
+Line Number: 769
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete subsetPg' statement was not added since subsetPg was used in a 'return' or 'throw' statement.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\ProteinParsimony\ProteinGroup.h
+Line Number: 14
+Message: //C# TO C++ CONVERTER NOTE: Forward class declarations:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\ProteinParsimony\ProteinParsimonyEngine.h
+Line Number: 8
+Message: //C# TO C++ CONVERTER NOTE: Forward class declarations:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\ProteinParsimony\ProteinParsimonyEngine.h
+Line Number: 55
+Message: //C# TO C++ CONVERTER TODO TASK: Local functions are not converted by C# to C++ Converter:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\ProteinParsimony\ProteinParsimonyEngine.h
+Line Number: 70
+Message: //C# TO C++ CONVERTER TODO TASK: Local functions are not converted by C# to C++ Converter:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\ProteinParsimony\ProteinParsimonyEngine.h
+Line Number: 372
+Message: //C# TO C++ CONVERTER TODO TASK: Local functions are not converted by C# to C++ Converter:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\ProteinParsimony\ProteinParsimonyResults.cpp
+Line Number: 26
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\ProteinParsimony\ProteinParsimonyResults.h
+Line Number: 8
+Message: //C# TO C++ CONVERTER NOTE: Forward class declarations:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\ProteinScoringAndFdr\ProteinScoringAndFdrEngine.cpp
+Line Number: 24
+Message: //C# TO C++ CONVERTER TODO TASK: A 'delete myAnalysisResults' statement was not added since myAnalysisResults was used in a 'return' or 'throw' statement.
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\ProteinScoringAndFdr\ProteinScoringAndFdrEngine.h
+Line Number: 10
+Message: //C# TO C++ CONVERTER NOTE: Forward class declarations:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\ProteinScoringAndFdr\ProteinScoringAndFdrResults.cpp
+Line Number: 16
+Message: //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\ProteinScoringAndFdr\ProteinScoringAndFdrResults.h
+Line Number: 8
+Message: //C# TO C++ CONVERTER NOTE: Forward class declarations:
+--------------------------------------------------------------------------------------
+File: MetaMorpheusC++\EngineLayer\ScanWithIndexAndNotchInfo.h
+Line Number: 3
+Message: //C# TO C++ CONVERTER NOTE: Forward class declarations:
+--------------------------------------------------------------------------------------
