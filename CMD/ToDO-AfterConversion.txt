@@ -1,4 +1,12 @@
-﻿File: MetaMorpheusC++\CMD\Program.cpp
+﻿- Need to replace FluentCommandLineParser with a C++ class to parse the
+arguments
+- Need to replace Nett with a C++ class to read/write toml files.
+   Option 1: Boost/toml https://github.com/ToruNiina/Boost.toml
+   Option 2: cpptoml.h  https://github.com/skystrife/cpptoml
+   
+
+
+File: MetaMorpheusC++\CMD\Program.cpp
 Line Number: 102
 Message: //C# TO C++ CONVERTER NOTE: The following 'switch' operated on a string variable and was converted to C++ 'if-else' logic:
 --------------------------------------------------------------------------------------

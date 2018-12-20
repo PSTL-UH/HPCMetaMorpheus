@@ -12,8 +12,8 @@
 namespace EngineLayer { class IGlobalSettings; }
 
 using namespace MassSpectrometry;
-using namespace Nett;
-using namespace Proteomics;
+//using namespace Nett;
+//using namespace Proteomics;
 
 namespace EngineLayer
 {

@@ -12,19 +12,20 @@
 #include <vector>
 #include <exception>
 #include <cctype>
+#include <algorithm>
 
 class StringHelper
 {
 public:
 	static std::wstring toLower(std::wstring source)
 	{
-		std::transform(source.begin(), source.end(), source.begin(), std::tolower);
+		std::transform(source.begin(), source.end(), source.begin(), ::tolower);
 		return source;
 	}
 
 	static std::wstring toUpper(std::wstring source)
 	{
-		std::transform(source.begin(), source.end(), source.begin(), std::toupper);
+		std::transform(source.begin(), source.end(), source.begin(), ::toupper);
 		return source;
 	}
 
