@@ -31,7 +31,7 @@ namespace MetaMorpheusCommandLine
 
 		static System::CodeDom::Compiler::IndentedTextWriter *MyWriter;
 
-		static void Main(std::vector<std::wstring> &args);
+		static void Main( int argc, char *argv[]);
 
 		static void WriteMultiLineIndented(const std::wstring &toWrite);
 
@@ -52,7 +52,13 @@ namespace MetaMorpheusCommandLine
 		static void WarnHandler(std::any sender, StringEventArgs *e);
 
 		static void LogHandler(std::any sender, StringEventArgs *e);
+                static void print_config ( std::vector<std::string> taskname,
+                                           std::vector<std::string> metataskname,
+                                           std::vector<std::string> outputfolder,
+                                           std::vector<std::string> spectra,
+                                           std::vector<std::string> dbases );
 
+                
 	public:
 		class ApplicationArguments
 		{

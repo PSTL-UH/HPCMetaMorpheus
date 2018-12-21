@@ -18,17 +18,27 @@
 #include <getopt.h>
 
 using namespace EngineLayer;
-//using namespace Fclp;
-//using namespace Nett;
+//using namespace Fclp; Has been replaced with getopt_long
+//using namespace Nett; 
 //using namespace Proteomics;
 using namespace TaskLayer;
+
+
+int main( int argc, char *argv[] )
+{
+
+    Program::Main ( argc, argv);
+    return 0;
+}
+
 
 namespace MetaMorpheusCommandLine
 {
 
     static void print_usage ( void )
     {
-        std::wcout << "Usage: MetaMorpheusC++ -t <Task> -m <MetaTask> -o <OutputFolder> -s <Spectra> -d <Databases>" << std::endl;
+        std::wcout << "Usage: MetaMorpheusC++ -t <Task> -m <MetaTask> -o <OutputFolder> "
+            "-s <Spectra> -d <Databases>" << std::endl;
         
         return;
     }
@@ -42,12 +52,14 @@ namespace MetaMorpheusCommandLine
     {
         std::wcout << "Number of tasks: " << taskname.size() << std::endl;
         for ( int i=0; i< taskname.size(); i ++ ) {
-            std::wcout << "  Taskname " << i << " : " << taskname.at(i).c_str() << std::endl;
+            std::wcout << "  Taskname " << i << " : " << taskname.at(i).c_str()
+                       << std::endl;
         }
         
         std::wcout << "Number of Metatasks: " << metataskname.size() << std::endl;
         for ( int i=0; i< metataskname.size(); i ++ ) {
-            std::wcout << "  Metataskname " << i << " : " << taskname.at(i).c_str() << std::endl;
+            std::wcout << "  Metataskname " << i << " : " << taskname.at(i).c_str()
+                       << std::endl;
         }
         
         if ( outputfolder.size() == 0 ) {
@@ -65,7 +77,8 @@ namespace MetaMorpheusCommandLine
         }
         std::wcout << "Number of Databases: " << dbases.size() << std::endl;
         for ( int i=0; i< dbases.size(); i ++ ) {
-            std::wcout << "  Databasename " << i << " : " << dbases.at(i).c_str() << std::endl;
+            std::wcout << "  Databasename " << i << " : " << dbases.at(i).c_str()
+                       << std::endl;
         }
         
         return;
@@ -75,7 +88,7 @@ namespace MetaMorpheusCommandLine
     bool Program::InProgress = false;
     System::CodeDom::Compiler::IndentedTextWriter *Program::MyWriter = new System::CodeDom::Compiler::IndentedTextWriter(Console::Out, L"\t");
 
-    void main( int argc, char *argv[] )
+    void Program::Main( int argc, char *argv[] )
     {
         std::wcout << L"Welcome to MetaMorpheus" << std::endl;
         std::wcout << GlobalVariables::getMetaMorpheusVersion() << std::endl;
@@ -152,36 +165,24 @@ namespace MetaMorpheusCommandLine
                 for (auto i= begin(taskname); i != end (taskname) ; ++i) {
                     std::vector<string> filePath = *i;
                     auto uhum = Toml::ReadFile(filePath, MetaMorpheusTask::tomlConfig);
-                    
-                    //ORIGINAL LINE: switch (uhum.Get<string>("TaskType"))
-                    //ORIGINAL LINE: case "Search":
-                    if (uhum->Get<std::wstring>(L"TaskType") == L"Search")
-                    {
+
+                    if (uhum->Get<std::wstring>(L"TaskType") == L"Search") {
                         auto ye1 = Toml::ReadFile<SearchTask*>(filePath, MetaMorpheusTask::tomlConfig);
                         taskList.push_back((L"Task" + std::to_wstring(i + 1) + L"SearchTask", ye1));
-                        
                     }
-                    //ORIGINAL LINE: case "Calibrate":
-                    else if (uhum->Get<std::wstring>(L"TaskType") == L"Calibrate")
-                    {
+                    else if (uhum->Get<std::wstring>(L"TaskType") == L"Calibrate") {
                         auto ye2 = Toml::ReadFile<CalibrationTask*>(filePath, MetaMorpheusTask::tomlConfig);
                         taskList.push_back((L"Task" + std::to_wstring(i + 1) + L"CalibrationTask", ye2));
-                        
                     }
-                    //ORIGINAL LINE: case "Gptmd":
-                    else if (uhum->Get<std::wstring>(L"TaskType") == L"Gptmd")
-                    {
+                    else if (uhum->Get<std::wstring>(L"TaskType") == L"Gptmd")  {
                         auto ye3 = Toml::ReadFile<GptmdTask*>(filePath, MetaMorpheusTask::tomlConfig);
                         taskList.push_back((L"Task" + std::to_wstring(i + 1) + L"GptmdTask", ye3));                        
                     }
-                    //ORIGINAL LINE: case "XLSearch":
-                    else if (uhum->Get<std::wstring>(L"TaskType") == L"XLSearch")
-                    {
+                    else if (uhum->Get<std::wstring>(L"TaskType") == L"XLSearch")  {
                         auto ye4 = Toml::ReadFile<XLSearchTask*>(filePath, MetaMorpheusTask::tomlConfig);
                         taskList.push_back((L"Task" + std::to_wstring(i + 1) + L"XLSearchTask", ye4));
                     }
-                    else
-                    {
+                    else {
                         std::wcout << uhum->Get<std::wstring>(L"TaskType") << L" is not a known task type! Skipping." << std::endl;
                     }
                 }
@@ -189,32 +190,20 @@ namespace MetaMorpheusCommandLine
                 for (auto i = begin(metataskname); i != end(metataskname); ++i) {
                     auto filePath = *i;
                     auto uhum = Toml::ReadFile(filePath, MetaMorpheusTask::tomlConfig);
-                    // ORIGINAL LINE:	switch (uhum.Get<string>("TaskType"))
-                    //ORIGINAL LINE: case "Search":
-                    if (uhum->Get<std::wstring>(L"TaskType") == L"Search")
-                    {
+
+                    if (uhum->Get<std::wstring>(L"TaskType") == L"Search") {
                         std::wcout << L"Search tasks are individual tasks. Please use -t for task instead of -m. Skipping." << std::endl;
-                        
                     }
-                    //ORIGINAL LINE: case "Calibrate":
-                    else if (uhum->Get<std::wstring>(L"TaskType") == L"Calibrate")
-                    {
+                    else if (uhum->Get<std::wstring>(L"TaskType") == L"Calibrate") {
                         std::wcout << L"Calibrate tasks are individual tasks. Please use -t for task instead of -m. Skipping." << std::endl;
                     }
-                    //ORIGINAL LINE: case "Gptmd":
-                    else if (uhum->Get<std::wstring>(L"TaskType") == L"Gptmd")
-                    {
+                    else if (uhum->Get<std::wstring>(L"TaskType") == L"Gptmd")  {
                         std::wcout << L"Gptmd tasks are individual tasks. Please use -t for task instead of -m. Skipping." << std::endl;
-                        
                     }
-                    //ORIGINAL LINE: case "XLSearch":
-                    else if (uhum->Get<std::wstring>(L"TaskType") == L"XLSearch")
-                    {
+                    else if (uhum->Get<std::wstring>(L"TaskType") == L"XLSearch")  {
                         std::wcout << L"XLSearch tasks are individual tasks. Please use -t for task instead of -m. Skipping." << std::endl;
-                        
                     }
-                    else
-                    {
+                    else {
                         std::wcout << uhum->Get<std::wstring>(L"TaskType") << L" is not a known task type! Skipping." << std::endl;
                     }
                 }
