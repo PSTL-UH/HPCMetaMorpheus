@@ -8,31 +8,31 @@ using namespace Proteomics;
 namespace EngineLayer
 {
 
-std::wstring GlobalVariables::privateDataDir;
+std::string GlobalVariables::privateDataDir;
 bool GlobalVariables::privateStopLoops = false;
-std::wstring GlobalVariables::privateElementsLocation;
-std::wstring GlobalVariables::privateMetaMorpheusVersion;
+std::string GlobalVariables::privateElementsLocation;
+std::string GlobalVariables::privateMetaMorpheusVersion;
 IGlobalSettings *GlobalVariables::privateGlobalSettings;
 std::vector<Modification*> GlobalVariables::privateUnimodDeserialized;
 std::vector<Modification*> GlobalVariables::privateUniprotDeseralized;
 UsefulProteomicsDatabases::Generated::obo *GlobalVariables::privatePsiModDeserialized;
-std::unordered_map<std::wstring, Modification*> GlobalVariables::privateAllModsKnownDictionary;
-std::unordered_map<std::wstring, DissociationType*> GlobalVariables::privateAllSupportedDissociationTypes;
-std::wstring GlobalVariables::privateExperimentalDesignFileName;
+std::unordered_map<std::string, Modification*> GlobalVariables::privateAllModsKnownDictionary;
+std::unordered_map<std::string, DissociationType*> GlobalVariables::privateAllSupportedDissociationTypes;
+std::string GlobalVariables::privateExperimentalDesignFileName;
 std::vector<Modification*> GlobalVariables::_AllModsKnown;
-std::unordered_set<std::wstring> GlobalVariables::_AllModTypesKnown;
+std::unordered_set<std::string> GlobalVariables::_AllModTypesKnown;
 
 	GlobalVariables::StaticConstructor::StaticConstructor()
 	{
 //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
 		MetaMorpheusVersion = GlobalVariables::typeid->Assembly->GetName()->Version->ToString();
         
-		if (getMetaMorpheusVersion() == L"1.0.0.0")
+		if (getMetaMorpheusVersion() == "1.0.0.0")
 		{
 		#if defined(DEBUG)
-			MetaMorpheusVersion = L"Not a release version. DEBUG.";
+			MetaMorpheusVersion = "Not a release version. DEBUG.";
 		#else
-			MetaMorpheusVersion = L"Not a release version.";
+			MetaMorpheusVersion = "Not a release version.";
 		#endif
 		}
 		else
@@ -53,9 +53,9 @@ std::unordered_set<std::wstring> GlobalVariables::_AllModTypesKnown;
         
 		{
 			auto pathToProgramFiles = Environment::GetFolderPath(Environment::SpecialFolder::ProgramFiles);
-			if (!StringHelper::isEmptyOrWhiteSpace(pathToProgramFiles) && AppDomain::CurrentDomain->BaseDirectory.find(pathToProgramFiles) != std::wstring::npos && !AppDomain::CurrentDomain->BaseDirectory.find(L"Jenkins") != std::wstring::npos)
+			if (!StringHelper::isEmptyOrWhiteSpace(pathToProgramFiles) && AppDomain::CurrentDomain->BaseDirectory.find(pathToProgramFiles) != std::string::npos && !AppDomain::CurrentDomain->BaseDirectory.find("Jenkins") != std::string::npos)
 			{
-				DataDir = FileSystem::combine(Environment::GetFolderPath(Environment::SpecialFolder::LocalApplicationData), L"MetaMorpheus");
+				DataDir = FileSystem::combine(Environment::GetFolderPath(Environment::SpecialFolder::LocalApplicationData), "MetaMorpheus");
 			}
 			else
 			{
@@ -66,7 +66,7 @@ std::unordered_set<std::wstring> GlobalVariables::_AllModTypesKnown;
 		ElementsLocation = FileSystem::combine(getDataDir(), LR"(Data)", LR"(elements.dat)");
 		UsefulProteomicsDatabases::Loaders::LoadElements(getElementsLocation());
         
-		ExperimentalDesignFileName = L"ExperimentalDesign.tsv";
+		ExperimentalDesignFileName = "ExperimentalDesign.tsv";
         
 		UnimodDeserialized = UsefulProteomicsDatabases::Loaders::LoadUnimod(FileSystem::combine(getDataDir(), LR"(Data)", LR"(unimod.xml)")).ToList();
 		PsiModDeserialized = UsefulProteomicsDatabases::Loaders::LoadPsiMod(FileSystem::combine(getDataDir(), LR"(Data)", LR"(PSI-MOD.obo.xml)"));
@@ -83,7 +83,7 @@ std::unordered_set<std::wstring> GlobalVariables::_AllModTypesKnown;
 		AddMods(getUnimodDeserialized().OfType<Modification*>(), false);
         
 		// populate dictionaries of known mods/proteins for deserialization
-		setAllModsKnownDictionary(std::unordered_map<std::wstring, Modification*>());
+		setAllModsKnownDictionary(std::unordered_map<std::string, Modification*>());
 		for (auto mod : getAllModsKnown())
 		{
 			if (getAllModsKnownDictionary().find(mod->IdWithMotif) == getAllModsKnownDictionary().end())
@@ -95,7 +95,7 @@ std::unordered_set<std::wstring> GlobalVariables::_AllModTypesKnown;
         
 		GlobalSettings = Toml::ReadFile<getGlobalSettings()*>(FileSystem::combine(getDataDir(), LR"(settings.toml)"));
 //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
-		setAllSupportedDissociationTypes(std::unordered_map<std::wstring, DissociationType*>
+		setAllSupportedDissociationTypes(std::unordered_map<std::string, DissociationType*>
 		{
 			{DissociationType::CID.ToString(), DissociationType::CID},
 			{DissociationType::ECD.ToString(), DissociationType::ECD},
@@ -106,9 +106,9 @@ std::unordered_set<std::wstring> GlobalVariables::_AllModTypesKnown;
 	}
 
 GlobalVariables::StaticConstructor GlobalVariables::staticConstructor;
-std::vector<std::wstring> GlobalVariables::ErrorsReadingMods;
+std::vector<std::string> GlobalVariables::ErrorsReadingMods;
 
-	std::wstring GlobalVariables::getDataDir()
+	std::string GlobalVariables::getDataDir()
 	{
 		return privateDataDir;
 	}
@@ -123,12 +123,12 @@ std::vector<std::wstring> GlobalVariables::ErrorsReadingMods;
 		privateStopLoops = value;
 	}
 
-	std::wstring GlobalVariables::getElementsLocation()
+	std::string GlobalVariables::getElementsLocation()
 	{
 		return privateElementsLocation;
 	}
 
-	std::wstring GlobalVariables::getMetaMorpheusVersion()
+	std::string GlobalVariables::getMetaMorpheusVersion()
 	{
 		return privateMetaMorpheusVersion;
 	}
@@ -158,32 +158,32 @@ std::vector<std::wstring> GlobalVariables::ErrorsReadingMods;
 		return _AllModsKnown.AsEnumerable();
 	}
 
-	std::vector<std::wstring> GlobalVariables::getAllModTypesKnown()
+	std::vector<std::string> GlobalVariables::getAllModTypesKnown()
 	{
 		return _AllModTypesKnown.AsEnumerable();
 	}
 
-	std::unordered_map<std::wstring, Modification*> GlobalVariables::getAllModsKnownDictionary()
+	std::unordered_map<std::string, Modification*> GlobalVariables::getAllModsKnownDictionary()
 	{
 		return privateAllModsKnownDictionary;
 	}
 
-	void GlobalVariables::setAllModsKnownDictionary(const std::unordered_map<std::wstring, Modification*> &value)
+	void GlobalVariables::setAllModsKnownDictionary(const std::unordered_map<std::string, Modification*> &value)
 	{
 		privateAllModsKnownDictionary = value;
 	}
 
-	std::unordered_map<std::wstring, DissociationType*> GlobalVariables::getAllSupportedDissociationTypes()
+	std::unordered_map<std::string, DissociationType*> GlobalVariables::getAllSupportedDissociationTypes()
 	{
 		return privateAllSupportedDissociationTypes;
 	}
 
-	void GlobalVariables::setAllSupportedDissociationTypes(const std::unordered_map<std::wstring, DissociationType*> &value)
+	void GlobalVariables::setAllSupportedDissociationTypes(const std::unordered_map<std::string, DissociationType*> &value)
 	{
 		privateAllSupportedDissociationTypes = value;
 	}
 
-	std::wstring GlobalVariables::getExperimentalDesignFileName()
+	std::string GlobalVariables::getExperimentalDesignFileName()
 	{
 		return privateExperimentalDesignFileName;
 	}
@@ -195,7 +195,7 @@ std::vector<std::wstring> GlobalVariables::ErrorsReadingMods;
 			if (mod->ModificationType.empty() || mod->IdWithMotif.empty())
 			{
 //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
-				ErrorsReadingMods.push_back(mod->ToString() + L"\r\n" + L" has null or empty modification type");
+				ErrorsReadingMods.push_back(mod->ToString() + "\r\n" + " has null or empty modification type");
 				continue;
 			}
 			if (getAllModsKnown().Any([&] (std::any b)
@@ -215,7 +215,7 @@ std::vector<std::wstring> GlobalVariables::ErrorsReadingMods;
 				else
 				{
 //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
-					ErrorsReadingMods.push_back(std::wstring(L"Modification id and type are equal, but some fields are not! ") + L"The following mod was not read in: " + L"\r\n" + mod->ToString());
+					ErrorsReadingMods.push_back(std::string("Modification id and type are equal, but some fields are not! ") + "The following mod was not read in: " + "\r\n" + mod->ToString());
 				}
 				continue;
 			}
@@ -246,9 +246,9 @@ std::vector<std::wstring> GlobalVariables::ErrorsReadingMods;
 					_AllModsKnown.push_back(mod);
 					_AllModTypesKnown.insert(mod->ModificationType);
 				}
-				else if (!mod->ModificationType->Equals(L"Unimod"))
+				else if (!mod->ModificationType->Equals("Unimod"))
 				{
-					ErrorsReadingMods.push_back(L"Duplicate mod IDs! Skipping " + mod->ModificationType + L":" + mod->IdWithMotif);
+					ErrorsReadingMods.push_back("Duplicate mod IDs! Skipping " + mod->ModificationType + ":" + mod->IdWithMotif);
 				}
 				continue;
 			}
@@ -261,11 +261,11 @@ std::vector<std::wstring> GlobalVariables::ErrorsReadingMods;
 		}
 	}
 
-	std::wstring GlobalVariables::CheckLengthOfOutput(const std::wstring &psmString)
+	std::string GlobalVariables::CheckLengthOfOutput(const std::string &psmString)
 	{
 		if (psmString.length() > 32000 && getGlobalSettings()->getWriteExcelCompatibleTSVs())
 		{
-			return L"Output too long for Excel";
+			return "Output too long for Excel";
 		}
 		else
 		{

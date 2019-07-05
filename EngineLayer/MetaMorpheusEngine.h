@@ -26,7 +26,7 @@ namespace EngineLayer
 
 		CommonParameters *const commonParameters;
 
-		const std::vector<std::wstring> nestedIds;
+		const std::vector<std::string> nestedIds;
 
 	public:
 		virtual ~MetaMorpheusEngine()
@@ -35,7 +35,7 @@ namespace EngineLayer
 		}
 
 	protected:
-		MetaMorpheusEngine(CommonParameters *commonParameters, std::vector<std::wstring> &nestedIds);
+		MetaMorpheusEngine(CommonParameters *commonParameters, std::vector<std::string> &nestedIds);
 
 	public:
 		static TangibleEvent<EventHandler<SingleEngineEventArgs>> *StartingSingleEngineHander = new TangibleEvent<EventHandler<SingleEngineEventArgs>>();
@@ -54,12 +54,12 @@ namespace EngineLayer
 
 		MetaMorpheusEngineResults *Run();
 
-		std::wstring GetId();
+		std::string GetId();
 
 	protected:
-		void Warn(const std::wstring &v);
+		void Warn(const std::string &v);
 
-		void Status(const std::wstring &v);
+		void Status(const std::string &v);
 
 		void ReportProgress(ProgressEventArgs *v);
 

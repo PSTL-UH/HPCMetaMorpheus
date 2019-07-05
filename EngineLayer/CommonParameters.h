@@ -13,7 +13,7 @@ namespace EngineLayer
 	class CommonParameters
 	{
 	private:
-		std::wstring privateTaskDescriptor;
+		std::string privateTaskDescriptor;
 		int privateMaxThreadsToUsePerFile = 0;
 		bool privateDoPrecursorDeconvolution = false;
 		bool privateUseProvidedPrecursorInfo = false;
@@ -44,7 +44,7 @@ namespace EngineLayer
 	public:
 		CommonParameters();
 
-		CommonParameters(const std::wstring &taskDescriptor = L"", DissociationType *dissociationType = DissociationType->HCD, bool doPrecursorDeconvolution = true, bool useProvidedPrecursorInfo = true, double deconvolutionIntensityRatio = 3, int deconvolutionMaxAssumedChargeState = 12, bool reportAllAmbiguity = true, bool addCompIons = false, int totalPartitions = 1, double scoreCutoff = 5, int topNpeaks = 200, double minRatio = 0.01, bool trimMs1Peaks = false, bool trimMsMsPeaks = true, bool useDeltaScore = false, bool calculateEValue = false, Tolerance *productMassTolerance = nullptr, Tolerance *precursorMassTolerance = nullptr, Tolerance *deconvolutionMassTolerance = nullptr, int maxThreadsToUsePerFile = -1, DigestionParams *digestionParams = nullptr, std::vector<(std::wstring, std::wstring)*> &listOfModsVariable, std::vector<(std::wstring, std::wstring)*> &listOfModsFixed, double qValueOutputFilter = 1.0, bool assumeOrphanPeaksAreZ1Fragments = true, int maxHeterozygousVariants = 4, int minVariantDepth = 1);
+		CommonParameters(const std::string &taskDescriptor = "", DissociationType *dissociationType = DissociationType->HCD, bool doPrecursorDeconvolution = true, bool useProvidedPrecursorInfo = true, double deconvolutionIntensityRatio = 3, int deconvolutionMaxAssumedChargeState = 12, bool reportAllAmbiguity = true, bool addCompIons = false, int totalPartitions = 1, double scoreCutoff = 5, int topNpeaks = 200, double minRatio = 0.01, bool trimMs1Peaks = false, bool trimMsMsPeaks = true, bool useDeltaScore = false, bool calculateEValue = false, Tolerance *productMassTolerance = nullptr, Tolerance *precursorMassTolerance = nullptr, Tolerance *deconvolutionMassTolerance = nullptr, int maxThreadsToUsePerFile = -1, DigestionParams *digestionParams = nullptr, std::vector<(std::string, std::string)*> &listOfModsVariable, std::vector<(std::string, std::string)*> &listOfModsFixed, double qValueOutputFilter = 1.0, bool assumeOrphanPeaksAreZ1Fragments = true, int maxHeterozygousVariants = 4, int minVariantDepth = 1);
 
 		// Notes:
 		// 1) Any new property must not be nullable (such as int?) or else if it is null,
@@ -52,8 +52,10 @@ namespace EngineLayer
 		//    and the default will override (so it's okay ONLY if the default is null)
 		// 2) All setters should be private unless necessary
 
-		std::wstring getTaskDescriptor() const;
-		void setTaskDescriptor(const std::wstring &value);
+		std::string getTaskDescriptor() const;
+		void setTaskDescriptor(const std::string &value);
 		int getMaxThreadsToUsePerFile() const;
 		void setMaxThreadsToUsePerFile(int value);
-		private *IEnumerable < (std::wstring, std::wstring);
+		private *IEnumerable < (std::string, std::string);
+        }
+}

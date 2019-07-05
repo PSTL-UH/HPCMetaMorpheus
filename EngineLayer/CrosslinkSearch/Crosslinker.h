@@ -18,9 +18,9 @@ namespace EngineLayer
 		class Crosslinker
 		{
 		private:
-			std::wstring privateCrosslinkerModSites;
-			std::wstring privateCrosslinkerModSites2;
-			std::wstring privateCrosslinkerName;
+			std::string privateCrosslinkerModSites;
+			std::string privateCrosslinkerModSites2;
+			std::string privateCrosslinkerName;
 			bool privateCleavable = false;
 			double privateTotalMass = 0;
 			double privateCleaveMassShort = 0;
@@ -31,16 +31,16 @@ namespace EngineLayer
 			double privateDeadendMassTris = 0;
 
 		public:
-			Crosslinker(const std::wstring &crosslinkerModSites, const std::wstring &crosslinkerModSites2, const std::wstring &crosslinkerName, bool cleavable, double totalMass, double cleaveMassShort, double cleaveMassLong, double loopMass, double deadendMassH2O, double deadendMassNH2, double deadendMassTris);
+			Crosslinker(const std::string &crosslinkerModSites, const std::string &crosslinkerModSites2, const std::string &crosslinkerName, bool cleavable, double totalMass, double cleaveMassShort, double cleaveMassLong, double loopMass, double deadendMassH2O, double deadendMassNH2, double deadendMassTris);
 
 			Crosslinker();
 
-				std::wstring getCrosslinkerModSites() const;
-				void setCrosslinkerModSites(const std::wstring &value);
-				std::wstring getCrosslinkerModSites2() const;
-				void setCrosslinkerModSites2(const std::wstring &value);
-				std::wstring getCrosslinkerName() const;
-				void setCrosslinkerName(const std::wstring &value);
+				std::string getCrosslinkerModSites() const;
+				void setCrosslinkerModSites(const std::string &value);
+				std::string getCrosslinkerModSites2() const;
+				void setCrosslinkerModSites2(const std::string &value);
+				std::string getCrosslinkerName() const;
+				void setCrosslinkerName(const std::string &value);
 				bool getCleavable() const;
 				void setCleavable(bool value);
 				double getTotalMass() const;

@@ -22,17 +22,17 @@ namespace EngineLayer
 		double privatePrecursorMonoisotopicPeakMz = 0;
 		double privatePrecursorMass = 0;
 		int privatePrecursorCharge = 0;
-		std::wstring privateFullFilePath;
+		std::string privateFullFilePath;
 		std::vector<IsotopicEnvelope*> privateExperimentalFragments;
 
 	public:
-		Ms2ScanWithSpecificMass(MsDataScan *mzLibScan, double precursorMonoisotopicPeakMz, int precursorCharge, const std::wstring &fullFilePath, CommonParameters *commonParam, std::vector<IsotopicEnvelope*> &neutralExperimentalFragments);
+		Ms2ScanWithSpecificMass(MsDataScan *mzLibScan, double precursorMonoisotopicPeakMz, int precursorCharge, const std::string &fullFilePath, CommonParameters *commonParam, std::vector<IsotopicEnvelope*> &neutralExperimentalFragments);
 
 		MsDataScan *getTheScan() const;
 		double getPrecursorMonoisotopicPeakMz() const override;
 		double getPrecursorMass() const override;
 		int getPrecursorCharge() const override;
-		std::wstring getFullFilePath() const override;
+		std::string getFullFilePath() const override;
 		std::vector<IsotopicEnvelope*> getExperimentalFragments() const;
 		void setExperimentalFragments(const std::vector<IsotopicEnvelope*> &value);
 	private:

@@ -21,6 +21,6 @@ namespace EngineLayer
 
 		MetaMorpheusEngine *getMyEngine() const;
 
-		std::wstring ToString() override;
+		std::string ToString() override;
 	};
 }

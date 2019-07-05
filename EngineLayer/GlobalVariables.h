@@ -20,20 +20,20 @@ namespace EngineLayer
 	class GlobalVariables final
 	{
 	private:
-		static std::wstring privateDataDir;
+		static std::string privateDataDir;
 		static bool privateStopLoops;
-		static std::wstring privateElementsLocation;
-		static std::wstring privateMetaMorpheusVersion;
+		static std::string privateElementsLocation;
+		static std::string privateMetaMorpheusVersion;
 		static IGlobalSettings *privateGlobalSettings;
 		static std::vector<Modification*> privateUnimodDeserialized;
 		static std::vector<Modification*> privateUniprotDeseralized;
 		static UsefulProteomicsDatabases::Generated::obo *privatePsiModDeserialized;
-		static std::unordered_map<std::wstring, Modification*> privateAllModsKnownDictionary;
-		static std::unordered_map<std::wstring, DissociationType*> privateAllSupportedDissociationTypes;
-		static std::wstring privateExperimentalDesignFileName;
+		static std::unordered_map<std::string, Modification*> privateAllModsKnownDictionary;
+		static std::unordered_map<std::string, DissociationType*> privateAllSupportedDissociationTypes;
+		static std::string privateExperimentalDesignFileName;
 
 		static std::vector<Modification*> _AllModsKnown;
-		static std::unordered_set<std::wstring> _AllModTypesKnown;
+		static std::unordered_set<std::string> _AllModTypesKnown;
 
 	private:
 		class StaticConstructor
@@ -47,28 +47,28 @@ namespace EngineLayer
 
 
 	public:
-		static std::vector<std::wstring> ErrorsReadingMods;
+		static std::vector<std::string> ErrorsReadingMods;
 		// File locations
-		static std::wstring getDataDir();
+		static std::string getDataDir();
 		static bool getStopLoops();
 		static void setStopLoops(bool value);
-		static std::wstring getElementsLocation();
-		static std::wstring getMetaMorpheusVersion();
+		static std::string getElementsLocation();
+		static std::string getMetaMorpheusVersion();
 		static IGlobalSettings *getGlobalSettings();
 		static std::vector<Modification*> getUnimodDeserialized();
 		static std::vector<Modification*> getUniprotDeseralized();
 		static UsefulProteomicsDatabases::Generated::obo *getPsiModDeserialized();
 		static std::vector<Modification*> getAllModsKnown();
-		static std::vector<std::wstring> getAllModTypesKnown();
-		static std::unordered_map<std::wstring, Modification*> getAllModsKnownDictionary();
-		static void setAllModsKnownDictionary(const std::unordered_map<std::wstring, Modification*> &value);
-		static std::unordered_map<std::wstring, DissociationType*> getAllSupportedDissociationTypes();
-		static void setAllSupportedDissociationTypes(const std::unordered_map<std::wstring, DissociationType*> &value);
+		static std::vector<std::string> getAllModTypesKnown();
+		static std::unordered_map<std::string, Modification*> getAllModsKnownDictionary();
+		static void setAllModsKnownDictionary(const std::unordered_map<std::string, Modification*> &value);
+		static std::unordered_map<std::string, DissociationType*> getAllSupportedDissociationTypes();
+		static void setAllSupportedDissociationTypes(const std::unordered_map<std::string, DissociationType*> &value);
 
-		static std::wstring getExperimentalDesignFileName();
+		static std::string getExperimentalDesignFileName();
 
 		static void AddMods(std::vector<Modification*> &modifications, bool modsAreFromTheTopOfProteinXml);
 
-		static std::wstring CheckLengthOfOutput(const std::wstring &psmString);
+		static std::string CheckLengthOfOutput(const std::string &psmString);
 	};
 }

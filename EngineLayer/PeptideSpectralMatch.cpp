@@ -39,12 +39,12 @@ namespace EngineLayer
 		privateModsChemicalFormula = value;
 	}
 
-	std::wstring PeptideSpectralMatch::getFullSequence() const
+	std::string PeptideSpectralMatch::getFullSequence() const
 	{
 		return privateFullSequence;
 	}
 
-	void PeptideSpectralMatch::setFullSequence(const std::wstring &value)
+	void PeptideSpectralMatch::setFullSequence(const std::string &value)
 	{
 		privateFullSequence = value;
 	}
@@ -59,12 +59,12 @@ namespace EngineLayer
 		privateNotch = value;
 	}
 
-	std::wstring PeptideSpectralMatch::getBaseSequence() const
+	std::string PeptideSpectralMatch::getBaseSequence() const
 	{
 		return privateBaseSequence;
 	}
 
-	void PeptideSpectralMatch::setBaseSequence(const std::wstring &value)
+	void PeptideSpectralMatch::setBaseSequence(const std::string &value)
 	{
 		privateBaseSequence = value;
 	}
@@ -119,22 +119,22 @@ namespace EngineLayer
 		privateProteinLength = value;
 	}
 
-	std::wstring PeptideSpectralMatch::getProteinAccession() const
+	std::string PeptideSpectralMatch::getProteinAccession() const
 	{
 		return privateProteinAccession;
 	}
 
-	void PeptideSpectralMatch::setProteinAccession(const std::wstring &value)
+	void PeptideSpectralMatch::setProteinAccession(const std::string &value)
 	{
 		privateProteinAccession = value;
 	}
 
-	std::wstring PeptideSpectralMatch::getOrganism() const
+	std::string PeptideSpectralMatch::getOrganism() const
 	{
 		return privateOrganism;
 	}
 
-	void PeptideSpectralMatch::setOrganism(const std::wstring &value)
+	void PeptideSpectralMatch::setOrganism(const std::string &value)
 	{
 		privateOrganism = value;
 	}
@@ -149,12 +149,12 @@ namespace EngineLayer
 		privateMatchedFragmentIons = value;
 	}
 
-	std::unordered_map<std::wstring, int> PeptideSpectralMatch::getModsIdentified() const
+	std::unordered_map<std::string, int> PeptideSpectralMatch::getModsIdentified() const
 	{
 		return privateModsIdentified;
 	}
 
-	void PeptideSpectralMatch::setModsIdentified(const std::unordered_map<std::wstring, int> &value)
+	void PeptideSpectralMatch::setModsIdentified(const std::unordered_map<std::string, int> &value)
 	{
 		privateModsIdentified = value;
 	}
@@ -209,7 +209,7 @@ namespace EngineLayer
 		return privateScanPrecursorMass;
 	}
 
-	std::wstring PeptideSpectralMatch::getFullFilePath() const
+	std::string PeptideSpectralMatch::getFullFilePath() const
 	{
 		return privateFullFilePath;
 	}
@@ -327,9 +327,9 @@ namespace EngineLayer
 		return std::vector<std::any> {BankersRounding::round(getScore()), getScore() - BankersRounding::round(getScore())};
 	}
 
-	std::wstring PeptideSpectralMatch::GetTabSeparatedHeader()
+	std::string PeptideSpectralMatch::GetTabSeparatedHeader()
 	{
-		return std::wstring::Join(L"\t", DataDictionary(nullptr, nullptr).Keys);
+		return std::string::Join("\t", DataDictionary(nullptr, nullptr).Keys);
 	}
 
 	void PeptideSpectralMatch::AddOrReplace(PeptideWithSetModifications *pwsm, double newScore, int notch, bool reportAllAmbiguity, std::vector<MatchedFragmentIon*> &matchedFragmentIons)
@@ -364,19 +364,19 @@ namespace EngineLayer
 		}
 	}
 
-	std::wstring PeptideSpectralMatch::ToString()
+	std::string PeptideSpectralMatch::ToString()
 	{
-		return ToString(std::unordered_map<std::wstring, int>());
+		return ToString(std::unordered_map<std::string, int>());
 	}
 
-	std::wstring PeptideSpectralMatch::ToString(IReadOnlyDictionary<std::wstring, int> *ModstoWritePruned)
+	std::string PeptideSpectralMatch::ToString(IReadOnlyDictionary<std::string, int> *ModstoWritePruned)
 	{
-		return std::wstring::Join(L"\t", DataDictionary(this, ModstoWritePruned).Values);
+		return std::string::Join("\t", DataDictionary(this, ModstoWritePruned).Values);
 	}
 
-	std::unordered_map<std::wstring, std::wstring> PeptideSpectralMatch::DataDictionary(PeptideSpectralMatch *psm, IReadOnlyDictionary<std::wstring, int> *ModsToWritePruned)
+	std::unordered_map<std::string, std::string> PeptideSpectralMatch::DataDictionary(PeptideSpectralMatch *psm, IReadOnlyDictionary<std::string, int> *ModsToWritePruned)
 	{
-		std::unordered_map<std::wstring, std::wstring> s;
+		std::unordered_map<std::string, std::string> s;
 		AddBasicMatchData(s, psm);
 		AddPeptideSequenceData(s, psm, ModsToWritePruned);
 		AddMatchedIonsData(s, psm);
@@ -534,38 +534,38 @@ namespace EngineLayer
 		ResolveAllAmbiguities();
 	}
 
-	private void <missing_class_definition>::AddBasicMatchData(std::unordered_map<std::wstring, std::wstring> &s, PeptideSpectralMatch *psm)
+	private void <missing_class_definition>::AddBasicMatchData(std::unordered_map<std::string, std::string> &s, PeptideSpectralMatch *psm)
 	{
-		s[L"File Name"] = psm == nullptr ? L" " : Path::GetFileNameWithoutExtension(psm->getFullFilePath());
+		s["File Name"] = psm == nullptr ? " " : Path::GetFileNameWithoutExtension(psm->getFullFilePath());
 //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
-		s[L"Scan Number"] = psm == nullptr ? L" " : psm->getScanNumber().ToString(CultureInfo::InvariantCulture);
+		s["Scan Number"] = psm == nullptr ? " " : psm->getScanNumber().ToString(CultureInfo::InvariantCulture);
 //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
-		s[L"Scan Retention Time"] = psm == nullptr ? L" " : psm->getScanRetentionTime().ToString(L"F5", CultureInfo::InvariantCulture);
+		s["Scan Retention Time"] = psm == nullptr ? " " : psm->getScanRetentionTime().ToString("F5", CultureInfo::InvariantCulture);
 //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
-		s[L"Num Experimental Peaks"] = psm == nullptr ? L" " : psm->getScanExperimentalPeaks().ToString(L"F5", CultureInfo::InvariantCulture);
+		s["Num Experimental Peaks"] = psm == nullptr ? " " : psm->getScanExperimentalPeaks().ToString("F5", CultureInfo::InvariantCulture);
 //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
-		s[L"Total Ion Current"] = psm == nullptr ? L" " : psm->getTotalIonCurrent().ToString(L"F5", CultureInfo::InvariantCulture);
+		s["Total Ion Current"] = psm == nullptr ? " " : psm->getTotalIonCurrent().ToString("F5", CultureInfo::InvariantCulture);
 //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
-		s[L"Precursor Scan Number"] = psm == nullptr ? L" " : psm->getPrecursorScanNumber().HasValue ? psm->getPrecursorScanNumber().Value.ToString(CultureInfo::InvariantCulture) : L"unknown";
+		s["Precursor Scan Number"] = psm == nullptr ? " " : psm->getPrecursorScanNumber().HasValue ? psm->getPrecursorScanNumber().Value.ToString(CultureInfo::InvariantCulture) : "unknown";
 //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
-		s[L"Precursor Charge"] = psm == nullptr ? L" " : psm->getScanPrecursorCharge().ToString(L"F5", CultureInfo::InvariantCulture);
+		s["Precursor Charge"] = psm == nullptr ? " " : psm->getScanPrecursorCharge().ToString("F5", CultureInfo::InvariantCulture);
 //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
-		s[L"Precursor MZ"] = psm == nullptr ? L" " : psm->getScanPrecursorMonoisotopicPeakMz().ToString(L"F5", CultureInfo::InvariantCulture);
+		s["Precursor MZ"] = psm == nullptr ? " " : psm->getScanPrecursorMonoisotopicPeakMz().ToString("F5", CultureInfo::InvariantCulture);
 //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
-		s[L"Precursor Mass"] = psm == nullptr ? L" " : psm->getScanPrecursorMass().ToString(L"F5", CultureInfo::InvariantCulture);
+		s["Precursor Mass"] = psm == nullptr ? " " : psm->getScanPrecursorMass().ToString("F5", CultureInfo::InvariantCulture);
 //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
-		s[L"Score"] = psm == nullptr ? L" " : psm->getScore().ToString(L"F3", CultureInfo::InvariantCulture);
+		s["Score"] = psm == nullptr ? " " : psm->getScore().ToString("F3", CultureInfo::InvariantCulture);
 //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
-		s[L"Delta Score"] = psm == nullptr ? L" " : psm->getDeltaScore().ToString(L"F3", CultureInfo::InvariantCulture);
-		s[L"Notch"] = psm == nullptr ? L" " : Resolve(psm->BestMatchingPeptides->Select([&] (std::any p)
+		s["Delta Score"] = psm == nullptr ? " " : psm->getDeltaScore().ToString("F3", CultureInfo::InvariantCulture);
+		s["Notch"] = psm == nullptr ? " " : Resolve(psm->BestMatchingPeptides->Select([&] (std::any p)
 		{
 			p::Notch;
 		}))->ResolvedString;
 //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
-		s[L"Different Peak Matches"] = psm == nullptr ? L" " : psm->getNumDifferentMatchingPeptides().ToString(L"F5", CultureInfo::InvariantCulture);
+		s["Different Peak Matches"] = psm == nullptr ? " " : psm->getNumDifferentMatchingPeptides().ToString("F5", CultureInfo::InvariantCulture);
 	}
 
-	private void <missing_class_definition>::AddPeptideSequenceData(std::unordered_map<std::wstring, std::wstring> &s, PeptideSpectralMatch *psm, IReadOnlyDictionary<std::wstring, int> *ModsToWritePruned)
+	private void <missing_class_definition>::AddPeptideSequenceData(std::unordered_map<std::string, std::string> &s, PeptideSpectralMatch *psm, IReadOnlyDictionary<std::string, int> *ModsToWritePruned)
 	{
 		bool pepWithModsIsNull = psm == nullptr || psm->BestMatchingPeptides == nullptr || !psm->BestMatchingPeptides.Any();
 
@@ -574,74 +574,74 @@ namespace EngineLayer
 			p::Peptide;
 		}).ToList();
 
-		s[L"Base Sequence"] = pepWithModsIsNull ? L" " : Resolve(pepWithModsIsNull ? nullptr : pepsWithMods.Select([&] (std::any b)
+		s["Base Sequence"] = pepWithModsIsNull ? " " : Resolve(pepWithModsIsNull ? nullptr : pepsWithMods.Select([&] (std::any b)
 		{
 			b::BaseSequence;
 		}))->ResolvedString;
-		s[L"Full Sequence"] = pepWithModsIsNull ? L" " : Resolve(pepWithModsIsNull ? nullptr : pepsWithMods.Select([&] (std::any b)
+		s["Full Sequence"] = pepWithModsIsNull ? " " : Resolve(pepWithModsIsNull ? nullptr : pepsWithMods.Select([&] (std::any b)
 		{
 			b::FullSequence;
 		}))->ResolvedString;
-		s[L"Essential Sequence"] = pepWithModsIsNull ? L" " : Resolve(pepWithModsIsNull ? nullptr : pepsWithMods.Select([&] (std::any b)
+		s["Essential Sequence"] = pepWithModsIsNull ? " " : Resolve(pepWithModsIsNull ? nullptr : pepsWithMods.Select([&] (std::any b)
 		{
 			b::EssentialSequence(ModsToWritePruned);
 		}))->ResolvedString;
-		s[L"Mods"] = pepWithModsIsNull ? L" " : Resolve(pepsWithMods.Select([&] (std::any b)
+		s["Mods"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
 		{
 			b::AllModsOneIsNterminus;
 		}))->ResolvedString;
-		s[L"Mods Chemical Formulas"] = pepWithModsIsNull ? L" " : Resolve(pepsWithMods.Select([&] (std::any p)
+		s["Mods Chemical Formulas"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any p)
 		{
 			p::AllModsOneIsNterminus->Select([&] (std::any v)
 			{
 				v->Value;
 			});
 		}))->ResolvedString;
-		s[L"Mods Combined Chemical Formula"] = pepWithModsIsNull ? L" " : Resolve(pepsWithMods.Select([&] (std::any b)
+		s["Mods Combined Chemical Formula"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
 		{
 			b::AllModsOneIsNterminus->Select([&] (std::any c)
 			{
 				(dynamic_cast<Modification*>(c->Value));
 			});
 		}))->ResolvedString;
-		s[L"Num Variable Mods"] = pepWithModsIsNull ? L" " : Resolve(pepsWithMods.Select([&] (std::any b)
+		s["Num Variable Mods"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
 		{
 			b::NumVariableMods;
 		}))->Item1;
-		s[L"Missed Cleavages"] = pepWithModsIsNull ? L" " : Resolve(pepsWithMods.Select([&] (std::any b)
+		s["Missed Cleavages"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
 		{
 			b::MissedCleavages.ToString(CultureInfo::InvariantCulture);
 		}))->ResolvedString;
-		s[L"Peptide Monoisotopic Mass"] = pepWithModsIsNull ? L" " : Resolve(pepsWithMods.Select([&] (std::any b)
+		s["Peptide Monoisotopic Mass"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
 		{
 			b::MonoisotopicMass;
 		}))->ResolvedString;
-		s[L"Mass Diff (Da)"] = pepWithModsIsNull ? L" " : Resolve(pepsWithMods.Select([&] (std::any b)
+		s["Mass Diff (Da)"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
 		{
 			return psm->getScanPrecursorMass() - b::MonoisotopicMass;
 		}))->ResolvedString;
-		s[L"Mass Diff (ppm)"] = pepWithModsIsNull ? L" " : ResolveF2(pepsWithMods.Select([&] (std::any b)
+		s["Mass Diff (ppm)"] = pepWithModsIsNull ? " " : ResolveF2(pepsWithMods.Select([&] (std::any b)
 		{
 			((psm->getScanPrecursorMass() - b::MonoisotopicMass) / b::MonoisotopicMass * 1e6);
 		})).ResolvedString;
-		s[L"Protein Accession"] = pepWithModsIsNull ? L" " : Resolve(pepsWithMods.Select([&] (std::any b)
+		s["Protein Accession"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
 		{
 			b::Protein::Accession;
 		}), psm->getFullSequence())->ResolvedString;
-		s[L"Protein Name"] = pepWithModsIsNull ? L" " : Resolve(pepsWithMods.Select([&] (std::any b)
+		s["Protein Name"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
 		{
 			b::Protein->FullName;
 		}), psm->getFullSequence())->ResolvedString;
-		s[L"Gene Name"] = pepWithModsIsNull ? L" " : Resolve(pepsWithMods.Select([&] (std::any b)
+		s["Gene Name"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
 		{
-			std::wstring::Join(L", ", b::Protein::GeneNames->Select([&] (std::any d)
+			std::string::Join(", ", b::Protein::GeneNames->Select([&] (std::any d)
 			{
-				StringHelper::formatSimple(L"{0}:{1}", d::Item1, d::Item2);
+				StringHelper::formatSimple("{0}:{1}", d::Item1, d::Item2);
 			}));
 		}), psm->getFullSequence())->ResolvedString;
-		s[L"Intersecting Sequence Variations"] = pepWithModsIsNull ? L" " : Resolve(pepsWithMods.Select([&] (std::any b)
+		s["Intersecting Sequence Variations"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
 		{
-			std::wstring::Join(L", ", b::Protein::AppliedSequenceVariations::Where([&] (std::any av)
+			std::string::Join(", ", b::Protein::AppliedSequenceVariations::Where([&] (std::any av)
 			{
 				IntersectsWithVariation(b, av, false);
 			})->Select([&] (std::any av)
@@ -649,9 +649,9 @@ namespace EngineLayer
 				SequenceVariantString(b, av);
 			}));
 		}))->ResolvedString;
-		s[L"Identified Sequence Variations"] = pepWithModsIsNull ? L" " : Resolve(pepsWithMods.Select([&] (std::any b)
+		s["Identified Sequence Variations"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
 		{
-			std::wstring::Join(L", ", b::Protein::AppliedSequenceVariations::Where([&] (std::any av)
+			std::string::Join(", ", b::Protein::AppliedSequenceVariations::Where([&] (std::any av)
 			{
 				IntersectsWithVariation(b, av, true);
 			})->Select([&] (std::any av)
@@ -659,59 +659,59 @@ namespace EngineLayer
 				SequenceVariantString(b, av);
 			}));
 		}))->ResolvedString;
-		s[L"Splice Sites"] = pepWithModsIsNull ? L" " : Resolve(pepsWithMods.Select([&] (std::any b)
+		s["Splice Sites"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
 		{
-			std::wstring::Join(L", ", b::Protein::SpliceSites::Where([&] (std::any d)
+			std::string::Join(", ", b::Protein::SpliceSites::Where([&] (std::any d)
 			{
 				Includes(b, d);
 			})->Select([&] (std::any d)
 			{
-				StringHelper::formatSimple(L"{0}-{1}", d::OneBasedBeginPosition.ToString(), d::OneBasedEndPosition.ToString());
+				StringHelper::formatSimple("{0}-{1}", d::OneBasedBeginPosition.ToString(), d::OneBasedEndPosition.ToString());
 			}));
 		}))->ResolvedString;
-		s[L"Organism Name"] = pepWithModsIsNull ? L" " : Resolve(pepsWithMods.Select([&] (std::any b)
+		s["Organism Name"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
 		{
 			b::Protein::Organism;
 		}))->Item1;
-		s[L"Contaminant"] = pepWithModsIsNull ? L" " : Resolve(pepsWithMods.Select([&] (std::any b)
+		s["Contaminant"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
 		{
-			b::Protein::IsContaminant ? L"Y" : L"N";
+			b::Protein::IsContaminant ? "Y" : "N";
 		}))->Item1;
-		s[L"Decoy"] = pepWithModsIsNull ? L" " : Resolve(pepsWithMods.Select([&] (std::any b)
+		s["Decoy"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
 		{
-			b::Protein::IsDecoy ? L"Y" : L"N";
+			b::Protein::IsDecoy ? "Y" : "N";
 		}))->Item1;
-		s[L"Peptide Description"] = pepWithModsIsNull ? L" " : Resolve(pepsWithMods.Select([&] (std::any b)
+		s["Peptide Description"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
 		{
 			b::PeptideDescription;
 		}))->Item1;
-		s[L"Start and End Residues In Protein"] = pepWithModsIsNull ? L" " : Resolve(pepsWithMods.Select([&] (std::any b)
+		s["Start and End Residues In Protein"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
 		{
-			(StringHelper::formatSimple(L"[{0} to {1}]", b::OneBasedStartResidueInProtein.ToString(CultureInfo::InvariantCulture), b::OneBasedEndResidueInProtein.ToString(CultureInfo::InvariantCulture)));
+			(StringHelper::formatSimple("[{0} to {1}]", b::OneBasedStartResidueInProtein.ToString(CultureInfo::InvariantCulture), b::OneBasedEndResidueInProtein.ToString(CultureInfo::InvariantCulture)));
 		}), psm->getFullSequence())->ResolvedString;
-		s[L"Previous Amino Acid"] = pepWithModsIsNull ? L" " : Resolve(pepsWithMods.Select([&] (std::any b)
+		s["Previous Amino Acid"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
 		{
 			b::PreviousAminoAcid.ToString();
 		}))->ResolvedString;
-		s[L"Next Amino Acid"] = pepWithModsIsNull ? L" " : Resolve(pepsWithMods.Select([&] (std::any b)
+		s["Next Amino Acid"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
 		{
 			b::NextAminoAcid.ToString();
 		}))->ResolvedString;
 
-		std::wstring allScores = L" ";
-		std::wstring theoreticalsSearched = L" ";
+		std::string allScores = " ";
+		std::string theoreticalsSearched = " ";
 		if (!pepWithModsIsNull && psm->getFdrInfo() != nullptr && psm->getFdrInfo()->getCalculateEValue())
 		{
-			allScores = std::wstring::Join(L";", psm->getAllScores().Select([&] (std::any p)
+			allScores = std::string::Join(";", psm->getAllScores().Select([&] (std::any p)
 			{
-				p.ToString(L"F2", CultureInfo::InvariantCulture);
+				p.ToString("F2", CultureInfo::InvariantCulture);
 			}));
-			theoreticalsSearched = std::to_wstring(psm->getAllScores().size());
+			theoreticalsSearched = std::to_string(psm->getAllScores().size());
 		}
 
-		s[L"All Scores"] = allScores;
-		s[L"Theoreticals Searched"] = theoreticalsSearched;
-		s[L"Decoy/Contaminant/Target"] = pepWithModsIsNull ? L" " : psm->getIsDecoy() ? L"D" : psm->getIsContaminant() ? L"C" : L"T";
+		s["All Scores"] = allScores;
+		s["Theoreticals Searched"] = theoreticalsSearched;
+		s["Decoy/Contaminant/Target"] = pepWithModsIsNull ? " " : psm->getIsDecoy() ? "D" : psm->getIsContaminant() ? "C" : "T";
 	}
 
 	private bool <missing_class_definition>::Includes(PeptideWithSetModifications *pep, SpliceSite *site)
@@ -745,13 +745,13 @@ namespace EngineLayer
 			}
 
 			// is the variant sequence intersecting the peptide different than the original sequence?
-			std::wstring originalAtIntersect = appliedVariation->OriginalSequence->substr(intersectOneBasedStart - appliedVariation->OneBasedBeginPosition, intersectSize);
-			std::wstring variantAtIntersect = appliedVariation->VariantSequence->substr(intersectOneBasedStart - appliedVariation->OneBasedBeginPosition, intersectSize);
+			std::string originalAtIntersect = appliedVariation->OriginalSequence->substr(intersectOneBasedStart - appliedVariation->OneBasedBeginPosition, intersectSize);
+			std::string variantAtIntersect = appliedVariation->VariantSequence->substr(intersectOneBasedStart - appliedVariation->OneBasedBeginPosition, intersectSize);
 			return originalAtIntersect != variantAtIntersect;
 		}
 	}
 
-	private std::wstring <missing_class_definition>::SequenceVariantString(PeptideWithSetModifications *p, SequenceVariation *applied)
+	private std::string <missing_class_definition>::SequenceVariantString(PeptideWithSetModifications *p, SequenceVariation *applied)
 	{
 		auto modsOnVariantOneIsNTerm = p->AllModsOneIsNterminus.Where([&] (std::any kv)
 		{
@@ -766,10 +766,10 @@ namespace EngineLayer
 		PeptideWithSetModifications *variantWithAnyMods = new PeptideWithSetModifications(p->Protein, p->DigestionParams, applied->OneBasedBeginPosition, applied->OneBasedEndPosition, p->CleavageSpecificityForFdrCategory, p->PeptideDescription, p->MissedCleavages, modsOnVariantOneIsNTerm, p->NumFixedMods);
 
 		delete variantWithAnyMods;
-		return StringHelper::formatSimple(L"{0}{1}{2}", applied->OriginalSequence, applied->OneBasedBeginPosition, variantWithAnyMods->FullSequence);
+		return StringHelper::formatSimple("{0}{1}{2}", applied->OriginalSequence, applied->OneBasedBeginPosition, variantWithAnyMods->FullSequence);
 	}
 
-	public void <missing_class_definition>::AddMatchedIonsData(std::unordered_map<std::wstring, std::wstring> &s, PeptideSpectralMatch *psm)
+	public void <missing_class_definition>::AddMatchedIonsData(std::unordered_map<std::string, std::string> &s, PeptideSpectralMatch *psm)
 	{
 		bool nullPsm = (psm == nullptr);
 
@@ -789,7 +789,7 @@ namespace EngineLayer
 			}
 
 			// using ", " instead of "," improves human readability
-			const std::wstring delimiter = L", ";
+			const std::string delimiter = ", ";
 
 			auto matchedIonsGroupedByProductType = matchedIons->GroupBy([&] (std::any i)
 			{
@@ -808,13 +808,13 @@ namespace EngineLayer
 
 				std::for_each(stringBuilders.begin(), stringBuilders.end(), [&] (std::any p)
 				{
-					p->Append(L"[");
+					p->Append("[");
 				});
 
 				for (int i = 0; i < products.size(); i++)
 				{
 					MatchedFragmentIon *ion = products[i];
-					std::wstring ionLabel;
+					std::string ionLabel;
 
 					double massError = ion->Mz.ToMass(ion->Charge) - ion->NeutralTheoreticalProduct.NeutralMass;
 					double ppmMassError = massError / ion->NeutralTheoreticalProduct.NeutralMass * 1e6;
@@ -822,13 +822,13 @@ namespace EngineLayer
 					if (ion->NeutralTheoreticalProduct->NeutralLoss == 0)
 					{
 						// no neutral loss
-						ionLabel = ion->NeutralTheoreticalProduct.ProductType + L"" + ion->NeutralTheoreticalProduct.TerminusFragment.FragmentNumber + L"+" + ion->Charge;
+						ionLabel = ion->NeutralTheoreticalProduct.ProductType + "" + ion->NeutralTheoreticalProduct.TerminusFragment.FragmentNumber + "+" + ion->Charge;
 					}
 					else
 					{
 						// ion label with neutral loss
 //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
-						ionLabel = L"(" + ion->NeutralTheoreticalProduct.ProductType + L"" + ion->NeutralTheoreticalProduct.TerminusFragment.FragmentNumber + L"-" + ion->NeutralTheoreticalProduct.NeutralLoss.ToString(L"F2") + L")" + L"+" + ion->Charge;
+						ionLabel = "(" + ion->NeutralTheoreticalProduct.ProductType + "" + ion->NeutralTheoreticalProduct.TerminusFragment.FragmentNumber + "-" + ion->NeutralTheoreticalProduct.NeutralLoss.ToString("F2") + ")" + "+" + ion->Charge;
 					}
 
 					// append ion label
@@ -836,19 +836,19 @@ namespace EngineLayer
 
 					// append experimental m/z
 //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
-					mzStringBuilder->append(ionLabel + L":" + ion->Mz.ToString(L"F5"));
+					mzStringBuilder->append(ionLabel + ":" + ion->Mz.ToString("F5"));
 
 					// append absolute mass error
 //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
-					fragmentDaErrorStringBuilder->append(ionLabel + L":" + massError.ToString(L"F5"));
+					fragmentDaErrorStringBuilder->append(ionLabel + ":" + massError.ToString("F5"));
 
 					// append ppm mass error
 //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
-					fragmentPpmErrorStringBuilder->append(ionLabel + L":" + ppmMassError.ToString(L"F2"));
+					fragmentPpmErrorStringBuilder->append(ionLabel + ":" + ppmMassError.ToString("F2"));
 
 					// append fragment ion intensity
 //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
-					fragmentIntensityStringBuilder->append(ionLabel + L":" + ion->Intensity.ToString(L"F0"));
+					fragmentIntensityStringBuilder->append(ionLabel + ":" + ion->Intensity.ToString("F0"));
 
 					// append delimiter ", "
 					if (i < products.size() - 1)
@@ -866,16 +866,16 @@ namespace EngineLayer
 				{
 					p->Append("];
 				}"));
-			}}s[L"Matched Ion Series"] = nullPsm ? L" " : seriesStringBuilder->ToString()->TrimEnd(L';');
+			}}s["Matched Ion Series"] = nullPsm ? " " : seriesStringBuilder->ToString()->TrimEnd(L';');
 //C# TO C++ CONVERTER TODO TASK: The following lambda expression could not be converted:
-				stringBuilders.ForEach(p => TangibleLambdaToken86}s[L"Matched Ion Series"];
-		s[L"Matched Ion Mass-To-Charge Ratios"] = nullPsm ? L" " : mzStringBuilder->toString()->TrimEnd(L';');
-		s[L"Matched Ion Mass Diff (Da)"] = nullPsm ? L" " : fragmentDaErrorStringBuilder->toString()->TrimEnd(L';');
-		s[L"Matched Ion Mass Diff (Ppm)"] = nullPsm ? L" " : fragmentPpmErrorStringBuilder->toString()->TrimEnd(L';');
-		s[L"Matched Ion Intensities"] = nullPsm ? L" " : fragmentIntensityStringBuilder->toString()->TrimEnd(L';');
+				stringBuilders.ForEach(p => TangibleLambdaToken86}s["Matched Ion Series"];
+		s["Matched Ion Mass-To-Charge Ratios"] = nullPsm ? " " : mzStringBuilder->toString()->TrimEnd(L';');
+		s["Matched Ion Mass Diff (Da)"] = nullPsm ? " " : fragmentDaErrorStringBuilder->toString()->TrimEnd(L';');
+		s["Matched Ion Mass Diff (Ppm)"] = nullPsm ? " " : fragmentPpmErrorStringBuilder->toString()->TrimEnd(L';');
+		s["Matched Ion Intensities"] = nullPsm ? " " : fragmentIntensityStringBuilder->toString()->TrimEnd(L';');
 
 		// number of matched ions
-		s[L"Matched Ion Counts"] = nullPsm ? L" " : std::to_wstring(psm->MatchedFragmentIons->Count);
+		s["Matched Ion Counts"] = nullPsm ? " " : std::to_string(psm->MatchedFragmentIons->Count);
 		}
 
 //C# TO C++ CONVERTER TODO TASK: Local functions are not converted by C# to C++ Converter:

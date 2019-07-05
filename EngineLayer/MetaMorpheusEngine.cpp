@@ -22,7 +22,7 @@ const std::unordered_map<DissociationType*, double> MetaMorpheusEngine::compleme
 	{DissociationType::CID, Constants::ProtonMass}
 };
 
-	MetaMorpheusEngine::MetaMorpheusEngine(CommonParameters *commonParameters, std::vector<std::wstring> &nestedIds) : commonParameters(commonParameters), nestedIds(nestedIds)
+	MetaMorpheusEngine::MetaMorpheusEngine(CommonParameters *commonParameters, std::vector<std::string> &nestedIds) : commonParameters(commonParameters), nestedIds(nestedIds)
 	{
 	}
 
@@ -116,18 +116,18 @@ const std::unordered_map<DissociationType*, double> MetaMorpheusEngine::compleme
 		return myResults;
 	}
 
-	std::wstring MetaMorpheusEngine::GetId()
+	std::string MetaMorpheusEngine::GetId()
 	{
-		return std::wstring::Join(L",", nestedIds);
+		return std::string::Join(",", nestedIds);
 	}
 
-	void MetaMorpheusEngine::Warn(const std::wstring &v)
+	void MetaMorpheusEngine::Warn(const std::string &v)
 	{
 		StringEventArgs tempVar(v, nestedIds);
 		WarnHandler +== nullptr ? nullptr : WarnHandler::Invoke(this, &tempVar);
 	}
 
-	void MetaMorpheusEngine::Status(const std::wstring &v)
+	void MetaMorpheusEngine::Status(const std::string &v)
 	{
 		StringEventArgs tempVar(v, nestedIds);
 		OutLabelStatusHandler +== nullptr ? nullptr : OutLabelStatusHandler::Invoke(this, &tempVar);

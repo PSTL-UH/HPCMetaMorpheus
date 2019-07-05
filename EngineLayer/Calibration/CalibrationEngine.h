@@ -1,4 +1,4 @@
-﻿#pragma once
+﻿!#pragma once
 
 #include "../MetaMorpheusEngine.h"
 #include <string>
@@ -36,7 +36,7 @@ namespace EngineLayer
 				MsDataFile *getCalibratedDataFile() const;
 				void setCalibratedDataFile(MsDataFile *value);
 
-			CalibrationEngine(MsDataFile *myMSDataFile, DataPointAquisitionResults *datapoints, CommonParameters *commonParameters, std::vector<std::wstring> &nestedIds);
+			CalibrationEngine(MsDataFile *myMSDataFile, DataPointAquisitionResults *datapoints, CommonParameters *commonParameters, std::vector<std::string> &nestedIds);
 
 		protected:
 			MetaMorpheusEngineResults *RunSpecific() override;

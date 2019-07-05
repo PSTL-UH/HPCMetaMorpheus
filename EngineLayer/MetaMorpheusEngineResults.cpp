@@ -15,10 +15,10 @@ namespace EngineLayer
 		return privateMyEngine;
 	}
 
-	std::wstring MetaMorpheusEngineResults::ToString()
+	std::string MetaMorpheusEngineResults::ToString()
 	{
 		auto sb = new StringBuilder();
-		sb->append(L"Time to run: " + Time);
+		sb->append("Time to run: " + Time);
 
 		delete sb;
 		return sb->toString();

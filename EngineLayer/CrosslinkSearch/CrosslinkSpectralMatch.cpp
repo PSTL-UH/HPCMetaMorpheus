@@ -73,12 +73,12 @@ namespace EngineLayer
 			privateXlRank = value;
 		}
 
-		std::wstring CrosslinkSpectralMatch::getParentIonExist() const
+		std::string CrosslinkSpectralMatch::getParentIonExist() const
 		{
 			return privateParentIonExist;
 		}
 
-		void CrosslinkSpectralMatch::setParentIonExist(const std::wstring &value)
+		void CrosslinkSpectralMatch::setParentIonExist(const std::string &value)
 		{
 			privateParentIonExist = value;
 		}
@@ -148,163 +148,163 @@ namespace EngineLayer
 			return experimental_intensities_rank;
 		}
 
-		std::wstring CrosslinkSpectralMatch::GetTabSepHeaderCross()
+		std::string CrosslinkSpectralMatch::GetTabSepHeaderCross()
 		{
 			auto sb = new StringBuilder();
-			sb->append(L"File Name" + StringHelper::toString(L'\t'));
-			sb->append(L"Scan Number" + StringHelper::toString(L'\t'));
-			sb->append(L"Precursor Scan Number" + StringHelper::toString(L'\t'));
-			sb->append(L"Precursor MZ" + StringHelper::toString(L'\t'));
-			sb->append(L"Precursor Charge" + StringHelper::toString(L'\t'));
-			sb->append(L"Precursor Mass" + StringHelper::toString(L'\t'));
-			sb->append(L"Cross Type" + StringHelper::toString(L'\t'));
-			sb->append(std::wstring(L"Link Residues") + L"\t");
+			sb->append("File Name" + StringHelper::toString(L'\t'));
+			sb->append("Scan Number" + StringHelper::toString(L'\t'));
+			sb->append("Precursor Scan Number" + StringHelper::toString(L'\t'));
+			sb->append("Precursor MZ" + StringHelper::toString(L'\t'));
+			sb->append("Precursor Charge" + StringHelper::toString(L'\t'));
+			sb->append("Precursor Mass" + StringHelper::toString(L'\t'));
+			sb->append("Cross Type" + StringHelper::toString(L'\t'));
+			sb->append(std::string("Link Residues") + "\t");
 
-			sb->append(L"Peptide" + StringHelper::toString(L'\t'));
-			sb->append(L"Protein Accession" + StringHelper::toString(L'\t'));
-			sb->append(L"Protein Link Site" + StringHelper::toString(L'\t'));
-			sb->append(L"Base Sequence" + StringHelper::toString(L'\t'));
-			sb->append(L"Full Sequence" + StringHelper::toString(L'\t'));
-			sb->append(L"Peptide Monoisotopic Mass" + StringHelper::toString(L'\t'));
-			sb->append(L"Score" + StringHelper::toString(L'\t'));
-			sb->append(L"Rank" + StringHelper::toString(L'\t'));
+			sb->append("Peptide" + StringHelper::toString(L'\t'));
+			sb->append("Protein Accession" + StringHelper::toString(L'\t'));
+			sb->append("Protein Link Site" + StringHelper::toString(L'\t'));
+			sb->append("Base Sequence" + StringHelper::toString(L'\t'));
+			sb->append("Full Sequence" + StringHelper::toString(L'\t'));
+			sb->append("Peptide Monoisotopic Mass" + StringHelper::toString(L'\t'));
+			sb->append("Score" + StringHelper::toString(L'\t'));
+			sb->append("Rank" + StringHelper::toString(L'\t'));
 
-			sb->append(L"Matched Ion Series" + StringHelper::toString(L'\t'));
-			sb->append(L"Matched Ion Mass-To-Charge Ratios" + StringHelper::toString(L'\t'));
-			sb->append(L"Matched Ion Mass Diff (Da)" + StringHelper::toString(L'\t'));
-			sb->append(L"Matched Ion Mass Diff (Ppm)" + StringHelper::toString(L'\t'));
-			sb->append(L"Matched Ion Intensities" + StringHelper::toString(L'\t'));
-			sb->append(L"Matched Ion Counts" + StringHelper::toString(L'\t'));
+			sb->append("Matched Ion Series" + StringHelper::toString(L'\t'));
+			sb->append("Matched Ion Mass-To-Charge Ratios" + StringHelper::toString(L'\t'));
+			sb->append("Matched Ion Mass Diff (Da)" + StringHelper::toString(L'\t'));
+			sb->append("Matched Ion Mass Diff (Ppm)" + StringHelper::toString(L'\t'));
+			sb->append("Matched Ion Intensities" + StringHelper::toString(L'\t'));
+			sb->append("Matched Ion Counts" + StringHelper::toString(L'\t'));
 
-			sb->append(L"Beta Peptide" + StringHelper::toString(L'\t'));
-			sb->append(L"Beta Peptide Protein Accession" + StringHelper::toString(L'\t'));
-			sb->append(L"Beta Peptide Protein LinkSite" + StringHelper::toString(L'\t'));
-			sb->append(L"Beta Peptide Base Sequence" + StringHelper::toString(L'\t'));
-			sb->append(L"Beta Peptide Full Sequence" + StringHelper::toString(L'\t'));
-			sb->append(L"Beta Peptide Theoretical Mass" + StringHelper::toString(L'\t'));
-			sb->append(L"Beta Peptide Score" + StringHelper::toString(L'\t'));
-			sb->append(L"Beta Peptide Rank" + StringHelper::toString(L'\t'));
+			sb->append("Beta Peptide" + StringHelper::toString(L'\t'));
+			sb->append("Beta Peptide Protein Accession" + StringHelper::toString(L'\t'));
+			sb->append("Beta Peptide Protein LinkSite" + StringHelper::toString(L'\t'));
+			sb->append("Beta Peptide Base Sequence" + StringHelper::toString(L'\t'));
+			sb->append("Beta Peptide Full Sequence" + StringHelper::toString(L'\t'));
+			sb->append("Beta Peptide Theoretical Mass" + StringHelper::toString(L'\t'));
+			sb->append("Beta Peptide Score" + StringHelper::toString(L'\t'));
+			sb->append("Beta Peptide Rank" + StringHelper::toString(L'\t'));
 
-			sb->append(L"Beta Peptide Matched Ion Series" + StringHelper::toString(L'\t'));
-			sb->append(L"Beta Peptide Matched Ion Mass-To-Charge Ratios" + StringHelper::toString(L'\t'));
-			sb->append(L"Beta Peptide Matched Ion Mass Diff (Da)" + StringHelper::toString(L'\t'));
-			sb->append(L"Beta Peptide Matched Ion Mass Diff (Ppm)" + StringHelper::toString(L'\t'));
-			sb->append(L"Beta Peptide Matched Ion Intensities" + StringHelper::toString(L'\t'));
-			sb->append(L"Beta Peptide Matched Ion Counts" + StringHelper::toString(L'\t'));
+			sb->append("Beta Peptide Matched Ion Series" + StringHelper::toString(L'\t'));
+			sb->append("Beta Peptide Matched Ion Mass-To-Charge Ratios" + StringHelper::toString(L'\t'));
+			sb->append("Beta Peptide Matched Ion Mass Diff (Da)" + StringHelper::toString(L'\t'));
+			sb->append("Beta Peptide Matched Ion Mass Diff (Ppm)" + StringHelper::toString(L'\t'));
+			sb->append("Beta Peptide Matched Ion Intensities" + StringHelper::toString(L'\t'));
+			sb->append("Beta Peptide Matched Ion Counts" + StringHelper::toString(L'\t'));
 
-			sb->append(L"Summary" + StringHelper::toString(L'\t'));
-			sb->append(L"XL Total Score" + StringHelper::toString(L'\t'));
-			sb->append(L"Mass Diff (Da)" + StringHelper::toString(L'\t'));
-			sb->append(L"Parent Ions" + StringHelper::toString(L'\t'));
-			sb->append(L"ParentIonsNum" + StringHelper::toString(L'\t'));
-			sb->append(L"ParentIonMaxIntensityRank" + StringHelper::toString(L'\t'));
-			sb->append(L"Decoy/Contaminant/Target" + StringHelper::toString(L'\t'));
-			sb->append(L"QValue" + StringHelper::toString(L'\t'));
+			sb->append("Summary" + StringHelper::toString(L'\t'));
+			sb->append("XL Total Score" + StringHelper::toString(L'\t'));
+			sb->append("Mass Diff (Da)" + StringHelper::toString(L'\t'));
+			sb->append("Parent Ions" + StringHelper::toString(L'\t'));
+			sb->append("ParentIonsNum" + StringHelper::toString(L'\t'));
+			sb->append("ParentIonMaxIntensityRank" + StringHelper::toString(L'\t'));
+			sb->append("Decoy/Contaminant/Target" + StringHelper::toString(L'\t'));
+			sb->append("QValue" + StringHelper::toString(L'\t'));
 
 
 			delete sb;
 			return sb->toString();
 		}
 
-		std::wstring CrosslinkSpectralMatch::GetTabSepHeaderSingle()
+		std::string CrosslinkSpectralMatch::GetTabSepHeaderSingle()
 		{
 			auto sb = new StringBuilder();
-			sb->append(L"File Name" + StringHelper::toString(L'\t'));
-			sb->append(L"Scan Number" + StringHelper::toString(L'\t'));
-			sb->append(L"Precursor Scan Number" + StringHelper::toString(L'\t'));
-			sb->append(L"Precursor MZ" + StringHelper::toString(L'\t'));
-			sb->append(L"Precursor Charge" + StringHelper::toString(L'\t'));
-			sb->append(L"Precursor Mass" + StringHelper::toString(L'\t'));
-			sb->append(L"Cross Type" + StringHelper::toString(L'\t'));
-			sb->append(std::wstring(L"Link Residues") + L"\t");
+			sb->append("File Name" + StringHelper::toString(L'\t'));
+			sb->append("Scan Number" + StringHelper::toString(L'\t'));
+			sb->append("Precursor Scan Number" + StringHelper::toString(L'\t'));
+			sb->append("Precursor MZ" + StringHelper::toString(L'\t'));
+			sb->append("Precursor Charge" + StringHelper::toString(L'\t'));
+			sb->append("Precursor Mass" + StringHelper::toString(L'\t'));
+			sb->append("Cross Type" + StringHelper::toString(L'\t'));
+			sb->append(std::string("Link Residues") + "\t");
 
-			sb->append(L"Peptide" + StringHelper::toString(L'\t'));
-			sb->append(L"Protein Accession" + StringHelper::toString(L'\t'));
-			sb->append(L"Protein Link Site" + StringHelper::toString(L'\t'));
-			sb->append(L"Base Sequence" + StringHelper::toString(L'\t'));
-			sb->append(L"Full Sequence" + StringHelper::toString(L'\t'));
-			sb->append(L"Peptide Monoisotopic Mass" + StringHelper::toString(L'\t'));
-			sb->append(L"Score" + StringHelper::toString(L'\t'));
-			sb->append(L"Rank" + StringHelper::toString(L'\t'));
+			sb->append("Peptide" + StringHelper::toString(L'\t'));
+			sb->append("Protein Accession" + StringHelper::toString(L'\t'));
+			sb->append("Protein Link Site" + StringHelper::toString(L'\t'));
+			sb->append("Base Sequence" + StringHelper::toString(L'\t'));
+			sb->append("Full Sequence" + StringHelper::toString(L'\t'));
+			sb->append("Peptide Monoisotopic Mass" + StringHelper::toString(L'\t'));
+			sb->append("Score" + StringHelper::toString(L'\t'));
+			sb->append("Rank" + StringHelper::toString(L'\t'));
 
-			sb->append(L"Matched Ion Series" + StringHelper::toString(L'\t'));
-			sb->append(L"Matched Ion Mass-To-Charge Ratios" + StringHelper::toString(L'\t'));
-			sb->append(L"Matched Ion Mass Diff (Da)" + StringHelper::toString(L'\t'));
-			sb->append(L"Matched Ion Mass Diff (Ppm)" + StringHelper::toString(L'\t'));
-			sb->append(L"Matched Ion Intensities" + StringHelper::toString(L'\t'));
-			sb->append(L"Matched Ion Counts" + StringHelper::toString(L'\t'));
-			sb->append(L"Decoy/Contaminant/Target" + StringHelper::toString(L'\t'));
-			sb->append(L"QValue" + StringHelper::toString(L'\t'));
+			sb->append("Matched Ion Series" + StringHelper::toString(L'\t'));
+			sb->append("Matched Ion Mass-To-Charge Ratios" + StringHelper::toString(L'\t'));
+			sb->append("Matched Ion Mass Diff (Da)" + StringHelper::toString(L'\t'));
+			sb->append("Matched Ion Mass Diff (Ppm)" + StringHelper::toString(L'\t'));
+			sb->append("Matched Ion Intensities" + StringHelper::toString(L'\t'));
+			sb->append("Matched Ion Counts" + StringHelper::toString(L'\t'));
+			sb->append("Decoy/Contaminant/Target" + StringHelper::toString(L'\t'));
+			sb->append("QValue" + StringHelper::toString(L'\t'));
 
 			delete sb;
 			return sb->toString();
 		}
 
-		std::wstring CrosslinkSpectralMatch::GetTabSepHeaderGlyco()
+		std::string CrosslinkSpectralMatch::GetTabSepHeaderGlyco()
 		{
 			auto sb = new StringBuilder();
-			sb->append(L"File Name" + StringHelper::toString(L'\t'));
-			sb->append(L"Scan Number" + StringHelper::toString(L'\t'));
-			sb->append(L"Precursor Scan Number" + StringHelper::toString(L'\t'));
-			sb->append(L"Precursor MZ" + StringHelper::toString(L'\t'));
-			sb->append(L"Precursor Charge" + StringHelper::toString(L'\t'));
-			sb->append(L"Precursor Mass" + StringHelper::toString(L'\t'));
-			sb->append(L"Cross Type" + StringHelper::toString(L'\t'));
-			sb->append(std::wstring(L"Link Residues") + L"\t");
+			sb->append("File Name" + StringHelper::toString(L'\t'));
+			sb->append("Scan Number" + StringHelper::toString(L'\t'));
+			sb->append("Precursor Scan Number" + StringHelper::toString(L'\t'));
+			sb->append("Precursor MZ" + StringHelper::toString(L'\t'));
+			sb->append("Precursor Charge" + StringHelper::toString(L'\t'));
+			sb->append("Precursor Mass" + StringHelper::toString(L'\t'));
+			sb->append("Cross Type" + StringHelper::toString(L'\t'));
+			sb->append(std::string("Link Residues") + "\t");
 
-			sb->append(L"Peptide" + StringHelper::toString(L'\t'));
-			sb->append(L"Protein Accession" + StringHelper::toString(L'\t'));
-			sb->append(L"Protein Link Site" + StringHelper::toString(L'\t'));
-			sb->append(L"Base Sequence" + StringHelper::toString(L'\t'));
-			sb->append(L"Full Sequence" + StringHelper::toString(L'\t'));
-			sb->append(L"Peptide Monoisotopic Mass" + StringHelper::toString(L'\t'));
-			sb->append(L"Score" + StringHelper::toString(L'\t'));
-			sb->append(L"Rank" + StringHelper::toString(L'\t'));
+			sb->append("Peptide" + StringHelper::toString(L'\t'));
+			sb->append("Protein Accession" + StringHelper::toString(L'\t'));
+			sb->append("Protein Link Site" + StringHelper::toString(L'\t'));
+			sb->append("Base Sequence" + StringHelper::toString(L'\t'));
+			sb->append("Full Sequence" + StringHelper::toString(L'\t'));
+			sb->append("Peptide Monoisotopic Mass" + StringHelper::toString(L'\t'));
+			sb->append("Score" + StringHelper::toString(L'\t'));
+			sb->append("Rank" + StringHelper::toString(L'\t'));
 
-			sb->append(L"Matched Ion Series" + StringHelper::toString(L'\t'));
-			sb->append(L"Matched Ion Mass-To-Charge Ratios" + StringHelper::toString(L'\t'));
-			sb->append(L"Matched Ion Mass Diff (Da)" + StringHelper::toString(L'\t'));
-			sb->append(L"Matched Ion Mass Diff (Ppm)" + StringHelper::toString(L'\t'));
-			sb->append(L"Matched Ion Intensities" + StringHelper::toString(L'\t'));
-			sb->append(L"Matched Ion Counts" + StringHelper::toString(L'\t'));
+			sb->append("Matched Ion Series" + StringHelper::toString(L'\t'));
+			sb->append("Matched Ion Mass-To-Charge Ratios" + StringHelper::toString(L'\t'));
+			sb->append("Matched Ion Mass Diff (Da)" + StringHelper::toString(L'\t'));
+			sb->append("Matched Ion Mass Diff (Ppm)" + StringHelper::toString(L'\t'));
+			sb->append("Matched Ion Intensities" + StringHelper::toString(L'\t'));
+			sb->append("Matched Ion Counts" + StringHelper::toString(L'\t'));
 
-			sb->append(L"Decoy/Contaminant/Target" + StringHelper::toString(L'\t'));
-			sb->append(L"QValue" + StringHelper::toString(L'\t'));
+			sb->append("Decoy/Contaminant/Target" + StringHelper::toString(L'\t'));
+			sb->append("QValue" + StringHelper::toString(L'\t'));
 
-			sb->append(L"GlyID" + StringHelper::toString(L'\t'));
-			sb->append(L"GlyMass" + StringHelper::toString(L'\t'));
-			sb->append(L"GlyStruct(H,N,A,G,F)" + StringHelper::toString(L'\t'));
+			sb->append("GlyID" + StringHelper::toString(L'\t'));
+			sb->append("GlyMass" + StringHelper::toString(L'\t'));
+			sb->append("GlyStruct(H,N,A,G,F)" + StringHelper::toString(L'\t'));
 
 			delete sb;
 			return sb->toString();
 		}
 
-		std::wstring CrosslinkSpectralMatch::ToString()
+		std::string CrosslinkSpectralMatch::ToString()
 		{
-			std::wstring position = L"";
+			std::string position = "";
 			switch (getCrossType())
 			{
 				case PsmCrossType::Single:
 					break;
 
 				case PsmCrossType::Loop:
-					position = L"(" + std::to_wstring(getLinkPositions()[0]) + L"-" + std::to_wstring(getLinkPositions()[1]) + L")";
+					position = "(" + std::to_string(getLinkPositions()[0]) + "-" + std::to_string(getLinkPositions()[1]) + ")";
 					break;
 
 				default:
-					position = L"(" + std::to_wstring(getLinkPositions()[0]) + L")";
+					position = "(" + std::to_string(getLinkPositions()[0]) + ")";
 					break;
 			}
 
 			auto sb = new StringBuilder();
-			sb->append(getFullFilePath() + L"\t");
-			sb->append(std::to_wstring(getScanNumber()) + L"\t");
-			sb->append(getPrecursorScanNumber() + L"\t");
-			sb->append(std::to_wstring(getScanPrecursorMonoisotopicPeakMz()) + L"\t");
-			sb->append(std::to_wstring(getScanPrecursorCharge()) + L"\t");
-			sb->append(std::to_wstring(getScanPrecursorMass()) + L"\t");
+			sb->append(getFullFilePath() + "\t");
+			sb->append(std::to_string(getScanNumber()) + "\t");
+			sb->append(getPrecursorScanNumber() + "\t");
+			sb->append(std::to_string(getScanPrecursorMonoisotopicPeakMz()) + "\t");
+			sb->append(std::to_string(getScanPrecursorCharge()) + "\t");
+			sb->append(std::to_string(getScanPrecursorMass()) + "\t");
 //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
-			sb->append(getCrossType().ToString() + L"\t");
+			sb->append(getCrossType().ToString() + "\t");
 
 
 
@@ -312,63 +312,63 @@ namespace EngineLayer
 			{
 				if (getCrossType() == PsmCrossType::Loop)
 				{
-					sb->append(getBaseSequence()[getLinkPositions()[0] - 1] + L";" + getBaseSequence()[getLinkPositions()[1] - 1] + L"\t");
+					sb->append(getBaseSequence()[getLinkPositions()[0] - 1] + ";" + getBaseSequence()[getLinkPositions()[1] - 1] + "\t");
 				}
 				else if (getCrossType() == PsmCrossType::Inter || getCrossType() == PsmCrossType::Intra)
 				{
-					sb->append(getBaseSequence()[getLinkPositions()[0] - 1] + L";" + getBetaPeptide()->getBaseSequence()[getBetaPeptide()->getLinkPositions()[0] - 1] + L"\t");
+					sb->append(getBaseSequence()[getLinkPositions()[0] - 1] + ";" + getBetaPeptide()->getBaseSequence()[getBetaPeptide()->getLinkPositions()[0] - 1] + "\t");
 				}
 				else
 				{
 					// deadend
-					sb->append(getBaseSequence()[getLinkPositions()[0] - 1] + L"\t");
+					sb->append(getBaseSequence()[getLinkPositions()[0] - 1] + "\t");
 				}
 			}
 			else
 			{
-				sb->append(L"\t");
+				sb->append("\t");
 			}
 
-			sb->append(L"\t");
-			sb->append(getProteinAccession() + L"\t");
-			sb->append(std::to_wstring(getXlProteinPos()) + L"\t");
-			sb->append(getBaseSequence() + L"\t");
-			sb->append(getFullSequence() + position + L"\t");
-			sb->append((getPeptideMonisotopicMass().HasValue ? std::to_wstring(getPeptideMonisotopicMass().Value) : L"---"));
-			sb->append(L"\t");
-			sb->append(std::to_wstring(getScore()) + L"\t");
-			sb->append(std::to_wstring(getXlRank()[0]) + L"\t");
+			sb->append("\t");
+			sb->append(getProteinAccession() + "\t");
+			sb->append(std::to_string(getXlProteinPos()) + "\t");
+			sb->append(getBaseSequence() + "\t");
+			sb->append(getFullSequence() + position + "\t");
+			sb->append((getPeptideMonisotopicMass().HasValue ? std::to_string(getPeptideMonisotopicMass().Value) : "---"));
+			sb->append("\t");
+			sb->append(std::to_string(getScore()) + "\t");
+			sb->append(std::to_string(getXlRank()[0]) + "\t");
 
 			for (auto mid : MatchedIonDataDictionary(this))
 			{
 				sb->append(mid.Value);
-				sb->append(L"\t");
+				sb->append("\t");
 			}
 
 			if (getBetaPeptide() != nullptr)
 			{
-				sb->append(L"\t");
-				sb->append(getBetaPeptide()->getProteinAccession() + L"\t");
-				sb->append(std::to_wstring(getBetaPeptide()->getXlProteinPos()) + L"\t");
-				sb->append(getBetaPeptide()->getBaseSequence() + L"\t");
-				sb->append(getBetaPeptide()->getFullSequence() + L"(" + std::to_wstring(getBetaPeptide()->getLinkPositions()[0]) + L")" + L"\t");
+				sb->append("\t");
+				sb->append(getBetaPeptide()->getProteinAccession() + "\t");
+				sb->append(std::to_string(getBetaPeptide()->getXlProteinPos()) + "\t");
+				sb->append(getBetaPeptide()->getBaseSequence() + "\t");
+				sb->append(getBetaPeptide()->getFullSequence() + "(" + std::to_string(getBetaPeptide()->getLinkPositions()[0]) + ")" + "\t");
 //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
-				sb->append(getBetaPeptide()->getPeptideMonisotopicMass().ToString() + L"\t");
-				sb->append(std::to_wstring(getBetaPeptide()->getScore()) + L"\t");
-				sb->append(std::to_wstring(getXlRank()[1]) + L"\t");
+				sb->append(getBetaPeptide()->getPeptideMonisotopicMass().ToString() + "\t");
+				sb->append(std::to_string(getBetaPeptide()->getScore()) + "\t");
+				sb->append(std::to_string(getXlRank()[1]) + "\t");
 
 				for (auto betamid : MatchedIonDataDictionary(this->getBetaPeptide()))
 				{
 					sb->append(betamid.Value);
-					sb->append(L"\t");
+					sb->append("\t");
 				}
 
-				sb->append(L"\t");
-				sb->append(std::to_wstring(getXLTotalScore()) + L"\t");
+				sb->append("\t");
+				sb->append(std::to_string(getXLTotalScore()) + "\t");
 
 				// mass of crosslinker
-				sb->append(((getPeptideMonisotopicMass().HasValue) ? std::to_wstring(getScanPrecursorMass() - getBetaPeptide()->getPeptideMonisotopicMass() - getPeptideMonisotopicMass().Value) : L"---"));
-				sb->append(L"\t");
+				sb->append(((getPeptideMonisotopicMass().HasValue) ? std::to_string(getScanPrecursorMass() - getBetaPeptide()->getPeptideMonisotopicMass() - getPeptideMonisotopicMass().Value) : "---"));
+				sb->append("\t");
 
 				int alphaNumParentIons = getMatchedFragmentIons().size()([&] (std::any p)
 				{
@@ -381,36 +381,36 @@ namespace EngineLayer
 					return p::NeutralTheoreticalProduct->ProductType == ProductType::M;
 				});
 
-				sb->append(std::to_wstring(alphaNumParentIons) + L";" + std::to_wstring(betaNumParentIons) + L"\t");
-				sb->append(std::to_wstring(alphaNumParentIons) + std::to_wstring(betaNumParentIons) + L"\t");
+				sb->append(std::to_string(alphaNumParentIons) + ";" + std::to_string(betaNumParentIons) + "\t");
+				sb->append(std::to_string(alphaNumParentIons) + std::to_string(betaNumParentIons) + "\t");
 //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
-				sb->append(((getParentIonMaxIntensityRanks().size() > 0) && (getParentIonMaxIntensityRanks().Any()) ? getParentIonMaxIntensityRanks().Min().ToString() : L"-"));
-				sb->append(L"\t");
+				sb->append(((getParentIonMaxIntensityRanks().size() > 0) && (getParentIonMaxIntensityRanks().Any()) ? getParentIonMaxIntensityRanks().Min().ToString() : "-"));
+				sb->append("\t");
 
 			}
 
 			if (getBetaPeptide() == nullptr)
 			{
-				sb->append((getIsDecoy()) ? L"D" : (getIsContaminant()) ? L"C" : L"T");
-				sb->append(L"\t");
+				sb->append((getIsDecoy()) ? "D" : (getIsContaminant()) ? "C" : "T");
+				sb->append("\t");
 			}
 			else
 			{
-				sb->append((getIsDecoy() || getBetaPeptide()->getIsDecoy()) ? L"D" : (getIsContaminant() || getBetaPeptide()->getIsContaminant()) ? L"C" : L"T");
-				sb->append(L"\t");
+				sb->append((getIsDecoy() || getBetaPeptide()->getIsDecoy()) ? "D" : (getIsContaminant() || getBetaPeptide()->getIsContaminant()) ? "C" : "T");
+				sb->append("\t");
 			}
 
-			sb->append(std::to_wstring(getFdrInfo()->getQValue()));
-			sb->append(L"\t");
+			sb->append(std::to_string(getFdrInfo()->getQValue()));
+			sb->append("\t");
 
 
 			delete sb;
 			return sb->toString();
 		}
 
-		std::unordered_map<std::wstring, std::wstring> CrosslinkSpectralMatch::MatchedIonDataDictionary(PeptideSpectralMatch *psm)
+		std::unordered_map<std::string, std::string> CrosslinkSpectralMatch::MatchedIonDataDictionary(PeptideSpectralMatch *psm)
 		{
-			std::unordered_map<std::wstring, std::wstring> s;
+			std::unordered_map<std::string, std::string> s;
 			AddMatchedIonsData(s, psm);
 			return s;
 		}

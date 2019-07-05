@@ -111,18 +111,18 @@ namespace EngineLayer
 			return getMs1List().size() + getMs2List().size();
 		}
 
-		std::wstring DataPointAquisitionResults::ToString()
+		std::string DataPointAquisitionResults::ToString()
 		{
 			auto sb = new StringBuilder();
 //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
 			sb->appendLine(MetaMorpheusEngineResults::ToString());
-			sb->appendLine(L"MS1 calibration datapoint count: " + std::to_wstring(getMs1List().size()));
-			sb->appendLine(L"MS1 ppm error median: " + std::round(PsmPrecursorMedianPpmError * std::pow(10, 3)) / std::pow(10, 3));
-			sb->appendLine(L"MS1 ppm error interquartile range: " + std::round(PsmPrecursorIqrPpmError * std::pow(10, 3)) / std::pow(10, 3));
+			sb->appendLine("MS1 calibration datapoint count: " + std::to_string(getMs1List().size()));
+			sb->appendLine("MS1 ppm error median: " + std::round(PsmPrecursorMedianPpmError * std::pow(10, 3)) / std::pow(10, 3));
+			sb->appendLine("MS1 ppm error interquartile range: " + std::round(PsmPrecursorIqrPpmError * std::pow(10, 3)) / std::pow(10, 3));
 
-			sb->appendLine(L"MS2 calibration datapoint count: " + std::to_wstring(getMs2List().size()));
-			sb->appendLine(L"MS2 ppm error median: " + std::round(PsmProductMedianPpmError * std::pow(10, 3)) / std::pow(10, 3));
-			sb->appendLine(L"MS2 ppm error interquartile range: " + std::round(PsmProductIqrPpmError * std::pow(10, 3)) / std::pow(10, 3));
+			sb->appendLine("MS2 calibration datapoint count: " + std::to_string(getMs2List().size()));
+			sb->appendLine("MS2 ppm error median: " + std::round(PsmProductMedianPpmError * std::pow(10, 3)) / std::pow(10, 3));
+			sb->appendLine("MS2 ppm error interquartile range: " + std::round(PsmProductIqrPpmError * std::pow(10, 3)) / std::pow(10, 3));
 
 			delete sb;
 			return sb->toString();

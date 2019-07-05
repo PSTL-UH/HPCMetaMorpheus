@@ -7,7 +7,7 @@ using namespace MassSpectrometry;
 namespace EngineLayer
 {
 
-	Ms2ScanWithSpecificMass::Ms2ScanWithSpecificMass(MsDataScan *mzLibScan, double precursorMonoisotopicPeakMz, int precursorCharge, const std::wstring &fullFilePath, CommonParameters *commonParam, std::vector<IsotopicEnvelope*> &neutralExperimentalFragments)
+	Ms2ScanWithSpecificMass::Ms2ScanWithSpecificMass(MsDataScan *mzLibScan, double precursorMonoisotopicPeakMz, int precursorCharge, const std::string &fullFilePath, CommonParameters *commonParam, std::vector<IsotopicEnvelope*> &neutralExperimentalFragments)
 	{
 		PrecursorMonoisotopicPeakMz = precursorMonoisotopicPeakMz;
 		PrecursorCharge = precursorCharge;
@@ -47,7 +47,7 @@ namespace EngineLayer
 		return privatePrecursorCharge;
 	}
 
-	std::wstring Ms2ScanWithSpecificMass::getFullFilePath() const
+	std::string Ms2ScanWithSpecificMass::getFullFilePath() const
 	{
 		return privateFullFilePath;
 	}

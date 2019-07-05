@@ -20,13 +20,13 @@ namespace EngineLayer
 			privateCalibratedDataFile = value;
 		}
 
-		CalibrationEngine::CalibrationEngine(MsDataFile *myMSDataFile, DataPointAquisitionResults *datapoints, CommonParameters *commonParameters, std::vector<std::wstring> &nestedIds) : MetaMorpheusEngine(commonParameters, nestedIds), MyMsDataFile(myMSDataFile), Datapoints(datapoints)
+		CalibrationEngine::CalibrationEngine(MsDataFile *myMSDataFile, DataPointAquisitionResults *datapoints, CommonParameters *commonParameters, std::vector<std::string> &nestedIds) : MetaMorpheusEngine(commonParameters, nestedIds), MyMsDataFile(myMSDataFile), Datapoints(datapoints)
 		{
 		}
 
 		MetaMorpheusEngineResults *CalibrationEngine::RunSpecific()
 		{
-			Status(L"Calibrating spectra");
+			Status("Calibrating spectra");
 			std::vector<LabeledDataPoint*> &ms1Points = Datapoints->getMs1List();
 			std::vector<LabeledDataPoint*> &ms2Points = Datapoints->getMs2List();
 			std::vector<MsDataScan*> originalScans = MyMsDataFile->GetAllScansList();

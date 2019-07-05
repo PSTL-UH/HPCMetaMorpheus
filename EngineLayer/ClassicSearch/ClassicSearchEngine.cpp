@@ -16,7 +16,7 @@ namespace EngineLayer
 	namespace ClassicSearch
 	{
 
-		ClassicSearchEngine::ClassicSearchEngine(std::vector<PeptideSpectralMatch*> &globalPsms, std::vector<Ms2ScanWithSpecificMass*> &arrayOfSortedMS2Scans, std::vector<Modification*> &variableModifications, std::vector<Modification*> &fixedModifications, std::vector<Protein*> &proteinList, MassDiffAcceptor *searchMode, CommonParameters *commonParameters, std::vector<std::wstring> &nestedIds) : MetaMorpheusEngine(commonParameters, nestedIds), SearchMode(searchMode), Proteins(proteinList), FixedModifications(fixedModifications), VariableModifications(variableModifications), PeptideSpectralMatches(globalPsms), ArrayOfSortedMS2Scans(arrayOfSortedMS2Scans), MyScanPrecursorMasses(arrayOfSortedMS2Scans.Select([&] (std::any b)
+		ClassicSearchEngine::ClassicSearchEngine(std::vector<PeptideSpectralMatch*> &globalPsms, std::vector<Ms2ScanWithSpecificMass*> &arrayOfSortedMS2Scans, std::vector<Modification*> &variableModifications, std::vector<Modification*> &fixedModifications, std::vector<Protein*> &proteinList, MassDiffAcceptor *searchMode, CommonParameters *commonParameters, std::vector<std::string> &nestedIds) : MetaMorpheusEngine(commonParameters, nestedIds), SearchMode(searchMode), Proteins(proteinList), FixedModifications(fixedModifications), VariableModifications(variableModifications), PeptideSpectralMatches(globalPsms), ArrayOfSortedMS2Scans(arrayOfSortedMS2Scans), MyScanPrecursorMasses(arrayOfSortedMS2Scans.Select([&] (std::any b)
 		{
 			b::PrecursorMass;
 		})->ToArray())
@@ -25,7 +25,7 @@ namespace EngineLayer
 
 		MetaMorpheusEngineResults *ClassicSearchEngine::RunSpecific()
 		{
-			Status(L"Getting ms2 scans...");
+			Status("Getting ms2 scans...");
 
 			double proteinsSearched = 0;
 			int oldPercentProgress = 0;
@@ -37,7 +37,7 @@ namespace EngineLayer
 				myLocks[i] = std::any();
 			}
 
-			Status(L"Performing classic search...");
+			Status("Performing classic search...");
 
 			if (Proteins.Any())
 			{
@@ -104,7 +104,7 @@ namespace EngineLayer
 						if (percentProgress > oldPercentProgress)
 						{
 							oldPercentProgress = percentProgress;
-							ProgressEventArgs tempVar2(percentProgress, L"Performing classic search... ", nestedIds);
+							ProgressEventArgs tempVar2(percentProgress, "Performing classic search... ", nestedIds);
 							ReportProgress(&tempVar2);
 						}
 					}

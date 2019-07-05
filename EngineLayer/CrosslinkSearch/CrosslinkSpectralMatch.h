@@ -28,7 +28,7 @@ namespace EngineLayer
 			double privateXLTotalScore = 0;
 			int privateXlProteinPos = 0;
 			std::vector<int> privateXlRank;
-			std::wstring privateParentIonExist;
+			std::string privateParentIonExist;
 			int privateParentIonExistNum = 0;
 			std::vector<int> privateParentIonMaxIntensityRanks;
 			PsmCrossType privateCrossType = static_cast<PsmCrossType>(0);
@@ -48,8 +48,8 @@ namespace EngineLayer
 				void setXlProteinPos(int value);
 				std::vector<int> getXlRank() const;
 				void setXlRank(const std::vector<int> &value);
-				std::wstring getParentIonExist() const;
-				void setParentIonExist(const std::wstring &value);
+				std::string getParentIonExist() const;
+				void setParentIonExist(const std::string &value);
 				int getParentIonExistNum() const;
 				void setParentIonExistNum(int value);
 				std::vector<int> getParentIonMaxIntensityRanks() const;
@@ -64,15 +64,15 @@ namespace EngineLayer
 			/// </summary>
 			static std::vector<int> GenerateIntensityRanks(std::vector<double> &experimental_intensities);
 
-			static std::wstring GetTabSepHeaderCross();
+			static std::string GetTabSepHeaderCross();
 
-			static std::wstring GetTabSepHeaderSingle();
+			static std::string GetTabSepHeaderSingle();
 
-			static std::wstring GetTabSepHeaderGlyco();
+			static std::string GetTabSepHeaderGlyco();
 
-			std::wstring ToString() override;
+			std::string ToString() override;
 
-			static std::unordered_map<std::wstring, std::wstring> MatchedIonDataDictionary(PeptideSpectralMatch *psm);
+			static std::unordered_map<std::string, std::string> MatchedIonDataDictionary(PeptideSpectralMatch *psm);
 		};
 	}
 }

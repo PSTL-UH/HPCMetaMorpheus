@@ -12,7 +12,7 @@ namespace EngineLayer
 	{
 	}
 
-	CommonParameters::CommonParameters(const std::wstring &taskDescriptor, DissociationType *dissociationType, bool doPrecursorDeconvolution, bool useProvidedPrecursorInfo, double deconvolutionIntensityRatio, int deconvolutionMaxAssumedChargeState, bool reportAllAmbiguity, bool addCompIons, int totalPartitions, double scoreCutoff, int topNpeaks, double minRatio, bool trimMs1Peaks, bool trimMsMsPeaks, bool useDeltaScore, bool calculateEValue, Tolerance *productMassTolerance, Tolerance *precursorMassTolerance, Tolerance *deconvolutionMassTolerance, int maxThreadsToUsePerFile, DigestionParams *digestionParams, std::vector<(std::wstring, std::wstring)*> &listOfModsVariable, std::vector<(std::wstring, std::wstring)*> &listOfModsFixed, double qValueOutputFilter, bool assumeOrphanPeaksAreZ1Fragments, int maxHeterozygousVariants, int minVariantDepth)
+	CommonParameters::CommonParameters(const std::string &taskDescriptor, DissociationType *dissociationType, bool doPrecursorDeconvolution, bool useProvidedPrecursorInfo, double deconvolutionIntensityRatio, int deconvolutionMaxAssumedChargeState, bool reportAllAmbiguity, bool addCompIons, int totalPartitions, double scoreCutoff, int topNpeaks, double minRatio, bool trimMs1Peaks, bool trimMsMsPeaks, bool useDeltaScore, bool calculateEValue, Tolerance *productMassTolerance, Tolerance *precursorMassTolerance, Tolerance *deconvolutionMassTolerance, int maxThreadsToUsePerFile, DigestionParams *digestionParams, std::vector<(std::string, std::string)*> &listOfModsVariable, std::vector<(std::string, std::string)*> &listOfModsFixed, double qValueOutputFilter, bool assumeOrphanPeaksAreZ1Fragments, int maxHeterozygousVariants, int minVariantDepth)
 	{
 		setTaskDescriptor(taskDescriptor);
 		setDoPrecursorDeconvolution(doPrecursorDeconvolution);
@@ -39,8 +39,8 @@ namespace EngineLayer
 		setDeconvolutionMassTolerance((deconvolutionMassTolerance != nullptr) ? deconvolutionMassTolerance : &tempVar3);
 		DigestionParams tempVar4();
 		setDigestionParams((digestionParams != nullptr) ? digestionParams : &tempVar4);
-		ListOfModsVariable = listOfModsVariable ? listOfModsVariable : {(L"Common Variable", L"Oxidation on M")};
-		ListOfModsFixed = listOfModsFixed ? listOfModsFixed : {(L"Common Fixed", L"Carbamidomethyl on C"), (L"Common Fixed", L"Carbamidomethyl on U")};
+		ListOfModsVariable = listOfModsVariable ? listOfModsVariable : {("Common Variable", "Oxidation on M")};
+		ListOfModsFixed = listOfModsFixed ? listOfModsFixed : {("Common Fixed", "Carbamidomethyl on C"), ("Common Fixed", "Carbamidomethyl on U")};
 		setDissociationType(dissociationType);
 		setQValueOutputFilter(qValueOutputFilter);
 
@@ -50,12 +50,12 @@ namespace EngineLayer
 		setMinVariantDepth(minVariantDepth);
 	}
 
-	std::wstring CommonParameters::getTaskDescriptor() const
+	std::string CommonParameters::getTaskDescriptor() const
 	{
 		return privateTaskDescriptor;
 	}
 
-	void CommonParameters::setTaskDescriptor(const std::wstring &value)
+	void CommonParameters::setTaskDescriptor(const std::string &value)
 	{
 		privateTaskDescriptor = value;
 	}
@@ -70,7 +70,7 @@ namespace EngineLayer
 		privateMaxThreadsToUsePerFile = value;
 	}
 
-	private *IEnumerable < CommonParameters::(std::wstring, std::wstring)
+	private *IEnumerable < CommonParameters::(std::string, std::string)
 	{
 		get;;
 

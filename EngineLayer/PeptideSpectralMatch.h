@@ -25,18 +25,18 @@ namespace EngineLayer
 	{
 	private:
 		ChemicalFormula *privateModsChemicalFormula;
-		std::wstring privateFullSequence;
+		std::string privateFullSequence;
 		std::optional<int> privateNotch;
-		std::wstring privateBaseSequence;
+		std::string privateBaseSequence;
 		std::optional<int> privatePeptideLength;
 		std::optional<int> privateOneBasedStartResidueInProtein;
 		std::optional<int> privateOneBasedEndResidueInProtein;
 		std::optional<double> privatePeptideMonisotopicMass;
 		std::optional<int> privateProteinLength;
-		std::wstring privateProteinAccession;
-		std::wstring privateOrganism;
+		std::string privateProteinAccession;
+		std::string privateOrganism;
 		std::vector<MatchedFragmentIon*> privateMatchedFragmentIons;
-		std::unordered_map<std::wstring, int> privateModsIdentified;
+		std::unordered_map<std::string, int> privateModsIdentified;
 		std::vector<double> privateLocalizedScores;
 		int privateScanNumber = 0;
 		std::optional<int> privatePrecursorScanNumber;
@@ -46,7 +46,7 @@ namespace EngineLayer
 		int privateScanPrecursorCharge = 0;
 		double privateScanPrecursorMonoisotopicPeakMz = 0;
 		double privateScanPrecursorMass = 0;
-		std::wstring privateFullFilePath;
+		std::string privateFullFilePath;
 		int privateScanIndex = 0;
 		FdrInfo *privateFdrInfo;
 		double privateScore = 0;
@@ -75,12 +75,12 @@ namespace EngineLayer
 		// these fields will be null if they are ambiguous
 		ChemicalFormula *getModsChemicalFormula() const;
 		void setModsChemicalFormula(ChemicalFormula *value);
-		std::wstring getFullSequence() const;
-		void setFullSequence(const std::wstring &value);
+		std::string getFullSequence() const;
+		void setFullSequence(const std::string &value);
 		std::optional<int> getNotch() const;
 		void setNotch(const std::optional<int> &value);
-		std::wstring getBaseSequence() const;
-		void setBaseSequence(const std::wstring &value);
+		std::string getBaseSequence() const;
+		void setBaseSequence(const std::string &value);
 		std::optional<int> getPeptideLength() const;
 		void setPeptideLength(const std::optional<int> &value);
 		std::optional<int> getOneBasedStartResidueInProtein() const;
@@ -91,16 +91,16 @@ namespace EngineLayer
 		void setPeptideMonisotopicMass(const std::optional<double> &value);
 		std::optional<int> getProteinLength() const;
 		void setProteinLength(const std::optional<int> &value);
-		std::wstring getProteinAccession() const;
-		void setProteinAccession(const std::wstring &value);
-		std::wstring getOrganism() const;
-		void setOrganism(const std::wstring &value);
+		std::string getProteinAccession() const;
+		void setProteinAccession(const std::string &value);
+		std::string getOrganism() const;
+		void setOrganism(const std::string &value);
 		std::vector<MatchedFragmentIon*> getMatchedFragmentIons() const;
 		void setMatchedFragmentIons(const std::vector<MatchedFragmentIon*> &value);
 
 		// these should never be null under normal circumstances
-		std::unordered_map<std::wstring, int> getModsIdentified() const;
-		void setModsIdentified(const std::unordered_map<std::wstring, int> &value);
+		std::unordered_map<std::string, int> getModsIdentified() const;
+		void setModsIdentified(const std::unordered_map<std::string, int> &value);
 		std::vector<double> getLocalizedScores() const;
 		void setLocalizedScores(const std::vector<double> &value);
 		int getScanNumber() const;
@@ -111,7 +111,7 @@ namespace EngineLayer
 		int getScanPrecursorCharge() const;
 		double getScanPrecursorMonoisotopicPeakMz() const;
 		double getScanPrecursorMass() const;
-		std::wstring getFullFilePath() const;
+		std::string getFullFilePath() const;
 		int getScanIndex() const;
 		int getNumDifferentMatchingPeptides() const;
 		FdrInfo *getFdrInfo() const;
@@ -140,15 +140,15 @@ namespace EngineLayer
 		/// </summary>
 		std::vector<double> getFeatures() const;
 
-		static std::wstring GetTabSeparatedHeader();
+		static std::string GetTabSeparatedHeader();
 
 		void AddOrReplace(PeptideWithSetModifications *pwsm, double newScore, int notch, bool reportAllAmbiguity, std::vector<MatchedFragmentIon*> &matchedFragmentIons);
 
-		std::wstring ToString() override;
+		std::string ToString() override;
 
-		std::wstring ToString(IReadOnlyDictionary<std::wstring, int> *ModstoWritePruned);
+		std::string ToString(IReadOnlyDictionary<std::string, int> *ModstoWritePruned);
 
-		static std::unordered_map<std::wstring, std::wstring> DataDictionary(PeptideSpectralMatch *psm, IReadOnlyDictionary<std::wstring, int> *ModsToWritePruned);
+		static std::unordered_map<std::string, std::string> DataDictionary(PeptideSpectralMatch *psm, IReadOnlyDictionary<std::string, int> *ModsToWritePruned);
 
 		void CalculateDeltaScore(double scoreCutoff);
 

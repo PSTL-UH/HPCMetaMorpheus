@@ -22,7 +22,7 @@ namespace EngineLayer
 	namespace CrosslinkSearch
 	{
 
-		CrosslinkSearchEngine::CrosslinkSearchEngine(std::vector<CrosslinkSpectralMatch*> &globalCsms, std::vector<Ms2ScanWithSpecificMass*> &listOfSortedms2Scans, std::vector<PeptideWithSetModifications*> &peptideIndex, std::vector<std::vector<int>&> &fragmentIndex, int currentPartition, CommonParameters *commonParameters, Crosslinker *crosslinker, bool CrosslinkSearchTop, int CrosslinkSearchTopNum, bool quench_H2O, bool quench_NH2, bool quench_Tris, std::vector<std::wstring> &nestedIds) : ModernSearchEngine(), GlobalCsms(globalCsms), Crosslinker(crosslinker), CrosslinkSearchTopN(CrosslinkSearchTop), TopN(CrosslinkSearchTopNum), QuenchH2O(quench_H2O), QuenchNH2(quench_NH2), QuenchTris(quench_Tris)
+		CrosslinkSearchEngine::CrosslinkSearchEngine(std::vector<CrosslinkSpectralMatch*> &globalCsms, std::vector<Ms2ScanWithSpecificMass*> &listOfSortedms2Scans, std::vector<PeptideWithSetModifications*> &peptideIndex, std::vector<std::vector<int>&> &fragmentIndex, int currentPartition, CommonParameters *commonParameters, Crosslinker *crosslinker, bool CrosslinkSearchTop, int CrosslinkSearchTopNum, bool quench_H2O, bool quench_NH2, bool quench_Tris, std::vector<std::string> &nestedIds) : ModernSearchEngine(), GlobalCsms(globalCsms), Crosslinker(crosslinker), CrosslinkSearchTopN(CrosslinkSearchTop), TopN(CrosslinkSearchTopNum), QuenchH2O(quench_H2O), QuenchNH2(quench_NH2), QuenchTris(quench_Tris)
 		{
 			GenerateCrosslinkModifications(crosslinker);
 			AllCrosslinkerSites = Crosslinker->getCrosslinkerModSites().ToCharArray().Concat(Crosslinker->getCrosslinkerModSites2().ToCharArray())->Distinct()->ToArray();
@@ -41,7 +41,7 @@ namespace EngineLayer
 		{
 			double progress = 0;
 			int oldPercentProgress = 0;
-			ProgressEventArgs tempVar(oldPercentProgress, L"Performing crosslink search... " + std::to_wstring(CurrentPartition) + L"/" + std::to_wstring(commonParameters->getTotalPartitions()), nestedIds);
+			ProgressEventArgs tempVar(oldPercentProgress, "Performing crosslink search... " + std::to_string(CurrentPartition) + "/" + std::to_string(commonParameters->getTotalPartitions()), nestedIds);
 			ReportProgress(&tempVar);
 
 			unsigned char byteScoreCutoff = static_cast<unsigned char>(commonParameters->getScoreCutoff());
@@ -118,7 +118,7 @@ namespace EngineLayer
 					if (percentProgress > oldPercentProgress)
 					{
 						oldPercentProgress = percentProgress;
-						ProgressEventArgs tempVar4(percentProgress, L"Performing crosslink search... " + std::to_wstring(CurrentPartition) + L"/" + std::to_wstring(commonParameters->getTotalPartitions()), nestedIds);
+						ProgressEventArgs tempVar4(percentProgress, "Performing crosslink search... " + std::to_string(CurrentPartition) + "/" + std::to_string(commonParameters->getTotalPartitions()), nestedIds);
 						ReportProgress(&tempVar4);
 					}
 				}
@@ -130,11 +130,11 @@ namespace EngineLayer
 		void CrosslinkSearchEngine::GenerateCrosslinkModifications(Crosslinker *crosslinker)
 		{
 			std::any motif;
-			ModificationMotif::TryGetMotif(L"X", motif);
-			TrisDeadEnd = new Modification(_originalId: L"Tris Dead End", _modificationType: L"Crosslink", _locationRestriction: L"Anywhere.", _target: motif, _monoisotopicMass: Crosslinker->getDeadendMassTris());
-			H2ODeadEnd = new Modification(_originalId: L"H2O Dead End", _modificationType: L"Crosslink", _locationRestriction: L"Anywhere.", _target: motif, _monoisotopicMass: Crosslinker->getDeadendMassH2O());
-			NH2DeadEnd = new Modification(_originalId: L"NH2 Dead End", _modificationType: L"Crosslink", _locationRestriction: L"Anywhere.", _target: motif, _monoisotopicMass: Crosslinker->getDeadendMassNH2());
-			Loop = new Modification(_originalId: L"Loop", _modificationType: L"Crosslink", _locationRestriction: L"Anywhere.", _target: motif, _monoisotopicMass: Crosslinker->getLoopMass());
+			ModificationMotif::TryGetMotif("X", motif);
+			TrisDeadEnd = new Modification(_originalId: "Tris Dead End", _modificationType: "Crosslink", _locationRestriction: "Anywhere.", _target: motif, _monoisotopicMass: Crosslinker->getDeadendMassTris());
+			H2ODeadEnd = new Modification(_originalId: "H2O Dead End", _modificationType: "Crosslink", _locationRestriction: "Anywhere.", _target: motif, _monoisotopicMass: Crosslinker->getDeadendMassH2O());
+			NH2DeadEnd = new Modification(_originalId: "NH2 Dead End", _modificationType: "Crosslink", _locationRestriction: "Anywhere.", _target: motif, _monoisotopicMass: Crosslinker->getDeadendMassNH2());
+			Loop = new Modification(_originalId: "Loop", _modificationType: "Crosslink", _locationRestriction: "Anywhere.", _target: motif, _monoisotopicMass: Crosslinker->getLoopMass());
 		}
 
 		CrosslinkSpectralMatch *CrosslinkSearchEngine::FindCrosslinkedPeptide(Ms2ScanWithSpecificMass *theScan, std::vector<BestPeptideScoreNotch*> &theScanBestPeptide, int scanIndex)
@@ -413,7 +413,7 @@ namespace EngineLayer
 				{
 					auto alreadyAnnotatedMod = mods[location + 1];
 					double combinedMass = mods[location + 1]->MonoisotopicMass->Value + deadEndMod->MonoisotopicMass->Value;
-					Modification *combinedMod = new Modification(_originalId: alreadyAnnotatedMod->OriginalId + L"+" + deadEndMod->OriginalId, _modificationType: L"Crosslink", _target: alreadyAnnotatedMod->Target, _locationRestriction: L"Anywhere.", _monoisotopicMass: combinedMass);
+					Modification *combinedMod = new Modification(_originalId: alreadyAnnotatedMod->OriginalId + "+" + deadEndMod->OriginalId, _modificationType: "Crosslink", _target: alreadyAnnotatedMod->Target, _locationRestriction: "Anywhere.", _monoisotopicMass: combinedMass);
 					mods[location + 1] = combinedMod;
 
 					delete combinedMod;

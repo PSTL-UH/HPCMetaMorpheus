@@ -14,13 +14,13 @@ namespace EngineLayer
 	namespace Calibration
 	{
 
-		DataPointAcquisitionEngine::DataPointAcquisitionEngine(std::vector<PeptideSpectralMatch*> &goodIdentifications, MsDataFile *myMsDataFile, Tolerance *mzToleranceForMs1Search, int minMS1isotopicPeaksNeededForConfirmedIdentification, CommonParameters *commonParameters, std::vector<std::wstring> &nestedIds) : MetaMorpheusEngine(commonParameters, nestedIds), GoodIdentifications(goodIdentifications), MyMsDataFile(myMsDataFile), MzToleranceForMs1Search(mzToleranceForMs1Search), MinMS1isotopicPeaksNeededForConfirmedIdentification(minMS1isotopicPeaksNeededForConfirmedIdentification)
+		DataPointAcquisitionEngine::DataPointAcquisitionEngine(std::vector<PeptideSpectralMatch*> &goodIdentifications, MsDataFile *myMsDataFile, Tolerance *mzToleranceForMs1Search, int minMS1isotopicPeaksNeededForConfirmedIdentification, CommonParameters *commonParameters, std::vector<std::string> &nestedIds) : MetaMorpheusEngine(commonParameters, nestedIds), GoodIdentifications(goodIdentifications), MyMsDataFile(myMsDataFile), MzToleranceForMs1Search(mzToleranceForMs1Search), MinMS1isotopicPeaksNeededForConfirmedIdentification(minMS1isotopicPeaksNeededForConfirmedIdentification)
 		{
 		}
 
 		MetaMorpheusEngineResults *DataPointAcquisitionEngine::RunSpecific()
 		{
-			Status(L"Extracting data points:");
+			Status("Extracting data points:");
 			// The final training point list
 
 			int numMs1MassChargeCombinationsConsidered = 0;
@@ -52,7 +52,7 @@ namespace EngineLayer
 					// Each identification has an MS2 spectrum attached to it.
 					int ms2scanNumber = identification->getScanNumber();
 					int peptideCharge = identification->getScanPrecursorCharge();
-					if (identification->getFullSequence() == L"")
+					if (identification->getFullSequence() == "")
 					{
 						continue;
 					}

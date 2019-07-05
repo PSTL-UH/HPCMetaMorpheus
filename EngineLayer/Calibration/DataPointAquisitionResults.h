@@ -57,7 +57,7 @@ namespace EngineLayer
 
 			int getCount() const;
 
-			std::wstring ToString() override;
+			std::string ToString() override;
 		};
 	}
 }

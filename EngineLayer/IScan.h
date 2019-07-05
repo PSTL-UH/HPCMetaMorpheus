@@ -7,7 +7,7 @@ namespace EngineLayer
 	class IScan
 	{
 	public:
-		virtual std::wstring getFullFilePath() const = 0;
+		virtual std::string getFullFilePath() const = 0;
 		virtual int getOneBasedScanNumber() const = 0;
 		virtual Nullable<int> getOneBasedPrecursorScanNumber() const = 0;
 		virtual double getRetentionTime() const = 0;

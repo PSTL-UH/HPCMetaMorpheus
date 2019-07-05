@@ -5,7 +5,7 @@ namespace EngineLayer
 	namespace CrosslinkSearch
 	{
 
-		Crosslinker::Crosslinker(const std::wstring &crosslinkerModSites, const std::wstring &crosslinkerModSites2, const std::wstring &crosslinkerName, bool cleavable, double totalMass, double cleaveMassShort, double cleaveMassLong, double loopMass, double deadendMassH2O, double deadendMassNH2, double deadendMassTris)
+		Crosslinker::Crosslinker(const std::string &crosslinkerModSites, const std::string &crosslinkerModSites2, const std::string &crosslinkerName, bool cleavable, double totalMass, double cleaveMassShort, double cleaveMassLong, double loopMass, double deadendMassH2O, double deadendMassNH2, double deadendMassTris)
 		{
 			setCrosslinkerModSites(crosslinkerModSites);
 			setCrosslinkerModSites2(crosslinkerModSites2);
@@ -24,32 +24,32 @@ namespace EngineLayer
 		{
 		}
 
-		std::wstring Crosslinker::getCrosslinkerModSites() const
+		std::string Crosslinker::getCrosslinkerModSites() const
 		{
 			return privateCrosslinkerModSites;
 		}
 
-		void Crosslinker::setCrosslinkerModSites(const std::wstring &value)
+		void Crosslinker::setCrosslinkerModSites(const std::string &value)
 		{
 			privateCrosslinkerModSites = value;
 		}
 
-		std::wstring Crosslinker::getCrosslinkerModSites2() const
+		std::string Crosslinker::getCrosslinkerModSites2() const
 		{
 			return privateCrosslinkerModSites2;
 		}
 
-		void Crosslinker::setCrosslinkerModSites2(const std::wstring &value)
+		void Crosslinker::setCrosslinkerModSites2(const std::string &value)
 		{
 			privateCrosslinkerModSites2 = value;
 		}
 
-		std::wstring Crosslinker::getCrosslinkerName() const
+		std::string Crosslinker::getCrosslinkerName() const
 		{
 			return privateCrosslinkerName;
 		}
 
-		void Crosslinker::setCrosslinkerName(const std::wstring &value)
+		void Crosslinker::setCrosslinkerName(const std::string &value)
 		{
 			privateCrosslinkerName = value;
 		}
@@ -138,13 +138,13 @@ namespace EngineLayer
 		{
 			if (type == CrosslinkerType::DSSO)
 			{
-				setCrosslinkerName(L"DSSO");
+				setCrosslinkerName("DSSO");
 				setCleavable(true);
 				setTotalMass(158.0038);
 				setCleaveMassShort(54.01056);
 				setCleaveMassLong(103.9932);
-				setCrosslinkerModSites(L"K");
-				setCrosslinkerModSites2(L"K");
+				setCrosslinkerModSites("K");
+				setCrosslinkerModSites2("K");
 				setLoopMass(158.0038);
 				setDeadendMassH2O(176.0143);
 				setDeadendMassNH2(175.0303);
@@ -152,21 +152,21 @@ namespace EngineLayer
 			}
 			else if (type == CrosslinkerType::DisulfideBond)
 			{
-				setCrosslinkerName(L"DisulfideBond");
+				setCrosslinkerName("DisulfideBond");
 				setCleavable(true);
 				setTotalMass(-2.01565);
 				setCleaveMassShort(-33.98772);
 				setCleaveMassLong(31.97207);
-				setCrosslinkerModSites(L"C");
-				setCrosslinkerModSites2(L"C");
+				setCrosslinkerModSites("C");
+				setCrosslinkerModSites2("C");
 			}
 			else if (type == CrosslinkerType::DSS)
 			{
-				setCrosslinkerName(L"DSS");
+				setCrosslinkerName("DSS");
 				setCleavable(false);
 				setTotalMass(138.06808);
-				setCrosslinkerModSites(L"K");
-				setCrosslinkerModSites2(L"K");
+				setCrosslinkerModSites("K");
+				setCrosslinkerModSites2("K");
 				setLoopMass(138.06808);
 				setDeadendMassH2O(156.0786);
 				setDeadendMassNH2(155.0946);
@@ -174,13 +174,13 @@ namespace EngineLayer
 			}
 			else if (type == CrosslinkerType::DSBU)
 			{
-				setCrosslinkerName(L"DSBU");
+				setCrosslinkerName("DSBU");
 				setCleavable(true);
 				setTotalMass(196.0848);
 				setCleaveMassShort(85.05276);
 				setCleaveMassLong(111.0320);
-				setCrosslinkerModSites(L"K");
-				setCrosslinkerModSites2(L"K");
+				setCrosslinkerModSites("K");
+				setCrosslinkerModSites2("K");
 				setLoopMass(196.0848);
 				setDeadendMassH2O(214.0954);
 				setDeadendMassNH2(213.1113);

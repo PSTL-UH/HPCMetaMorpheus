@@ -11,6 +11,6 @@ namespace EngineLayer
 	class MetaMorpheusException : public std::runtime_error
 	{
 	public:
-		MetaMorpheusException(const std::wstring &message);
+		MetaMorpheusException(const std::string &message);
 	};
 }
