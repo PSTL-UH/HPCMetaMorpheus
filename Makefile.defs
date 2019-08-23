@@ -9,13 +9,13 @@
 
 # Generated automatically from Makefile.in by configure.
 
-MMORPHEUS_DIR      = /home/gabriel/MetaMorpheus/MetaMorpheus-master
+MMORPHEUS_DIR      = /home/gabriel/XLMS/MetaMorpheus-master
 MMORPHEUS_INC_DIR  = $(MMMORPHEUS_DIR)/include 
 MMORPHEUS_LIB_DIR  = $(MMORPHEUS_DIR)/lib
 MMORPHEUS_LIB      = libmmorpheus.a
 
 
-MZLIB_DIR      = /home/gabriel/MetaMorpheus/mzlib-master
+MZLIB_DIR      = /home/gabriel/XLMS/mzlib-master
 MZLIB_INC_DIR  = $(MZLIB_DIR)/include 
 MZLIB_LIB_DIR  = $(MZLIB_DIR)/lib
 MZLIB_LIB      = libmzlib.a
