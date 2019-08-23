@@ -3,13 +3,13 @@
 #include <string>
 #include <vector>
 
-#include "../MassSpectrometry/MassSpectrometry.h"
+#include "MassSpectrometry/MassSpectrometry.h"
 using namespace MassSpectrometry;
 
 #include "MzLibUtil.h"
 using namespace MzLibUtil;
 
-#include "../Proteomics/Proteomics.h"
+#include "Proteomics/Proteomics.h"
 using namespace Proteomics;
 
 namespace EngineLayer

@@ -9,11 +9,17 @@
 #include "tangible_filesystem.h"
 
 //C# TO C++ CONVERTER NOTE: Forward class declarations:
-namespace EngineLayer { class IGlobalSettings; }
+//namespace EngineLayer { class IGlobalSettings; }
+#include "IGlobalSettings.h"
 
+#include "MassSpectrometry/MassSpectrometry.h"
 using namespace MassSpectrometry;
 //using namespace Nett;
-//using namespace Proteomics;
+
+#include "Proteomics/Proteomics.h"
+using namespace Proteomics;
+
+#include "UsefulProteomicsDatabases/UsefulProteomicsDatabases.h"
 
 namespace EngineLayer
 {
@@ -29,7 +35,7 @@ namespace EngineLayer
 		static std::vector<Modification*> privateUniprotDeseralized;
 		static UsefulProteomicsDatabases::Generated::obo *privatePsiModDeserialized;
 		static std::unordered_map<std::string, Modification*> privateAllModsKnownDictionary;
-		static std::unordered_map<std::string, DissociationType*> privateAllSupportedDissociationTypes;
+		static std::unordered_map<std::string, DissociationType> privateAllSupportedDissociationTypes;
 		static std::string privateExperimentalDesignFileName;
 
 		static std::vector<Modification*> _AllModsKnown;
@@ -59,11 +65,12 @@ namespace EngineLayer
 		static std::vector<Modification*> getUniprotDeseralized();
 		static UsefulProteomicsDatabases::Generated::obo *getPsiModDeserialized();
 		static std::vector<Modification*> getAllModsKnown();
-		static std::vector<std::string> getAllModTypesKnown();
+		//static std::vector<std::string> getAllModTypesKnown();
+		static std::unordered_set<std::string> getAllModTypesKnown();
 		static std::unordered_map<std::string, Modification*> getAllModsKnownDictionary();
 		static void setAllModsKnownDictionary(const std::unordered_map<std::string, Modification*> &value);
-		static std::unordered_map<std::string, DissociationType*> getAllSupportedDissociationTypes();
-		static void setAllSupportedDissociationTypes(const std::unordered_map<std::string, DissociationType*> &value);
+		static std::unordered_map<std::string, DissociationType> getAllSupportedDissociationTypes();
+		static void setAllSupportedDissociationTypes(const std::unordered_map<std::string, DissociationType> &value);
 
 		static std::string getExperimentalDesignFileName();
 

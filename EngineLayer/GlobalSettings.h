@@ -11,6 +11,6 @@ namespace EngineLayer
 
 	public:
 		bool getWriteExcelCompatibleTSVs() const override;
-		void setWriteExcelCompatibleTSVs(bool value) override;
+		void setWriteExcelCompatibleTSVs(bool value);
 	};
 }
