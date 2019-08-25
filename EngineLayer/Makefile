@@ -51,8 +51,8 @@ all:
 	cd MetaDraw; make ; cd ..
 	cd ModernSearch; make ; cd ..
 	cd ModificationAnalysis; make ; cd ..
-	cd NonSpecificEnzumeSearch; make ; cd ..
-	cd PrecursurSearchModes; make ; cd ..
+	cd NonSpecificEnzymeSearch; make ; cd ..
+	cd PrecursorSearchModes; make ; cd ..
 	cd ProteinParsimony; make ; cd ..
 	cd ProteinScoringAndFdr; make ; cd ..
 
@@ -78,7 +78,7 @@ clean:
 	cd MetaDraw; make clean; cd ..
 	cd ModernSearch; make clean; cd ..
 	cd ModificationAnalysis; make clean; cd ..
-	cd NonSpecificEnzumeSearch; make clean; cd ..
-	cd PrecursurSearchModes; make clean; cd ..
+	cd NonSpecificEnzymeSearch; make clean; cd ..
+	cd PrecursorSearchModes; make clean; cd ..
 	cd ProteinParsimony; make clean; cd ..
 	cd ProteinScoringAndFdr; make clean; cd ..
