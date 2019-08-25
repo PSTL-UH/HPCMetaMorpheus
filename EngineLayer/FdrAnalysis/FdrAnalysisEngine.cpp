@@ -11,7 +11,7 @@ namespace EngineLayer
 	namespace FdrAnalysis
 	{
 
-		FdrAnalysisEngine::FdrAnalysisEngine(std::vector<PeptideSpectralMatch*> &psms, int massDiffAcceptorNumNotches, CommonParameters *commonParameters, std::vector<std::wstring> &nestedIds) : MetaMorpheusEngine(commonParameters, nestedIds), MassDiffAcceptorNumNotches(massDiffAcceptorNumNotches), UseDeltaScore(commonParameters->getUseDeltaScore()), CalculateEValue(commonParameters->getCalculateEValue()), ScoreCutoff(commonParameters->getScoreCutoff())
+		FdrAnalysisEngine::FdrAnalysisEngine(std::vector<PeptideSpectralMatch*> &psms, int massDiffAcceptorNumNotches, CommonParameters *commonParameters, std::vector<std::string> &nestedIds) : MetaMorpheusEngine(commonParameters, nestedIds), MassDiffAcceptorNumNotches(massDiffAcceptorNumNotches), UseDeltaScore(commonParameters->getUseDeltaScore()), CalculateEValue(commonParameters->getCalculateEValue()), ScoreCutoff(commonParameters->getScoreCutoff())
 		{
 			AllPsms = psms;
 		}
@@ -20,7 +20,7 @@ namespace EngineLayer
 		{
 			FdrAnalysisResults *myAnalysisResults = new FdrAnalysisResults(this);
 
-			Status(L"Running FDR analysis...");
+			Status("Running FDR analysis...");
 			DoFalseDiscoveryRateAnalysis(myAnalysisResults);
 
 			myAnalysisResults->setPsmsWithin1PercentFdr(AllPsms.size()([&] (std::any b)
@@ -106,7 +106,7 @@ namespace EngineLayer
 						b::PeptideMonisotopicMass.HasValue ? std::abs(b::ScanPrecursorMass - b::PeptideMonisotopicMass->Value) : std::numeric_limits<double>::max();
 					}).GroupBy([&] (std::any b)
 					{
-						return std::tuple < std::wstring;
+						return std::tuple < std::string;
 					}, int, std::optional<double>>(b::FullFilePath, b::ScanNumber, b::PeptideMonisotopicMass))->Select([&] (std::any b)
 					{
 						b::First();
@@ -120,7 +120,7 @@ namespace EngineLayer
 						b::PeptideMonisotopicMass.HasValue ? std::abs(b::ScanPrecursorMass - b::PeptideMonisotopicMass->Value) : std::numeric_limits<double>::max();
 					}).GroupBy([&] (std::any b)
 					{
-						return std::tuple < std::wstring;
+						return std::tuple < std::string;
 					}, int, std::optional<double>>(b::FullFilePath, b::ScanNumber, b::PeptideMonisotopicMass))->Select([&] (std::any b)
 					{
 						b::First();

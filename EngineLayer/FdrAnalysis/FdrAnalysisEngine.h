@@ -31,7 +31,7 @@ namespace EngineLayer
 			const double ScoreCutoff;
 
 		public:
-			FdrAnalysisEngine(std::vector<PeptideSpectralMatch*> &psms, int massDiffAcceptorNumNotches, CommonParameters *commonParameters, std::vector<std::wstring> &nestedIds);
+			FdrAnalysisEngine(std::vector<PeptideSpectralMatch*> &psms, int massDiffAcceptorNumNotches, CommonParameters *commonParameters, std::vector<std::string> &nestedIds);
 
 		protected:
 			MetaMorpheusEngineResults *RunSpecific() override;

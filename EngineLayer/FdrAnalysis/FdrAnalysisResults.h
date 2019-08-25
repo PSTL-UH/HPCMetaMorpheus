@@ -27,7 +27,7 @@ namespace EngineLayer
 				bool getDeltaScoreImprovement() const;
 				void setDeltaScoreImprovement(bool value);
 
-			std::wstring ToString() override;
+			std::string ToString();
 		};
 	}
 }

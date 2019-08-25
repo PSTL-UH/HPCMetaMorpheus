@@ -31,13 +31,12 @@ namespace EngineLayer
 			privateDeltaScoreImprovement = value;
 		}
 
-		std::wstring FdrAnalysisResults::ToString()
+		std::string FdrAnalysisResults::ToString()
 		{
 			auto sb = new StringBuilder();
-//C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
 			sb->appendLine(MetaMorpheusEngineResults::ToString());
-			sb->appendLine(L"PSMs within 1% fdr: " + std::to_wstring(getPsmsWithin1PercentFdr()));
-			sb->appendLine(L"Delta Score Used for FDR Analysis: " + StringHelper::toString(getDeltaScoreImprovement()));
+			sb->appendLine("PSMs within 1% fdr: " + std::to_string(getPsmsWithin1PercentFdr()));
+			sb->appendLine("Delta Score Used for FDR Analysis: " + StringHelper::toString(getDeltaScoreImprovement()));
 
 			delete sb;
 			return sb->toString();

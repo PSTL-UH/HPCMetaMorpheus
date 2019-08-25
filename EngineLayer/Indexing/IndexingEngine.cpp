@@ -14,41 +14,41 @@ namespace EngineLayer
 	namespace Indexing
 	{
 
-		IndexingEngine::IndexingEngine(std::vector<Protein*> &proteinList, std::vector<Modification*> &variableModifications, std::vector<Modification*> &fixedModifications, int currentPartition, DecoyType *decoyType, CommonParameters *commonParams, double maxFragmentSize, bool generatePrecursorIndex, std::vector<FileInfo*> &proteinDatabases, std::vector<std::wstring> &nestedIds) : MetaMorpheusEngine(commonParams, nestedIds), ProteinList(proteinList), FixedModifications(fixedModifications), VariableModifications(variableModifications), CurrentPartition(currentPartition + 1), DecoyType(decoyType), MaxFragmentSize(maxFragmentSize), GeneratePrecursorIndex(generatePrecursorIndex), ProteinDatabases(proteinDatabases)
+		IndexingEngine::IndexingEngine(std::vector<Protein*> &proteinList, std::vector<Modification*> &variableModifications, std::vector<Modification*> &fixedModifications, int currentPartition, DecoyType *decoyType, CommonParameters *commonParams, double maxFragmentSize, bool generatePrecursorIndex, std::vector<FileInfo*> &proteinDatabases, std::vector<std::string> &nestedIds) : MetaMorpheusEngine(commonParams, nestedIds), ProteinList(proteinList), FixedModifications(fixedModifications), VariableModifications(variableModifications), CurrentPartition(currentPartition + 1), DecoyType(decoyType), MaxFragmentSize(maxFragmentSize), GeneratePrecursorIndex(generatePrecursorIndex), ProteinDatabases(proteinDatabases)
 		{
 		}
 
-		std::wstring IndexingEngine::ToString()
+		std::string IndexingEngine::ToString()
 		{
 			auto sb = new StringBuilder();
-			sb->appendLine(L"Databases: " + std::wstring::Join(L",", ProteinDatabases.OrderBy([&] (std::any p)
+			sb->appendLine("Databases: " + std::string::Join(",", ProteinDatabases.OrderBy([&] (std::any p)
 			{
 				p->Name;
 			})->Select([&] (std::any p)
 			{
 			delete sb;
-				return p->Name + L":" + p::CreationTime;
+				return p->Name + ":" + p::CreationTime;
 			})));
-			sb->appendLine(L"Partitions: " + std::to_wstring(CurrentPartition) + L"/" + std::to_wstring(commonParameters->getTotalPartitions()));
-			sb->appendLine(L"Precursor Index: " + StringHelper::toString(GeneratePrecursorIndex));
-			sb->appendLine(L"Search Decoys: " + DecoyType);
-			sb->appendLine(L"Number of proteins: " + std::to_wstring(ProteinList.size()));
-			sb->appendLine(L"Number of fixed mods: " + std::to_wstring(FixedModifications.size()));
-			sb->appendLine(L"Number of variable mods: " + std::to_wstring(VariableModifications.size()));
-			sb->appendLine(L"Dissociation Type: " + commonParameters->getDissociationType());
+			sb->appendLine("Partitions: " + std::to_string(CurrentPartition) + "/" + std::to_string(commonParameters->getTotalPartitions()));
+			sb->appendLine("Precursor Index: " + StringHelper::toString(GeneratePrecursorIndex));
+			sb->appendLine("Search Decoys: " + DecoyType);
+			sb->appendLine("Number of proteins: " + std::to_string(ProteinList.size()));
+			sb->appendLine("Number of fixed mods: " + std::to_string(FixedModifications.size()));
+			sb->appendLine("Number of variable mods: " + std::to_string(VariableModifications.size()));
+			sb->appendLine("Dissociation Type: " + commonParameters->getDissociationType());
 
-			sb->appendLine(L"protease: " + commonParameters->getDigestionParams()->Protease);
-			sb->appendLine(L"initiatorMethionineBehavior: " + commonParameters->getDigestionParams()->InitiatorMethionineBehavior);
-			sb->appendLine(L"maximumMissedCleavages: " + commonParameters->getDigestionParams()->MaxMissedCleavages);
-			sb->appendLine(L"minPeptideLength: " + commonParameters->getDigestionParams()->MinPeptideLength);
-			sb->appendLine(L"maxPeptideLength: " + commonParameters->getDigestionParams()->MaxPeptideLength);
-			sb->appendLine(L"maximumVariableModificationIsoforms: " + commonParameters->getDigestionParams()->MaxModificationIsoforms);
-			sb->appendLine(L"digestionTerminus: " + commonParameters->getDigestionParams()->FragmentationTerminus);
-			sb->appendLine(L"maxModsForEachPeptide: " + commonParameters->getDigestionParams()->MaxModsForPeptide);
-			sb->appendLine(L"cleavageSpecificity: " + commonParameters->getDigestionParams()->SearchModeType);
-			sb->appendLine(L"specificProtease: " + commonParameters->getDigestionParams()->SpecificProtease);
+			sb->appendLine("protease: " + commonParameters->getDigestionParams()->Protease);
+			sb->appendLine("initiatorMethionineBehavior: " + commonParameters->getDigestionParams()->InitiatorMethionineBehavior);
+			sb->appendLine("maximumMissedCleavages: " + commonParameters->getDigestionParams()->MaxMissedCleavages);
+			sb->appendLine("minPeptideLength: " + commonParameters->getDigestionParams()->MinPeptideLength);
+			sb->appendLine("maxPeptideLength: " + commonParameters->getDigestionParams()->MaxPeptideLength);
+			sb->appendLine("maximumVariableModificationIsoforms: " + commonParameters->getDigestionParams()->MaxModificationIsoforms);
+			sb->appendLine("digestionTerminus: " + commonParameters->getDigestionParams()->FragmentationTerminus);
+			sb->appendLine("maxModsForEachPeptide: " + commonParameters->getDigestionParams()->MaxModsForPeptide);
+			sb->appendLine("cleavageSpecificity: " + commonParameters->getDigestionParams()->SearchModeType);
+			sb->appendLine("specificProtease: " + commonParameters->getDigestionParams()->SpecificProtease);
 
-			sb->append(L"Localizeable mods: " + ProteinList.Select([&] (std::any b)
+			sb->append("Localizeable mods: " + ProteinList.Select([&] (std::any b)
 			{
 				b::OneBasedPossibleLocalizedModifications->Count;
 			}).Sum());
@@ -90,7 +90,7 @@ namespace EngineLayer
 					if (percentProgress > oldPercentProgress)
 					{
 						oldPercentProgress = percentProgress;
-						ProgressEventArgs tempVar2(percentProgress, L"Digesting proteins...", nestedIds);
+						ProgressEventArgs tempVar2(percentProgress, "Digesting proteins...", nestedIds);
 						ReportProgress(&tempVar2);
 					}
 				}
@@ -117,7 +117,7 @@ namespace EngineLayer
 			}
 			catch (const OutOfMemoryException &e1)
 			{
-				throw MetaMorpheusException(L"Max fragment mass too large for indexing engine; try \"Classic Search\" mode, or make the maximum fragment mass smaller");
+				throw MetaMorpheusException("Max fragment mass too large for indexing engine; try \"Classic Search\" mode, or make the maximum fragment mass smaller");
 			}
 
 			// populate fragment index
@@ -153,7 +153,7 @@ namespace EngineLayer
 				if (percentProgress > oldPercentProgress)
 				{
 					oldPercentProgress = percentProgress;
-					ProgressEventArgs tempVar3(percentProgress, L"Fragmenting peptides...", nestedIds);
+					ProgressEventArgs tempVar3(percentProgress, "Fragmenting peptides...", nestedIds);
 					ReportProgress(&tempVar3);
 				}
 			}
@@ -169,11 +169,11 @@ namespace EngineLayer
 				}
 				catch (const OutOfMemoryException &e2)
 				{
-					throw MetaMorpheusException(L"Max precursor mass too large for indexing engine; try \"Classic Search\" mode, or make the maximum fragment mass smaller");
+					throw MetaMorpheusException("Max precursor mass too large for indexing engine; try \"Classic Search\" mode, or make the maximum fragment mass smaller");
 				}
 				progress = 0;
 				oldPercentProgress = 0;
-				ProgressEventArgs tempVar4(0, L"Creating precursor index...", nestedIds);
+				ProgressEventArgs tempVar4(0, "Creating precursor index...", nestedIds);
 				ReportProgress(&tempVar4);
 
 				for (int i = 0; i < peptidesSortedByMass.size(); i++)
@@ -203,7 +203,7 @@ namespace EngineLayer
 					if (percentProgress > oldPercentProgress)
 					{
 						oldPercentProgress = percentProgress;
-						ProgressEventArgs tempVar5(percentProgress, L"Creating precursor index...", nestedIds);
+						ProgressEventArgs tempVar5(percentProgress, "Creating precursor index...", nestedIds);
 						ReportProgress(&tempVar5);
 					}
 				}

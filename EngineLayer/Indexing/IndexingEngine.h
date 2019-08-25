@@ -41,9 +41,9 @@ namespace EngineLayer
 				delete DecoyType;
 			}
 
-			IndexingEngine(std::vector<Protein*> &proteinList, std::vector<Modification*> &variableModifications, std::vector<Modification*> &fixedModifications, int currentPartition, DecoyType *decoyType, CommonParameters *commonParams, double maxFragmentSize, bool generatePrecursorIndex, std::vector<FileInfo*> &proteinDatabases, std::vector<std::wstring> &nestedIds);
+			IndexingEngine(std::vector<Protein*> &proteinList, std::vector<Modification*> &variableModifications, std::vector<Modification*> &fixedModifications, int currentPartition, DecoyType *decoyType, CommonParameters *commonParams, double maxFragmentSize, bool generatePrecursorIndex, std::vector<FileInfo*> &proteinDatabases, std::vector<std::string> &nestedIds);
 
-			std::wstring ToString() override;
+			std::string ToString();
 
 		protected:
 			MetaMorpheusEngineResults *RunSpecific() override;

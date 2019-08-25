@@ -45,17 +45,17 @@ namespace EngineLayer
 			privatePeptideIndex = value;
 		}
 
-		std::wstring IndexingResults::ToString()
+		std::string IndexingResults::ToString()
 		{
 			auto sb = new StringBuilder();
-//C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+
 			sb->appendLine(MetaMorpheusEngineResults::ToString());
-			sb->appendLine(L"\t\tfragmentIndexDict.Count: " + std::to_wstring(getFragmentIndex().size()));
+			sb->appendLine("\t\tfragmentIndexDict.Count: " + std::to_string(getFragmentIndex().size()));
 			if (getPrecursorIndex().size() > 0)
 			{
-				sb->appendLine(L"\t\tprecursorIndexDict.Count: " + std::to_wstring(getPrecursorIndex().size()));
+				sb->appendLine("\t\tprecursorIndexDict.Count: " + std::to_string(getPrecursorIndex().size()));
 			}
-			sb->appendLine(L"\t\tpeptideIndex.Count: " + std::to_wstring(getPeptideIndex().size()));
+			sb->appendLine("\t\tpeptideIndex.Count: " + std::to_string(getPeptideIndex().size()));
 
 			delete sb;
 			return sb->toString();

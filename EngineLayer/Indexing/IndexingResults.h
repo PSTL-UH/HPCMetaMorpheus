@@ -32,7 +32,7 @@ namespace EngineLayer
 				std::vector<PeptideWithSetModifications*> getPeptideIndex() const;
 				void setPeptideIndex(const std::vector<PeptideWithSetModifications*> &value);
 
-			std::wstring ToString() override;
+			std::string ToString();
 		};
 	}
 }
