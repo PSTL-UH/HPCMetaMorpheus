@@ -129,8 +129,8 @@ namespace EngineLayer
             });
     }
     
-    //GlobalVariables::StaticConstructor GlobalVariables::staticConstructor;
-    //std::vector<std::string> GlobalVariables::ErrorsReadingMods;
+    GlobalVariables::StaticConstructor GlobalVariables::staticConstructor;
+    std::vector<std::string> GlobalVariables::ErrorsReadingMods;
     
     std::string GlobalVariables::getDataDir()
     {

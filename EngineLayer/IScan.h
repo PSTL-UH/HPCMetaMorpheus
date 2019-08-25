@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include <string>
+#include <optional>
 
 namespace EngineLayer
 {
@@ -9,7 +10,7 @@ namespace EngineLayer
 	public:
 		virtual std::string getFullFilePath() const = 0;
 		virtual int getOneBasedScanNumber() const = 0;
-		virtual Nullable<int> getOneBasedPrecursorScanNumber() const = 0;
+		virtual std::optional<int> getOneBasedPrecursorScanNumber() const = 0;
 		virtual double getRetentionTime() const = 0;
 		virtual int getNumPeaks() const = 0;
 		virtual double getTotalIonCurrent() const = 0;
