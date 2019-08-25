@@ -1,8 +1,10 @@
 ﻿#include "GlobalVariables.h"
 #include "IGlobalSettings.h"
 
+#include <experimental/filesystem>
+
 using namespace MassSpectrometry;
-using namespace Nett;
+//using namespace Nett;
 using namespace Proteomics;
 
 namespace EngineLayer
@@ -17,21 +19,21 @@ namespace EngineLayer
     std::vector<Modification*> GlobalVariables::privateUniprotDeseralized;
     UsefulProteomicsDatabases::Generated::obo *GlobalVariables::privatePsiModDeserialized;
     std::unordered_map<std::string, Modification*> GlobalVariables::privateAllModsKnownDictionary;
-    std::unordered_map<std::string, DissociationType*> GlobalVariables::privateAllSupportedDissociationTypes;
+    std::unordered_map<std::string, DissociationType> GlobalVariables::privateAllSupportedDissociationTypes;
     std::string GlobalVariables::privateExperimentalDesignFileName;
     std::vector<Modification*> GlobalVariables::_AllModsKnown;
     std::unordered_set<std::string> GlobalVariables::_AllModTypesKnown;
     
     GlobalVariables::StaticConstructor::StaticConstructor()
     {
-        MetaMorpheusVersion = GlobalVariables::typeid->Assembly->GetName()->Version->ToString();
+        privateMetaMorpheusVersion = "0.0.295";
         
         if (getMetaMorpheusVersion() == "1.0.0.0")
         {
 #if defined(DEBUG)
-            MetaMorpheusVersion = "Not a release version. DEBUG.";
+            privateMetaMorpheusVersion += "Not a release version. DEBUG.";
 #else
-            MetaMorpheusVersion = "Not a release version.";
+            privateMetaMorpheusVersion += "Not a release version.";
 #endif
         }
         else
@@ -40,48 +42,58 @@ namespace EngineLayer
             // this is intentional; it's to avoid conflicting AppVeyor build numbers
             // trim the build number off the version number for displaying/checking versions, etc
             auto foundIndexes = std::vector<int>();
-            for (int i = 0; i < getMetaMorpheusVersion().length(); i++)
+            for (int i = 0; i < (int)getMetaMorpheusVersion().length(); i++)
             {
                 if (getMetaMorpheusVersion()[i] == L'.')
                 {
                     foundIndexes.push_back(i);
                 }
             }
-            MetaMorpheusVersion = getMetaMorpheusVersion().substr(0, foundIndexes.back());
+            privateMetaMorpheusVersion = getMetaMorpheusVersion().substr(0, foundIndexes.back());
         }
         
+#ifdef ORIG
+        // Edgar: directory structure for C++/Linux not as sophisticated for now. Can revisit later if necessary.
+        auto pathToProgramFiles = Environment::GetFolderPath(Environment::SpecialFolder::ProgramFiles);
+        if (!StringHelper::isEmptyOrWhiteSpace(pathToProgramFiles)                                &&
+            AppDomain::CurrentDomain->BaseDirectory.find(pathToProgramFiles) != std::string::npos &&
+            !AppDomain::CurrentDomain->BaseDirectory.find("Jenkins") != std::string::npos)
         {
-            auto pathToProgramFiles = Environment::GetFolderPath(Environment::SpecialFolder::ProgramFiles);
-            if (!StringHelper::isEmptyOrWhiteSpace(pathToProgramFiles)                                &&
-                AppDomain::CurrentDomain->BaseDirectory.find(pathToProgramFiles) != std::string::npos &&
-                !AppDomain::CurrentDomain->BaseDirectory.find("Jenkins") != std::string::npos)
-            {
-                DataDir = FileSystem::combine(Environment::GetFolderPath(Environment::SpecialFolder::LocalApplicationData), "MetaMorpheus");
-            }
-            else
-            {
-                DataDir = AppDomain::CurrentDomain->BaseDirectory;
-            }
+            privateDataDir = FileSystem::combine(Environment::GetFolderPath(Environment::SpecialFolder::LocalApplicationData), "MetaMorpheus");
         }
+        else
+        {
+            privateDataDir = AppDomain::CurrentDomain->BaseDirectory;
+        }
+#endif
+        privateDataDir = std::experimental::filesystem::current_path();
         
-        ElementsLocation = FileSystem::combine(getDataDir(), R"(Data)", R"(elements.dat)");
+        std::string datadir = FileSystem::combine(getDataDir(), "Data" );
+        privateElementsLocation = FileSystem::combine(datadir, "elements.dat");
         UsefulProteomicsDatabases::Loaders::LoadElements(getElementsLocation());
         
-        ExperimentalDesignFileName = "ExperimentalDesign.tsv";
-        
-        UnimodDeserialized = UsefulProteomicsDatabases::Loaders::LoadUnimod(FileSystem::combine(getDataDir(), R"(Data)", R"(unimod.xml)")); //.ToList();
-        PsiModDeserialized = UsefulProteomicsDatabases::Loaders::LoadPsiMod(FileSystem::combine(getDataDir(), R"(Data)", R"(PSI-MOD.obo.xml)"));
+        privateExperimentalDesignFileName = "ExperimentalDesign.tsv";
+
+        privateUnimodDeserialized = UsefulProteomicsDatabases::Loaders::LoadUnimod(FileSystem::combine(datadir, "unimod.xml")); //.ToList();
+        privatePsiModDeserialized = UsefulProteomicsDatabases::Loaders::LoadPsiMod(FileSystem::combine(datadir, "PSI-MOD.obo.xml"));
         auto formalChargesDictionary = UsefulProteomicsDatabases::Loaders::GetFormalChargesDictionary(getPsiModDeserialized());
-        UniprotDeseralized = UsefulProteomicsDatabases::Loaders::LoadUniprot(FileSystem::combine(getDataDir(), R"(Data)", R"(ptmlist.txt)"), formalChargesDictionary); //.ToList();
+        privateUniprotDeseralized = UsefulProteomicsDatabases::Loaders::LoadUniprot(FileSystem::combine(datadir, "ptmlist.txt"), formalChargesDictionary); //.ToList();
         
-        for (auto modFile : Directory::GetFiles(FileSystem::combine(getDataDir(), R"(Mods)")))
+        //for (auto modFile : Directory::GetFiles(FileSystem::combine(getDataDir(), "Mods")))
+        for (auto  modFile : std::experimental::filesystem::directory_iterator(FileSystem::combine(getDataDir(), "Mods")))
         {
-            std::any errorMods;
-            AddMods(UsefulProteomicsDatabases::PtmListLoader::ReadModsFromFile(modFile, errorMods), false);
+            std::vector<std::tuple<Modification *, std::string>> errorMods;
+            std::vector<Modification *> mods;
+            mods = UsefulProteomicsDatabases::PtmListLoader::ReadModsFromFile(modFile.path().string(), errorMods);
+            AddMods( mods, false);
         }
-        
-        AddMods(getUniprotDeseralized().OfType<Modification*>(), false);
+
+#ifdef ORIG
+        AddMods(getUniprotDeserialized().OfType<Modification*>(), false);
         AddMods(getUnimodDeserialized().OfType<Modification*>(), false);
+#endif
+        AddMods(privateUniprotDeseralized, false);
+        AddMods(privateUnimodDeserialized, false);
         
         // populate dictionaries of known mods/proteins for deserialization
         setAllModsKnownDictionary(std::unordered_map<std::string, Modification*>());
@@ -94,8 +106,12 @@ namespace EngineLayer
             // no error thrown if multiple mods with this ID are present - just pick one
         }
         
-        GlobalSettings = Toml::ReadFile<getGlobalSettings()*>(FileSystem::combine(getDataDir(), LR"(settings.toml)"));
+#ifdef ORIG
+        // Todo for Nick: Replace the Nett functionality here.
+        GlobalSettings = Toml::ReadFile<getGlobalSettings()*>(FileSystem::combine(getDataDir(), "settings.toml"));
+#endif
 
+#ifdef ORIG
         setAllSupportedDissociationTypes(std::unordered_map<std::string, DissociationType> {
                 {DissociationType::CID.ToString(), DissociationType::CID},
                 {DissociationType::ECD.ToString(), DissociationType::ECD},
@@ -103,10 +119,18 @@ namespace EngineLayer
                 {DissociationType::HCD.ToString(), DissociationType::HCD},
                 {DissociationType::EThcD.ToString(), DissociationType::EThcD}
             });
+#endif
+        setAllSupportedDissociationTypes(std::unordered_map<std::string, DissociationType> {
+                {"CID", DissociationType::CID},
+                {"ECD", DissociationType::ECD},
+                {"ETD", DissociationType::ETD},
+                {"HCD", DissociationType::HCD},
+                {"EThcD", DissociationType::EThcD}
+            });
     }
     
-    GlobalVariables::StaticConstructor GlobalVariables::staticConstructor;
-    std::vector<std::string> GlobalVariables::ErrorsReadingMods;
+    //GlobalVariables::StaticConstructor GlobalVariables::staticConstructor;
+    //std::vector<std::string> GlobalVariables::ErrorsReadingMods;
     
     std::string GlobalVariables::getDataDir()
     {
