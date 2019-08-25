@@ -8,9 +8,9 @@ namespace EngineLayer
 {
 
 Regex *const MetaDrawPsm::IonParser = new Regex(LR"(([a-zA-Z]+)(\d+))");
-std::vector<wchar_t> const MetaDrawPsm::MzSplit = {L'[', L',', L']', L';'};
+std::vector<char> const MetaDrawPsm::MzSplit = {'[', ',', ']', ';'};
 
-	std::wstring MetaDrawPsm::getFullSequence() const
+	std::string MetaDrawPsm::getFullSequence() const
 	{
 		return privateFullSequence;
 	}
@@ -20,7 +20,7 @@ std::vector<wchar_t> const MetaDrawPsm::MzSplit = {L'[', L',', L']', L';'};
 		return privateMs2ScanNumber;
 	}
 
-	std::wstring MetaDrawPsm::getFilename() const
+	std::string MetaDrawPsm::getFilename() const
 	{
 		return privateFilename;
 	}
@@ -50,7 +50,7 @@ std::vector<wchar_t> const MetaDrawPsm::MzSplit = {L'[', L',', L']', L';'};
 		return privateScore;
 	}
 
-	std::wstring MetaDrawPsm::getProteinAccession() const
+	std::string MetaDrawPsm::getProteinAccession() const
 	{
 		return privateProteinAccession;
 	}
@@ -75,77 +75,77 @@ std::vector<wchar_t> const MetaDrawPsm::MzSplit = {L'[', L',', L']', L';'};
 		return privateDeltaScore;
 	}
 
-	std::wstring MetaDrawPsm::getNotch() const
+	std::string MetaDrawPsm::getNotch() const
 	{
 		return privateNotch;
 	}
 
-	std::wstring MetaDrawPsm::getBaseSeq() const
+	std::string MetaDrawPsm::getBaseSeq() const
 	{
 		return privateBaseSeq;
 	}
 
-	std::wstring MetaDrawPsm::getEssentialSeq() const
+	std::string MetaDrawPsm::getEssentialSeq() const
 	{
 		return privateEssentialSeq;
 	}
 
-	std::wstring MetaDrawPsm::getMissedCleavage() const
+	std::string MetaDrawPsm::getMissedCleavage() const
 	{
 		return privateMissedCleavage;
 	}
 
-	std::wstring MetaDrawPsm::getPeptideMonoMass() const
+	std::string MetaDrawPsm::getPeptideMonoMass() const
 	{
 		return privatePeptideMonoMass;
 	}
 
-	std::wstring MetaDrawPsm::getMassDiffDa() const
+	std::string MetaDrawPsm::getMassDiffDa() const
 	{
 		return privateMassDiffDa;
 	}
 
-	std::wstring MetaDrawPsm::getMassDiffPpm() const
+	std::string MetaDrawPsm::getMassDiffPpm() const
 	{
 		return privateMassDiffPpm;
 	}
 
-	std::wstring MetaDrawPsm::getProteinName() const
+	std::string MetaDrawPsm::getProteinName() const
 	{
 		return privateProteinName;
 	}
 
-	std::wstring MetaDrawPsm::getGeneName() const
+	std::string MetaDrawPsm::getGeneName() const
 	{
 		return privateGeneName;
 	}
 
-	std::wstring MetaDrawPsm::getOrganismName() const
+	std::string MetaDrawPsm::getOrganismName() const
 	{
 		return privateOrganismName;
 	}
 
-	std::wstring MetaDrawPsm::getPeptideDesicription() const
+	std::string MetaDrawPsm::getPeptideDesicription() const
 	{
 		return privatePeptideDesicription;
 	}
 
-	std::wstring MetaDrawPsm::getStartAndEndResiduesInProtein() const
+	std::string MetaDrawPsm::getStartAndEndResiduesInProtein() const
 	{
 		return privateStartAndEndResiduesInProtein;
 	}
 
-	std::wstring MetaDrawPsm::getPreviousAminoAcid() const
+	std::string MetaDrawPsm::getPreviousAminoAcid() const
 	{
 		return privatePreviousAminoAcid;
 	}
 
-	std::wstring MetaDrawPsm::getNextAminoAcid() const
+	std::string MetaDrawPsm::getNextAminoAcid() const
 	{
 		return privateNextAminoAcid;
 	}
 
-	std::wstring MetaDrawPsm::getDecoyContamTarget() const
+	std::string MetaDrawPsm::getDecoyContamTarget() const
 	{
 		return privateDecoyContamTarget;
 	}
@@ -155,12 +155,12 @@ std::vector<wchar_t> const MetaDrawPsm::MzSplit = {L'[', L',', L']', L';'};
 		return privateQValueNotch;
 	}
 
-	std::wstring MetaDrawPsm::getCrossType() const
+	std::string MetaDrawPsm::getCrossType() const
 	{
 		return privateCrossType;
 	}
 
-	std::wstring MetaDrawPsm::getLinkResidues() const
+	std::string MetaDrawPsm::getLinkResidues() const
 	{
 		return privateLinkResidues;
 	}
@@ -175,7 +175,7 @@ std::vector<wchar_t> const MetaDrawPsm::MzSplit = {L'[', L',', L']', L';'};
 		return privateRank;
 	}
 
-	std::wstring MetaDrawPsm::getBetaPeptideProteinAccession() const
+	std::string MetaDrawPsm::getBetaPeptideProteinAccession() const
 	{
 		return privateBetaPeptideProteinAccession;
 	}
@@ -185,17 +185,17 @@ std::vector<wchar_t> const MetaDrawPsm::MzSplit = {L'[', L',', L']', L';'};
 		return privateBetaPeptideProteinLinkSite;
 	}
 
-	std::wstring MetaDrawPsm::getBetaPeptideBaseSequence() const
+	std::string MetaDrawPsm::getBetaPeptideBaseSequence() const
 	{
 		return privateBetaPeptideBaseSequence;
 	}
 
-	std::wstring MetaDrawPsm::getBetaPeptideFullSequence() const
+	std::string MetaDrawPsm::getBetaPeptideFullSequence() const
 	{
 		return privateBetaPeptideFullSequence;
 	}
 
-	std::wstring MetaDrawPsm::getBetaPeptideTheoreticalMass() const
+	std::string MetaDrawPsm::getBetaPeptideTheoreticalMass() const
 	{
 		return privateBetaPeptideTheoreticalMass;
 	}
@@ -220,12 +220,12 @@ std::vector<wchar_t> const MetaDrawPsm::MzSplit = {L'[', L',', L']', L';'};
 		return privateXLTotalScore;
 	}
 
-	std::wstring MetaDrawPsm::getParentIons() const
+	std::string MetaDrawPsm::getParentIons() const
 	{
 		return privateParentIons;
 	}
 
-	MetaDrawPsm::MetaDrawPsm(const std::wstring &line, std::vector<wchar_t> &split, std::unordered_map<std::wstring, int> &parsedHeader)
+	MetaDrawPsm::MetaDrawPsm(const std::string &line, std::vector<char> &split, std::unordered_map<std::string, int> &parsedHeader)
 	{
 		auto spl = line.Split(split);
 
@@ -247,39 +247,39 @@ std::vector<wchar_t> const MetaDrawPsm::MzSplit = {L'[', L',', L']', L';'};
 		//For general psms
 		TotalIonCurrent = (parsedHeader[TsvResultReader::TotalIonCurrentLabel] < 0) ? std::nullopt : static_cast<std::optional<double>>(std::stod(StringHelper::trim(spl[parsedHeader[TsvResultReader::TotalIonCurrentLabel]])));
 		DeltaScore = (parsedHeader[TsvResultReader::DeltaScoreLabel] < 0) ? std::nullopt : static_cast<std::optional<double>>(std::stod(StringHelper::trim(spl[parsedHeader[TsvResultReader::DeltaScoreLabel]])));
-		Notch = (parsedHeader[TsvResultReader::NotchLabel] < 0) ? L"" : StringHelper::trim(spl[parsedHeader[TsvResultReader::NotchLabel]]);
-		EssentialSeq = (parsedHeader[TsvResultReader::EssentialSeqLabel] < 0) ? L"" : StringHelper::trim(spl[parsedHeader[TsvResultReader::EssentialSeqLabel]]);
-		MissedCleavage = (parsedHeader[TsvResultReader::MissedCleavageLabel] < 0) ? L"" : StringHelper::trim(spl[parsedHeader[TsvResultReader::MissedCleavageLabel]]);
-		MassDiffDa = (parsedHeader[TsvResultReader::MassDiffDaLabel] < 0) ? L"" : StringHelper::trim(spl[parsedHeader[TsvResultReader::MassDiffDaLabel]]);
-		MassDiffPpm = (parsedHeader[TsvResultReader::MassDiffPpmLabel] < 0) ? L"" : StringHelper::trim(spl[parsedHeader[TsvResultReader::MassDiffPpmLabel]]);
-		ProteinAccession = (parsedHeader[TsvResultReader::ProteinAccessionLabel] < 0) ? L"" : StringHelper::trim(spl[parsedHeader[TsvResultReader::ProteinAccessionLabel]]);
-		ProteinName = (parsedHeader[TsvResultReader::ProteinNameLabel] < 0) ? L"" : StringHelper::trim(spl[parsedHeader[TsvResultReader::ProteinNameLabel]]);
-		GeneName = (parsedHeader[TsvResultReader::GeneNameLabel] < 0) ? L"" : StringHelper::trim(spl[parsedHeader[TsvResultReader::GeneNameLabel]]);
-		OrganismName = (parsedHeader[TsvResultReader::OrganismNameLabel] < 0) ? L"" : StringHelper::trim(spl[parsedHeader[TsvResultReader::OrganismNameLabel]]);
-		PeptideDesicription = (parsedHeader[TsvResultReader::PeptideDesicriptionLabel] < 0) ? L"" : StringHelper::trim(spl[parsedHeader[TsvResultReader::PeptideDesicriptionLabel]]);
-		StartAndEndResiduesInProtein = (parsedHeader[TsvResultReader::StartAndEndResiduesInProteinLabel] < 0) ? L"" : StringHelper::trim(spl[parsedHeader[TsvResultReader::StartAndEndResiduesInProteinLabel]]);
-		PreviousAminoAcid = (parsedHeader[TsvResultReader::PreviousAminoAcidLabel] < 0) ? L"" : StringHelper::trim(spl[parsedHeader[TsvResultReader::PreviousAminoAcidLabel]]);
-		NextAminoAcid = (parsedHeader[TsvResultReader::NextAminoAcidLabel] < 0) ? L"" : StringHelper::trim(spl[parsedHeader[TsvResultReader::NextAminoAcidLabel]]);
+		Notch = (parsedHeader[TsvResultReader::NotchLabel] < 0) ? "" : StringHelper::trim(spl[parsedHeader[TsvResultReader::NotchLabel]]);
+		EssentialSeq = (parsedHeader[TsvResultReader::EssentialSeqLabel] < 0) ? "" : StringHelper::trim(spl[parsedHeader[TsvResultReader::EssentialSeqLabel]]);
+		MissedCleavage = (parsedHeader[TsvResultReader::MissedCleavageLabel] < 0) ? "" : StringHelper::trim(spl[parsedHeader[TsvResultReader::MissedCleavageLabel]]);
+		MassDiffDa = (parsedHeader[TsvResultReader::MassDiffDaLabel] < 0) ? "" : StringHelper::trim(spl[parsedHeader[TsvResultReader::MassDiffDaLabel]]);
+		MassDiffPpm = (parsedHeader[TsvResultReader::MassDiffPpmLabel] < 0) ? "" : StringHelper::trim(spl[parsedHeader[TsvResultReader::MassDiffPpmLabel]]);
+		ProteinAccession = (parsedHeader[TsvResultReader::ProteinAccessionLabel] < 0) ? "" : StringHelper::trim(spl[parsedHeader[TsvResultReader::ProteinAccessionLabel]]);
+		ProteinName = (parsedHeader[TsvResultReader::ProteinNameLabel] < 0) ? "" : StringHelper::trim(spl[parsedHeader[TsvResultReader::ProteinNameLabel]]);
+		GeneName = (parsedHeader[TsvResultReader::GeneNameLabel] < 0) ? "" : StringHelper::trim(spl[parsedHeader[TsvResultReader::GeneNameLabel]]);
+		OrganismName = (parsedHeader[TsvResultReader::OrganismNameLabel] < 0) ? "" : StringHelper::trim(spl[parsedHeader[TsvResultReader::OrganismNameLabel]]);
+		PeptideDesicription = (parsedHeader[TsvResultReader::PeptideDesicriptionLabel] < 0) ? "" : StringHelper::trim(spl[parsedHeader[TsvResultReader::PeptideDesicriptionLabel]]);
+		StartAndEndResiduesInProtein = (parsedHeader[TsvResultReader::StartAndEndResiduesInProteinLabel] < 0) ? "" : StringHelper::trim(spl[parsedHeader[TsvResultReader::StartAndEndResiduesInProteinLabel]]);
+		PreviousAminoAcid = (parsedHeader[TsvResultReader::PreviousAminoAcidLabel] < 0) ? "" : StringHelper::trim(spl[parsedHeader[TsvResultReader::PreviousAminoAcidLabel]]);
+		NextAminoAcid = (parsedHeader[TsvResultReader::NextAminoAcidLabel] < 0) ? "" : StringHelper::trim(spl[parsedHeader[TsvResultReader::NextAminoAcidLabel]]);
 		QValueNotch = (parsedHeader[TsvResultReader::QValueNotchLabel] < 0) ? std::nullopt : static_cast<std::optional<double>>(std::stod(StringHelper::trim(spl[parsedHeader[TsvResultReader::QValueNotchLabel]])));
 
 		//For crosslinks
-		CrossType = (parsedHeader[TsvResultReader::CrossTypeLabel] < 0) ? L"" : StringHelper::trim(spl[parsedHeader[TsvResultReader::CrossTypeLabel]]);
-		LinkResidues = (parsedHeader[TsvResultReader::LinkResiduesLabel] < 0) ? L"" : StringHelper::trim(spl[parsedHeader[TsvResultReader::LinkResiduesLabel]]);
+		CrossType = (parsedHeader[TsvResultReader::CrossTypeLabel] < 0) ? "" : StringHelper::trim(spl[parsedHeader[TsvResultReader::CrossTypeLabel]]);
+		LinkResidues = (parsedHeader[TsvResultReader::LinkResiduesLabel] < 0) ? "" : StringHelper::trim(spl[parsedHeader[TsvResultReader::LinkResiduesLabel]]);
 		ProteinLinkSite = (parsedHeader[TsvResultReader::ProteinLinkSiteLabel] < 0) ? std::nullopt : static_cast<std::optional<int>>(std::stoi(StringHelper::trim(spl[parsedHeader[TsvResultReader::ProteinLinkSiteLabel]])));
 		Rank = (parsedHeader[TsvResultReader::RankLabel] < 0) ? std::nullopt : static_cast<std::optional<int>>(std::stoi(StringHelper::trim(spl[parsedHeader[TsvResultReader::RankLabel]])));
-		BetaPeptideProteinAccession = (parsedHeader[TsvResultReader::BetaPeptideProteinAccessionLabel] < 0) ? L"" : StringHelper::trim(spl[parsedHeader[TsvResultReader::BetaPeptideProteinAccessionLabel]]);
+		BetaPeptideProteinAccession = (parsedHeader[TsvResultReader::BetaPeptideProteinAccessionLabel] < 0) ? "" : StringHelper::trim(spl[parsedHeader[TsvResultReader::BetaPeptideProteinAccessionLabel]]);
 		BetaPeptideProteinLinkSite = (parsedHeader[TsvResultReader::BetaPeptideProteinLinkSiteLabel] < 0) ? std::nullopt : static_cast<std::optional<int>>(std::stoi(StringHelper::trim(spl[parsedHeader[TsvResultReader::BetaPeptideProteinLinkSiteLabel]])));
-		BetaPeptideBaseSequence = (parsedHeader[TsvResultReader::BetaPeptideBaseSequenceLabel] < 0) ? L"" : StringHelper::trim(spl[parsedHeader[TsvResultReader::BetaPeptideBaseSequenceLabel]]);
-		BetaPeptideFullSequence = (parsedHeader[TsvResultReader::BetaPeptideFullSequenceLabel] < 0) ? L"" : StringHelper::trim(spl[parsedHeader[TsvResultReader::BetaPeptideFullSequenceLabel]]);
-		BetaPeptideTheoreticalMass = (parsedHeader[TsvResultReader::BetaPeptideTheoreticalMassLabel] < 0) ? L"" : StringHelper::trim(spl[parsedHeader[TsvResultReader::BetaPeptideTheoreticalMassLabel]]);
+		BetaPeptideBaseSequence = (parsedHeader[TsvResultReader::BetaPeptideBaseSequenceLabel] < 0) ? "" : StringHelper::trim(spl[parsedHeader[TsvResultReader::BetaPeptideBaseSequenceLabel]]);
+		BetaPeptideFullSequence = (parsedHeader[TsvResultReader::BetaPeptideFullSequenceLabel] < 0) ? "" : StringHelper::trim(spl[parsedHeader[TsvResultReader::BetaPeptideFullSequenceLabel]]);
+		BetaPeptideTheoreticalMass = (parsedHeader[TsvResultReader::BetaPeptideTheoreticalMassLabel] < 0) ? "" : StringHelper::trim(spl[parsedHeader[TsvResultReader::BetaPeptideTheoreticalMassLabel]]);
 		BetaPeptideScore = (parsedHeader[TsvResultReader::BetaPeptideScoreLabel] < 0) ? std::nullopt : static_cast<std::optional<double>>(std::stod(StringHelper::trim(spl[parsedHeader[TsvResultReader::BetaPeptideScoreLabel]])));
 		BetaPeptideRank = (parsedHeader[TsvResultReader::BetaPeptideRankLabel] < 0) ? std::nullopt : static_cast<std::optional<int>>(std::stoi(StringHelper::trim(spl[parsedHeader[TsvResultReader::BetaPeptideRankLabel]])));
 		BetaPeptideMatchedIons = (parsedHeader[TsvResultReader::BetaPeptideMatchedIonsLabel] < 0) ? nullptr : ReadFragmentIonsFromString(StringHelper::trim(spl[parsedHeader[TsvResultReader::BetaPeptideMatchedIonsLabel]]), getBetaPeptideBaseSequence());
 		XLTotalScore = (parsedHeader[TsvResultReader::XLTotalScoreLabel] < 0) ? std::nullopt : static_cast<std::optional<double>>(std::stod(StringHelper::trim(spl[parsedHeader[TsvResultReader::XLTotalScoreLabel]])));
-		ParentIons = (parsedHeader[TsvResultReader::ParentIonsLabel] < 0) ? L"" : StringHelper::trim(spl[parsedHeader[TsvResultReader::ParentIonsLabel]]);
+		ParentIons = (parsedHeader[TsvResultReader::ParentIonsLabel] < 0) ? "" : StringHelper::trim(spl[parsedHeader[TsvResultReader::ParentIonsLabel]]);
 	}
 
-	std::vector<MatchedFragmentIon*> MetaDrawPsm::ReadFragmentIonsFromString(const std::wstring &matchedMzString, const std::wstring &peptideBaseSequence)
+	std::vector<MatchedFragmentIon*> MetaDrawPsm::ReadFragmentIonsFromString(const std::string &matchedMzString, const std::string &peptideBaseSequence)
 	{
 		auto peaks = matchedMzString.Split(MzSplit, StringSplitOptions::RemoveEmptyEntries).Select([&] (std::any v)
 		{
@@ -287,16 +287,16 @@ std::vector<wchar_t> const MetaDrawPsm::MzSplit = {L'[', L',', L']', L';'};
 		}).ToList();
 		peaks.RemoveAll([&] (std::any p)
 		{
-			p->Contains(L"\"");
+			p->Contains("\"");
 		});
 
 		std::vector<MatchedFragmentIon*> matchedIons;
 
 		for (auto peak : peaks)
 		{
-			auto split = peak.Split(std::vector<wchar_t> {L'+', L':'});
+			auto split = peak.Split(std::vector<char> {'+', ':'});
 
-			std::wstring ionTypeAndNumber = split[0];
+			std::string ionTypeAndNumber = split[0];
 			Match *result = IonParser->Match(ionTypeAndNumber);
 
 			ProductType *productType = std::any_cast<ProductType*>(Enum::Parse(ProductType::typeid, result->Groups[1]->Value));
@@ -307,11 +307,11 @@ std::vector<wchar_t> const MetaDrawPsm::MzSplit = {L'[', L',', L']', L';'};
 			double neutralLoss = 0;
 
 			// check for neutral loss
-			if (ionTypeAndNumber.find(L"-") != std::wstring::npos)
+			if (ionTypeAndNumber.find("-") != std::string::npos)
 			{
-				std::wstring temp = StringHelper::replace(ionTypeAndNumber, L"(", L"");
-				temp = StringHelper::replace(temp, L")", L"");
-				auto split2 = StringHelper::split(temp, L'-');
+				std::string temp = StringHelper::replace(ionTypeAndNumber, "(", "");
+				temp = StringHelper::replace(temp, ")", "");
+				auto split2 = StringHelper::split(temp, '-');
 				neutralLoss = std::stod(split2[1]);
 			}
 

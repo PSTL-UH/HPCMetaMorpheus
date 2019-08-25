@@ -1,4 +1,4 @@
-﻿#include "NonSpecificEnzymeSearchEngine.h"
+﻿#Include "NonSpecificEnzymeSearchEngine.h"
 #include "../PeptideSpectralMatch.h"
 #include "../CommonParameters.h"
 #include "../Ms2ScanWithSpecificMass.h"
@@ -17,9 +17,9 @@ namespace EngineLayer
 	namespace NonSpecificEnzymeSearch
 	{
 
-const double NonSpecificEnzymeSearchEngine::WaterMonoisotopicMass = PeriodicTable::GetElement(L"H").PrincipalIsotope::AtomicMass * 2 + PeriodicTable::GetElement(L"O").PrincipalIsotope::AtomicMass;
+const double NonSpecificEnzymeSearchEngine::WaterMonoisotopicMass = PeriodicTable::GetElement("H").PrincipalIsotope::AtomicMass * 2 + PeriodicTable::GetElement("O").PrincipalIsotope::AtomicMass;
 
-		NonSpecificEnzymeSearchEngine::NonSpecificEnzymeSearchEngine(std::vector<std::vector<PeptideSpectralMatch*>> &globalPsms, std::vector<Ms2ScanWithSpecificMass*> &listOfSortedms2Scans, std::vector<PeptideWithSetModifications*> &peptideIndex, std::vector<std::vector<int>&> &fragmentIndex, std::vector<std::vector<int>&> &precursorIndex, int currentPartition, CommonParameters *CommonParameters, MassDiffAcceptor *massDiffAcceptor, double maximumMassThatFragmentIonScoreIsDoubled, std::vector<std::wstring> &nestedIds) : ModernSearchEngine(nullptr, listOfSortedms2Scans, peptideIndex, fragmentIndex, currentPartition, CommonParameters, massDiffAcceptor, maximumMassThatFragmentIonScoreIsDoubled, nestedIds), PrecursorIndex(precursorIndex), MinimumPeptideLength(commonParameters->getDigestionParams()->MinPeptideLength)
+		NonSpecificEnzymeSearchEngine::NonSpecificEnzymeSearchEngine(std::vector<std::vector<PeptideSpectralMatch*>> &globalPsms, std::vector<Ms2ScanWithSpecificMass*> &listOfSortedms2Scans, std::vector<PeptideWithSetModifications*> &peptideIndex, std::vector<std::vector<int>&> &fragmentIndex, std::vector<std::vector<int>&> &precursorIndex, int currentPartition, CommonParameters *CommonParameters, MassDiffAcceptor *massDiffAcceptor, double maximumMassThatFragmentIonScoreIsDoubled, std::vector<std::string> &nestedIds) : ModernSearchEngine(nullptr, listOfSortedms2Scans, peptideIndex, fragmentIndex, currentPartition, CommonParameters, massDiffAcceptor, maximumMassThatFragmentIonScoreIsDoubled, nestedIds), PrecursorIndex(precursorIndex), MinimumPeptideLength(commonParameters->getDigestionParams()->MinPeptideLength)
 		{
 			GlobalCategorySpecificPsms = globalPsms;
 			ModifiedParametersNoComp = commonParameters->CloneWithNewTerminus(, std::make_optional(false));
@@ -30,7 +30,7 @@ const double NonSpecificEnzymeSearchEngine::WaterMonoisotopicMass = PeriodicTabl
 		{
 			double progress = 0;
 			int oldPercentProgress = 0;
-			ProgressEventArgs tempVar(oldPercentProgress, L"Performing nonspecific search... " + std::to_wstring(CurrentPartition) + L"/" + std::to_wstring(commonParameters->getTotalPartitions()), nestedIds);
+			ProgressEventArgs tempVar(oldPercentProgress, "Performing nonspecific search... " + std::to_string(CurrentPartition) + "/" + std::to_string(commonParameters->getTotalPartitions()), nestedIds);
 			ReportProgress(&tempVar);
 
 			unsigned char byteScoreCutoff = static_cast<unsigned char>(commonParameters->getScoreCutoff());
@@ -147,7 +147,7 @@ const double NonSpecificEnzymeSearchEngine::WaterMonoisotopicMass = PeriodicTabl
 					if (percentProgress > oldPercentProgress)
 					{
 						oldPercentProgress = percentProgress;
-						ProgressEventArgs tempVar3(percentProgress, L"Performing nonspecific search... " + std::to_wstring(CurrentPartition) + L"/" + std::to_wstring(commonParameters->getTotalPartitions()), nestedIds);
+						ProgressEventArgs tempVar3(percentProgress, "Performing nonspecific search... " + std::to_string(CurrentPartition) + "/" + std::to_string(commonParameters->getTotalPartitions()), nestedIds);
 						ReportProgress(&tempVar3);
 					}
 				}
@@ -179,7 +179,7 @@ const double NonSpecificEnzymeSearchEngine::WaterMonoisotopicMass = PeriodicTabl
 								updatedMods.emplace(mod.first, mod.second);
 							}
 						}
-						updatedPwsm = new PeptideWithSetModifications(peptide->Protein, peptide->DigestionParams, peptide->OneBasedStartResidueInProtein, endResidue, CleavageSpecificity::Unknown, L"", 0, updatedMods, 0);
+						updatedPwsm = new PeptideWithSetModifications(peptide->Protein, peptide->DigestionParams, peptide->OneBasedStartResidueInProtein, endResidue, CleavageSpecificity::Unknown, "", 0, updatedMods, 0);
 					}
 					else
 					{
@@ -194,7 +194,7 @@ const double NonSpecificEnzymeSearchEngine::WaterMonoisotopicMass = PeriodicTabl
 								updatedMods.emplace(key, mod.second);
 							}
 						}
-						updatedPwsm = new PeptideWithSetModifications(peptide->Protein, peptide->DigestionParams, startResidue, peptide->OneBasedEndResidueInProtein, CleavageSpecificity::Unknown, L"", 0, updatedMods, 0);
+						updatedPwsm = new PeptideWithSetModifications(peptide->Protein, peptide->DigestionParams, startResidue, peptide->OneBasedEndResidueInProtein, CleavageSpecificity::Unknown, "", 0, updatedMods, 0);
 					}
 
 					delete updatedPwsm;
@@ -213,7 +213,7 @@ const double NonSpecificEnzymeSearchEngine::WaterMonoisotopicMass = PeriodicTabl
 				if (notch >= 0)
 				{
 					//need to update so that the cleavage specificity is recorded
-					PeptideWithSetModifications *updatedPwsm = new PeptideWithSetModifications(peptide->Protein, peptide->DigestionParams, peptide->OneBasedStartResidueInProtein, peptide->OneBasedEndResidueInProtein, CleavageSpecificity::Unknown, L"", 0, peptide->AllModsOneIsNterminus, peptide->NumFixedMods);
+					PeptideWithSetModifications *updatedPwsm = new PeptideWithSetModifications(peptide->Protein, peptide->DigestionParams, peptide->OneBasedStartResidueInProtein, peptide->OneBasedEndResidueInProtein, CleavageSpecificity::Unknown, "", 0, peptide->AllModsOneIsNterminus, peptide->NumFixedMods);
 
 					delete updatedPwsm;
 					return std::tuple<int, PeptideWithSetModifications*>(notch, updatedPwsm);
@@ -222,7 +222,7 @@ const double NonSpecificEnzymeSearchEngine::WaterMonoisotopicMass = PeriodicTabl
 			return std::tuple<int, PeptideWithSetModifications*>(-1, nullptr);
 		}
 
-		std::vector<PeptideSpectralMatch*> NonSpecificEnzymeSearchEngine::ResolveFdrCategorySpecificPsms(std::vector<std::vector<PeptideSpectralMatch*>&> &AllPsms, int numNotches, const std::wstring &taskId, CommonParameters *commonParameters)
+		std::vector<PeptideSpectralMatch*> NonSpecificEnzymeSearchEngine::ResolveFdrCategorySpecificPsms(std::vector<std::vector<PeptideSpectralMatch*>&> &AllPsms, int numNotches, const std::string &taskId, CommonParameters *commonParameters)
 		{
 			//update all psms with peptide info
 			AllPsms.ToList()->Where([&] (std::any psmArray)
@@ -260,7 +260,7 @@ const double NonSpecificEnzymeSearchEngine::WaterMonoisotopicMass = PeriodicTabl
 						b::First();
 					}).ToList();
 
-					FdrAnalysisEngine tempVar(cleanedPsmsArray, numNotches, commonParameters, new std::vector<std::wstring> {taskId});
+					FdrAnalysisEngine tempVar(cleanedPsmsArray, numNotches, commonParameters, new std::vector<std::string> {taskId});
 					(&tempVar)->Run();
 
 					for (int i = 0; i < psmsArray.size(); i++)
@@ -414,7 +414,7 @@ const double NonSpecificEnzymeSearchEngine::WaterMonoisotopicMass = PeriodicTabl
 						b::PeptideMonisotopicMass.HasValue ? std::abs(b::ScanPrecursorMass - b::PeptideMonisotopicMass->Value) : std::numeric_limits<double>::max();
 					}).ToList();
 
-					FdrAnalysisEngine tempVar2(cleanedPsmsArray, numNotches, commonParameters, new std::vector<std::wstring> {taskId});
+					FdrAnalysisEngine tempVar2(cleanedPsmsArray, numNotches, commonParameters, new std::vector<std::string> {taskId});
 					(&tempVar2)->Run();
 				}
 			}

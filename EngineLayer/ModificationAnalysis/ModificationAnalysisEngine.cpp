@@ -10,13 +10,13 @@ namespace EngineLayer
 	namespace ModificationAnalysis
 	{
 
-		ModificationAnalysisEngine::ModificationAnalysisEngine(std::vector<PeptideSpectralMatch*> &newPsms, CommonParameters *commonParameters, std::vector<std::wstring> &nestedIds) : MetaMorpheusEngine(commonParameters, nestedIds), NewPsms(newPsms)
+		ModificationAnalysisEngine::ModificationAnalysisEngine(std::vector<PeptideSpectralMatch*> &newPsms, CommonParameters *commonParameters, std::vector<std::string> &nestedIds) : MetaMorpheusEngine(commonParameters, nestedIds), NewPsms(newPsms)
 		{
 		}
 
 		MetaMorpheusEngineResults *ModificationAnalysisEngine::RunSpecific()
 		{
-			Status(L"Running modification analysis...");
+			Status("Running modification analysis...");
 
 			ModificationAnalysisResults *myAnalysisResults = new ModificationAnalysisResults(this);
 
@@ -44,7 +44,7 @@ namespace EngineLayer
 			std::vector<PeptideSpectralMatch*> toby;
 			for (auto psm : confidentTargetPsms)
 			{
-				if (psm->getFullSequence() != L"" && psm->getProteinAccession() != L"" && psm->getOneBasedEndResidueInProtein() != nullptr && psm->getOneBasedStartResidueInProtein() != nullptr)
+				if (psm->getFullSequence() != "" && psm->getProteinAccession() != "" && psm->getOneBasedEndResidueInProtein() != nullptr && psm->getOneBasedStartResidueInProtein() != nullptr)
 				{
 					toby.push_back(psm);
 				}
@@ -70,7 +70,7 @@ namespace EngineLayer
 				return b::BaseSequence != nullptr && b->FullSequence == nullptr && b::ModsIdentified != nullptr;
 			}).GroupBy([&] (std::any b)
 			{
-				(b::BaseSequence, std::wstring::Join(L" ", b::ModsIdentified->Values->OrderBy([&] (std::any c)
+				(b::BaseSequence, std::string::Join(" ", b::ModsIdentified->Values->OrderBy([&] (std::any c)
 				{
 			delete myAnalysisResults;
 					return c;
@@ -88,7 +88,7 @@ namespace EngineLayer
 			});
 
 			// We do not want to double-count modifications. Hence the HashSet!!!
-			std::unordered_set<(std::wstring, std::wstring, int)*> modsOnProteins;
+			std::unordered_set<(std::string, std::string, int)*> modsOnProteins;
 			for (auto psm : forObserved)
 			{
 				auto singlePeptide = psm->BestMatchingPeptides.First().Peptide;
@@ -107,7 +107,7 @@ namespace EngineLayer
 			}
 
 			// We do not want to double-count modifications. Hence the HashSet!!!
-			std::unordered_set<(std::wstring, std::wstring, int)*> modsSeenAndLocalized;
+			std::unordered_set<(std::string, std::string, int)*> modsSeenAndLocalized;
 			for (auto psm : forUnambiguouslyLocalized)
 			{
 				auto singlePeptide = psm->BestMatchingPeptides.First().Peptide;
@@ -131,7 +131,7 @@ namespace EngineLayer
 			}
 
 			// Might have some double counting...
-			std::unordered_map<std::wstring, int> ambiguousButLocalizedModsSeen;
+			std::unordered_map<std::string, int> ambiguousButLocalizedModsSeen;
 			for (auto representativePsm : forAmbiguousButLocalized->Select([&] (std::any b)
 			{
 				b::First();
@@ -151,7 +151,7 @@ namespace EngineLayer
 			}
 
 			// Might have some double counting...
-			std::unordered_map<std::wstring, int> unlocalizedMods;
+			std::unordered_map<std::string, int> unlocalizedMods;
 			for (auto representativePsm : forUnlocalized->Select([&] (std::any b)
 			{
 				b::First();

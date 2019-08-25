@@ -12,18 +12,18 @@ namespace EngineLayer
 		class ParsimonySequence
 		{
 		private:
-			std::wstring privateSequence;
+			std::string privateSequence;
 			Protease *privateProtease;
 
 		public:
 			ParsimonySequence(PeptideWithSetModifications *pwsm, bool TreatModPeptidesAsDifferentPeptides);
 
-				std::wstring getSequence() const;
-				Protease *getProtease() const;
+                        std::string getSequence() const;
+                        Protease *getProtease() const;
 
-			bool Equals(std::any obj) override;
+			bool Equals(std::any obj);
 
-			int GetHashCode() override;
+			int GetHashCode();
 		};
 	}
 }

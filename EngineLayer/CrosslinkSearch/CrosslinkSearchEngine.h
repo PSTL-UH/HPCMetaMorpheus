@@ -46,7 +46,7 @@ namespace EngineLayer
 			Modification *H2ODeadEnd;
 			Modification *NH2DeadEnd;
 			Modification *Loop;
-			std::vector<wchar_t> AllCrosslinkerSites;
+			std::vector<char> AllCrosslinkerSites;
 
 		public:
 			virtual ~CrosslinkSearchEngine()

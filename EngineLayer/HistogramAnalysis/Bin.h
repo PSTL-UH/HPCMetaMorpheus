@@ -23,23 +23,23 @@ namespace EngineLayer
 			int privatePepClocCount = 0;
 			int privateProtNlocCount = 0;
 			int privateProtClocCount = 0;
-			std::wstring privateCombos = L"-";
-			std::wstring privateUnimodDiffs = L"-";
-			std::wstring privateUniprotID = L"-";
-			std::wstring privateUnimodFormulas = L"-";
-			std::wstring privateUnimodId = L"-";
+			std::string privateCombos = "-";
+			std::string privateUnimodDiffs = "-";
+			std::string privateUniprotID = "-";
+			std::string privateUnimodFormulas = "-";
+			std::string privateUnimodId = "-";
 			double privateMassShift = 0;
-			std::wstring privateMine;
-			std::unordered_map<wchar_t, int> privateAAsInCommon;
+			std::string privateMine;
+			std::unordered_map<char, int> privateAAsInCommon;
 			int privateOverlapping = 0;
 			double privateFracWithSingle = 0;
 			double privateMedianLength = 0;
 
 		public:
-			std::wstring AA = L"-";
-			std::unordered_map<wchar_t, int> ResidueCount;
-			std::unordered_map<std::wstring, std::tuple<std::wstring, std::wstring, PeptideSpectralMatch*>> UniquePSMs;
-			std::unordered_map<std::wstring, int> ModsInCommon;
+			std::string AA = "-";
+			std::unordered_map<char, int> ResidueCount;
+			std::unordered_map<std::string, std::tuple<std::string, std::string, PeptideSpectralMatch*>> UniquePSMs;
+			std::unordered_map<std::string, int> ModsInCommon;
 
 			Bin(double massShift);
 
@@ -51,16 +51,16 @@ namespace EngineLayer
 				void setProtNlocCount(int value);
 				int getProtClocCount() const;
 				void setProtClocCount(int value);
-				std::wstring getCombos() const;
-				void setCombos(const std::wstring &value);
-				std::wstring getUnimodDiffs() const;
-				void setUnimodDiffs(const std::wstring &value);
-				std::wstring getUniprotID() const;
-				void setUniprotID(const std::wstring &value);
-				std::wstring getUnimodFormulas() const;
-				void setUnimodFormulas(const std::wstring &value);
-				std::wstring getUnimodId() const;
-				void setUnimodId(const std::wstring &value);
+				std::string getCombos() const;
+				void setCombos(const std::string &value);
+				std::string getUnimodDiffs() const;
+				void setUnimodDiffs(const std::string &value);
+				std::string getUniprotID() const;
+				void setUniprotID(const std::string &value);
+				std::string getUnimodFormulas() const;
+				void setUnimodFormulas(const std::string &value);
+				std::string getUnimodId() const;
+				void setUnimodId(const std::string &value);
 				double getMassShift() const;
 
 			int getCount() const;
@@ -71,10 +71,10 @@ namespace EngineLayer
 
 			int getLocalizeableTarget() const;
 
-				std::wstring getMine() const;
-				void setMine(const std::wstring &value);
-				std::unordered_map<wchar_t, int> getAAsInCommon() const;
-				void setAAsInCommon(const std::unordered_map<wchar_t, int> &value);
+				std::string getMine() const;
+				void setMine(const std::string &value);
+				std::unordered_map<char, int> getAAsInCommon() const;
+				void setAAsInCommon(const std::unordered_map<char, int> &value);
 				int getOverlapping() const;
 				void setOverlapping(int value);
 				double getFracWithSingle() const;

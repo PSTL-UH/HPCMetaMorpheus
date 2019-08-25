@@ -12,7 +12,7 @@ namespace EngineLayer
 		Bin::Bin(double massShift)
 		{
 			this->MassShift = massShift;
-			UniquePSMs = std::unordered_map<std::wstring, std::tuple<std::wstring, std::wstring, PeptideSpectralMatch*>>();
+			UniquePSMs = std::unordered_map<std::string, std::tuple<std::string, std::string, PeptideSpectralMatch*>>();
 		}
 
 		int Bin::getPepNlocCount() const
@@ -55,52 +55,52 @@ namespace EngineLayer
 			privateProtClocCount = value;
 		}
 
-		std::wstring Bin::getCombos() const
+		std::string Bin::getCombos() const
 		{
 			return privateCombos;
 		}
 
-		void Bin::setCombos(const std::wstring &value)
+		void Bin::setCombos(const std::string &value)
 		{
 			privateCombos = value;
 		}
 
-		std::wstring Bin::getUnimodDiffs() const
+		std::string Bin::getUnimodDiffs() const
 		{
 			return privateUnimodDiffs;
 		}
 
-		void Bin::setUnimodDiffs(const std::wstring &value)
+		void Bin::setUnimodDiffs(const std::string &value)
 		{
 			privateUnimodDiffs = value;
 		}
 
-		std::wstring Bin::getUniprotID() const
+		std::string Bin::getUniprotID() const
 		{
 			return privateUniprotID;
 		}
 
-		void Bin::setUniprotID(const std::wstring &value)
+		void Bin::setUniprotID(const std::string &value)
 		{
 			privateUniprotID = value;
 		}
 
-		std::wstring Bin::getUnimodFormulas() const
+		std::string Bin::getUnimodFormulas() const
 		{
 			return privateUnimodFormulas;
 		}
 
-		void Bin::setUnimodFormulas(const std::wstring &value)
+		void Bin::setUnimodFormulas(const std::string &value)
 		{
 			privateUnimodFormulas = value;
 		}
 
-		std::wstring Bin::getUnimodId() const
+		std::string Bin::getUnimodId() const
 		{
 			return privateUnimodId;
 		}
 
-		void Bin::setUnimodId(const std::wstring &value)
+		void Bin::setUnimodId(const std::string &value)
 		{
 			privateUnimodId = value;
 		}
@@ -139,22 +139,22 @@ namespace EngineLayer
 			});
 		}
 
-		std::wstring Bin::getMine() const
+		std::string Bin::getMine() const
 		{
 			return privateMine;
 		}
 
-		void Bin::setMine(const std::wstring &value)
+		void Bin::setMine(const std::string &value)
 		{
 			privateMine = value;
 		}
 
-		std::unordered_map<wchar_t, int> Bin::getAAsInCommon() const
+		std::unordered_map<char, int> Bin::getAAsInCommon() const
 		{
 			return privateAAsInCommon;
 		}
 
-		void Bin::setAAsInCommon(const std::unordered_map<wchar_t, int> &value)
+		void Bin::setAAsInCommon(const std::unordered_map<char, int> &value)
 		{
 			privateAAsInCommon = value;
 		}
@@ -191,7 +191,7 @@ namespace EngineLayer
 
 		void Bin::IdentifyResidues()
 		{
-			ResidueCount = std::unordered_map<wchar_t, int>();
+			ResidueCount = std::unordered_map<char, int>();
 			for (auto hehe : UniquePSMs.Values->Where([&] (std::any b)
 			{
 				return b::Item3->LocalizedScores != nullptr;
@@ -236,16 +236,16 @@ namespace EngineLayer
 
 		void Bin::IdentifyCombos(double v, std::unordered_set<std::tuple<double, double, double>> &ok)
 		{
-			auto okk = std::unordered_set<std::wstring>();
+			auto okk = std::unordered_set<std::string>();
 			for (auto hm : ok)
 			{
 				if (std::abs(hm->Item1 + hm->Item2 - getMassShift()) <= v && getCountTarget() < hm->Item3)
 				{
 //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
-					okk.insert(L"Combo " + std::min(hm->Item1, hm->Item2).ToString(L"F3", CultureInfo::InvariantCulture) + L" and " + std::max(hm->Item1, hm->Item2).ToString(L"F3", CultureInfo::InvariantCulture));
+					okk.insert("Combo " + std::min(hm->Item1, hm->Item2).ToString("F3", CultureInfo::InvariantCulture) + " and " + std::max(hm->Item1, hm->Item2).ToString("F3", CultureInfo::InvariantCulture));
 				}
 			}
-			setCombos(std::wstring::Join(L"|", okk));
+			setCombos(std::string::Join("|", okk));
 		}
 
 		double Bin::ComputeZ(double v)
@@ -255,7 +255,7 @@ namespace EngineLayer
 
 		void Bin::IdentifyUniprotBins(double v)
 		{
-			auto modIdOptions = std::unordered_set<std::wstring>();
+			auto modIdOptions = std::unordered_set<std::string>();
 			for (auto mod : GlobalVariables::getUniprotDeseralized())
 			{
 				if (mod->MonoisotopicMass.HasValue && std::abs(mod->MonoisotopicMass->Value - getMassShift()) <= v)
@@ -263,49 +263,49 @@ namespace EngineLayer
 					modIdOptions.insert(mod->IdWithMotif);
 				}
 			}
-			setUniprotID(std::wstring::Join(L"|", modIdOptions));
+			setUniprotID(std::string::Join("|", modIdOptions));
 		}
 
 		void Bin::IdentifyAA(double v)
 		{
-			auto ok = std::unordered_set<std::wstring>();
-			for (wchar_t c = L'A'; c <= L'Z'; c++)
+			auto ok = std::unordered_set<std::string>();
+			for (char c = 'A'; c <= 'Z'; c++)
 			{
 				Residue residue;
 				if (Residue::TryGetResidue(c, residue))
 				{
 					if (std::abs(residue::MonoisotopicMass - getMassShift()) <= v)
 					{
-						ok.insert(L"Add " + residue->Name);
+						ok.insert("Add " + residue->Name);
 					}
 					if (std::abs(residue::MonoisotopicMass + getMassShift()) <= v)
 					{
-						ok.insert(L"Remove " + residue->Name);
+						ok.insert("Remove " + residue->Name);
 					}
-					for (wchar_t cc = L'A'; cc <= L'Z'; cc++)
+					for (char cc = 'A'; cc <= 'Z'; cc++)
 					{
 						Residue residueCC;
 						if (Residue::TryGetResidue(cc, residueCC))
 						{
 							if (std::abs(residueCC::MonoisotopicMass + residue::MonoisotopicMass - getMassShift()) <= v)
 							{
-								ok.insert(L"Add (" + residue->Name + L"+" + residueCC->Name + L")");
+								ok.insert("Add (" + residue->Name + "+" + residueCC->Name + ")");
 							}
 							if (std::abs(residueCC::MonoisotopicMass + residue::MonoisotopicMass + getMassShift()) <= v)
 							{
-								ok.insert(L"Remove (" + residue->Name + L"+" + residueCC->Name + L")");
+								ok.insert("Remove (" + residue->Name + "+" + residueCC->Name + ")");
 							}
 						}
 					}
 				}
 			}
-			AA = std::wstring::Join(L"|", ok);
+			AA = std::string::Join("|", ok);
 		}
 
 		void Bin::IdentifyUnimodBins(double v)
 		{
-			auto ok = std::unordered_set<std::wstring>();
-			auto okformula = std::unordered_set<std::wstring>();
+			auto ok = std::unordered_set<std::string>();
+			auto okformula = std::unordered_set<std::string>();
 			auto okDiff = std::unordered_set<double>();
 			for (auto hm : GlobalVariables::getUnimodDeserialized())
 			{
@@ -317,26 +317,26 @@ namespace EngineLayer
 					okDiff.insert(theMod->MonoisotopicMass->Value - getMassShift());
 				}
 			}
-			setUnimodId(std::wstring::Join(L"|", ok));
-			setUnimodFormulas(std::wstring::Join(L"|", okformula));
-			setUnimodDiffs(std::wstring::Join(L"|", okDiff));
+			setUnimodId(std::string::Join("|", ok));
+			setUnimodFormulas(std::string::Join("|", okformula));
+			setUnimodDiffs(std::string::Join("|", okDiff));
 		}
 
 		void Bin::Add(PeptideSpectralMatch *ok)
 		{
-			if (ok->getFullSequence() != L"")
+			if (ok->getFullSequence() != "")
 			{
 				if (UniquePSMs.find(ok->getFullSequence()) != UniquePSMs.end())
 				{
 					auto current = UniquePSMs[ok->getFullSequence()];
 					if (current.Item3->Score < ok->getScore())
 					{
-						UniquePSMs[ok->getFullSequence()] = std::tuple<std::wstring, std::wstring, PeptideSpectralMatch*>(ok->getBaseSequence(), ok->getFullSequence(), ok);
+						UniquePSMs[ok->getFullSequence()] = std::tuple<std::string, std::string, PeptideSpectralMatch*>(ok->getBaseSequence(), ok->getFullSequence(), ok);
 					}
 				}
 				else
 				{
-					UniquePSMs.emplace(ok->getFullSequence(), std::tuple<std::wstring, std::wstring, PeptideSpectralMatch*>(ok->getBaseSequence(), ok->getFullSequence(), ok));
+					UniquePSMs.emplace(ok->getFullSequence(), std::tuple<std::string, std::string, PeptideSpectralMatch*>(ok->getBaseSequence(), ok->getFullSequence(), ok));
 				}
 			}
 		}

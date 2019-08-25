@@ -19,6 +19,6 @@ namespace EngineLayer
 
 		ProteinScoringAndFdrResults(ProteinScoringAndFdrEngine *proteinAnalysisEngine);
 
-		std::wstring ToString() override;
+		std::string ToString();
 	};
 }

@@ -29,13 +29,13 @@ namespace EngineLayer
 		yield return new AllowedIntervalWithNotch(&tempVar, 0);
 	}
 
-	std::wstring OpenLowTheoSearchMode::ToProseString()
+	std::string OpenLowTheoSearchMode::ToProseString()
 	{
-		return (L"unboundedHigh");
+		return ("unboundedHigh");
 	}
 
-	std::wstring OpenLowTheoSearchMode::ToString()
+	std::string OpenLowTheoSearchMode::ToString()
 	{
-		return getFileNameAddition() + L" OpenHighSearch";
+		return getFileNameAddition() + " OpenHighSearch";
 	}
 }

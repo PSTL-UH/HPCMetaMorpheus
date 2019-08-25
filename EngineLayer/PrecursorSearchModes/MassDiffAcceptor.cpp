@@ -5,7 +5,7 @@
 namespace EngineLayer
 {
 
-	MassDiffAcceptor::MassDiffAcceptor(const std::wstring &fileNameAddition)
+	MassDiffAcceptor::MassDiffAcceptor(const std::string &fileNameAddition)
 	{
 		FileNameAddition = fileNameAddition;
 		setNumNotches(1);
@@ -21,7 +21,7 @@ namespace EngineLayer
 		privateNumNotches = value;
 	}
 
-	std::wstring MassDiffAcceptor::getFileNameAddition() const
+	std::string MassDiffAcceptor::getFileNameAddition() const
 	{
 		return privateFileNameAddition;
 	}

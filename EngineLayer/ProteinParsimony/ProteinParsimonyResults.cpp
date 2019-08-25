@@ -20,10 +20,9 @@ namespace EngineLayer
 		privateProteinGroups = value;
 	}
 
-	std::wstring ProteinParsimonyResults::ToString()
+	std::string ProteinParsimonyResults::ToString()
 	{
 		auto sb = new StringBuilder();
-//C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
 		sb->appendLine(MetaMorpheusEngineResults::ToString());
 
 		delete sb;

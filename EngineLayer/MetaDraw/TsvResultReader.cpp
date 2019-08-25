@@ -6,55 +6,55 @@
 namespace EngineLayer
 {
 
-const std::wstring TsvResultReader::FullSequenceLabel = L"Full Sequence";
-const std::wstring TsvResultReader::Ms2ScanNumberLabel = L"Scan Number";
-const std::wstring TsvResultReader::FilenameLabel = L"File Name";
-const std::wstring TsvResultReader::TotalIonCurrentLabel = L"Total Ion Current";
-const std::wstring TsvResultReader::PrecursorScanNumLabel = L"Precursor Scan Number";
-const std::wstring TsvResultReader::PrecursorChargeLabel = L"Precursor Charge";
-const std::wstring TsvResultReader::PrecursorMzLabel = L"Precursor MZ";
-const std::wstring TsvResultReader::PrecursorMassLabel = L"Precursor Mass";
-const std::wstring TsvResultReader::ScoreLabel = L"Score";
-const std::wstring TsvResultReader::DeltaScoreLabel = L"Delta Score";
-const std::wstring TsvResultReader::NotchLabel = L"Notch";
-const std::wstring TsvResultReader::BaseSeqLabel = L"Base Sequence";
-const std::wstring TsvResultReader::EssentialSeqLabel = L"Essential Sequence";
-const std::wstring TsvResultReader::MissedCleavageLabel = L"Missed Cleavages";
-const std::wstring TsvResultReader::PeptideMonoMassLabel = L"Peptide Monoisotopic Mass";
-const std::wstring TsvResultReader::MassDiffDaLabel = L"Mass Diff (Da)";
-const std::wstring TsvResultReader::MassDiffPpmLabel = L"Mass Diff (ppm)";
-const std::wstring TsvResultReader::ProteinAccessionLabel = L"Protein Accession";
-const std::wstring TsvResultReader::ProteinNameLabel = L"Protein Name";
-const std::wstring TsvResultReader::GeneNameLabel = L"Gene Name";
-const std::wstring TsvResultReader::OrganismNameLabel = L"Organism Name";
-const std::wstring TsvResultReader::PeptideDesicriptionLabel = L"Peptide Description";
-const std::wstring TsvResultReader::StartAndEndResiduesInProteinLabel = L"Start and End Residues In Protein";
-const std::wstring TsvResultReader::PreviousAminoAcidLabel = L"Previous Amino Acid";
-const std::wstring TsvResultReader::NextAminoAcidLabel = L"Next Amino Acid";
-const std::wstring TsvResultReader::DecoyContamTargetLabel = L"Decoy/Contaminant/Target";
-const std::wstring TsvResultReader::MatchedIonsLabel = L"Matched Ion Mass-To-Charge Ratios";
-const std::wstring TsvResultReader::QValueLabel = L"QValue";
-const std::wstring TsvResultReader::QValueNotchLabel = L"QValue Notch";
-const std::wstring TsvResultReader::CrossTypeLabel = L"Cross Type";
-const std::wstring TsvResultReader::LinkResiduesLabel = L"Link Residues";
-const std::wstring TsvResultReader::ProteinLinkSiteLabel = L"Protein Link Site";
-const std::wstring TsvResultReader::RankLabel = L"Rank";
-const std::wstring TsvResultReader::BetaPeptideProteinAccessionLabel = L"Beta Peptide Protein Accession";
-const std::wstring TsvResultReader::BetaPeptideProteinLinkSiteLabel = L"Beta Peptide Protein LinkSite";
-const std::wstring TsvResultReader::BetaPeptideBaseSequenceLabel = L"Beta Peptide Base Sequence";
-const std::wstring TsvResultReader::BetaPeptideFullSequenceLabel = L"Beta Peptide Full Sequence";
-const std::wstring TsvResultReader::BetaPeptideTheoreticalMassLabel = L"Beta Peptide Theoretical Mass";
-const std::wstring TsvResultReader::BetaPeptideScoreLabel = L"Beta Peptide Score";
-const std::wstring TsvResultReader::BetaPeptideRankLabel = L"Beta Peptide Rank";
-const std::wstring TsvResultReader::BetaPeptideMatchedIonsLabel = L"Beta Peptide Matched Ion Mass-To-Charge Ratios";
-const std::wstring TsvResultReader::XLTotalScoreLabel = L"XL Total Score";
-const std::wstring TsvResultReader::ParentIonsLabel = L"Parent Ions";
-std::vector<wchar_t> const TsvResultReader::Split = {L'\t'};
+const std::string TsvResultReader::FullSequenceLabel = "Full Sequence";
+const std::string TsvResultReader::Ms2ScanNumberLabel = "Scan Number";
+const std::string TsvResultReader::FilenameLabel = "File Name";
+const std::string TsvResultReader::TotalIonCurrentLabel = "Total Ion Current";
+const std::string TsvResultReader::PrecursorScanNumLabel = "Precursor Scan Number";
+const std::string TsvResultReader::PrecursorChargeLabel = "Precursor Charge";
+const std::string TsvResultReader::PrecursorMzLabel = "Precursor MZ";
+const std::string TsvResultReader::PrecursorMassLabel = "Precursor Mass";
+const std::string TsvResultReader::ScoreLabel = "Score";
+const std::string TsvResultReader::DeltaScoreLabel = "Delta Score";
+const std::string TsvResultReader::NotchLabel = "Notch";
+const std::string TsvResultReader::BaseSeqLabel = "Base Sequence";
+const std::string TsvResultReader::EssentialSeqLabel = "Essential Sequence";
+const std::string TsvResultReader::MissedCleavageLabel = "Missed Cleavages";
+const std::string TsvResultReader::PeptideMonoMassLabel = "Peptide Monoisotopic Mass";
+const std::string TsvResultReader::MassDiffDaLabel = "Mass Diff (Da)";
+const std::string TsvResultReader::MassDiffPpmLabel = "Mass Diff (ppm)";
+const std::string TsvResultReader::ProteinAccessionLabel = "Protein Accession";
+const std::string TsvResultReader::ProteinNameLabel = "Protein Name";
+const std::string TsvResultReader::GeneNameLabel = "Gene Name";
+const std::string TsvResultReader::OrganismNameLabel = "Organism Name";
+const std::string TsvResultReader::PeptideDesicriptionLabel = "Peptide Description";
+const std::string TsvResultReader::StartAndEndResiduesInProteinLabel = "Start and End Residues In Protein";
+const std::string TsvResultReader::PreviousAminoAcidLabel = "Previous Amino Acid";
+const std::string TsvResultReader::NextAminoAcidLabel = "Next Amino Acid";
+const std::string TsvResultReader::DecoyContamTargetLabel = "Decoy/Contaminant/Target";
+const std::string TsvResultReader::MatchedIonsLabel = "Matched Ion Mass-To-Charge Ratios";
+const std::string TsvResultReader::QValueLabel = "QValue";
+const std::string TsvResultReader::QValueNotchLabel = "QValue Notch";
+const std::string TsvResultReader::CrossTypeLabel = "Cross Type";
+const std::string TsvResultReader::LinkResiduesLabel = "Link Residues";
+const std::string TsvResultReader::ProteinLinkSiteLabel = "Protein Link Site";
+const std::string TsvResultReader::RankLabel = "Rank";
+const std::string TsvResultReader::BetaPeptideProteinAccessionLabel = "Beta Peptide Protein Accession";
+const std::string TsvResultReader::BetaPeptideProteinLinkSiteLabel = "Beta Peptide Protein LinkSite";
+const std::string TsvResultReader::BetaPeptideBaseSequenceLabel = "Beta Peptide Base Sequence";
+const std::string TsvResultReader::BetaPeptideFullSequenceLabel = "Beta Peptide Full Sequence";
+const std::string TsvResultReader::BetaPeptideTheoreticalMassLabel = "Beta Peptide Theoretical Mass";
+const std::string TsvResultReader::BetaPeptideScoreLabel = "Beta Peptide Score";
+const std::string TsvResultReader::BetaPeptideRankLabel = "Beta Peptide Rank";
+const std::string TsvResultReader::BetaPeptideMatchedIonsLabel = "Beta Peptide Matched Ion Mass-To-Charge Ratios";
+const std::string TsvResultReader::XLTotalScoreLabel = "XL Total Score";
+const std::string TsvResultReader::ParentIonsLabel = "Parent Ions";
+std::vector<char> const TsvResultReader::Split = {'\t'};
 
-	std::vector<MetaDrawPsm*> TsvResultReader::ReadTsv(const std::wstring &filePath, std::vector<std::wstring> &warnings)
+	std::vector<MetaDrawPsm*> TsvResultReader::ReadTsv(const std::string &filePath, std::vector<std::string> &warnings)
 	{
 		std::vector<MetaDrawPsm*> psms;
-		warnings = std::vector<std::wstring>();
+		warnings = std::vector<std::string>();
 
 		StreamReader *reader = nullptr;
 		try
@@ -64,13 +64,13 @@ std::vector<wchar_t> const TsvResultReader::Split = {L'\t'};
 		catch (const std::runtime_error &e)
 		{
 		   delete reader;
-		   throw MetaMorpheusException(L"Could not read file: " + e.what());
+		   throw MetaMorpheusException("Could not read file: " + e.what());
 		}
 
 		int lineCount = 0;
 
-		std::wstring line;
-		std::unordered_map<std::wstring, int> parsedHeader;
+		std::string line;
+		std::unordered_map<std::string, int> parsedHeader;
 
 		while (reader->Peek() > 0)
 		{
@@ -91,7 +91,7 @@ std::vector<wchar_t> const TsvResultReader::Split = {L'\t'};
 			}
 			catch (const std::runtime_error &e1)
 			{
-				warnings.push_back(L"Could not read line: " + std::to_wstring(lineCount));
+				warnings.push_back("Could not read line: " + std::to_string(lineCount));
 			}
 		}
 
@@ -99,16 +99,16 @@ std::vector<wchar_t> const TsvResultReader::Split = {L'\t'};
 
 		if ((lineCount - 1) != psms.size())
 		{
-			warnings.push_back(L"Warning: " + std::to_wstring((lineCount - 1) - psms.size()) + L" PSMs were not read.");
+			warnings.push_back("Warning: " + std::to_string((lineCount - 1) - psms.size()) + " PSMs were not read.");
 		}
 
 		delete reader;
 		return psms;
 	}
 
-	std::unordered_map<std::wstring, int> TsvResultReader::ParseHeader(const std::wstring &header)
+	std::unordered_map<std::string, int> TsvResultReader::ParseHeader(const std::string &header)
 	{
-		auto parsedHeader = std::unordered_map<std::wstring, int>();
+		auto parsedHeader = std::unordered_map<std::string, int>();
 		auto spl = header.Split(Split);
 
 		parsedHeader.emplace(FullSequenceLabel, Array::IndexOf(spl, FullSequenceLabel));

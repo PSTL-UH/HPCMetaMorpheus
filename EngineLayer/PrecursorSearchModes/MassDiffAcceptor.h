@@ -13,15 +13,15 @@ namespace EngineLayer
 	{
 	private:
 		int privateNumNotches = 0;
-		std::wstring privateFileNameAddition;
+		std::string privateFileNameAddition;
 
 	protected:
-		MassDiffAcceptor(const std::wstring &fileNameAddition);
+		MassDiffAcceptor(const std::string &fileNameAddition);
 
 	public:
 		int getNumNotches() const;
 		void setNumNotches(int value);
-		std::wstring getFileNameAddition() const;
+		std::string getFileNameAddition() const;
 
 		/// <summary>
 		/// If acceptable, returns 0 or greater, negative means does not accept
@@ -34,6 +34,6 @@ namespace EngineLayer
 		virtual std::vector<AllowedIntervalWithNotch*> GetAllowedPrecursorMassIntervalsFromTheoreticalMass(double peptideMonoisotopicMass) = 0;
 		virtual std::vector<AllowedIntervalWithNotch*> GetAllowedPrecursorMassIntervalsFromObservedMass(double peptideMonoisotopicMass) = 0;
 
-		virtual std::wstring ToProseString() = 0;
+		virtual std::string ToProseString() = 0;
 	};
 }

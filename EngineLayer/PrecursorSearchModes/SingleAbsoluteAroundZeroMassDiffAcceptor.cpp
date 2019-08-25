@@ -6,7 +6,7 @@ using namespace MzLibUtil;
 namespace EngineLayer
 {
 
-	SingleAbsoluteAroundZeroSearchMode::SingleAbsoluteAroundZeroSearchMode(double value) : MassDiffAcceptor(std::to_wstring(value) + L"daltonsAroundZero"), Value(value)
+	SingleAbsoluteAroundZeroSearchMode::SingleAbsoluteAroundZeroSearchMode(double value) : MassDiffAcceptor(std::to_string(value) + L"daltonsAroundZero"), Value(value)
 	{
 	}
 
@@ -29,13 +29,13 @@ namespace EngineLayer
 		yield return new AllowedIntervalWithNotch(&tempVar, 0);
 	}
 
-	std::wstring SingleAbsoluteAroundZeroSearchMode::ToString()
+	std::string SingleAbsoluteAroundZeroSearchMode::ToString()
 	{
-		return getFileNameAddition() + L" daltonsAroundZero " + std::to_wstring(Value);
+		return getFileNameAddition() + " daltonsAroundZero " + std::to_string(Value);
 	}
 
-	std::wstring SingleAbsoluteAroundZeroSearchMode::ToProseString()
+	std::string SingleAbsoluteAroundZeroSearchMode::ToProseString()
 	{
-		return (std::wstring::Format(L"{0:0.000}", Value) + L" Da around zero");
+		return (std::string::Format("{0:0.000}", Value) + " Da around zero");
 	}
 }

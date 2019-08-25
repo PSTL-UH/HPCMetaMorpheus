@@ -32,7 +32,7 @@ namespace EngineLayer
 		const bool _treatModPeptidesAsDifferentPeptides;
 
 	public:
-		ProteinParsimonyEngine(std::vector<PeptideSpectralMatch*> &allPsms, bool modPeptidesAreDifferent, CommonParameters *commonParameters, std::vector<std::wstring> &nestedIds);
+		ProteinParsimonyEngine(std::vector<PeptideSpectralMatch*> &allPsms, bool modPeptidesAreDifferent, CommonParameters *commonParameters, std::vector<std::string> &nestedIds);
 				else // PSM is target
 				{
 					for (auto peptide : psm::BestMatchingPeptides->Select([&] (std::any p)

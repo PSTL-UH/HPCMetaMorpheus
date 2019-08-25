@@ -57,7 +57,7 @@ namespace EngineLayer
 				PsmCrossType getCrossType() const;
 				void setCrossType(PsmCrossType value);
 
-			static std::vector<int> GetPossibleCrosslinkerModSites(std::vector<wchar_t> &crosslinkerModSites, PeptideWithSetModifications *peptide);
+			static std::vector<int> GetPossibleCrosslinkerModSites(std::vector<char> &crosslinkerModSites, PeptideWithSetModifications *peptide);
 
 			/// <summary>
 			/// Rank experimental mass spectral peaks by intensity

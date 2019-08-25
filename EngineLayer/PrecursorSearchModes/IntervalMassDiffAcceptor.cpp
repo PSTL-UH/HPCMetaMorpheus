@@ -6,7 +6,7 @@ using namespace MzLibUtil;
 namespace EngineLayer
 {
 
-	IntervalMassDiffAcceptor::IntervalMassDiffAcceptor(const std::wstring &fileNameAddition, std::vector<DoubleRange*> &doubleRanges) : MassDiffAcceptor(fileNameAddition), Intervals(doubleRanges.OrderBy([&] (std::any b)
+	IntervalMassDiffAcceptor::IntervalMassDiffAcceptor(const std::string &fileNameAddition, std::vector<DoubleRange*> &doubleRanges) : MassDiffAcceptor(fileNameAddition), Intervals(doubleRanges.OrderBy([&] (std::any b)
 	{
 			b::Mean;
 	}).ToList()), Means(Intervals.Select([&] (std::any b)
@@ -56,13 +56,13 @@ namespace EngineLayer
 		});
 	}
 
-	std::wstring IntervalMassDiffAcceptor::ToString()
+	std::string IntervalMassDiffAcceptor::ToString()
 	{
-		return getFileNameAddition() + L" interval " + std::wstring::Join(L",", Intervals);
+		return getFileNameAddition() + " interval " + std::string::Join(",", Intervals);
 	}
 
-	std::wstring IntervalMassDiffAcceptor::ToProseString()
+	std::string IntervalMassDiffAcceptor::ToProseString()
 	{
-		return (L"the mass (Da) interval(s) " + std::wstring::Join(L", ", Intervals));
+		return ("the mass (Da) interval(s) " + std::string::Join(", ", Intervals));
 	}
 }

@@ -12,9 +12,9 @@ namespace EngineLayer
 			double privateMassShift = 0;
 
 		public:
-			std::wstring infostring;
+			std::string infostring;
 
-			MyInfo(double MassShift, const std::wstring &infostring);
+			MyInfo(double MassShift, const std::string &infostring);
 
 				double getMassShift() const;
 				void setMassShift(double value);

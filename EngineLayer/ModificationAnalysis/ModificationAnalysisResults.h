@@ -17,10 +17,10 @@ namespace EngineLayer
 		class ModificationAnalysisResults : public MetaMorpheusEngineResults
 		{
 		private:
-			std::unordered_map<std::wstring, int> privateCountOfAmbiguousButLocalizedModsSeen;
-			std::unordered_map<std::wstring, int> privateCountOfModsSeenAndLocalized;
-			std::unordered_map<std::wstring, int> privateCountOfEachModSeenOnProteins;
-			std::unordered_map<std::wstring, int> privateCountOfUnlocalizedMods;
+			std::unordered_map<std::string, int> privateCountOfAmbiguousButLocalizedModsSeen;
+			std::unordered_map<std::string, int> privateCountOfModsSeenAndLocalized;
+			std::unordered_map<std::string, int> privateCountOfEachModSeenOnProteins;
+			std::unordered_map<std::string, int> privateCountOfUnlocalizedMods;
 			std::unordered_map<ChemicalFormula*, int> privateCountOfUnlocalizedFormulas;
 
 		public:
@@ -29,18 +29,18 @@ namespace EngineLayer
 			/// <summary>
 			/// String is the mod ID, integer is the count of that mod observed
 			/// </summary>
-				std::unordered_map<std::wstring, int> getCountOfAmbiguousButLocalizedModsSeen() const;
-				void setCountOfAmbiguousButLocalizedModsSeen(const std::unordered_map<std::wstring, int> &value);
-				std::unordered_map<std::wstring, int> getCountOfModsSeenAndLocalized() const;
-				void setCountOfModsSeenAndLocalized(const std::unordered_map<std::wstring, int> &value);
-				std::unordered_map<std::wstring, int> getCountOfEachModSeenOnProteins() const;
-				void setCountOfEachModSeenOnProteins(const std::unordered_map<std::wstring, int> &value);
-				std::unordered_map<std::wstring, int> getCountOfUnlocalizedMods() const;
-				void setCountOfUnlocalizedMods(const std::unordered_map<std::wstring, int> &value);
+				std::unordered_map<std::string, int> getCountOfAmbiguousButLocalizedModsSeen() const;
+				void setCountOfAmbiguousButLocalizedModsSeen(const std::unordered_map<std::string, int> &value);
+				std::unordered_map<std::string, int> getCountOfModsSeenAndLocalized() const;
+				void setCountOfModsSeenAndLocalized(const std::unordered_map<std::string, int> &value);
+				std::unordered_map<std::string, int> getCountOfEachModSeenOnProteins() const;
+				void setCountOfEachModSeenOnProteins(const std::unordered_map<std::string, int> &value);
+				std::unordered_map<std::string, int> getCountOfUnlocalizedMods() const;
+				void setCountOfUnlocalizedMods(const std::unordered_map<std::string, int> &value);
 				std::unordered_map<ChemicalFormula*, int> getCountOfUnlocalizedFormulas() const;
 				void setCountOfUnlocalizedFormulas(const std::unordered_map<ChemicalFormula*, int> &value);
 
-			std::wstring ToString() override;
+			std::string ToString();
 		};
 	}
 }

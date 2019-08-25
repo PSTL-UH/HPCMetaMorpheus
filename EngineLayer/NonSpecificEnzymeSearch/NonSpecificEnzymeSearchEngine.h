@@ -44,7 +44,7 @@ namespace EngineLayer
 				delete ModifiedParametersNoComp;
 			}
 
-			NonSpecificEnzymeSearchEngine(std::vector<std::vector<PeptideSpectralMatch*>> &globalPsms, std::vector<Ms2ScanWithSpecificMass*> &listOfSortedms2Scans, std::vector<PeptideWithSetModifications*> &peptideIndex, std::vector<std::vector<int>&> &fragmentIndex, std::vector<std::vector<int>&> &precursorIndex, int currentPartition, CommonParameters *CommonParameters, MassDiffAcceptor *massDiffAcceptor, double maximumMassThatFragmentIonScoreIsDoubled, std::vector<std::wstring> &nestedIds);
+			NonSpecificEnzymeSearchEngine(std::vector<std::vector<PeptideSpectralMatch*>> &globalPsms, std::vector<Ms2ScanWithSpecificMass*> &listOfSortedms2Scans, std::vector<PeptideWithSetModifications*> &peptideIndex, std::vector<std::vector<int>&> &fragmentIndex, std::vector<std::vector<int>&> &precursorIndex, int currentPartition, CommonParameters *CommonParameters, MassDiffAcceptor *massDiffAcceptor, double maximumMassThatFragmentIonScoreIsDoubled, std::vector<std::string> &nestedIds);
 
 		protected:
 			MetaMorpheusEngineResults *RunSpecific() override;
@@ -53,7 +53,7 @@ namespace EngineLayer
 			std::tuple<int, PeptideWithSetModifications*> Accepts(std::vector<Product*> &fragments, double scanPrecursorMass, PeptideWithSetModifications *peptide, FragmentationTerminus *fragmentationTerminus, MassDiffAcceptor *searchMode);
 
 		public:
-			static std::vector<PeptideSpectralMatch*> ResolveFdrCategorySpecificPsms(std::vector<std::vector<PeptideSpectralMatch*>&> &AllPsms, int numNotches, const std::wstring &taskId, CommonParameters *commonParameters);
+			static std::vector<PeptideSpectralMatch*> ResolveFdrCategorySpecificPsms(std::vector<std::vector<PeptideSpectralMatch*>&> &AllPsms, int numNotches, const std::string &taskId, CommonParameters *commonParameters);
 		};
 	}
 }

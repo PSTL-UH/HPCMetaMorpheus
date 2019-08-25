@@ -6,7 +6,7 @@ using namespace MzLibUtil;
 namespace EngineLayer
 {
 
-	DotMassDiffAcceptor::DotMassDiffAcceptor(const std::wstring &FileNameAddition, std::vector<double> &acceptableMassShifts, Tolerance *tol) : MassDiffAcceptor(FileNameAddition), AcceptableSortedMassShifts(acceptableMassShifts.OrderBy([&] (std::any b)
+	DotMassDiffAcceptor::DotMassDiffAcceptor(const std::string &FileNameAddition, std::vector<double> &acceptableMassShifts, Tolerance *tol) : MassDiffAcceptor(FileNameAddition), AcceptableSortedMassShifts(acceptableMassShifts.OrderBy([&] (std::any b)
 	{
 			return b;
 	})->ToArray()), Tolerance(tol)
@@ -53,15 +53,13 @@ namespace EngineLayer
 		}
 	}
 
-	std::wstring DotMassDiffAcceptor::ToString()
+	std::string DotMassDiffAcceptor::ToString()
 	{
-//C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
-		return getFileNameAddition() + L" dot " + Tolerance->ToString() + L" " + std::wstring::Join(L",", AcceptableSortedMassShifts);
+		return getFileNameAddition() + " dot " + Tolerance->ToString() + " " + std::string::Join(",", AcceptableSortedMassShifts);
 	}
 
-	std::wstring DotMassDiffAcceptor::ToProseString()
+	std::string DotMassDiffAcceptor::ToProseString()
 	{
-//C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
-		return (Tolerance->ToString() + L" around " + std::wstring::Join(L",", AcceptableSortedMassShifts) + L" Da");
+		return (Tolerance->ToString() + " around " + std::string::Join(",", AcceptableSortedMassShifts) + " Da");
 	}
 }

@@ -16,7 +16,7 @@ namespace EngineLayer
 		{
 			p::Accession;
 		}).ToList();
-		setProteinGroupName(std::wstring::Join(L"|", ListOfProteinsOrderedByAccession.Select([&] (std::any p)
+		setProteinGroupName(std::string::Join("|", ListOfProteinsOrderedByAccession.Select([&] (std::any p)
 		{
 			p::Accession;
 		})));
@@ -24,14 +24,14 @@ namespace EngineLayer
 		setUniquePeptides(uniquePeptides);
 		setAllPsmsBelowOnePercentFDR(std::unordered_set<PeptideSpectralMatch*>());
 		setSequenceCoveragePercent(std::vector<double>());
-		setSequenceCoverageDisplayList(std::vector<std::wstring>());
-		setSequenceCoverageDisplayListWithMods(std::vector<std::wstring>());
+		setSequenceCoverageDisplayList(std::vector<std::string>());
+		setSequenceCoverageDisplayListWithMods(std::vector<std::string>());
 		setProteinGroupScore(0);
 		setBestPeptideScore(0);
 		setQValue(0);
 		IsDecoy = false;
 		IsContaminant = false;
-		setModsInfo(std::vector<std::wstring>());
+		setModsInfo(std::vector<std::string>());
 
 		// if any of the proteins in the protein group are decoys, the protein group is a decoy
 		for (auto protein : proteins)
@@ -79,12 +79,12 @@ namespace EngineLayer
 		privateProteins = value;
 	}
 
-	std::wstring ProteinGroup::getProteinGroupName() const
+	std::string ProteinGroup::getProteinGroupName() const
 	{
 		return privateProteinGroupName;
 	}
 
-	void ProteinGroup::setProteinGroupName(const std::wstring &value)
+	void ProteinGroup::setProteinGroupName(const std::string &value)
 	{
 		privateProteinGroupName = value;
 	}
@@ -139,22 +139,22 @@ namespace EngineLayer
 		privateSequenceCoveragePercent = value;
 	}
 
-	std::vector<std::wstring> ProteinGroup::getSequenceCoverageDisplayList() const
+	std::vector<std::string> ProteinGroup::getSequenceCoverageDisplayList() const
 	{
 		return privateSequenceCoverageDisplayList;
 	}
 
-	void ProteinGroup::setSequenceCoverageDisplayList(const std::vector<std::wstring> &value)
+	void ProteinGroup::setSequenceCoverageDisplayList(const std::vector<std::string> &value)
 	{
 		privateSequenceCoverageDisplayList = value;
 	}
 
-	std::vector<std::wstring> ProteinGroup::getSequenceCoverageDisplayListWithMods() const
+	std::vector<std::string> ProteinGroup::getSequenceCoverageDisplayListWithMods() const
 	{
 		return privateSequenceCoverageDisplayListWithMods;
 	}
 
-	void ProteinGroup::setSequenceCoverageDisplayListWithMods(const std::vector<std::wstring> &value)
+	void ProteinGroup::setSequenceCoverageDisplayListWithMods(const std::vector<std::string> &value)
 	{
 		privateSequenceCoverageDisplayListWithMods = value;
 	}
@@ -219,12 +219,12 @@ namespace EngineLayer
 		privateDisplayModsOnPeptides = value;
 	}
 
-	std::vector<std::wstring> ProteinGroup::getModsInfo() const
+	std::vector<std::string> ProteinGroup::getModsInfo() const
 	{
 		return privateModsInfo;
 	}
 
-	void ProteinGroup::setModsInfo(const std::vector<std::wstring> &value)
+	void ProteinGroup::setModsInfo(const std::vector<std::string> &value)
 	{
 		privateModsInfo = value;
 	}
@@ -239,73 +239,73 @@ namespace EngineLayer
 		privateIntensitiesByFile = value;
 	}
 
-	std::wstring ProteinGroup::GetTabSeparatedHeader()
+	std::string ProteinGroup::GetTabSeparatedHeader()
 	{
 		auto sb = new StringBuilder();
-		sb->append(L"Protein Accession" + StringHelper::toString(L'\t'));
-		sb->append(L"Gene" + StringHelper::toString(L'\t'));
-		sb->append(L"Organism" + StringHelper::toString(L'\t'));
-		sb->append(L"Protein Full Name" + StringHelper::toString(L'\t'));
-		sb->append(L"Protein Unmodified Mass" + StringHelper::toString(L'\t'));
-		sb->append(L"Number of Proteins in Group" + StringHelper::toString(L'\t'));
-		sb->append(L"Unique Peptides" + StringHelper::toString(L'\t'));
-		sb->append(L"Shared Peptides" + StringHelper::toString(L'\t'));
-		sb->append(L"Number of Peptides" + StringHelper::toString(L'\t'));
-		sb->append(L"Number of Unique Peptides" + StringHelper::toString(L'\t'));
-		sb->append(L"Sequence Coverage %" + StringHelper::toString(L'\t'));
-		sb->append(L"Sequence Coverage" + StringHelper::toString(L'\t'));
-		sb->append(L"Sequence Coverage with Mods" + StringHelper::toString(L'\t'));
-		sb->append(std::wstring(L"Modification Info List") + L"\t");
+		sb->append("Protein Accession" + StringHelper::toString(L'\t'));
+		sb->append("Gene" + StringHelper::toString(L'\t'));
+		sb->append("Organism" + StringHelper::toString(L'\t'));
+		sb->append("Protein Full Name" + StringHelper::toString(L'\t'));
+		sb->append("Protein Unmodified Mass" + StringHelper::toString(L'\t'));
+		sb->append("Number of Proteins in Group" + StringHelper::toString(L'\t'));
+		sb->append("Unique Peptides" + StringHelper::toString(L'\t'));
+		sb->append("Shared Peptides" + StringHelper::toString(L'\t'));
+		sb->append("Number of Peptides" + StringHelper::toString(L'\t'));
+		sb->append("Number of Unique Peptides" + StringHelper::toString(L'\t'));
+		sb->append("Sequence Coverage %" + StringHelper::toString(L'\t'));
+		sb->append("Sequence Coverage" + StringHelper::toString(L'\t'));
+		sb->append("Sequence Coverage with Mods" + StringHelper::toString(L'\t'));
+		sb->append(std::string("Modification Info List") + "\t");
 		if (getFilesForQuantification().size() > 0)
 		{
 			for (int i = 0; i < getFilesForQuantification().size(); i++)
 			{
-				sb->append(L"Intensity_" + getFilesForQuantification()[i]->FilenameWithoutExtension + L'\t');
+				sb->append("Intensity_" + getFilesForQuantification()[i]->FilenameWithoutExtension + L'\t');
 			}
 		}
-		sb->append(L"Number of PSMs" + StringHelper::toString(L'\t'));
-		sb->append(L"Protein Decoy/Contaminant/Target" + StringHelper::toString(L'\t'));
-		sb->append(L"Protein Cumulative Target" + StringHelper::toString(L'\t'));
-		sb->append(L"Protein Cumulative Decoy" + StringHelper::toString(L'\t'));
-		sb->append(L"Protein QValue" + StringHelper::toString(L'\t'));
-		sb->append(L"Best Peptide Score" + StringHelper::toString(L'\t'));
-		sb->append(L"Best Peptide Notch QValue");
+		sb->append("Number of PSMs" + StringHelper::toString(L'\t'));
+		sb->append("Protein Decoy/Contaminant/Target" + StringHelper::toString(L'\t'));
+		sb->append("Protein Cumulative Target" + StringHelper::toString(L'\t'));
+		sb->append("Protein Cumulative Decoy" + StringHelper::toString(L'\t'));
+		sb->append("Protein QValue" + StringHelper::toString(L'\t'));
+		sb->append("Best Peptide Score" + StringHelper::toString(L'\t'));
+		sb->append("Best Peptide Notch QValue");
 
 		delete sb;
 		return sb->toString();
 	}
 
-	std::wstring ProteinGroup::ToString()
+	std::string ProteinGroup::ToString()
 	{
 		auto sb = new StringBuilder();
 
 		// list of protein accession numbers
 		sb->append(getProteinGroupName());
-		sb->append(L"\t");
+		sb->append("\t");
 
 		// genes
-		sb->append(GlobalVariables::CheckLengthOfOutput(std::wstring::Join(L"|", ListOfProteinsOrderedByAccession.Select([&] (std::any p)
+		sb->append(GlobalVariables::CheckLengthOfOutput(std::string::Join("|", ListOfProteinsOrderedByAccession.Select([&] (std::any p)
 		{
 			p::GeneNames->Select([&] (std::any x)
 			{
 				x::Item2;
 			}).FirstOrDefault();
 		}))));
-		sb->append(L"\t");
+		sb->append("\t");
 
 		// organisms
-		sb->append(GlobalVariables::CheckLengthOfOutput(std::wstring::Join(L"|", ListOfProteinsOrderedByAccession.Select([&] (std::any p)
+		sb->append(GlobalVariables::CheckLengthOfOutput(std::string::Join("|", ListOfProteinsOrderedByAccession.Select([&] (std::any p)
 		{
 			p::Organism;
 		}).Distinct())));
-		sb->append(L"\t");
+		sb->append("\t");
 
 		// list of protein names
-		sb->append(GlobalVariables::CheckLengthOfOutput(std::wstring::Join(L"|", ListOfProteinsOrderedByAccession.Select([&] (std::any p)
+		sb->append(GlobalVariables::CheckLengthOfOutput(std::string::Join("|", ListOfProteinsOrderedByAccession.Select([&] (std::any p)
 		{
 			p->FullName;
 		}).Distinct())));
-		sb->append(L"\t");
+		sb->append("\t");
 
 		// list of masses
 		auto sequences = ListOfProteinsOrderedByAccession.Select([&] (std::any p)
@@ -325,100 +325,100 @@ namespace EngineLayer
 				masses.push_back(NAN);
 			}
 		}
-		sb->append(GlobalVariables::CheckLengthOfOutput(std::wstring::Join(L"|", masses)));
-		sb->append(L"\t");
+		sb->append(GlobalVariables::CheckLengthOfOutput(std::string::Join("|", masses)));
+		sb->append("\t");
 
 		// number of proteins in group
-		sb->append(L"" + std::to_wstring(getProteins().size()));
-		sb->append(L"\t");
+		sb->append("" + std::to_string(getProteins().size()));
+		sb->append("\t");
 
 		// list of unique peptides
 		if (!getDisplayModsOnPeptides())
 		{
-			sb->append(GlobalVariables::CheckLengthOfOutput(std::wstring::Join(L"|", getUniquePeptides().Select([&] (std::any p)
+			sb->append(GlobalVariables::CheckLengthOfOutput(std::string::Join("|", getUniquePeptides().Select([&] (std::any p)
 			{
 				p::BaseSequence;
 			}).Distinct())));
 		}
 		else
 		{
-			sb->append(GlobalVariables::CheckLengthOfOutput(std::wstring::Join(L"|", getUniquePeptides().Select([&] (std::any p)
+			sb->append(GlobalVariables::CheckLengthOfOutput(std::string::Join("|", getUniquePeptides().Select([&] (std::any p)
 			{
 				p::FullSequence;
 			}).Distinct())));
 		}
-		sb->append(L"\t");
+		sb->append("\t");
 
 		// list of shared peptides
 		auto SharedPeptides = getAllPeptides().Except(getUniquePeptides());
 		if (!getDisplayModsOnPeptides())
 		{
-			sb->append(GlobalVariables::CheckLengthOfOutput(std::wstring::Join(L"|", SharedPeptides->Select([&] (std::any p)
+			sb->append(GlobalVariables::CheckLengthOfOutput(std::string::Join("|", SharedPeptides->Select([&] (std::any p)
 			{
 				p::BaseSequence;
 			}).Distinct())));
 		}
 		else
 		{
-			sb->append(GlobalVariables::CheckLengthOfOutput(std::wstring::Join(L"|", SharedPeptides->Select([&] (std::any p)
+			sb->append(GlobalVariables::CheckLengthOfOutput(std::string::Join("|", SharedPeptides->Select([&] (std::any p)
 			{
 				p::FullSequence;
 			}).Distinct())));
 		}
-		sb->append(L"\t");
+		sb->append("\t");
 
 		// number of peptides
 		if (!getDisplayModsOnPeptides())
 		{
-			sb->append(L"" + getAllPeptides().Select([&] (std::any p)
+			sb->append("" + getAllPeptides().Select([&] (std::any p)
 			{
 				p::BaseSequence;
 			}).Distinct()->Count());
 		}
 		else
 		{
-			sb->append(L"" + getAllPeptides().Select([&] (std::any p)
+			sb->append("" + getAllPeptides().Select([&] (std::any p)
 			{
 				p::FullSequence;
 			}).Distinct()->Count());
 		}
-		sb->append(L"\t");
+		sb->append("\t");
 
 		// number of unique peptides
 		if (!getDisplayModsOnPeptides())
 		{
-			sb->append(L"" + getUniquePeptides().Select([&] (std::any p)
+			sb->append("" + getUniquePeptides().Select([&] (std::any p)
 			{
 				p::BaseSequence;
 			}).Distinct()->Count());
 		}
 		else
 		{
-			sb->append(L"" + getUniquePeptides().Select([&] (std::any p)
+			sb->append("" + getUniquePeptides().Select([&] (std::any p)
 			{
 				p::FullSequence;
 			}).Distinct()->Count());
 		}
-		sb->append(L"\t");
+		sb->append("\t");
 
 		// sequence coverage percent
-		sb->append(GlobalVariables::CheckLengthOfOutput(std::wstring::Join(L"|", getSequenceCoveragePercent().Select([&] (std::any p)
+		sb->append(GlobalVariables::CheckLengthOfOutput(std::string::Join("|", getSequenceCoveragePercent().Select([&] (std::any p)
 		{
-			std::wstring::Format(std::wstring(L"{0:0}") + L"%", (p * 100));
+			std::string::Format(std::string("{0:0}") + "%", (p * 100));
 		}))));
-		sb->append(L"\t");
+		sb->append("\t");
 
 		// sequence coverage
-		sb->append(GlobalVariables::CheckLengthOfOutput(std::wstring::Join(L"|", getSequenceCoverageDisplayList())));
-		sb->append(L"\t");
+		sb->append(GlobalVariables::CheckLengthOfOutput(std::string::Join("|", getSequenceCoverageDisplayList())));
+		sb->append("\t");
 
 		// sequence coverage with mods
-		sb->append(GlobalVariables::CheckLengthOfOutput(std::wstring::Join(L"|", getSequenceCoverageDisplayListWithMods())));
-		sb->append(L"\t");
+		sb->append(GlobalVariables::CheckLengthOfOutput(std::string::Join("|", getSequenceCoverageDisplayListWithMods())));
+		sb->append("\t");
 
 		//Detailed mods information list
-		sb->append(GlobalVariables::CheckLengthOfOutput(std::wstring::Join(L"|", getModsInfo())));
-		sb->append(L"\t");
+		sb->append(GlobalVariables::CheckLengthOfOutput(std::string::Join("|", getModsInfo())));
+		sb->append("\t");
 
 		// MS1 intensity (retrieved from FlashLFQ in the SearchTask)
 		if (getIntensitiesByFile().size() > 0 && getFilesForQuantification().size() > 0)
@@ -431,50 +431,50 @@ namespace EngineLayer
 				}
 				else
 				{
-					sb->append(L"");
+					sb->append("");
 				}
-				sb->append(L"\t");
+				sb->append("\t");
 			}
 		}
 
 		// number of PSMs for listed peptides
-		sb->append(L"" + std::to_wstring(getAllPsmsBelowOnePercentFDR().size()));
-		sb->append(L"\t");
+		sb->append("" + std::to_string(getAllPsmsBelowOnePercentFDR().size()));
+		sb->append("\t");
 
 		// isDecoy
 		if (getIsDecoy())
 		{
-			sb->append(L"D");
+			sb->append("D");
 		}
 		else if (getIsContaminant())
 		{
-			sb->append(L"C");
+			sb->append("C");
 		}
 		else
 		{
-			sb->append(L"T");
+			sb->append("T");
 		}
-		sb->append(L"\t");
+		sb->append("\t");
 
 		// cumulative target
 		sb->append(getCumulativeTarget());
-		sb->append(L"\t");
+		sb->append("\t");
 
 		// cumulative decoy
 		sb->append(getCumulativeDecoy());
-		sb->append(L"\t");
+		sb->append("\t");
 
 		// q value
 		sb->append(getQValue());
-		sb->append(L"\t");
+		sb->append("\t");
 
 		// best peptide score
 		sb->append(getBestPeptideScore());
-		sb->append(L"\t");
+		sb->append("\t");
 
 		// best peptide q value
 		sb->append(getBestPeptideQValue());
-		sb->append(L"\t");
+		sb->append("\t");
 
 		delete sb;
 		return sb->toString();
@@ -541,7 +541,7 @@ namespace EngineLayer
 			// get residue numbers of each peptide in the protein and identify them as observed if the sequence is unambiguous
 			for (auto peptide : proteinsWithUnambigSeqPsms[protein])
 			{
-				std::wstring sequenceExtractedFromProtein = L"";
+				std::string sequenceExtractedFromProtein = "";
 				for (int i = peptide->OneBasedStartResidueInProtein; i <= peptide->OneBasedEndResidueInProtein; i++)
 				{
 					// check for bugs in sequence coverage; make sure we have the right amino acids!
@@ -578,7 +578,7 @@ namespace EngineLayer
 			{
 				coverageArray[obsResidueLocation - 1] = std::toupper(coverageArray[obsResidueLocation - 1]);
 			}
-			sequenceCoverageDisplay = std::wstring(coverageArray);
+			sequenceCoverageDisplay = std::string(coverageArray);
 
 			// check to see if there was an errored result; if not, add the coverage display
 			if (!errorResult)
@@ -587,7 +587,7 @@ namespace EngineLayer
 			}
 			else
 			{
-				getSequenceCoverageDisplayList().push_back(L"Error calculating sequence coverage");
+				getSequenceCoverageDisplayList().push_back("Error calculating sequence coverage");
 			}
 
 			// put mods in the sequence coverage display
@@ -599,7 +599,7 @@ namespace EngineLayer
 				{
 					for (auto mod : pep->AllModsOneIsNterminus)
 					{
-						if (!mod->Value->ModificationType->Contains(L"PeptideTermMod") && !mod->Value->ModificationType->Contains(L"Common Variable") && !mod->Value->ModificationType->Contains(L"Common Fixed"))
+						if (!mod->Value->ModificationType->Contains("PeptideTermMod") && !mod->Value->ModificationType->Contains("Common Variable") && !mod->Value->ModificationType->Contains("Common Fixed"))
 						{
 							modsOnThisProtein.insert(KeyValuePair<int, Modification*>(pep->OneBasedStartResidueInProtein + mod->Key - 2, mod->Value));
 						}
@@ -613,18 +613,18 @@ namespace EngineLayer
 
 				for (auto mod : temp1)
 				{
-					if (mod.Value->LocationRestriction->Equals(L"N-terminal."))
+					if (mod.Value->LocationRestriction->Equals("N-terminal."))
 					{
-						sequenceCoverageDisplay = sequenceCoverageDisplay->Insert(0, L"[" + mod.Value->IdWithMotif + L"]-");
+						sequenceCoverageDisplay = sequenceCoverageDisplay->Insert(0, "[" + mod.Value->IdWithMotif + "]-");
 					}
-					else if (mod.Value->LocationRestriction->Equals(L"Anywhere."))
+					else if (mod.Value->LocationRestriction->Equals("Anywhere."))
 					{
 						int modStringIndex = sequenceCoverageDisplay->Length - (protein->Length - mod.Key);
-						sequenceCoverageDisplay = sequenceCoverageDisplay->Insert(modStringIndex, L"[" + mod.Value->IdWithMotif + L"]");
+						sequenceCoverageDisplay = sequenceCoverageDisplay->Insert(modStringIndex, "[" + mod.Value->IdWithMotif + "]");
 					}
-					else if (mod.Value->LocationRestriction->Equals(L"C-terminal."))
+					else if (mod.Value->LocationRestriction->Equals("C-terminal."))
 					{
-						sequenceCoverageDisplay = sequenceCoverageDisplay->Insert(sequenceCoverageDisplay->Length, L"-[" + mod.Value->IdWithMotif + L"]");
+						sequenceCoverageDisplay = sequenceCoverageDisplay->Insert(sequenceCoverageDisplay->Length, "-[" + mod.Value->IdWithMotif + "]");
 					}
 				}
 
@@ -633,10 +633,10 @@ namespace EngineLayer
 				if (modsOnThisProtein.Any())
 				{
 					// calculate spectral count percentage of modified observation
-					std::wstring tempModStrings = L""; //The whole string
+					std::string tempModStrings = ""; //The whole string
 					std::vector<int> tempPepModTotals; //The List of (For one mod, The Modified Pep Num)
 					std::vector<int> tempPepTotals; //The List of (For one mod, The total Pep Num)
-					std::vector<std::wstring> tempPepModValues; //The List of (For one mod, the Modified Name)
+					std::vector<std::string> tempPepModValues; //The List of (For one mod, the Modified Name)
 					std::vector<int> tempModIndex; //The Index of the modified position.
 
 					for (auto pep : proteinsWithPsmsWithLocalizedMods[protein])
@@ -644,18 +644,18 @@ namespace EngineLayer
 						for (auto mod : pep->AllModsOneIsNterminus)
 						{
 							int tempPepNumTotal = 0; //For one mod, The total Pep Num
-							if (!mod->Value->ModificationType->Contains(L"Common Variable") && !mod->Value->ModificationType->Contains(L"Common Fixed") && !mod->Value->LocationRestriction->Equals(ModLocationOnPeptideOrProtein::PepC) && !mod->Value->LocationRestriction->Equals(ModLocationOnPeptideOrProtein::NPep))
+							if (!mod->Value->ModificationType->Contains("Common Variable") && !mod->Value->ModificationType->Contains("Common Fixed") && !mod->Value->LocationRestriction->Equals(ModLocationOnPeptideOrProtein::PepC) && !mod->Value->LocationRestriction->Equals(ModLocationOnPeptideOrProtein::NPep))
 							{
 								int tempIndexInProtein;
-								if (mod->Value->LocationRestriction->Equals(L"N-terminal."))
+								if (mod->Value->LocationRestriction->Equals("N-terminal."))
 								{
 									tempIndexInProtein = 1;
 								}
-								else if (mod->Value->LocationRestriction->Equals(L"Anywhere."))
+								else if (mod->Value->LocationRestriction->Equals("Anywhere."))
 								{
 									tempIndexInProtein = pep->OneBasedStartResidueInProtein + mod->Key - 2;
 								}
-								else if (mod->Value->LocationRestriction->Equals(L"C-terminal."))
+								else if (mod->Value->LocationRestriction->Equals("C-terminal."))
 								{
 									tempIndexInProtein = protein->Length;
 								}
@@ -690,7 +690,7 @@ namespace EngineLayer
 					for (int i = 0; i < tempPepModTotals.size(); i++)
 					{
 //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
-						std::wstring tempString = (L"#aa" + std::to_wstring(tempModIndex[i]) + L"[" + tempPepModValues[i].ToString() + L",info:occupancy=" + (static_cast<double>(tempPepModTotals[i]) / static_cast<double>(tempPepTotals[i])).ToString(L"F2") + L"(" + std::to_wstring(tempPepModTotals[i]) + L"/" + std::to_wstring(tempPepTotals[i]) + L")" + L"];");
+						std::string tempString = ("#aa" + std::to_string(tempModIndex[i]) + "[" + tempPepModValues[i].ToString() + ",info:occupancy=" + (static_cast<double>(tempPepModTotals[i]) / static_cast<double>(tempPepTotals[i])).ToString("F2") + "(" + std::to_string(tempPepModTotals[i]) + "/" + std::to_string(tempPepTotals[i]) + ")" + "];");
 						tempModStrings += tempString;
 					}
 
@@ -718,13 +718,13 @@ namespace EngineLayer
 			p::Accession;
 		}).ToList();
 
-		setProteinGroupName(std::wstring::Join(L"|", ListOfProteinsOrderedByAccession.Select([&] (std::any p)
+		setProteinGroupName(std::string::Join("|", ListOfProteinsOrderedByAccession.Select([&] (std::any p)
 		{
 			p::Accession;
 		})));
 	}
 
-	ProteinGroup *ProteinGroup::ConstructSubsetProteinGroup(const std::wstring &fullFilePath)
+	ProteinGroup *ProteinGroup::ConstructSubsetProteinGroup(const std::string &fullFilePath)
 	{
 		auto allPsmsForThisFile = std::unordered_set<PeptideSpectralMatch*>(this->getAllPsmsBelowOnePercentFDR().Where([&] (std::any p)
 		{

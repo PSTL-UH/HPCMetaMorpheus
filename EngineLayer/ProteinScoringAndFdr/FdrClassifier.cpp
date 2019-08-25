@@ -21,7 +21,7 @@ namespace EngineLayer
 		}
 		else
 		{
-			throw NotImplementedException("Cleavage specificity '" + cleavageSpecificity + L"' has not been immplemented for local FDR calculations.");
+			throw NotImplementedException("Cleavage specificity '" + cleavageSpecificity + "' has not been immplemented for local FDR calculations.");
 		}
 	}
 }

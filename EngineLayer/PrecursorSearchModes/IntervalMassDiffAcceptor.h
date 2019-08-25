@@ -18,7 +18,7 @@ namespace EngineLayer
 		std::vector<double> const Means;
 
 	public:
-		IntervalMassDiffAcceptor(const std::wstring &fileNameAddition, std::vector<DoubleRange*> &doubleRanges);
+		IntervalMassDiffAcceptor(const std::string &fileNameAddition, std::vector<DoubleRange*> &doubleRanges);
 
 		int Accepts(double scanPrecursorMass, double peptideMass) override;
 
@@ -26,8 +26,8 @@ namespace EngineLayer
 
 		std::vector<AllowedIntervalWithNotch*> GetAllowedPrecursorMassIntervalsFromObservedMass(double peptideMonoisotopicMass) override;
 
-		std::wstring ToString() override;
+		std::string ToString();
 
-		std::wstring ToProseString() override;
+		std::string ToProseString() override;
 	};
 }

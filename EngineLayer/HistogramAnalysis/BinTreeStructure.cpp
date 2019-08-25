@@ -240,13 +240,13 @@ namespace EngineLayer
 		{
 			for (auto bin : getFinalBins())
 			{
-				bin->setAAsInCommon(std::unordered_map<wchar_t, int>());
+				bin->setAAsInCommon(std::unordered_map<char, int>());
 				for (auto hehe : bin->UniquePSMs.Values->Where([&] (std::any b)
 				{
 					!b::Item3->IsDecoy;
 				}))
 				{
-					auto chars = std::unordered_set<wchar_t>();
+					auto chars = std::unordered_set<char>();
 					for (int i = 0; i < hehe::Item1->Count(); i++)
 					{
 						chars.insert(hehe::Item1[i]);
@@ -270,7 +270,7 @@ namespace EngineLayer
 		{
 			for (auto bin : getFinalBins())
 			{
-				bin->ModsInCommon = std::unordered_map<std::wstring, int>();
+				bin->ModsInCommon = std::unordered_map<std::string, int>();
 				for (auto hehe : bin->UniquePSMs.Values->Where([&] (std::any b)
 				{
 					!b::Item3->IsDecoy;
@@ -278,10 +278,10 @@ namespace EngineLayer
 				{
 					int inModLevel = 0;
 					StringBuilder *currentMod = new StringBuilder();
-					std::unordered_set<std::wstring> modsHere;
+					std::unordered_set<std::string> modsHere;
 					for (int i = 0; i < hehe::Item2->Count(); i++)
 					{
-						wchar_t ye = hehe::Item2[i];
+						char ye = hehe::Item2[i];
 						if (ye.Equals(L'['))
 						{
 							inModLevel++;
@@ -295,7 +295,7 @@ namespace EngineLayer
 							inModLevel--;
 							if (inModLevel == 0)
 							{
-								if (!currentMod->toString()->StartsWith(L"Common Fixed:"))
+								if (!currentMod->toString()->StartsWith("Common Fixed:"))
 								{
 									modsHere.insert(currentMod->toString());
 								}
@@ -393,27 +393,27 @@ namespace EngineLayer
 		{
 			auto myInfos = std::vector<MyInfo*>
 			{
-				new MyInfo(0, L"Exact match!"),
-				new MyInfo(-48.128629, L"Phosphorylation-Lysine: Probably reverse is the correct match"),
-				new MyInfo(-76.134779, L"Phosphorylation-Arginine: Probably reverse is the correct match"),
-				new MyInfo(1.0029, L"1 MM"),
-				new MyInfo(2.0052, L"2 MM"),
-				new MyInfo(3.0077, L"3 MM"),
-				new MyInfo(173.051055, L"Acetylation + Methionine: Usually on protein N terminus"),
-				new MyInfo(-91.009185, L"neg Carbamidomethylation - H2S: Usually on cysteine."),
-				new MyInfo(-32.008456, L"oxidation and then loss of oxidized M side chain"),
-				new MyInfo(-79.966331, L"neg Phosphorylation."),
-				new MyInfo(189.045969, L"Carboxymethylated + Methionine. Usually on protein N terminus"),
-				new MyInfo(356.20596, L"Lysine+V+E or Lysine+L+D"),
-				new MyInfo(239.126988, L"Lysine+H(5) C(5) N O(2), possibly Nmethylmaleimide"),
-				new MyInfo(-105.02484, L"Methionine loss then acetaldehyde"),
-				new MyInfo(52.911464, L"Fe[III]"),
-				new MyInfo(71.000729, L"H C2 N O2"),
-				new MyInfo(50.000394, L"H2 O3")
+				new MyInfo(0, "Exact match!"),
+				new MyInfo(-48.128629, "Phosphorylation-Lysine: Probably reverse is the correct match"),
+				new MyInfo(-76.134779, "Phosphorylation-Arginine: Probably reverse is the correct match"),
+				new MyInfo(1.0029, "1 MM"),
+				new MyInfo(2.0052, "2 MM"),
+				new MyInfo(3.0077, "3 MM"),
+				new MyInfo(173.051055, "Acetylation + Methionine: Usually on protein N terminus"),
+				new MyInfo(-91.009185, "neg Carbamidomethylation - H2S: Usually on cysteine."),
+				new MyInfo(-32.008456, "oxidation and then loss of oxidized M side chain"),
+				new MyInfo(-79.966331, "neg Phosphorylation."),
+				new MyInfo(189.045969, "Carboxymethylated + Methionine. Usually on protein N terminus"),
+				new MyInfo(356.20596, "Lysine+V+E or Lysine+L+D"),
+				new MyInfo(239.126988, "Lysine+H(5) C(5) N O(2), possibly Nmethylmaleimide"),
+				new MyInfo(-105.02484, "Methionine loss then acetaldehyde"),
+				new MyInfo(52.911464, "Fe[III]"),
+				new MyInfo(71.000729, "H C2 N O2"),
+				new MyInfo(50.000394, "H2 O3")
 			};
 			for (auto bin : getFinalBins())
 			{
-				bin->setMine(L"");
+				bin->setMine("");
 				for (auto myInfo : myInfos)
 				{
 					if (std::abs(myInfo->getMassShift() - bin->getMassShift()) <= v)

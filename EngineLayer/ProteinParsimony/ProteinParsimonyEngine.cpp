@@ -9,7 +9,7 @@ using namespace Proteomics::ProteolyticDigestion;
 namespace EngineLayer
 {
 
-	ProteinParsimonyEngine::ProteinParsimonyEngine(std::vector<PeptideSpectralMatch*> &allPsms, bool modPeptidesAreDifferent, CommonParameters *commonParameters, std::vector<std::wstring> &nestedIds) : MetaMorpheusEngine(commonParameters, nestedIds), _fdrFilteredPeptides(std::unordered_set<PeptideWithSetModifications*>()), _allPsms(allPsms), _treatModPeptidesAsDifferentPeptides(modPeptidesAreDifferent)
+	ProteinParsimonyEngine::ProteinParsimonyEngine(std::vector<PeptideSpectralMatch*> &allPsms, bool modPeptidesAreDifferent, CommonParameters *commonParameters, std::vector<std::string> &nestedIds) : MetaMorpheusEngine(commonParameters, nestedIds), _fdrFilteredPeptides(std::unordered_set<PeptideWithSetModifications*>()), _allPsms(allPsms), _treatModPeptidesAsDifferentPeptides(modPeptidesAreDifferent)
 	{
 
 		if (!allPsms.Any())

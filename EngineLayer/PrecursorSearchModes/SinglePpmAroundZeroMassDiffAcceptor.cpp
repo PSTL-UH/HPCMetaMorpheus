@@ -6,7 +6,7 @@ using namespace MzLibUtil;
 namespace EngineLayer
 {
 
-	SinglePpmAroundZeroSearchMode::SinglePpmAroundZeroSearchMode(double ppmTolerance) : MassDiffAcceptor(std::to_wstring(ppmTolerance) + L"ppmAroundZero"), PpmTolerance(ppmTolerance)
+	SinglePpmAroundZeroSearchMode::SinglePpmAroundZeroSearchMode(double ppmTolerance) : MassDiffAcceptor(std::to_string(ppmTolerance) + L"ppmAroundZero"), PpmTolerance(ppmTolerance)
 	{
 	}
 
@@ -31,13 +31,13 @@ namespace EngineLayer
 		yield return new AllowedIntervalWithNotch(&tempVar, 0);
 	}
 
-	std::wstring SinglePpmAroundZeroSearchMode::ToProseString()
+	std::string SinglePpmAroundZeroSearchMode::ToProseString()
 	{
-		return (std::wstring::Format(L"{0:0.0}", PpmTolerance) + L" ppm around zero");
+		return (std::string::Format("{0:0.0}", PpmTolerance) + " ppm around zero");
 	}
 
-	std::wstring SinglePpmAroundZeroSearchMode::ToString()
+	std::string SinglePpmAroundZeroSearchMode::ToString()
 	{
-		return getFileNameAddition() + L" ppmAroundZero " + std::to_wstring(PpmTolerance);
+		return getFileNameAddition() + " ppmAroundZero " + std::to_string(PpmTolerance);
 	}
 }

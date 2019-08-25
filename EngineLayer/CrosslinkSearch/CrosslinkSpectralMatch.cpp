@@ -113,7 +113,7 @@ namespace EngineLayer
 			privateCrossType = value;
 		}
 
-		std::vector<int> CrosslinkSpectralMatch::GetPossibleCrosslinkerModSites(std::vector<wchar_t> &crosslinkerModSites, PeptideWithSetModifications *peptide)
+		std::vector<int> CrosslinkSpectralMatch::GetPossibleCrosslinkerModSites(std::vector<char> &crosslinkerModSites, PeptideWithSetModifications *peptide)
 		{
 			std::vector<int> possibleXlPositions;
 			bool wildcard = crosslinkerModSites.Any([&] (std::any p)

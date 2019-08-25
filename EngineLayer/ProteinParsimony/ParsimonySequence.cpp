@@ -12,7 +12,7 @@ namespace EngineLayer
 			Protease = pwsm->DigestionParams.Protease;
 		}
 
-		std::wstring ParsimonySequence::getSequence() const
+		std::string ParsimonySequence::getSequence() const
 		{
 			return privateSequence;
 		}
@@ -25,7 +25,7 @@ namespace EngineLayer
 		bool ParsimonySequence::Equals(std::any obj)
 		{
 			ParsimonySequence *other = std::any_cast<ParsimonySequence*>(obj);
-			return other != nullptr && (getSequence() == L"" && other->getSequence() == L"" || getSequence() == other->getSequence()) && (getProtease() == nullptr && other->getProtease() == nullptr || getProtease()->Equals(other->getProtease()));
+			return other != nullptr && (getSequence() == "" && other->getSequence() == "" || getSequence() == other->getSequence()) && (getProtease() == nullptr && other->getProtease() == nullptr || getProtease()->Equals(other->getProtease()));
 		}
 
 		int ParsimonySequence::GetHashCode()

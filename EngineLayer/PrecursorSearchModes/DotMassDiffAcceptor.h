@@ -23,7 +23,7 @@ namespace EngineLayer
 			delete Tolerance;
 		}
 
-		DotMassDiffAcceptor(const std::wstring &FileNameAddition, std::vector<double> &acceptableMassShifts, Tolerance *tol);
+		DotMassDiffAcceptor(const std::string &FileNameAddition, std::vector<double> &acceptableMassShifts, Tolerance *tol);
 
 		int Accepts(double scanPrecursorMass, double peptideMass) override;
 
@@ -31,8 +31,8 @@ namespace EngineLayer
 
 		std::vector<AllowedIntervalWithNotch*> GetAllowedPrecursorMassIntervalsFromObservedMass(double peptideMonoisotopicMass) override;
 
-		std::wstring ToString() override;
+		std::string ToString();
 
-		std::wstring ToProseString() override;
+		std::string ToProseString() override;
 	};
 }

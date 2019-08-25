@@ -23,7 +23,7 @@ namespace EngineLayer
 			const std::vector<PeptideSpectralMatch*> NewPsms;
 
 		public:
-			ModificationAnalysisEngine(std::vector<PeptideSpectralMatch*> &newPsms, CommonParameters *commonParameters, std::vector<std::wstring> &nestedIds);
+			ModificationAnalysisEngine(std::vector<PeptideSpectralMatch*> &newPsms, CommonParameters *commonParameters, std::vector<std::string> &nestedIds);
 
 		protected:
 			MetaMorpheusEngineResults *RunSpecific() override;

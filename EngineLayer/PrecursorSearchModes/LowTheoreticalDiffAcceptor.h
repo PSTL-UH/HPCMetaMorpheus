@@ -23,8 +23,8 @@ namespace EngineLayer
 
 		std::vector<AllowedIntervalWithNotch*> GetAllowedPrecursorMassIntervalsFromObservedMass(double peptideMonoisotopicMass) override;
 
-		std::wstring ToProseString() override;
+		std::string ToProseString() override;
 
-		std::wstring ToString() override;
+		std::string ToString();
 	};
 }

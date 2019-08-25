@@ -27,21 +27,21 @@ namespace EngineLayer
 		bool privateIsContaminant = false;
 		std::vector<SpectraFileInfo*> privateFilesForQuantification;
 		std::unordered_set<Protein*> privateProteins;
-		std::wstring privateProteinGroupName;
+		std::string privateProteinGroupName;
 		double privateProteinGroupScore = 0;
 		std::unordered_set<PeptideWithSetModifications*> privateAllPeptides;
 		std::unordered_set<PeptideWithSetModifications*> privateUniquePeptides;
 		std::unordered_set<PeptideSpectralMatch*> privateAllPsmsBelowOnePercentFDR;
 		std::vector<double> privateSequenceCoveragePercent;
-		std::vector<std::wstring> privateSequenceCoverageDisplayList;
-		std::vector<std::wstring> privateSequenceCoverageDisplayListWithMods;
+		std::vector<std::string> privateSequenceCoverageDisplayList;
+		std::vector<std::string> privateSequenceCoverageDisplayListWithMods;
 		double privateQValue = 0;
 		double privateBestPeptideQValue = 0;
 		double privateBestPeptideScore = 0;
 		int privateCumulativeTarget = 0;
 		int privateCumulativeDecoy = 0;
 		bool privateDisplayModsOnPeptides = false;
-		std::vector<std::wstring> privateModsInfo;
+		std::vector<std::string> privateModsInfo;
 		std::unordered_map<SpectraFileInfo*, double> privateIntensitiesByFile;
 
 	public:
@@ -57,8 +57,8 @@ namespace EngineLayer
 		std::unordered_set<Protein*> getProteins() const;
 		void setProteins(const std::unordered_set<Protein*> &value);
 
-		std::wstring getProteinGroupName() const;
-		void setProteinGroupName(const std::wstring &value);
+		std::string getProteinGroupName() const;
+		void setProteinGroupName(const std::string &value);
 
 		double getProteinGroupScore() const;
 		void setProteinGroupScore(double value);
@@ -75,11 +75,11 @@ namespace EngineLayer
 		std::vector<double> getSequenceCoveragePercent() const;
 		void setSequenceCoveragePercent(const std::vector<double> &value);
 
-		std::vector<std::wstring> getSequenceCoverageDisplayList() const;
-		void setSequenceCoverageDisplayList(const std::vector<std::wstring> &value);
+		std::vector<std::string> getSequenceCoverageDisplayList() const;
+		void setSequenceCoverageDisplayList(const std::vector<std::string> &value);
 
-		std::vector<std::wstring> getSequenceCoverageDisplayListWithMods() const;
-		void setSequenceCoverageDisplayListWithMods(const std::vector<std::wstring> &value);
+		std::vector<std::string> getSequenceCoverageDisplayListWithMods() const;
+		void setSequenceCoverageDisplayListWithMods(const std::vector<std::string> &value);
 
 		double getQValue() const;
 		void setQValue(double value);
@@ -99,8 +99,8 @@ namespace EngineLayer
 		bool getDisplayModsOnPeptides() const;
 		void setDisplayModsOnPeptides(bool value);
 
-		std::vector<std::wstring> getModsInfo() const;
-		void setModsInfo(const std::vector<std::wstring> &value);
+		std::vector<std::string> getModsInfo() const;
+		void setModsInfo(const std::vector<std::string> &value);
 
 		std::unordered_map<SpectraFileInfo*, double> getIntensitiesByFile() const;
 		void setIntensitiesByFile(const std::unordered_map<SpectraFileInfo*, double> &value);
@@ -109,9 +109,9 @@ namespace EngineLayer
 		std::vector<Protein*> ListOfProteinsOrderedByAccession;
 
 	public:
-		std::wstring GetTabSeparatedHeader();
+		std::string GetTabSeparatedHeader();
 
-		std::wstring ToString() override;
+		std::string ToString();
 
 		// this method is only used internally, to make protein grouping faster
 		// this is NOT an output and is NOT used for protein FDR calculations
@@ -121,6 +121,6 @@ namespace EngineLayer
 
 		void MergeProteinGroupWith(ProteinGroup *other);
 
-		ProteinGroup *ConstructSubsetProteinGroup(const std::wstring &fullFilePath);
+		ProteinGroup *ConstructSubsetProteinGroup(const std::string &fullFilePath);
 	};
 }

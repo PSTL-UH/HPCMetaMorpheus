@@ -10,7 +10,7 @@ using namespace Proteomics::ProteolyticDigestion;
 namespace EngineLayer
 {
 
-	ProteinScoringAndFdrEngine::ProteinScoringAndFdrEngine(std::vector<ProteinGroup*> &proteinGroups, std::vector<PeptideSpectralMatch*> &newPsms, bool noOneHitWonders, bool treatModPeptidesAsDifferentPeptides, bool mergeIndistinguishableProteinGroups, CommonParameters *commonParameters, std::vector<std::wstring> &nestedIds) : MetaMorpheusEngine(commonParameters, nestedIds), NewPsms(newPsms), NoOneHitWonders(noOneHitWonders), TreatModPeptidesAsDifferentPeptides(treatModPeptidesAsDifferentPeptides), MergeIndistinguishableProteinGroups(mergeIndistinguishableProteinGroups), ProteinGroups(proteinGroups)
+	ProteinScoringAndFdrEngine::ProteinScoringAndFdrEngine(std::vector<ProteinGroup*> &proteinGroups, std::vector<PeptideSpectralMatch*> &newPsms, bool noOneHitWonders, bool treatModPeptidesAsDifferentPeptides, bool mergeIndistinguishableProteinGroups, CommonParameters *commonParameters, std::vector<std::string> &nestedIds) : MetaMorpheusEngine(commonParameters, nestedIds), NewPsms(newPsms), NoOneHitWonders(noOneHitWonders), TreatModPeptidesAsDifferentPeptides(treatModPeptidesAsDifferentPeptides), MergeIndistinguishableProteinGroups(mergeIndistinguishableProteinGroups), ProteinGroups(proteinGroups)
 	{
 	}
 
@@ -25,9 +25,9 @@ namespace EngineLayer
 		return myAnalysisResults;
 	}
 
-	std::wstring ProteinScoringAndFdrEngine::StripDecoyIdentifier(const std::wstring &proteinGroupName)
+	std::string ProteinScoringAndFdrEngine::StripDecoyIdentifier(const std::string &proteinGroupName)
 	{
-		return proteinGroupName.find(L"DECOY_") != std::wstring::npos ? StringHelper::replace(proteinGroupName, L"DECOY_", L"") : proteinGroupName;
+		return proteinGroupName.find("DECOY_") != std::string::npos ? StringHelper::replace(proteinGroupName, "DECOY_", "") : proteinGroupName;
 	}
 
 	void ProteinScoringAndFdrEngine::ScoreProteinGroups(std::vector<ProteinGroup*> &proteinGroups, std::vector<PeptideSpectralMatch*> &psmList)
@@ -38,7 +38,7 @@ namespace EngineLayer
 		{
 			if (psm->getFdrInfo()->getQValueNotch() <= 0.01 && psm->getFdrInfo()->getQValue() <= 0.01)
 			{
-				if ((TreatModPeptidesAsDifferentPeptides && psm->getFullSequence() != L"") || (!TreatModPeptidesAsDifferentPeptides && psm->getBaseSequence() != L""))
+				if ((TreatModPeptidesAsDifferentPeptides && psm->getFullSequence() != "") || (!TreatModPeptidesAsDifferentPeptides && psm->getBaseSequence() != ""))
 				{
 					for (auto pepWithSetMods : psm->BestMatchingPeptides->Select([&] (std::any p)
 					{
@@ -111,11 +111,11 @@ namespace EngineLayer
 					// check to make sure they have the same peptides, then merge them
 					for (auto p : pgsWithThisScore)
 					{
-						auto seqs1 = std::unordered_set<std::wstring>(p.AllPeptides->Select([&] (std::any x)
+						auto seqs1 = std::unordered_set<std::string>(p.AllPeptides->Select([&] (std::any x)
 						{
 							return x::FullSequence + x::DigestionParams::Protease;
 						}));
-						auto seqs2 = std::unordered_set<std::wstring>(pg[i].AllPeptides->Select([&] (std::any x)
+						auto seqs2 = std::unordered_set<std::string>(pg[i].AllPeptides->Select([&] (std::any x)
 						{
 							return x::FullSequence + x::DigestionParams::Protease;
 						}));
@@ -150,7 +150,7 @@ namespace EngineLayer
 			{
 				proteinGroups = proteinGroups.Where([&] (std::any p)
 				{
-					return p::IsDecoy || (std::unordered_set<std::wstring>(p::AllPeptides->Select([&] (std::any x)
+					return p::IsDecoy || (std::unordered_set<std::string>(p::AllPeptides->Select([&] (std::any x)
 					{
 						x::FullSequence;
 					})))->size() > 1;
@@ -160,7 +160,7 @@ namespace EngineLayer
 			{
 				proteinGroups = proteinGroups.Where([&] (std::any p)
 				{
-					return p::IsDecoy || (std::unordered_set<std::wstring>(p::AllPeptides->Select([&] (std::any x)
+					return p::IsDecoy || (std::unordered_set<std::string>(p::AllPeptides->Select([&] (std::any x)
 					{
 						x::BaseSequence;
 					})))->size() > 1;
@@ -170,15 +170,15 @@ namespace EngineLayer
 
 		// pair decoys and targets by accession
 		// then use the best peptide notch-QValue as the score for the protein group
-		std::unordered_map<std::wstring, std::vector<ProteinGroup*>> accessionToProteinGroup;
+		std::unordered_map<std::string, std::vector<ProteinGroup*>> accessionToProteinGroup;
 		for (auto pg : proteinGroups)
 		{
 			for (auto protein : pg->getProteins())
 			{
-				std::wstring stippedAccession = StripDecoyIdentifier(protein->Accession);
+				std::string stippedAccession = StripDecoyIdentifier(protein->Accession);
 
 				List<ProteinGroup*> groups;
-				std::unordered_map<std::wstring, std::vector<ProteinGroup*>>::const_iterator accessionToProteinGroup_iterator = accessionToProteinGroup.find(stippedAccession);
+				std::unordered_map<std::string, std::vector<ProteinGroup*>>::const_iterator accessionToProteinGroup_iterator = accessionToProteinGroup.find(stippedAccession);
 				if (accessionToProteinGroup_iterator != accessionToProteinGroup.end())
 				{
 					groups = accessionToProteinGroup_iterator->second;

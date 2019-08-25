@@ -23,6 +23,6 @@ namespace EngineLayer
 		std::vector<ProteinGroup*> getProteinGroups() const;
 		void setProteinGroups(const std::vector<ProteinGroup*> &value);
 
-		std::wstring ToString() override;
+		std::string ToString();
 	};
 }
