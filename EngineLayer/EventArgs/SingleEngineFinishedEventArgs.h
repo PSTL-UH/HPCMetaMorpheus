@@ -20,6 +20,6 @@ namespace EngineLayer
 
 		SingleEngineFinishedEventArgs(MetaMorpheusEngineResults *myResults);
 
-		std::wstring ToString() override;
+		std::string ToString();
 	};
 }

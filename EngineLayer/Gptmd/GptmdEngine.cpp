@@ -12,7 +12,7 @@ namespace EngineLayer
 	namespace Gptmd
 	{
 
-		GptmdEngine::GptmdEngine(std::vector<PeptideSpectralMatch*> &allIdentifications, std::vector<Modification*> &gptmdModifications, std::vector<std::tuple<double, double>> &combos, std::unordered_map<std::wstring, Tolerance*> &filePathToPrecursorMassTolerance, CommonParameters *commonParameters, std::vector<std::wstring> &nestedIds) : MetaMorpheusEngine(commonParameters, nestedIds), AllIdentifications(allIdentifications), Combos(combos), GptmdModifications(gptmdModifications), FilePathToPrecursorMassTolerance(filePathToPrecursorMassTolerance)
+		GptmdEngine::GptmdEngine(std::vector<PeptideSpectralMatch*> &allIdentifications, std::vector<Modification*> &gptmdModifications, std::vector<std::tuple<double, double>> &combos, std::unordered_map<std::string, Tolerance*> &filePathToPrecursorMassTolerance, CommonParameters *commonParameters, std::vector<std::string> &nestedIds) : MetaMorpheusEngine(commonParameters, nestedIds), AllIdentifications(allIdentifications), Combos(combos), GptmdModifications(gptmdModifications), FilePathToPrecursorMassTolerance(filePathToPrecursorMassTolerance)
 		{
 		}
 
@@ -41,23 +41,23 @@ namespace EngineLayer
 				}
 				indexUp++;
 			}
-			if (attemptToLocalize->LocationRestriction == L"Anywhere.")
+			if (attemptToLocalize->LocationRestriction == "Anywhere.")
 			{
 				return true;
 			}
-			if (attemptToLocalize->LocationRestriction == L"N-terminal." && (proteinOneBasedIndex <= 2))
+			if (attemptToLocalize->LocationRestriction == "N-terminal." && (proteinOneBasedIndex <= 2))
 			{
 				return true;
 			}
-			if (attemptToLocalize->LocationRestriction == L"Peptide N-terminal." && peptideOneBasedIndex == 1)
+			if (attemptToLocalize->LocationRestriction == "Peptide N-terminal." && peptideOneBasedIndex == 1)
 			{
 				return true;
 			}
-			if (attemptToLocalize->LocationRestriction == L"Peptide C-terminal." && peptideOneBasedIndex == peptideLength)
+			if (attemptToLocalize->LocationRestriction == "Peptide C-terminal." && peptideOneBasedIndex == peptideLength)
 			{
 				return true;
 			}
-			if (attemptToLocalize->LocationRestriction == L"C-terminal." && proteinOneBasedIndex == protein->Length)
+			if (attemptToLocalize->LocationRestriction == "C-terminal." && proteinOneBasedIndex == protein->Length)
 			{
 				return true;
 			}
@@ -66,7 +66,7 @@ namespace EngineLayer
 
 		MetaMorpheusEngineResults *GptmdEngine::RunSpecific()
 		{
-			auto modDict = std::unordered_map<std::wstring, std::unordered_set<std::tuple<int, Modification*>>>();
+			auto modDict = std::unordered_map<std::string, std::unordered_set<std::tuple<int, Modification*>>>();
 
 			int modsAdded = 0;
 			//foreach peptide in each psm and for each modification that matches the notch,
@@ -150,10 +150,10 @@ namespace EngineLayer
 			return new GptmdResults(this, modDict, modsAdded);
 		}
 
-		void GptmdEngine::AddIndexedMod(std::unordered_map<std::wstring, std::unordered_set<std::tuple<int, Modification*>>> &modDict, const std::wstring &proteinAccession, std::tuple<int, Modification*> &indexedMod)
+		void GptmdEngine::AddIndexedMod(std::unordered_map<std::string, std::unordered_set<std::tuple<int, Modification*>>> &modDict, const std::string &proteinAccession, std::tuple<int, Modification*> &indexedMod)
 		{
 			TValue hash;
-			std::unordered_map<std::wstring, std::unordered_set<std::tuple<int, Modification*>>>::const_iterator modDict_iterator = modDict.find(proteinAccession);
+			std::unordered_map<std::string, std::unordered_set<std::tuple<int, Modification*>>>::const_iterator modDict_iterator = modDict.find(proteinAccession);
 			if (modDict_iterator != modDict.end())
 			{
 				hash = modDict_iterator->second;

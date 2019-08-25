@@ -35,7 +35,7 @@ namespace EngineLayer
 				delete MyMsDataFile;
 			}
 
-			LocalizationEngine(std::vector<PeptideSpectralMatch*> &allResultingIdentifications, MsDataFile *myMsDataFile, CommonParameters *commonParameters, std::vector<std::wstring> &nestedIds);
+			LocalizationEngine(std::vector<PeptideSpectralMatch*> &allResultingIdentifications, MsDataFile *myMsDataFile, CommonParameters *commonParameters, std::vector<std::string> &nestedIds);
 
 		protected:
 			MetaMorpheusEngineResults *RunSpecific() override;

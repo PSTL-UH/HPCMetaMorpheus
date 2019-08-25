@@ -4,12 +4,12 @@
 namespace EngineLayer
 {
 
-	StringListEventArgs::StringListEventArgs(std::vector<std::wstring> &stringList)
+	StringListEventArgs::StringListEventArgs(std::vector<std::string> &stringList)
 	{
 		StringList = stringList;
 	}
 
-	std::vector<std::wstring> StringListEventArgs::getStringList() const
+	std::vector<std::string> StringListEventArgs::getStringList() const
 	{
 		return privateStringList;
 	}

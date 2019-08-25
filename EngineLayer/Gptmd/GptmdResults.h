@@ -19,17 +19,17 @@ namespace EngineLayer
 		class GptmdResults : public MetaMorpheusEngineResults
 		{
 		private:
-			std::unordered_map<std::wstring, std::unordered_set<std::tuple<int, Modification*>>> privateMods;
+			std::unordered_map<std::string, std::unordered_set<std::tuple<int, Modification*>>> privateMods;
 
 			const int ModsAdded;
 
 		public:
-			GptmdResults(MetaMorpheusEngine *s, std::unordered_map<std::wstring, std::unordered_set<std::tuple<int, Modification*>>> &mods, int modsAdded);
+			GptmdResults(MetaMorpheusEngine *s, std::unordered_map<std::string, std::unordered_set<std::tuple<int, Modification*>>> &mods, int modsAdded);
 
-				std::unordered_map<std::wstring, std::unordered_set<std::tuple<int, Modification*>>> getMods() const;
-				void setMods(const std::unordered_map<std::wstring, std::unordered_set<std::tuple<int, Modification*>>> &value);
+				std::unordered_map<std::string, std::unordered_set<std::tuple<int, Modification*>>> getMods() const;
+				void setMods(const std::unordered_map<std::string, std::unordered_set<std::tuple<int, Modification*>>> &value);
 
-			std::wstring ToString() override;
+			std::string ToString();
 		};
 	}
 }

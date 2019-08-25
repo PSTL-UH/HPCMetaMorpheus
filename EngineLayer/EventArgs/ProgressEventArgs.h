@@ -12,8 +12,8 @@ namespace EngineLayer
 	{
 	public:
 		int NewProgress = 0;
-		std::wstring V;
+		std::string V;
 
-		ProgressEventArgs(int newProgress, const std::wstring &v, std::vector<std::wstring> &nestedIDs);
+		ProgressEventArgs(int newProgress, const std::string &v, std::vector<std::string> &nestedIDs);
 	};
 }

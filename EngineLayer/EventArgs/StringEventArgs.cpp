@@ -4,12 +4,12 @@
 namespace EngineLayer
 {
 
-	StringEventArgs::StringEventArgs(const std::wstring &s, std::vector<std::wstring> &nestedIDs) : MyRecursiveEventArgs(nestedIDs)
+	StringEventArgs::StringEventArgs(const std::string &s, std::vector<std::string> &nestedIDs) : MyRecursiveEventArgs(nestedIDs)
 	{
 		this->S = s;
 	}
 
-	std::wstring StringEventArgs::getS() const
+	std::string StringEventArgs::getS() const
 	{
 		return privateS;
 	}

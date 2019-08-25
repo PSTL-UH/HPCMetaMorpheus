@@ -10,12 +10,12 @@ namespace EngineLayer
 	class SingleFileEventArgs : public MyRecursiveEventArgs
 	{
 	private:
-		std::wstring privateWrittenFile;
+		std::string privateWrittenFile;
 
 	public:
-		SingleFileEventArgs(const std::wstring &writtenFile, std::vector<std::wstring> &nestedIds);
+		SingleFileEventArgs(const std::string &writtenFile, std::vector<std::string> &nestedIds);
 
-		std::wstring getWrittenFile() const;
-		void setWrittenFile(const std::wstring &value);
+		std::string getWrittenFile() const;
+		void setWrittenFile(const std::string &value);
 	};
 }

@@ -42,7 +42,7 @@ namespace EngineLayer
 				delete DissociationType;
 			}
 
-			ModernSearchEngine(std::vector<PeptideSpectralMatch*> &globalPsms, std::vector<Ms2ScanWithSpecificMass*> &listOfSortedms2Scans, std::vector<PeptideWithSetModifications*> &peptideIndex, std::vector<std::vector<int>&> &fragmentIndex, int currentPartition, CommonParameters *commonParameters, MassDiffAcceptor *massDiffAcceptor, double maximumMassThatFragmentIonScoreIsDoubled, std::vector<std::wstring> &nestedIds);
+			ModernSearchEngine(std::vector<PeptideSpectralMatch*> &globalPsms, std::vector<Ms2ScanWithSpecificMass*> &listOfSortedms2Scans, std::vector<PeptideWithSetModifications*> &peptideIndex, std::vector<std::vector<int>&> &fragmentIndex, int currentPartition, CommonParameters *commonParameters, MassDiffAcceptor *massDiffAcceptor, double maximumMassThatFragmentIonScoreIsDoubled, std::vector<std::string> &nestedIds);
 
 		protected:
 			MetaMorpheusEngineResults *RunSpecific() override;

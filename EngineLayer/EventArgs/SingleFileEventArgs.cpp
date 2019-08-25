@@ -4,17 +4,17 @@
 namespace EngineLayer
 {
 
-	SingleFileEventArgs::SingleFileEventArgs(const std::wstring &writtenFile, std::vector<std::wstring> &nestedIds) : MyRecursiveEventArgs(nestedIds)
+	SingleFileEventArgs::SingleFileEventArgs(const std::string &writtenFile, std::vector<std::string> &nestedIds) : MyRecursiveEventArgs(nestedIds)
 	{
 		setWrittenFile(writtenFile);
 	}
 
-	std::wstring SingleFileEventArgs::getWrittenFile() const
+	std::string SingleFileEventArgs::getWrittenFile() const
 	{
 		return privateWrittenFile;
 	}
 
-	void SingleFileEventArgs::setWrittenFile(const std::wstring &value)
+	void SingleFileEventArgs::setWrittenFile(const std::string &value)
 	{
 		privateWrittenFile = value;
 	}

@@ -15,7 +15,7 @@ namespace EngineLayer
 	namespace ModernSearch
 	{
 
-		ModernSearchEngine::ModernSearchEngine(std::vector<PeptideSpectralMatch*> &globalPsms, std::vector<Ms2ScanWithSpecificMass*> &listOfSortedms2Scans, std::vector<PeptideWithSetModifications*> &peptideIndex, std::vector<std::vector<int>&> &fragmentIndex, int currentPartition, CommonParameters *commonParameters, MassDiffAcceptor *massDiffAcceptor, double maximumMassThatFragmentIonScoreIsDoubled, std::vector<std::wstring> &nestedIds) : MetaMorpheusEngine(commonParameters, nestedIds), FragmentIndex(fragmentIndex), PeptideSpectralMatches(globalPsms), ListOfSortedMs2Scans(listOfSortedms2Scans), PeptideIndex(peptideIndex), CurrentPartition(currentPartition + 1), MassDiffAcceptor(massDiffAcceptor), DissociationType(commonParameters->getDissociationType()), MaxMassThatFragmentIonScoreIsDoubled(maximumMassThatFragmentIonScoreIsDoubled)
+		ModernSearchEngine::ModernSearchEngine(std::vector<PeptideSpectralMatch*> &globalPsms, std::vector<Ms2ScanWithSpecificMass*> &listOfSortedms2Scans, std::vector<PeptideWithSetModifications*> &peptideIndex, std::vector<std::vector<int>&> &fragmentIndex, int currentPartition, CommonParameters *commonParameters, MassDiffAcceptor *massDiffAcceptor, double maximumMassThatFragmentIonScoreIsDoubled, std::vector<std::string> &nestedIds) : MetaMorpheusEngine(commonParameters, nestedIds), FragmentIndex(fragmentIndex), PeptideSpectralMatches(globalPsms), ListOfSortedMs2Scans(listOfSortedms2Scans), PeptideIndex(peptideIndex), CurrentPartition(currentPartition + 1), MassDiffAcceptor(massDiffAcceptor), DissociationType(commonParameters->getDissociationType()), MaxMassThatFragmentIonScoreIsDoubled(maximumMassThatFragmentIonScoreIsDoubled)
 		{
 		}
 
@@ -23,7 +23,7 @@ namespace EngineLayer
 		{
 			double progress = 0;
 			int oldPercentProgress = 0;
-			ProgressEventArgs tempVar(oldPercentProgress, L"Performing modern search... " + std::to_wstring(CurrentPartition) + L"/" + std::to_wstring(commonParameters->getTotalPartitions()), nestedIds);
+			ProgressEventArgs tempVar(oldPercentProgress, "Performing modern search... " + std::to_string(CurrentPartition) + "/" + std::to_string(commonParameters->getTotalPartitions()), nestedIds);
 			ReportProgress(&tempVar);
 
 			unsigned char byteScoreCutoff = static_cast<unsigned char>(commonParameters->getScoreCutoff());
@@ -114,7 +114,7 @@ namespace EngineLayer
 					if (percentProgress > oldPercentProgress)
 					{
 						oldPercentProgress = percentProgress;
-						ProgressEventArgs tempVar3(percentProgress, L"Performing modern search... " + std::to_wstring(CurrentPartition) + L"/" + std::to_wstring(commonParameters->getTotalPartitions()), nestedIds);
+						ProgressEventArgs tempVar3(percentProgress, "Performing modern search... " + std::to_string(CurrentPartition) + "/" + std::to_string(commonParameters->getTotalPartitions()), nestedIds);
 						ReportProgress(&tempVar3);
 					}
 				}

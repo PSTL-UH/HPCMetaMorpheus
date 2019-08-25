@@ -9,11 +9,11 @@ namespace EngineLayer
 	class StringListEventArgs : public EventArgs
 	{
 	private:
-		std::vector<std::wstring> privateStringList;
+		std::vector<std::string> privateStringList;
 
 	public:
-		StringListEventArgs(std::vector<std::wstring> &stringList);
+		StringListEventArgs(std::vector<std::string> &stringList);
 
-		std::vector<std::wstring> getStringList() const;
+		std::vector<std::string> getStringList() const;
 	};
 }

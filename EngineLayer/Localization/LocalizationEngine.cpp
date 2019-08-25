@@ -14,7 +14,7 @@ namespace EngineLayer
 	namespace Localization
 	{
 
-		LocalizationEngine::LocalizationEngine(std::vector<PeptideSpectralMatch*> &allResultingIdentifications, MsDataFile *myMsDataFile, CommonParameters *commonParameters, std::vector<std::wstring> &nestedIds) : MetaMorpheusEngine(commonParameters, nestedIds), AllResultingIdentifications(allResultingIdentifications), MyMsDataFile(myMsDataFile)
+		LocalizationEngine::LocalizationEngine(std::vector<PeptideSpectralMatch*> &allResultingIdentifications, MsDataFile *myMsDataFile, CommonParameters *commonParameters, std::vector<std::string> &nestedIds) : MetaMorpheusEngine(commonParameters, nestedIds), AllResultingIdentifications(allResultingIdentifications), MyMsDataFile(myMsDataFile)
 		{
 		}
 

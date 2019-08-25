@@ -10,11 +10,11 @@ namespace EngineLayer
 	class StringEventArgs : public MyRecursiveEventArgs
 	{
 	private:
-		std::wstring privateS;
+		std::string privateS;
 
 	public:
-		StringEventArgs(const std::wstring &s, std::vector<std::wstring> &nestedIDs);
+		StringEventArgs(const std::string &s, std::vector<std::string> &nestedIDs);
 
-		std::wstring getS() const;
+		std::string getS() const;
 	};
 }

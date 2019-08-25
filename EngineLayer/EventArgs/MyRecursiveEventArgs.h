@@ -11,6 +11,6 @@ namespace EngineLayer
 	public:
 		const std::vector<std::wstring> NestedIDs;
 
-		MyRecursiveEventArgs(std::vector<std::wstring> &nestedIDs);
+		MyRecursiveEventArgs(std::vector<std::string> &nestedIDs);
 	};
 }

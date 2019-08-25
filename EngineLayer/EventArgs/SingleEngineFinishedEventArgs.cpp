@@ -9,9 +9,8 @@ namespace EngineLayer
 	{
 	}
 
-	std::wstring SingleEngineFinishedEventArgs::ToString()
+	std::string SingleEngineFinishedEventArgs::ToString()
 	{
-//C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
 		return MyResults->ToString();
 	}
 }
