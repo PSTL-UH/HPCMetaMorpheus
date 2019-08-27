@@ -9,8 +9,8 @@
 
 # Generated automatically from Makefile.in by configure.
 
-MMORPHEUS_DIR      = /home/gabriel/XLMS/MetaMorpheus-master
-MMORPHEUS_INC_DIR  = $(MMMORPHEUS_DIR)/include 
+MMORPHEUS_DIR      = /home/gabriel/XLMS/metamorpheus-master
+MMORPHEUS_INC_DIR  = $(MMORPHEUS_DIR)/include 
 MMORPHEUS_LIB_DIR  = $(MMORPHEUS_DIR)/lib
 MMORPHEUS_LIB      = libmmorpheus.a
 
@@ -30,7 +30,7 @@ CC          = gcc
 CFLAGS      = -g -O0
 
 
-CXX         = g++
+CXX         = g++              
 CXXFLAGS    = -Wall -g -O0 -I$(MMORPHEUS_INC_DIR) -I$(MZLIB_INC_DIR) -I$(MZLIB_DIR) -I$(MZLIB_DIR)/MzLibUtil -std=c++17
 CXXLOCALFLAGS = -DNDEBUG
 LDFLAGS     = -L$(MMORPHEUS_LIB_DIR) -lmmorpheus -L$(MZLIB_LIB_DIR) -lmzlib

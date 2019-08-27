@@ -15,14 +15,14 @@ template<typename T>
 class TangibleEvent final
 {
 private:
-	std::unordered_map<std::wstring, T> namedListeners;
+	std::unordered_map<std::string, T> namedListeners;
 public:
-	void addListener(const std::wstring &methodName, T namedEventHandlerMethod)
+	void addListener(const std::string &methodName, T namedEventHandlerMethod)
 	{
 		if (namedListeners.find(methodName) == namedListeners.end())
 			namedListeners[methodName] = namedEventHandlerMethod;
 	}
-	void removeListener(const std::wstring &methodName)
+	void removeListener(const std::string &methodName)
 	{
 		if (namedListeners.find(methodName) != namedListeners.end())
 			namedListeners.erase(methodName);

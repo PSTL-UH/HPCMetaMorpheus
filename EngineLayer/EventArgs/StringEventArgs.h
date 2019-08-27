@@ -7,14 +7,14 @@
 
 namespace EngineLayer
 {
-	class StringEventArgs : public MyRecursiveEventArgs
-	{
-	private:
-		std::string privateS;
-
+    class StringEventArgs : public MyRecursiveEventArgs
+    {
+    private:
+        std::string privateS;
+        
 	public:
-		StringEventArgs(const std::string &s, std::vector<std::string> &nestedIDs);
-
-		std::string getS() const;
-	};
+        StringEventArgs(const std::string &s, std::vector<std::string> &nestedIDs);
+        
+        std::string getS() const;
+    };
 }
