@@ -7,6 +7,8 @@
 #include "EventArgs/SingleEngineEventArgs.h"
 #include "EventArgs/SingleEngineFinishedEventArgs.h"
 
+#include <ctime>
+
 using namespace Chemistry;
 using namespace MassSpectrometry;
 using namespace MzLibUtil;
@@ -15,138 +17,180 @@ using namespace Proteomics::Fragmentation;
 namespace EngineLayer
 {
 
-const std::unordered_map<DissociationType, double> MetaMorpheusEngine::complementaryIonConversionDictionary = std::unordered_map<DissociationType, double>
-{
-	{DissociationType::HCD, Constants::ProtonMass},
-	{DissociationType::ETD, 2 * Constants::ProtonMass},
-	{DissociationType::CID, Constants::ProtonMass}
-};
+    std::unordered_map<DissociationType, double> MetaMorpheusEngine::complementaryIonConversionDictionary = std::unordered_map<DissociationType, double>
+    {
+        {DissociationType::HCD, Constants::protonMass},
+	{DissociationType::ETD, 2 * Constants::protonMass},
+	{DissociationType::CID, Constants::protonMass}
+    };
 
-	MetaMorpheusEngine::MetaMorpheusEngine(CommonParameters *commonParameters, std::vector<std::string> &nestedIds) : commonParameters(commonParameters), nestedIds(nestedIds)
-	{
-	}
 
-	double MetaMorpheusEngine::CalculatePeptideScore(MsDataScan *thisScan, std::vector<MatchedFragmentIon*> &matchedFragmentIons, double maximumMassThatFragmentIonScoreIsDoubled)
-	{
-		double score = 0;
+    EventHandler<SingleEngineEventArgs> *StartingSingleEngineHander = new EventHandler<SingleEngineEventArgs>();
 
-		for (auto fragment : matchedFragmentIons)
-		{
-			double fragmentScore = 1 + (fragment->Intensity / thisScan->TotalIonCurrent);
-			score += fragmentScore;
+    EventHandler<SingleEngineFinishedEventArgs> *FinishedSingleEngineHandler = new EventHandler<SingleEngineFinishedEventArgs>();
 
-			if (fragment->NeutralTheoreticalProduct.NeutralMass <= maximumMassThatFragmentIonScoreIsDoubled)
-			{
-				score += fragmentScore;
-			}
-		}
+    EventHandler<StringEventArgs> *OutLabelStatusHandler = new EventHandler<StringEventArgs>();
 
-		return score;
-	}
+    EventHandler<StringEventArgs> *WarnHandler = new EventHandler<StringEventArgs>();
 
-	std::vector<MatchedFragmentIon*> MetaMorpheusEngine::MatchFragmentIons(Ms2ScanWithSpecificMass *scan, std::vector<Product*> &theoreticalProducts, CommonParameters *commonParameters)
-	{
-		auto matchedFragmentIons = std::vector<MatchedFragmentIon*>();
+    EventHandler<ProgressEventArgs> *OutProgressHandler = new EventHandler<ProgressEventArgs>();
 
-		// if the spectrum has no peaks
-		if (!scan->getExperimentalFragments().Any())
-		{
-			return matchedFragmentIons;
-		}
 
-		// search for ions in the spectrum
-		for (auto product : theoreticalProducts)
-		{
-			// unknown fragment mass; this only happens rarely for sequences with unknown amino acids
-			if (std::isnan(product->NeutralMass))
-			{
-				continue;
-			}
+    
+    MetaMorpheusEngine::MetaMorpheusEngine(CommonParameters *commonParameters, std::vector<std::string> &nestedIds) : commonParameters(commonParameters), nestedIds(nestedIds)
+    {
+    }
 
-			// get the closest peak in the spectrum to the theoretical peak
-			auto closestExperimentalMass = scan->GetClosestExperimentalFragmentMass(product->NeutralMass);
+    double MetaMorpheusEngine::CalculatePeptideScore(MsDataScan *thisScan, std::vector<MatchedFragmentIon*> &matchedFragmentIons, double maximumMassThatFragmentIonScoreIsDoubled)
+    {
+        double score = 0;
+        
+        for (auto fragment : matchedFragmentIons)
+        {
+            double fragmentScore = 1 + (fragment->Intensity / thisScan->getTotalIonCurrent());
+            score += fragmentScore;
+            
+            if (fragment->NeutralTheoreticalProduct->NeutralMass <= maximumMassThatFragmentIonScoreIsDoubled)
+            {
+                score += fragmentScore;
+            }
+        }
+        
+        return score;
+    }
+    
+    std::vector<MatchedFragmentIon*> MetaMorpheusEngine::MatchFragmentIons(Ms2ScanWithSpecificMass *scan, std::vector<Product*> &theoreticalProducts, CommonParameters *commonParameters)
+    {
+        auto matchedFragmentIons = std::vector<MatchedFragmentIon*>();
+        
+        // if the spectrum has no peaks
+        if (scan->getExperimentalFragments().empty())
+        {
+            return matchedFragmentIons;
+        }
+        
+        // search for ions in the spectrum
+        for (auto product : theoreticalProducts)
+        {
+            // unknown fragment mass; this only happens rarely for sequences with unknown amino acids
+            if (std::isnan(product->NeutralMass))
+            {
+                continue;
+            }
+            
+            // get the closest peak in the spectrum to the theoretical peak
+            auto closestExperimentalMass = scan->GetClosestExperimentalFragmentMass(product->NeutralMass);
+            
+            // is the mass error acceptable?
+            if (commonParameters->getProductMassTolerance()->Within(closestExperimentalMass->monoisotopicMass, product->NeutralMass) && closestExperimentalMass->charge <= scan->getPrecursorCharge())
+            {
+                MatchedFragmentIon tempVar(product,
+                                           Chemistry::ClassExtensions::ToMz(closestExperimentalMass->monoisotopicMass,
+                                                                            closestExperimentalMass->charge),
+                                           std::get<1>(closestExperimentalMass->peaks.front()), //intensity
+                                           closestExperimentalMass->charge);
+                matchedFragmentIons.push_back(&tempVar);
+            }
+        }
+        if (commonParameters->getAddCompIons())
+        {
+            DissociationType dtype = commonParameters->getDissociationType();
+            double d = complementaryIonConversionDictionary[dtype];
+            double protonMassShift = Chemistry::ClassExtensions::ToMass( d, 1);
+            
+            for (auto product : theoreticalProducts)
+            {
+                // unknown fragment mass or diagnostic ion or precursor; skip those
+                if (std::isnan(product->NeutralMass)       ||
+                    product->productType == ProductType::D ||
+                    product->productType == ProductType::M)
+                {
+                    continue;
+                }
+                
+                double compIonMass = scan->getPrecursorMass() + protonMassShift - product->NeutralMass;
+                
+                // get the closest peak in the spectrum to the theoretical peak
+                auto closestExperimentalMass = scan->GetClosestExperimentalFragmentMass(compIonMass);
+                
+                // is the mass error acceptable?
+                if (commonParameters->getProductMassTolerance()->Within(closestExperimentalMass->monoisotopicMass,
+                                                                        compIonMass)                                &&
+                    closestExperimentalMass->charge <= scan->getPrecursorCharge())
+                {
+                    MatchedFragmentIon tempVar2(product,
+                                                Chemistry::ClassExtensions::ToMz(closestExperimentalMass->monoisotopicMass,
+                                                                                 closestExperimentalMass->charge),
+                                                closestExperimentalMass->totalIntensity,
+                                                closestExperimentalMass->charge);
+                    matchedFragmentIons.push_back(&tempVar2);
+                }
+            }
+        }
+        
+        return matchedFragmentIons;
+    }
+    
+    MetaMorpheusEngineResults *MetaMorpheusEngine::Run()
+    {
+        StartingSingleEngine();
+        time_t start, stop;
+        time(&start);
+        auto myResults = RunSpecific();
+        time(&stop);
+        myResults->Time = difftime( stop, start);
+        FinishedSingleEngine(myResults);
+        
+        return myResults;
+    }
+    
+    std::string MetaMorpheusEngine::GetId()
+    {
+        // return std::string::Join(",", nestedIds);
+        std::string s = ",";
+        for ( auto n: nestedIds ) {
+            s += n;
+        }
+        return s;
+    }
+    
+    void MetaMorpheusEngine::Warn(const std::string &v)
+    {
+        StringEventArgs tempVar(v, nestedIds);
+        //WarnHandler +++ nullptr ? nullptrs : WarnHandler->Invoke(this, &tempVar);
+        if ( WarnHandler != nullptr) {
+            WarnHandler->Invoke(this, &tempVar);
+        }
+    }
 
-			// is the mass error acceptable?
-			if (commonParameters->getProductMassTolerance()->Within(closestExperimentalMass->monoisotopicMass, product->NeutralMass) && closestExperimentalMass->charge <= scan->getPrecursorCharge())
-			{
-				MatchedFragmentIon tempVar(product, closestExperimentalMass->monoisotopicMass.ToMz(closestExperimentalMass->charge), closestExperimentalMass->peaks.First().intensity, closestExperimentalMass->charge);
-				matchedFragmentIons.push_back(&tempVar);
-			}
-		}
-		if (commonParameters->getAddCompIons())
-		{
-			double protonMassShift = complementaryIonConversionDictionary[commonParameters->getDissociationType()].ToMass(1);
-
-			for (auto product : theoreticalProducts)
-			{
-				// unknown fragment mass or diagnostic ion or precursor; skip those
-				if (std::isnan(product->NeutralMass) || product->ProductType == ProductType::D || product->ProductType == ProductType::M)
-				{
-					continue;
-				}
-
-				double compIonMass = scan->getPrecursorMass() + protonMassShift - product->NeutralMass;
-
-				// get the closest peak in the spectrum to the theoretical peak
-				auto closestExperimentalMass = scan->GetClosestExperimentalFragmentMass(compIonMass);
-
-				// is the mass error acceptable?
-				if (commonParameters->getProductMassTolerance()->Within(closestExperimentalMass->monoisotopicMass, compIonMass) && closestExperimentalMass->charge <= scan->getPrecursorCharge())
-				{
-					MatchedFragmentIon tempVar2(product, closestExperimentalMass->monoisotopicMass.ToMz(closestExperimentalMass->charge), closestExperimentalMass->totalIntensity, closestExperimentalMass->charge);
-					matchedFragmentIons.push_back(&tempVar2);
-				}
-			}
-		}
-
-		return matchedFragmentIons;
-	}
-
-	MetaMorpheusEngineResults *MetaMorpheusEngine::Run()
-	{
-		StartingSingleEngine();
-		auto stopWatch = new Stopwatch();
-		stopWatch->Start();
-		auto myResults = RunSpecific();
-		stopWatch->Stop();
-		myResults->Time = stopWatch->Elapsed;
-		FinishedSingleEngine(myResults);
-
-		delete stopWatch;
-		return myResults;
-	}
-
-	std::string MetaMorpheusEngine::GetId()
-	{
-		return std::string::Join(",", nestedIds);
-	}
-
-	void MetaMorpheusEngine::Warn(const std::string &v)
-	{
-		StringEventArgs tempVar(v, nestedIds);
-		WarnHandler +== nullptr ? nullptr : WarnHandler::Invoke(this, &tempVar);
-	}
-
-	void MetaMorpheusEngine::Status(const std::string &v)
-	{
-		StringEventArgs tempVar(v, nestedIds);
-		OutLabelStatusHandler +== nullptr ? nullptr : OutLabelStatusHandler::Invoke(this, &tempVar);
-	}
-
-	void MetaMorpheusEngine::ReportProgress(ProgressEventArgs *v)
-	{
-		OutProgressHandler +== nullptr ? nullptr : OutProgressHandler::Invoke(this, v);
-	}
-
-	void MetaMorpheusEngine::StartingSingleEngine()
-	{
-		SingleEngineEventArgs tempVar(this);
-		StartingSingleEngineHander +== nullptr ? nullptr : StartingSingleEngineHander::Invoke(this, &tempVar);
-	}
-
-	void MetaMorpheusEngine::FinishedSingleEngine(MetaMorpheusEngineResults *myResults)
-	{
-		SingleEngineFinishedEventArgs tempVar(myResults);
-		FinishedSingleEngineHandler +== nullptr ? nullptr : FinishedSingleEngineHandler::Invoke(this, &tempVar);
-	}
+    void MetaMorpheusEngine::Status(const std::string &v)
+    {
+        StringEventArgs tempVar(v, nestedIds);
+        if ( OutLabelStatusHandler != nullptr ) {
+            OutLabelStatusHandler->Invoke(this, &tempVar);
+        }
+    }
+    
+    void MetaMorpheusEngine::ReportProgress(ProgressEventArgs *v)
+    {
+        if ( OutProgressHandler != nullptr ) {
+            OutProgressHandler->Invoke(this, v);
+        }
+    }
+    
+    void MetaMorpheusEngine::StartingSingleEngine()
+    {
+        SingleEngineEventArgs tempVar(this);
+        if ( StartingSingleEngineHander != nullptr ) {
+            StartingSingleEngineHander->Invoke(this, &tempVar);
+        }
+    }
+    
+    void MetaMorpheusEngine::FinishedSingleEngine(MetaMorpheusEngineResults *myResults)
+    {
+        SingleEngineFinishedEventArgs tempVar(myResults);
+        if ( FinishedSingleEngineHandler != nullptr ) {
+            FinishedSingleEngineHandler->Invoke(this, &tempVar);
+        }
+    }
 }

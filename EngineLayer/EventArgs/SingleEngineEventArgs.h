@@ -19,5 +19,11 @@ namespace EngineLayer
         
         MetaMorpheusEngine *getMyEngine() const;
         void setMyEngine(MetaMorpheusEngine *value);
+
+        bool Equals( EventArgs *obj) const override;
+    
+        int GetHashCode() const override;
+    
+        std::string ToString() const override; 
     };
 }

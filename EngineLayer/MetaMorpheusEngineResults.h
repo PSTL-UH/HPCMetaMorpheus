@@ -1,13 +1,12 @@
 ﻿#pragma once
 
 #include <string>
-#include <sys/time.h>
 
 #include "stringbuilder.h"
 
 //C# TO C++ CONVERTER NOTE: Forward class declarations:
-namespace EngineLayer { class MetaMorpheusEngine; }
-
+//namespace EngineLayer { class MetaMorpheusEngine; }
+#include "MetaMorpheusEngine.h"
 
 namespace EngineLayer
 {
@@ -18,7 +17,7 @@ namespace EngineLayer
         
     public:
         //TimeSpan Time;
-        struct timeval Time;
+        double Time;
 
         MetaMorpheusEngineResults(MetaMorpheusEngine *s);
         

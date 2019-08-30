@@ -2,8 +2,8 @@
 
 #include <string>
 #include "EventArgs.h"
-#include "../MetaMorpheusEngineResults.h"
-
+//#include "../MetaMorpheusEngineResults.h"
+namespace EngineLayer { class MetaMorpheusEngineResults; }
 
 namespace EngineLayer
 {
@@ -14,11 +14,15 @@ namespace EngineLayer
         
         virtual ~SingleEngineFinishedEventArgs()
         {
-            delete MyResults;
+            //delete MyResults;
         }
         
         SingleEngineFinishedEventArgs(MetaMorpheusEngineResults *myResults);
         
-        std::string ToString();
+        bool Equals( EventArgs *obj) const override;
+    
+        int GetHashCode() const override;
+    
+        std::string ToString() const override;
     };
 }

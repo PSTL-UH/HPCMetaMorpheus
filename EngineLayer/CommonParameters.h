@@ -105,7 +105,7 @@ namespace EngineLayer
         void setTotalPartitions(int value);
         Tolerance *getProductMassTolerance() const;                
         void setProductMassTolerance(Tolerance *value);
-        bool setAddCompIons() const;                
+        bool getAddCompIons() const;                
         void setAddCompIons( bool value);
         double getScoreCutoff() const;                
         void setScoreCutoff(double);                

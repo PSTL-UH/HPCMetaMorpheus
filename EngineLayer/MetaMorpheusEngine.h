@@ -4,13 +4,14 @@
 #include <unordered_map>
 #include <vector>
 #include <cmath>
-#include "tangible_event.h"
 
 //C# TO C++ CONVERTER NOTE: Forward class declarations:
 //namespace EngineLayer { class CommonParameters; }
 #include "CommonParameters.h"
 
-namespace EngineLayer { class Ms2ScanWithSpecificMass; }
+//namespace EngineLayer { class Ms2ScanWithSpecificMass; }
+#include "Ms2ScanWithSpecificMass.h"
+
 namespace EngineLayer { class MetaMorpheusEngineResults; }
 
 //namespace EngineLayer { class ProgressEventArgs; }
@@ -19,6 +20,7 @@ namespace EngineLayer { class MetaMorpheusEngineResults; }
 #include "EventArgs/SingleEngineFinishedEventArgs.h"
 #include "EventArgs/StringEventArgs.h"
 
+#include "EventHandler.h"
 
 #include "Chemistry/Chemistry.h"
 using namespace Chemistry;
@@ -37,7 +39,6 @@ namespace EngineLayer
 	class MetaMorpheusEngine
 	{
 	protected:
-		static const std::unordered_map<DissociationType, double> complementaryIonConversionDictionary;
 
 		CommonParameters *const commonParameters;
 
@@ -53,15 +54,17 @@ namespace EngineLayer
 		MetaMorpheusEngine(CommonParameters *commonParameters, std::vector<std::string> &nestedIds);
 
 	public:
-		static TangibleEvent<EventHandler<SingleEngineEventArgs>> *StartingSingleEngineHander = new TangibleEvent<EventHandler<SingleEngineEventArgs>>();
+		static std::unordered_map<DissociationType, double> complementaryIonConversionDictionary;
 
-		static TangibleEvent<EventHandler<SingleEngineFinishedEventArgs>> *FinishedSingleEngineHandler = new TangibleEvent<EventHandler<SingleEngineFinishedEventArgs>>();
+		static EventHandler<SingleEngineEventArgs> *StartingSingleEngineHander;
 
-		static TangibleEvent<EventHandler<StringEventArgs>> *OutLabelStatusHandler = new TangibleEvent<EventHandler<StringEventArgs>>();
+		static EventHandler<SingleEngineFinishedEventArgs> *FinishedSingleEngineHandler;
 
-		static TangibleEvent<EventHandler<StringEventArgs>> *WarnHandler = new TangibleEvent<EventHandler<StringEventArgs>>();
+		static EventHandler<StringEventArgs> *OutLabelStatusHandler;
 
-		static TangibleEvent<EventHandler<ProgressEventArgs>> *OutProgressHandler = new TangibleEvent<EventHandler<ProgressEventArgs>>();
+		static EventHandler<StringEventArgs> *WarnHandler;
+
+		static EventHandler<ProgressEventArgs> *OutProgressHandler;
 
 		static double CalculatePeptideScore(MsDataScan *thisScan, std::vector<MatchedFragmentIon*> &matchedFragmentIons, double maximumMassThatFragmentIonScoreIsDoubled);
 

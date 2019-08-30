@@ -212,7 +212,7 @@ namespace EngineLayer
             privateProductMassTolerance = value;
         }
 
-        bool CommonParameters::setAddCompIons() const
+        bool CommonParameters::getAddCompIons() const
         {
             return privateAddCompIons;
         }
