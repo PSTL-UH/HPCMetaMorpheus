@@ -4,17 +4,17 @@
 namespace TaskLayer
 {
 
-	SingleTaskEventArgs::SingleTaskEventArgs(const std::wstring &displayName)
+	SingleTaskEventArgs::SingleTaskEventArgs(const std::string &displayName)
 	{
 		this->setDisplayName(displayName);
 	}
 
-	std::wstring SingleTaskEventArgs::getDisplayName() const
+	std::string SingleTaskEventArgs::getDisplayName() const
 	{
 		return privateDisplayName;
 	}
 
-	void SingleTaskEventArgs::setDisplayName(const std::wstring &value)
+	void SingleTaskEventArgs::setDisplayName(const std::string &value)
 	{
 		privateDisplayName = value;
 	}

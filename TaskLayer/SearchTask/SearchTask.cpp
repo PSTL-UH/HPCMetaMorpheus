@@ -54,7 +54,7 @@ namespace TaskLayer
 		privateSearchParameters = value;
 	}
 
-	MassDiffAcceptor *SearchTask::GetMassDiffAcceptor(Tolerance *precursorMassTolerance, MassDiffAcceptorType massDiffAcceptorType, const std::wstring &customMdac)
+	MassDiffAcceptor *SearchTask::GetMassDiffAcceptor(Tolerance *precursorMassTolerance, MassDiffAcceptorType massDiffAcceptorType, const std::string &customMdac)
 	{
 		switch (massDiffAcceptorType)
 		{
@@ -69,16 +69,16 @@ namespace TaskLayer
 				}
 
 			case MassDiffAcceptorType::OneMM:
-				return new DotMassDiffAcceptor(L"1mm", {0, 1.0029}, precursorMassTolerance);
+				return new DotMassDiffAcceptor("1mm", {0, 1.0029}, precursorMassTolerance);
 
 			case MassDiffAcceptorType::TwoMM:
-				return new DotMassDiffAcceptor(L"2mm", {0, 1.0029, 2.0052}, precursorMassTolerance);
+				return new DotMassDiffAcceptor("2mm", {0, 1.0029, 2.0052}, precursorMassTolerance);
 
 			case MassDiffAcceptorType::ThreeMM:
-				return new DotMassDiffAcceptor(L"3mm", {0, 1.0029, 2.0052, 3.0077}, precursorMassTolerance);
+				return new DotMassDiffAcceptor("3mm", {0, 1.0029, 2.0052, 3.0077}, precursorMassTolerance);
 
 			case MassDiffAcceptorType::ModOpen:
-				return new IntervalMassDiffAcceptor(L"-187andUp", std::vector<DoubleRange*> {new DoubleRange(-187, std::numeric_limits<double>::infinity())});
+				return new IntervalMassDiffAcceptor("-187andUp", std::vector<DoubleRange*> {new DoubleRange(-187, std::numeric_limits<double>::infinity())});
 
 			case MassDiffAcceptorType::Open:
 				return new OpenSearchMode();
@@ -87,16 +87,16 @@ namespace TaskLayer
 				return ParseSearchMode(customMdac);
 
 			default:
-				throw MetaMorpheusException(L"Unknown MassDiffAcceptorType");
+				throw MetaMorpheusException("Unknown MassDiffAcceptorType");
 		}
 	}
 
-	MyTaskResults *SearchTask::RunSpecific(const std::wstring &OutputFolder, std::vector<DbForTask*> &dbFilenameList, std::vector<std::wstring> &currentRawFileList, const std::wstring &taskId, std::vector<FileSpecificParameters*> &fileSettingsList)
+	MyTaskResults *SearchTask::RunSpecific(const std::string &OutputFolder, std::vector<DbForTask*> &dbFilenameList, std::vector<std::string> &currentRawFileList, const std::string &taskId, std::vector<FileSpecificParameters*> &fileSettingsList)
 	{
 		// disable quantification if a .mgf is being used
 		if (getSearchParameters()->getDoQuantification() && currentRawFileList.Any([&] (std::any x)
 		{
-			Path::GetExtension(x).Equals(L".mgf", StringComparison::OrdinalIgnoreCase);
+			Path::GetExtension(x).Equals(".mgf", StringComparison::OrdinalIgnoreCase);
 		}))
 		{
 			getSearchParameters()->setDoQuantification(false);
@@ -111,32 +111,32 @@ namespace TaskLayer
 		std::vector<Protein*> proteinList = LoadProteins(taskId, dbFilenameList, getSearchParameters()->getSearchTarget(), getSearchParameters()->getDecoyType(), localizeableModificationTypes, getCommonParameters());
 
 		// write prose settings
-		ProseCreatedWhileRunning->append(L"The following search settings were used: ");
-		ProseCreatedWhileRunning->append(L"protease = " + getCommonParameters()->getDigestionParams()->Protease + L"; ");
-		ProseCreatedWhileRunning->append(L"maximum missed cleavages = " + getCommonParameters()->getDigestionParams()->MaxMissedCleavages + L"; ");
-		ProseCreatedWhileRunning->append(L"minimum peptide length = " + getCommonParameters()->getDigestionParams()->MinPeptideLength + L"; ");
-		ProseCreatedWhileRunning->append(getCommonParameters()->getDigestionParams()->MaxPeptideLength == std::numeric_limits<int>::max() ? L"maximum peptide length = unspecified; " : L"maximum peptide length = " + getCommonParameters()->getDigestionParams()->MaxPeptideLength + L"; ");
-		ProseCreatedWhileRunning->append(L"initiator methionine behavior = " + getCommonParameters()->getDigestionParams()->InitiatorMethionineBehavior + L"; ");
-		ProseCreatedWhileRunning->append(L"fixed modifications = " + std::wstring::Join(L", ", fixedModifications->Select([&] (std::any m)
+		ProseCreatedWhileRunning->append("The following search settings were used: ");
+		ProseCreatedWhileRunning->append("protease = " + getCommonParameters()->getDigestionParams()->Protease + "; ");
+		ProseCreatedWhileRunning->append("maximum missed cleavages = " + getCommonParameters()->getDigestionParams()->MaxMissedCleavages + "; ");
+		ProseCreatedWhileRunning->append("minimum peptide length = " + getCommonParameters()->getDigestionParams()->MinPeptideLength + "; ");
+		ProseCreatedWhileRunning->append(getCommonParameters()->getDigestionParams()->MaxPeptideLength == std::numeric_limits<int>::max() ? "maximum peptide length = unspecified; " : "maximum peptide length = " + getCommonParameters()->getDigestionParams()->MaxPeptideLength + "; ");
+		ProseCreatedWhileRunning->append("initiator methionine behavior = " + getCommonParameters()->getDigestionParams()->InitiatorMethionineBehavior + "; ");
+		ProseCreatedWhileRunning->append("fixed modifications = " + std::string::Join(", ", fixedModifications->Select([&] (std::any m)
 		{
 			m::IdWithMotif;
-		})) + L"; ");
-		ProseCreatedWhileRunning->append(L"variable modifications = " + std::wstring::Join(L", ", variableModifications->Select([&] (std::any m)
+		})) + "; ");
+		ProseCreatedWhileRunning->append("variable modifications = " + std::string::Join(", ", variableModifications->Select([&] (std::any m)
 		{
 			m::IdWithMotif;
-		})) + L"; ");
-		ProseCreatedWhileRunning->append(L"max mods per peptide = " + getCommonParameters()->getDigestionParams()->MaxModsForPeptide + L"; ");
-		ProseCreatedWhileRunning->append(L"max modification isoforms = " + getCommonParameters()->getDigestionParams()->MaxModificationIsoforms + L"; ");
-		ProseCreatedWhileRunning->append(L"precursor mass tolerance = " + getCommonParameters()->getPrecursorMassTolerance() + L"; ");
-		ProseCreatedWhileRunning->append(L"product mass tolerance = " + getCommonParameters()->getProductMassTolerance() + L"; ");
-		ProseCreatedWhileRunning->append(L"report PSM ambiguity = " + StringHelper::toString(getCommonParameters()->getReportAllAmbiguity()) + L". ");
-		ProseCreatedWhileRunning->append(L"The combined search database contained " + proteinList.size()([&] (std::any p)
+		})) + "; ");
+		ProseCreatedWhileRunning->append("max mods per peptide = " + getCommonParameters()->getDigestionParams()->MaxModsForPeptide + "; ");
+		ProseCreatedWhileRunning->append("max modification isoforms = " + getCommonParameters()->getDigestionParams()->MaxModificationIsoforms + "; ");
+		ProseCreatedWhileRunning->append("precursor mass tolerance = " + getCommonParameters()->getPrecursorMassTolerance() + "; ");
+		ProseCreatedWhileRunning->append("product mass tolerance = " + getCommonParameters()->getProductMassTolerance() + "; ");
+		ProseCreatedWhileRunning->append("report PSM ambiguity = " + StringHelper::toString(getCommonParameters()->getReportAllAmbiguity()) + ". ");
+		ProseCreatedWhileRunning->append("The combined search database contained " + proteinList.size()([&] (std::any p)
 		{
 			!p::IsDecoy;
-		}) + L" non-decoy protein entries including " + proteinList.size()([&] (std::any p)
+		}) + " non-decoy protein entries including " + proteinList.size()([&] (std::any p)
 		{
 			p::IsContaminant;
-		}) + L" contaminant sequences. ");
+		}) + " contaminant sequences. ");
 
 		// start the search task
 		MyTaskResults = new MyTaskResults(this);
@@ -163,10 +163,10 @@ namespace TaskLayer
 		std::any indexLock = std::any();
 		std::any psmLock = std::any();
 
-		Status(L"Searching files...", taskId);
-		Status(L"Searching files...", std::vector<std::wstring> {taskId, L"Individual Spectra Files"});
+		Status("Searching files...", taskId);
+		Status("Searching files...", std::vector<std::string> {taskId, "Individual Spectra Files"});
 
-		std::unordered_map<std::wstring, std::vector<int>> numMs2SpectraPerFile;
+		std::unordered_map<std::string, std::vector<int>> numMs2SpectraPerFile;
 		for (int spectraFileIndex = 0; spectraFileIndex < currentRawFileList.size(); spectraFileIndex++)
 		{
 			if (GlobalVariables::getStopLoops())
@@ -177,17 +177,17 @@ namespace TaskLayer
 			auto origDataFile = currentRawFileList[spectraFileIndex];
 
 			// mark the file as in-progress
-			StartingDataFile(origDataFile, std::vector<std::wstring> {taskId, L"Individual Spectra Files", origDataFile});
+			StartingDataFile(origDataFile, std::vector<std::string> {taskId, "Individual Spectra Files", origDataFile});
 
 			EngineLayer::CommonParameters *combinedParams = SetAllFileSpecificCommonParams(getCommonParameters(), fileSettingsList[spectraFileIndex]);
 
 			MassDiffAcceptor *massDiffAcceptor = GetMassDiffAcceptor(combinedParams->getPrecursorMassTolerance(), getSearchParameters()->getMassDiffAcceptorType(), getSearchParameters()->getCustomMdac());
 
-			auto thisId = std::vector<std::wstring> {taskId, L"Individual Spectra Files", origDataFile};
+			auto thisId = std::vector<std::string> {taskId, "Individual Spectra Files", origDataFile};
 			NewCollection(FileSystem::getFileName(origDataFile), thisId);
-			Status(L"Loading spectra file...", thisId);
+			Status("Loading spectra file...", thisId);
 			MsDataFile *myMsDataFile = myFileManager->LoadFile(origDataFile, std::make_optional(combinedParams->getTopNpeaks()), std::make_optional(combinedParams->getMinRatio()), combinedParams->getTrimMs1Peaks(), combinedParams->getTrimMsMsPeaks(), combinedParams);
-			Status(L"Getting ms2 scans...", thisId);
+			Status("Getting ms2 scans...", thisId);
 			std::vector<Ms2ScanWithSpecificMass*> arrayOfMs2ScansSortedByMass = GetMs2Scans(myMsDataFile, origDataFile, combinedParams).OrderBy([&] (std::any b)
 			{
 				b::PrecursorMass;
@@ -209,11 +209,11 @@ namespace TaskLayer
 					std::vector<PeptideWithSetModifications*> peptideIndex;
 					std::vector<Protein*> proteinListSubset = proteinList.GetRange(currentPartition * proteinList.size() / combinedParams->getTotalPartitions(), ((currentPartition + 1) * proteinList.size() / combinedParams->getTotalPartitions()) - (currentPartition * proteinList.size() / combinedParams->getTotalPartitions()));
 
-					Status(L"Getting fragment dictionary...", std::vector<std::wstring> {taskId});
+					Status("Getting fragment dictionary...", std::vector<std::string> {taskId});
 					auto indexEngine = new IndexingEngine(proteinListSubset, variableModifications, fixedModifications, currentPartition, getSearchParameters()->getDecoyType(), combinedParams, getSearchParameters()->getMaxFragmentSize(), false, dbFilenameList.Select([&] (std::any p)
 					{
 						new FileInfo(p::FilePath);
-					}).ToList(), std::vector<std::wstring> {taskId});
+					}).ToList(), std::vector<std::string> {taskId});
 					std::vector<std::vector<int>> fragmentIndex;
 					std::vector<std::vector<int>> precursorIndex;
 					{
@@ -221,12 +221,12 @@ namespace TaskLayer
 						GenerateIndexes(indexEngine, dbFilenameList, peptideIndex, fragmentIndex, precursorIndex, proteinList, GlobalVariables::getAllModsKnown().ToList(), taskId);
 					}
 
-					Status(L"Searching files...", taskId);
+					Status("Searching files...", taskId);
 
 					ModernSearchEngine tempVar(fileSpecificPsms, arrayOfMs2ScansSortedByMass, peptideIndex, fragmentIndex, currentPartition, combinedParams, massDiffAcceptor, getSearchParameters()->getMaximumMassThatFragmentIonScoreIsDoubled(), thisId);
 					(&tempVar)->Run();
 
-					ProgressEventArgs tempVar2(100, L"Done with search " + std::to_wstring(currentPartition + 1) + L"/" + std::to_wstring(combinedParams->getTotalPartitions()) + L"!", thisId);
+					ProgressEventArgs tempVar2(100, "Done with search " + std::to_string(currentPartition + 1) + "/" + std::to_string(combinedParams->getTotalPartitions()) + "!", thisId);
 					ReportProgress(&tempVar2);
 
 //C# TO C++ CONVERTER TODO TASK: A 'delete indexEngine' statement was not added since indexEngine was passed to a method or constructor. Handle memory management manually.
@@ -262,22 +262,22 @@ namespace TaskLayer
 						std::vector<std::vector<int>> fragmentIndex(1);
 						std::vector<std::vector<int>> precursorIndex(1);
 
-						Status(L"Getting fragment dictionary...", std::vector<std::wstring> {taskId});
+						Status("Getting fragment dictionary...", std::vector<std::string> {taskId});
 						auto indexEngine = new IndexingEngine(proteinListSubset, variableModifications, fixedModifications, currentPartition, getSearchParameters()->getDecoyType(), paramToUse, getSearchParameters()->getMaxFragmentSize(), true, dbFilenameList.Select([&] (std::any p)
 						{
 							new FileInfo(p::FilePath);
-						}).ToList(), std::vector<std::wstring> {taskId});
+						}).ToList(), std::vector<std::string> {taskId});
 						{
 							std::lock_guard<std::mutex> lock(indexLock);
 							GenerateIndexes(indexEngine, dbFilenameList, peptideIndex, fragmentIndex, precursorIndex, proteinList, GlobalVariables::getAllModsKnown().ToList(), taskId);
 						}
 
-						Status(L"Searching files...", taskId);
+						Status("Searching files...", taskId);
 
 						NonSpecificEnzymeSearchEngine tempVar3(fileSpecificPsmsSeparatedByFdrCategory, arrayOfMs2ScansSortedByMass, peptideIndex, fragmentIndex, precursorIndex, currentPartition, paramToUse, massDiffAcceptor, getSearchParameters()->getMaximumMassThatFragmentIonScoreIsDoubled(), thisId);
 						(&tempVar3)->Run();
 
-						ProgressEventArgs tempVar4(100, L"Done with search " + std::to_wstring(currentPartition + 1) + L"/" + std::to_wstring(paramToUse->getTotalPartitions()) + L"!", thisId);
+						ProgressEventArgs tempVar4(100, "Done with search " + std::to_string(currentPartition + 1) + "/" + std::to_string(paramToUse->getTotalPartitions()) + "!", thisId);
 						ReportProgress(&tempVar4);
 
 //C# TO C++ CONVERTER TODO TASK: A 'delete indexEngine' statement was not added since indexEngine was passed to a method or constructor. Handle memory management manually.
@@ -297,11 +297,11 @@ namespace TaskLayer
 			// classic search
 			else
 			{
-				Status(L"Starting search...", thisId);
+				Status("Starting search...", thisId);
 				ClassicSearchEngine tempVar5(fileSpecificPsms, arrayOfMs2ScansSortedByMass, variableModifications, fixedModifications, proteinList, massDiffAcceptor, combinedParams, thisId);
 				(&tempVar5)->Run();
 
-				ProgressEventArgs tempVar6(100, L"Done with search!", thisId);
+				ProgressEventArgs tempVar6(100, "Done with search!", thisId);
 				ReportProgress(&tempVar6);
 			}
 
@@ -311,12 +311,12 @@ namespace TaskLayer
 			}
 
 			completedFiles++;
-			FinishedDataFile(origDataFile, std::vector<std::wstring> {taskId, L"Individual Spectra Files", origDataFile});
-			ProgressEventArgs tempVar7(completedFiles / currentRawFileList.size(), L"Searching...", new std::vector<std::wstring> {taskId, L"Individual Spectra Files"});
+			FinishedDataFile(origDataFile, std::vector<std::string> {taskId, "Individual Spectra Files", origDataFile});
+			ProgressEventArgs tempVar7(completedFiles / currentRawFileList.size(), "Searching...", new std::vector<std::string> {taskId, "Individual Spectra Files"});
 			ReportProgress(&tempVar7);
 		}
 
-		ProgressEventArgs tempVar8(100, L"Done with all searches!", new std::vector<std::wstring> {taskId, L"Individual Spectra Files"});
+		ProgressEventArgs tempVar8(100, "Done with all searches!", new std::vector<std::string> {taskId, "Individual Spectra Files"});
 		ReportProgress(&tempVar8);
 
 		int numNotches = GetNumNotches(getSearchParameters()->getMassDiffAcceptorType(), getSearchParameters()->getCustomMdac());
@@ -342,7 +342,7 @@ namespace TaskLayer
 		parameters->setMyFileManager(myFileManager);
 		parameters->setNumNotches(numNotches);
 		parameters->setOutputFolder(OutputFolder);
-		parameters->setIndividualResultsOutputFolder(FileSystem::combine(OutputFolder, L"Individual File Results"));
+		parameters->setIndividualResultsOutputFolder(FileSystem::combine(OutputFolder, "Individual File Results"));
 		parameters->setFlashLfqResults(flashLfqResults);
 		parameters->setFileSettingsList(fileSettingsList);
 		parameters->setNumMs2SpectraPerFile(numMs2SpectraPerFile);
@@ -357,7 +357,7 @@ namespace TaskLayer
 		return postProcessing->Run();
 	}
 
-	int SearchTask::GetNumNotches(MassDiffAcceptorType massDiffAcceptorType, const std::wstring &customMdac)
+	int SearchTask::GetNumNotches(MassDiffAcceptorType massDiffAcceptorType, const std::string &customMdac)
 	{
 		switch (massDiffAcceptorType)
 		{
@@ -377,11 +377,11 @@ namespace TaskLayer
 				return ParseSearchMode(customMdac)->NumNotches;
 
 			default:
-				throw MetaMorpheusException(L"Unknown mass difference acceptor type");
+				throw MetaMorpheusException("Unknown mass difference acceptor type");
 		}
 	}
 
-	MassDiffAcceptor *SearchTask::ParseSearchMode(const std::wstring &text)
+	MassDiffAcceptor *SearchTask::ParseSearchMode(const std::string &text)
 	{
 		MassDiffAcceptor *massDiffAcceptor = nullptr;
 
@@ -392,19 +392,19 @@ namespace TaskLayer
 //C# TO C++ CONVERTER NOTE: The following 'switch' operated on a string variable and was converted to C++ 'if-else' logic:
 //			switch (split[1])
 //ORIGINAL LINE: case "dot":
-			if (split[1] == L"dot")
+			if (split[1] == "dot")
 			{
 					std::vector<double> massShifts = Array::ConvertAll(StringHelper::split(split[4], L','), double::Parse);
-					std::wstring newString = StringHelper::replace(split[2], L"�", L"");
-					double toleranceValue = std::stod(newString, CultureInfo::InvariantCulture);
+					std::string nestring = StringHelper::replace(split[2], "�", "");
+					double toleranceValue = std::stod(nestring, CultureInfo::InvariantCulture);
 //C# TO C++ CONVERTER TODO TASK: There is no direct native C++ equivalent to this .NET String method:
-					if (split[3].ToUpperInvariant() == L"PPM")
+					if (split[3].ToUpperInvariant() == "PPM")
 					{
 						PpmTolerance tempVar(toleranceValue);
 						massDiffAcceptor = new DotMassDiffAcceptor(split[0], massShifts, &tempVar);
 					}
 //C# TO C++ CONVERTER TODO TASK: There is no direct native C++ equivalent to this .NET String method:
-					else if (split[3].ToUpperInvariant() == L"DA")
+					else if (split[3].ToUpperInvariant() == "DA")
 					{
 						AbsoluteTolerance tempVar2(toleranceValue);
 						massDiffAcceptor = new DotMassDiffAcceptor(split[0], massShifts, &tempVar2);
@@ -413,7 +413,7 @@ namespace TaskLayer
 
 			}
 //ORIGINAL LINE: case "interval":
-			else if (split[1] == L"interval")
+			else if (split[1] == "interval")
 			{
 					std::vector<DoubleRange*> doubleRanges = Array::ConvertAll(StringHelper::split(split[2], L';'), [&] (std::any b)
 					{
@@ -423,19 +423,19 @@ namespace TaskLayer
 
 			}
 //ORIGINAL LINE: case "OpenSearch":
-			else if (split[1] == L"OpenSearch")
+			else if (split[1] == "OpenSearch")
 			{
 					massDiffAcceptor = new OpenSearchMode();
 
 			}
 //ORIGINAL LINE: case "daltonsAroundZero":
-			else if (split[1] == L"daltonsAroundZero")
+			else if (split[1] == "daltonsAroundZero")
 			{
 					massDiffAcceptor = new SingleAbsoluteAroundZeroSearchMode(std::stod(split[2], CultureInfo::InvariantCulture));
 
 			}
 //ORIGINAL LINE: case "ppmAroundZero":
-			else if (split[1] == L"ppmAroundZero")
+			else if (split[1] == "ppmAroundZero")
 			{
 					massDiffAcceptor = new SinglePpmAroundZeroSearchMode(std::stod(split[2], CultureInfo::InvariantCulture));
 
@@ -443,13 +443,13 @@ namespace TaskLayer
 			else
 			{
 					delete massDiffAcceptor;
-					throw MetaMorpheusException(L"Unrecognized search mode type: " + split[1]);
+					throw MetaMorpheusException("Unrecognized search mode type: " + split[1]);
 			}
 		}
 		catch (const std::runtime_error &e)
 		{
 			delete massDiffAcceptor;
-			throw MetaMorpheusException(L"Could not parse search mode string: " + e.what());
+			throw MetaMorpheusException("Could not parse search mode string: " + e.what());
 		}
 
 //C# TO C++ CONVERTER TODO TASK: A 'delete massDiffAcceptor' statement was not added since massDiffAcceptor was used in a 'return' or 'throw' statement.

@@ -39,7 +39,7 @@ namespace TaskLayer
 	private:
 		PostSearchAnalysisParameters *privateParameters;
 		std::vector<EngineLayer::ProteinGroup*> privateProteinGroups;
-		std::vector<IGrouping<std::wstring, PeptideSpectralMatch*>*> privatePsmsGroupedByFile;
+		std::vector<IGrouping<std::string, PeptideSpectralMatch*>*> privatePsmsGroupedByFile;
 
 	public:
 		PostSearchAnalysisParameters *getParameters() const;
@@ -47,8 +47,8 @@ namespace TaskLayer
 	private:
 		std::vector<EngineLayer::ProteinGroup*> getProteinGroups() const;
 		void setProteinGroups(const std::vector<EngineLayer::ProteinGroup*> &value);
-		std::vector<IGrouping<std::wstring, PeptideSpectralMatch*>*> getPsmsGroupedByFile() const;
-		void setPsmsGroupedByFile(const std::vector<IGrouping<std::wstring, PeptideSpectralMatch*>*> &value);
+		std::vector<IGrouping<std::string, PeptideSpectralMatch*>*> getPsmsGroupedByFile() const;
+		void setPsmsGroupedByFile(const std::vector<IGrouping<std::string, PeptideSpectralMatch*>*> &value);
 
 	public:
 		PostSearchAnalysisTask();
@@ -56,7 +56,7 @@ namespace TaskLayer
 		MyTaskResults *Run();
 
 	protected:
-		MyTaskResults *RunSpecific(const std::wstring &OutputFolder, std::vector<DbForTask*> &dbFilenameList, std::vector<std::wstring> &currentRawFileList, const std::wstring &taskId, std::vector<FileSpecificParameters*> &fileSettingsList) override;
+		MyTaskResults *RunSpecific(const std::string &OutputFolder, std::vector<DbForTask*> &dbFilenameList, std::vector<std::string> &currentRawFileList, const std::string &taskId, std::vector<FileSpecificParameters*> &fileSettingsList) override;
 
 		/// <summary>
 		/// Calculate estimated false-discovery rate (FDR) for peptide spectral matches (PSMs)
@@ -82,14 +82,14 @@ namespace TaskLayer
 
 		static int GetOneBasedIndexInProtein(int oneIsNterminus, PeptideWithSetModifications *peptideWithSetModifications);
 
-		static void WriteTree(BinTreeStructure *myTreeStructure, const std::wstring &writtenFile);
+		static void WriteTree(BinTreeStructure *myTreeStructure, const std::string &writtenFile);
 
-		void WritePsmsForPercolator(std::vector<PeptideSpectralMatch*> &psmList, const std::wstring &writtenFileForPercolator, double qValueCutoff);
+		void WritePsmsForPercolator(std::vector<PeptideSpectralMatch*> &psmList, const std::string &writtenFileForPercolator, double qValueCutoff);
 
-		void WriteProteinGroupsToTsv(std::vector<EngineLayer::ProteinGroup*> &proteinGroups, const std::wstring &filePath, std::vector<std::wstring> &nestedIds, double qValueCutoff);
+		void WriteProteinGroupsToTsv(std::vector<EngineLayer::ProteinGroup*> &proteinGroups, const std::string &filePath, std::vector<std::string> &nestedIds, double qValueCutoff);
 
-		void WritePeptideQuantificationResultsToTsv(FlashLfqResults *flashLFQResults, const std::wstring &outputFolder, const std::wstring &fileName, std::vector<std::wstring> &nestedIds);
+		void WritePeptideQuantificationResultsToTsv(FlashLfqResults *flashLFQResults, const std::string &outputFolder, const std::string &fileName, std::vector<std::string> &nestedIds);
 
-		void WritePeakQuantificationResultsToTsv(FlashLfqResults *flashLFQResults, const std::wstring &outputFolder, const std::wstring &fileName, std::vector<std::wstring> &nestedIds);
+		void WritePeakQuantificationResultsToTsv(FlashLfqResults *flashLFQResults, const std::string &outputFolder, const std::string &fileName, std::vector<std::string> &nestedIds);
 	};
 }

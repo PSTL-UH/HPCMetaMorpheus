@@ -6,50 +6,50 @@
 namespace TaskLayer
 {
 
-	MyTaskResults::MyTaskResults(MetaMorpheusTask *s) : resultTexts(std::vector<std::wstring>())
+	MyTaskResults::MyTaskResults(MetaMorpheusTask *s) : resultTexts(std::vector<std::string>())
 	{
 	}
 
-	std::wstring MyTaskResults::ToString()
+	std::string MyTaskResults::ToString()
 	{
 		StringBuilder *sb = new StringBuilder();
-		sb->appendLine(L"Time to run task: " + Time);
+		sb->appendLine("Time to run task: " + Time);
 		sb->appendLine();
 		sb->appendLine();
-		sb->appendLine(L"--------------------------------------------------");
+		sb->appendLine("--------------------------------------------------");
 		if ((NewSpectra.size() > 0 && NewSpectra.Any()) || (NewDatabases.size() > 0 && NewDatabases.Any()))
 		{
 			sb->appendLine();
 			sb->appendLine();
-			sb->appendLine(L"New files:");
+			sb->appendLine("New files:");
 			if (NewSpectra.size() > 0 && NewSpectra.Any())
 			{
-				sb->appendLine(L"New spectra: ");
+				sb->appendLine("New spectra: ");
 				sb->appendLine();
-				sb->appendLine(std::wstring::Join(L"\r\n" + L"\t", NewSpectra));
+				sb->appendLine(std::string::Join("\r\n" + "\t", NewSpectra));
 			}
 			if (NewDatabases.size() > 0 && NewDatabases.Any())
 			{
-				sb->appendLine(L"New databases: ");
+				sb->appendLine("New databases: ");
 //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
-				sb->appendLine(std::wstring::Join(L"\r\n" + L"\t", NewDatabases.Select([&] (std::any b)
+				sb->appendLine(std::string::Join("\r\n" + "\t", NewDatabases.Select([&] (std::any b)
 				{
 					b::FilePath;
 				})).ToString());
 			}
 			sb->appendLine();
 			sb->appendLine();
-			sb->appendLine(L"--------------------------------------------------");
+			sb->appendLine("--------------------------------------------------");
 		}
 		sb->appendLine();
 		sb->appendLine();
 		sb->appendLine(niceText->toString());
 		sb->appendLine();
 		sb->appendLine();
-		sb->appendLine(L"--------------------------------------------------");
+		sb->appendLine("--------------------------------------------------");
 		sb->appendLine();
 		sb->appendLine();
-		sb->appendLine(L"Engine Results:");
+		sb->appendLine("Engine Results:");
 		sb->appendLine();
 		for (auto ok : resultTexts)
 		{
@@ -61,12 +61,12 @@ namespace TaskLayer
 		return sb->toString();
 	}
 
-	void MyTaskResults::AddResultText(const std::wstring &resultsText)
+	void MyTaskResults::AddResultText(const std::string &resultsText)
 	{
 		resultTexts.push_back(resultsText);
 	}
 
-	void MyTaskResults::AddNiceText(const std::wstring &niceTextString)
+	void MyTaskResults::AddNiceText(const std::string &niceTextString)
 	{
 		niceText->appendLine(niceTextString);
 	}

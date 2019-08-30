@@ -19,13 +19,13 @@ namespace TaskLayer
 	class EverythingRunnerEngine
 	{
 	private:
-		const std::vector<(std::wstring, MetaMorpheusTask)*> TaskList;
-		std::wstring OutputFolder;
-		std::vector<std::wstring> CurrentRawDataFilenameList;
+		const std::vector<(std::string, MetaMorpheusTask)*> TaskList;
+		std::string OutputFolder;
+		std::vector<std::string> CurrentRawDataFilenameList;
 		std::vector<DbForTask*> CurrentXmlDbFilenameList;
 
 	public:
-		EverythingRunnerEngine(std::vector<(std::wstring, MetaMorpheusTask)*> &taskList, std::vector<std::wstring> &startingRawFilenameList, std::vector<DbForTask*> &startingXmlDbFilenameList, const std::wstring &outputFolder);
+		EverythingRunnerEngine(std::vector<(std::string, MetaMorpheusTask)*> &taskList, std::vector<std::string> &startingRawFilenameList, std::vector<DbForTask*> &startingXmlDbFilenameList, const std::string &outputFolder);
 
 		static TangibleEvent<EventHandler<StringEventArgs>> *FinishedWritingAllResultsFileHandler = new TangibleEvent<EventHandler<StringEventArgs>>();
 
@@ -44,15 +44,15 @@ namespace TaskLayer
 		void Run();
 
 	private:
-		void Warn(const std::wstring &v);
+		void Warn(const std::string &v);
 
 		void StartingAllTasks();
 
-		void FinishedAllTasks(const std::wstring &rootOutputDir);
+		void FinishedAllTasks(const std::string &rootOutputDir);
 
-		void NewSpectras(std::vector<std::wstring> &newSpectra);
+		void NewSpectras(std::vector<std::string> &newSpectra);
 
-		void NewFileSpecificToml(std::vector<std::wstring> &newFileSpecificTomls);
+		void NewFileSpecificToml(std::vector<std::string> &newFileSpecificTomls);
 
 		void NewDBs(std::vector<DbForTask*> &newDatabases);
 	};

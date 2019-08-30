@@ -46,14 +46,14 @@ namespace TaskLayer
 		TaskLayer::SearchParameters *getSearchParameters() const;
 		void setSearchParameters(TaskLayer::SearchParameters *value);
 
-		static MassDiffAcceptor *GetMassDiffAcceptor(Tolerance *precursorMassTolerance, MassDiffAcceptorType massDiffAcceptorType, const std::wstring &customMdac);
+		static MassDiffAcceptor *GetMassDiffAcceptor(Tolerance *precursorMassTolerance, MassDiffAcceptorType massDiffAcceptorType, const std::string &customMdac);
 
 	protected:
-		MyTaskResults *RunSpecific(const std::wstring &OutputFolder, std::vector<DbForTask*> &dbFilenameList, std::vector<std::wstring> &currentRawFileList, const std::wstring &taskId, std::vector<FileSpecificParameters*> &fileSettingsList) override;
+		MyTaskResults *RunSpecific(const std::string &OutputFolder, std::vector<DbForTask*> &dbFilenameList, std::vector<std::string> &currentRawFileList, const std::string &taskId, std::vector<FileSpecificParameters*> &fileSettingsList) override;
 
 	private:
-		int GetNumNotches(MassDiffAcceptorType massDiffAcceptorType, const std::wstring &customMdac);
+		int GetNumNotches(MassDiffAcceptorType massDiffAcceptorType, const std::string &customMdac);
 
-		static MassDiffAcceptor *ParseSearchMode(const std::wstring &text);
+		static MassDiffAcceptor *ParseSearchMode(const std::string &text);
 	};
 }

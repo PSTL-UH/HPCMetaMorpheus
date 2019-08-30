@@ -46,7 +46,7 @@ namespace TaskLayer
 		privateGptmdParameters = value;
 	}
 
-	MyTaskResults *GptmdTask::RunSpecific(const std::wstring &OutputFolder, std::vector<DbForTask*> &dbFilenameList, std::vector<std::wstring> &currentRawFileList, const std::wstring &taskId, std::vector<FileSpecificParameters*> &fileSettingsList)
+	MyTaskResults *GptmdTask::RunSpecific(const std::string &OutputFolder, std::vector<DbForTask*> &dbFilenameList, std::vector<std::string> &currentRawFileList, const std::string &taskId, std::vector<FileSpecificParameters*> &fileSettingsList)
 	{
 		std::vector<Modification> variableModifications;
 		std::vector<Modification> fixedModifications;
@@ -68,39 +68,39 @@ namespace TaskLayer
 		auto numRawFiles = currentRawFileList.size();
 
 		// write prose settings
-		ProseCreatedWhileRunning->append(L"The following G-PTM-D settings were used: ");
-		ProseCreatedWhileRunning->append(L"protease = " + getCommonParameters()->getDigestionParams()->Protease + L"; ");
-		ProseCreatedWhileRunning->append(L"maximum missed cleavages = " + getCommonParameters()->getDigestionParams()->MaxMissedCleavages + L"; ");
-		ProseCreatedWhileRunning->append(L"minimum peptide length = " + getCommonParameters()->getDigestionParams()->MinPeptideLength + L"; ");
-		ProseCreatedWhileRunning->append(getCommonParameters()->getDigestionParams()->MaxPeptideLength == std::numeric_limits<int>::max() ? L"maximum peptide length = unspecified; " : L"maximum peptide length = " + getCommonParameters()->getDigestionParams()->MaxPeptideLength + L"; ");
-		ProseCreatedWhileRunning->append(L"initiator methionine behavior = " + getCommonParameters()->getDigestionParams()->InitiatorMethionineBehavior + L"; ");
-		ProseCreatedWhileRunning->append(L"max modification isoforms = " + getCommonParameters()->getDigestionParams()->MaxModificationIsoforms + L"; ");
-		ProseCreatedWhileRunning->append(L"fixed modifications = " + std::wstring::Join(L", ", fixedModifications->Select([&] (std::any m)
+		ProseCreatedWhileRunning->append("The following G-PTM-D settings were used: ");
+		ProseCreatedWhileRunning->append("protease = " + getCommonParameters()->getDigestionParams()->Protease + "; ");
+		ProseCreatedWhileRunning->append("maximum missed cleavages = " + getCommonParameters()->getDigestionParams()->MaxMissedCleavages + "; ");
+		ProseCreatedWhileRunning->append("minimum peptide length = " + getCommonParameters()->getDigestionParams()->MinPeptideLength + "; ");
+		ProseCreatedWhileRunning->append(getCommonParameters()->getDigestionParams()->MaxPeptideLength == std::numeric_limits<int>::max() ? "maximum peptide length = unspecified; " : "maximum peptide length = " + getCommonParameters()->getDigestionParams()->MaxPeptideLength + "; ");
+		ProseCreatedWhileRunning->append("initiator methionine behavior = " + getCommonParameters()->getDigestionParams()->InitiatorMethionineBehavior + "; ");
+		ProseCreatedWhileRunning->append("max modification isoforms = " + getCommonParameters()->getDigestionParams()->MaxModificationIsoforms + "; ");
+		ProseCreatedWhileRunning->append("fixed modifications = " + std::string::Join(", ", fixedModifications->Select([&] (std::any m)
 		{
 			m::IdWithMotif;
-		})) + L"; ");
-		ProseCreatedWhileRunning->append(L"variable modifications = " + std::wstring::Join(L", ", variableModifications->Select([&] (std::any m)
+		})) + "; ");
+		ProseCreatedWhileRunning->append("variable modifications = " + std::string::Join(", ", variableModifications->Select([&] (std::any m)
 		{
 			m::IdWithMotif;
-		})) + L"; ");
-		ProseCreatedWhileRunning->append(L"G-PTM-D modifications count = " + std::to_wstring(gptmdModifications.size()) + L"; ");
+		})) + "; ");
+		ProseCreatedWhileRunning->append("G-PTM-D modifications count = " + std::to_string(gptmdModifications.size()) + "; ");
 
 		// temporary search type for writing prose
 		// the actual search type is technically file-specific but we don't allow file-specific notches, so it's safe to do this
-		MassDiffAcceptor *tempSearchMode = new DotMassDiffAcceptor(L"", GetAcceptableMassShifts(fixedModifications, variableModifications, gptmdModifications, combos), getCommonParameters()->getPrecursorMassTolerance());
-		ProseCreatedWhileRunning->append(L"precursor mass tolerance(s) = {" + tempSearchMode->ToProseString() + L"}; ");
+		MassDiffAcceptor *tempSearchMode = new DotMassDiffAcceptor("", GetAcceptableMassShifts(fixedModifications, variableModifications, gptmdModifications, combos), getCommonParameters()->getPrecursorMassTolerance());
+		ProseCreatedWhileRunning->append("precursor mass tolerance(s) = {" + tempSearchMode->ToProseString() + "}; ");
 
-		ProseCreatedWhileRunning->append(L"product mass tolerance = " + getCommonParameters()->getProductMassTolerance() + L". ");
-		ProseCreatedWhileRunning->append(L"The combined search database contained " + proteinList.size()([&] (std::any p)
+		ProseCreatedWhileRunning->append("product mass tolerance = " + getCommonParameters()->getProductMassTolerance() + ". ");
+		ProseCreatedWhileRunning->append("The combined search database contained " + proteinList.size()([&] (std::any p)
 		{
 			!p::IsDecoy;
-		}) + L" non-decoy protein entries including " + proteinList.Where([&] (std::any p)
+		}) + " non-decoy protein entries including " + proteinList.Where([&] (std::any p)
 		{
 			p::IsContaminant;
-		})->Count() + L" contaminant sequences. ");
+		})->Count() + " contaminant sequences. ");
 
 		// start the G-PTM-D task
-		Status(L"Running G-PTM-D...", std::vector<std::wstring> {taskId});
+		Status("Running G-PTM-D...", std::vector<std::string> {taskId});
 		MyTaskResults = new MyTaskResults(this);
 		MyTaskResults->NewDatabases = std::vector<DbForTask*>();
 		auto fileSpecificCommonParams = fileSettingsList.Select([&] (std::any b)
@@ -128,23 +128,23 @@ namespace TaskLayer
 			auto origDataFile = currentRawFileList[spectraFileIndex];
 
 			// mark the file as in-progress
-			StartingDataFile(origDataFile, std::vector<std::wstring> {taskId, L"Individual Spectra Files", origDataFile});
+			StartingDataFile(origDataFile, std::vector<std::string> {taskId, "Individual Spectra Files", origDataFile});
 
 			EngineLayer::CommonParameters *combinedParams = SetAllFileSpecificCommonParams(getCommonParameters(), fileSettingsList[spectraFileIndex]);
-			MassDiffAcceptor *searchMode = new DotMassDiffAcceptor(L"", GetAcceptableMassShifts(fixedModifications, variableModifications, gptmdModifications, combos), combinedParams->getPrecursorMassTolerance());
+			MassDiffAcceptor *searchMode = new DotMassDiffAcceptor("", GetAcceptableMassShifts(fixedModifications, variableModifications, gptmdModifications, combos), combinedParams->getPrecursorMassTolerance());
 
-			NewCollection(FileSystem::getFileName(origDataFile), std::vector<std::wstring> {taskId, L"Individual Spectra Files", origDataFile});
+			NewCollection(FileSystem::getFileName(origDataFile), std::vector<std::string> {taskId, "Individual Spectra Files", origDataFile});
 
-			Status(L"Loading spectra file...", std::vector<std::wstring> {taskId, L"Individual Spectra Files", origDataFile});
+			Status("Loading spectra file...", std::vector<std::string> {taskId, "Individual Spectra Files", origDataFile});
 			MsDataFile *myMsDataFile = myFileManager->LoadFile(origDataFile, std::make_optional(combinedParams->getTopNpeaks()), std::make_optional(combinedParams->getMinRatio()), combinedParams->getTrimMs1Peaks(), combinedParams->getTrimMsMsPeaks(), combinedParams);
-			Status(L"Getting ms2 scans...", std::vector<std::wstring> {taskId, L"Individual Spectra Files", origDataFile});
+			Status("Getting ms2 scans...", std::vector<std::string> {taskId, "Individual Spectra Files", origDataFile});
 			std::vector<Ms2ScanWithSpecificMass*> arrayOfMs2ScansSortedByMass = GetMs2Scans(myMsDataFile, origDataFile, combinedParams).OrderBy([&] (std::any b)
 			{
 				b::PrecursorMass;
 			})->ToArray();
 			myFileManager->DoneWithFile(origDataFile);
 			std::vector<PeptideSpectralMatch*> allPsmsArray(arrayOfMs2ScansSortedByMass.size());
-			ClassicSearchEngine tempVar(allPsmsArray, arrayOfMs2ScansSortedByMass, variableModifications, fixedModifications, proteinList, searchMode, combinedParams, new std::vector<std::wstring> {taskId, L"Individual Spectra Files", origDataFile});
+			ClassicSearchEngine tempVar(allPsmsArray, arrayOfMs2ScansSortedByMass, variableModifications, fixedModifications, proteinList, searchMode, combinedParams, new std::vector<std::string> {taskId, "Individual Spectra Files", origDataFile});
 			(&tempVar)->Run();
 			allPsms.AddRange(allPsmsArray.Where([&] (std::any p)
 			{
@@ -153,13 +153,13 @@ namespace TaskLayer
 			delete tempSearchMode;
 				return p != nullptr;
 			}));
-			FinishedDataFile(origDataFile, std::vector<std::wstring> {taskId, L"Individual Spectra Files", origDataFile});
-			ProgressEventArgs tempVar2(100, L"Done!", new std::vector<std::wstring> {taskId, L"Individual Spectra Files", origDataFile});
+			FinishedDataFile(origDataFile, std::vector<std::string> {taskId, "Individual Spectra Files", origDataFile});
+			ProgressEventArgs tempVar2(100, "Done!", new std::vector<std::string> {taskId, "Individual Spectra Files", origDataFile});
 			ReportProgress(&tempVar2);
 
 //C# TO C++ CONVERTER TODO TASK: A 'delete searchMode' statement was not added since searchMode was passed to a method or constructor. Handle memory management manually.
 		}
-		ProgressEventArgs tempVar3(100, L"Done!", new std::vector<std::wstring> {taskId, L"Individual Spectra Files"});
+		ProgressEventArgs tempVar3(100, "Done!", new std::vector<std::string> {taskId, "Individual Spectra Files"});
 		ReportProgress(&tempVar3);
 
 		allPsms = allPsms.OrderByDescending([&] (std::any b)
@@ -172,24 +172,24 @@ namespace TaskLayer
 		{
 		delete myFileManager;
 		delete tempSearchMode;
-			return std::tuple < std::wstring;
+			return std::tuple < std::string;
 		}, int, std::optional<double>>(b::FullFilePath, b::ScanNumber, b::PeptideMonisotopicMass))->Select([&] (std::any b)
 		{
 			b::First();
 		}).ToList();
 
-		FdrAnalysisEngine tempVar4(allPsms, tempSearchMode->NumNotches, getCommonParameters(), new std::vector<std::wstring> {taskId});
+		FdrAnalysisEngine tempVar4(allPsms, tempSearchMode->NumNotches, getCommonParameters(), new std::vector<std::string> {taskId});
 		(&tempVar4)->Run();
 
-		auto writtenFile = FileSystem::combine(OutputFolder, L"GPTMD_Candidates.psmtsv");
-		WritePsmsToTsv(allPsms, writtenFile, std::unordered_map<std::wstring, int>());
-		FinishedWritingFile(writtenFile, std::vector<std::wstring> {taskId});
+		auto writtenFile = FileSystem::combine(OutputFolder, "GPTMD_Candidates.psmtsv");
+		WritePsmsToTsv(allPsms, writtenFile, std::unordered_map<std::string, int>());
+		FinishedWritingFile(writtenFile, std::vector<std::string> {taskId});
 
 		// get file-specific precursor mass tolerances for the GPTMD engine
-		auto filePathToPrecursorMassTolerance = std::unordered_map<std::wstring, Tolerance*>();
+		auto filePathToPrecursorMassTolerance = std::unordered_map<std::string, Tolerance*>();
 		for (int i = 0; i < currentRawFileList.size(); i++)
 		{
-			std::wstring filePath = currentRawFileList[i];
+			std::string filePath = currentRawFileList[i];
 			Tolerance *fileTolerance = getCommonParameters()->getPrecursorMassTolerance();
 			if (fileSettingsList[i] != nullptr && fileSettingsList[i]->getPrecursorMassTolerance() != nullptr)
 			{
@@ -199,7 +199,7 @@ namespace TaskLayer
 		}
 
 		// run GPTMD engine
-		GptmdEngine tempVar5(allPsms, gptmdModifications, combos, filePathToPrecursorMassTolerance, getCommonParameters(), new std::vector<std::wstring> {taskId});
+		GptmdEngine tempVar5(allPsms, gptmdModifications, combos, filePathToPrecursorMassTolerance, getCommonParameters(), new std::vector<std::string> {taskId});
 		auto gptmdResults = static_cast<GptmdResults*>((&tempVar5)->Run());
 
 		// Stop if canceled
@@ -216,7 +216,7 @@ namespace TaskLayer
 			!b::IsContaminant;
 		}))
 		{
-			std::vector<std::wstring> databaseNames;
+			std::vector<std::string> databaseNames;
 			for (auto nonContaminantDb : dbFilenameList.Where([&] (std::any p)
 			{
 				!p::IsContaminant;
@@ -225,10 +225,10 @@ namespace TaskLayer
 				auto dbName = Path::GetFileNameWithoutExtension(nonContaminantDb::FilePath);
 //C# TO C++ CONVERTER TODO TASK: There is no direct native C++ equivalent to this .NET String method:
 				auto theExtension = Path::GetExtension(nonContaminantDb::FilePath).ToLowerInvariant();
-				bool compressed = StringHelper::endsWith(theExtension, L"gz");
+				bool compressed = StringHelper::endsWith(theExtension, "gz");
 				databaseNames.push_back(compressed ? Path::GetFileNameWithoutExtension(dbName) : dbName);
 			}
-			std::wstring outputXMLdbFullName = FileSystem::combine(OutputFolder, std::wstring::Join(L"-", databaseNames) + L"GPTMD.xml");
+			std::string outputXMLdbFullName = FileSystem::combine(OutputFolder, std::string::Join("-", databaseNames) + "GPTMD.xml");
 
 			auto newModsActuallyWritten = ProteinDbWriter::WriteXmlDatabase(gptmdResults->getMods(), proteinList.Where([&] (std::any b)
 			{
@@ -237,23 +237,23 @@ namespace TaskLayer
 				return !b::IsDecoy && !b::IsContaminant;
 			}).ToList(), outputXMLdbFullName);
 
-			FinishedWritingFile(outputXMLdbFullName, std::vector<std::wstring> {taskId});
+			FinishedWritingFile(outputXMLdbFullName, std::vector<std::string> {taskId});
 
 			DbForTask tempVar6(outputXMLdbFullName, false);
 			MyTaskResults->NewDatabases.push_back(&tempVar6);
-			MyTaskResults->AddNiceText(L"Modifications added: " + newModsActuallyWritten->Select([&] (std::any b)
+			MyTaskResults->AddNiceText("Modifications added: " + newModsActuallyWritten->Select([&] (std::any b)
 			{
 				b->Value;
 			}).Sum());
-			MyTaskResults->AddNiceText(L"Mods types and counts:");
-			MyTaskResults->AddNiceText(std::wstring::Join(L"\r\n", newModsActuallyWritten->OrderByDescending([&] (std::any b)
+			MyTaskResults->AddNiceText("Mods types and counts:");
+			MyTaskResults->AddNiceText(std::string::Join("\r\n", newModsActuallyWritten->OrderByDescending([&] (std::any b)
 			{
 				b->Value;
 			})->Select([&] (std::any b)
 			{
 			delete myFileManager;
 			delete tempSearchMode;
-				return L"\t" + b::Key + L"\t" + b->Value;
+				return "\t" + b::Key + "\t" + b->Value;
 			})));
 		}
 		if (dbFilenameList.Any([&] (std::any b)
@@ -263,17 +263,17 @@ namespace TaskLayer
 		{
 			// do NOT use this code (Path.GetFilenameWithoutExtension) because GPTMD on .xml.gz will result in .xml.xml file type being written
 			//string outputXMLdbFullNameContaminants = Path.Combine(OutputFolder, string.Join("-", dbFilenameList.Where(b => b.IsContaminant).Select(b => Path.GetFileNameWithoutExtension(b.FilePath))) + "GPTMD.xml");
-			std::vector<std::wstring> databaseNames;
+			std::vector<std::string> databaseNames;
 			for (auto contaminantDb : dbFilenameList.Where([&] (std::any p)
 			{
 				p::IsContaminant;
 			}))
 			{
 				auto dbName = FileSystem::getFileName(contaminantDb::FilePath);
-				int indexOfFirstDot = (int)dbName.find(L".");
+				int indexOfFirstDot = (int)dbName.find(".");
 				databaseNames.push_back(dbName.substr(0, indexOfFirstDot));
 			}
-			std::wstring outputXMLdbFullNameContaminants = FileSystem::combine(OutputFolder, std::wstring::Join(L"-", databaseNames) + L"GPTMD.xml");
+			std::string outputXMLdbFullNameContaminants = FileSystem::combine(OutputFolder, std::string::Join("-", databaseNames) + "GPTMD.xml");
 
 			auto newModsActuallyWritten = ProteinDbWriter::WriteXmlDatabase(gptmdResults->getMods(), proteinList.Where([&] (std::any b)
 			{
@@ -282,23 +282,23 @@ namespace TaskLayer
 				return !b::IsDecoy && b::IsContaminant;
 			}).ToList(), outputXMLdbFullNameContaminants);
 
-			FinishedWritingFile(outputXMLdbFullNameContaminants, std::vector<std::wstring> {taskId});
+			FinishedWritingFile(outputXMLdbFullNameContaminants, std::vector<std::string> {taskId});
 
 			DbForTask tempVar7(outputXMLdbFullNameContaminants, true);
 			MyTaskResults->NewDatabases.push_back(&tempVar7);
-			MyTaskResults->AddNiceText(L"Contaminant modifications added: " + newModsActuallyWritten->Select([&] (std::any b)
+			MyTaskResults->AddNiceText("Contaminant modifications added: " + newModsActuallyWritten->Select([&] (std::any b)
 			{
 				b->Value;
 			}).Sum());
-			MyTaskResults->AddNiceText(L"Mods types and counts:");
-			MyTaskResults->AddNiceText(std::wstring::Join(L"\r\n", newModsActuallyWritten->OrderByDescending([&] (std::any b)
+			MyTaskResults->AddNiceText("Mods types and counts:");
+			MyTaskResults->AddNiceText(std::string::Join("\r\n", newModsActuallyWritten->OrderByDescending([&] (std::any b)
 			{
 				b->Value;
 			})->Select([&] (std::any b)
 			{
 			delete myFileManager;
 			delete tempSearchMode;
-				return L"\t" + b::Key + L"\t" + b->Value;
+				return "\t" + b::Key + "\t" + b->Value;
 			})));
 		}
 
@@ -312,7 +312,7 @@ namespace TaskLayer
 //C# TO C++ CONVERTER NOTE: The following 'using' block is replaced by its C++ equivalent:
 //ORIGINAL LINE: using (StreamReader r = new StreamReader(Path.Combine(GlobalVariables.DataDir, "Data", "TangibleTempVerbatimOpenTagcombos.txtTangibleTempVerbatimCloseTag")))
 		{
-			StreamReader r = StreamReader(FileSystem::combine(GlobalVariables::getDataDir(), L"Data", LR"(combos.txt)"));
+			StreamReader r = StreamReader(FileSystem::combine(GlobalVariables::getDataDir(), "Data", "combos.txt"));
 			while (r.Peek() >= 0)
 			{
 				auto line = StringHelper::split(r.ReadLine(), L' ');

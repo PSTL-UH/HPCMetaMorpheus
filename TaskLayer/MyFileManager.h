@@ -38,27 +38,27 @@ namespace TaskLayer
 
 	private:
 		const bool DisposeOfFileWhenDone;
-		const std::unordered_map<std::wstring, MsDataFile*> MyMsDataFiles = std::unordered_map<std::wstring, MsDataFile*>();
+		const std::unordered_map<std::string, MsDataFile*> MyMsDataFiles = std::unordered_map<std::string, MsDataFile*>();
 		std::mutex FileLoadingLock;
-		static const std::wstring AssumedThermoMsFileReaderDllPath;
-		static const std::wstring DesiredFileIoVersion;
-		static const std::wstring DesiredFregistryVersion;
-		static const std::wstring DesiredXRawFileVersion;
+		static const std::string AssumedThermoMsFileReaderDllPath;
+		static const std::string DesiredFileIoVersion;
+		static const std::string DesiredFregistryVersion;
+		static const std::string DesiredXRawFileVersion;
 
 	public:
 		MyFileManager(bool disposeOfFileWhenDone);
 
 		static TangibleEvent<EventHandler<StringEventArgs>> *WarnHandler = new TangibleEvent<EventHandler<StringEventArgs>>();
 
-		bool SeeIfOpen(const std::wstring &path);
+		bool SeeIfOpen(const std::string &path);
 
 		static ThermoMsFileReaderVersionCheck ValidateThermoMsFileReaderVersion();
 
-		MsDataFile *LoadFile(const std::wstring &origDataFile, std::optional<int> &topNpeaks, std::optional<double> &minRatio, bool trimMs1Peaks, bool trimMsMsPeaks, CommonParameters *commonParameters);
+		MsDataFile *LoadFile(const std::string &origDataFile, std::optional<int> &topNpeaks, std::optional<double> &minRatio, bool trimMs1Peaks, bool trimMsMsPeaks, CommonParameters *commonParameters);
 
-		void DoneWithFile(const std::wstring &origDataFile);
+		void DoneWithFile(const std::string &origDataFile);
 
 	private:
-		void Warn(const std::wstring &v);
+		void Warn(const std::string &v);
 	};
 }

@@ -68,27 +68,27 @@ TomlSettings *const MetaMorpheusTask::tomlConfig = TomlSettings::Create([&] (std
 			ProteaseDictionary::Dictionary[tmlString->Value];
 		});
 			});
-		}).ConfigureType<std::vector<std::wstring>>([&] (std::any type)
+		}).ConfigureType<std::vector<std::string>>([&] (std::any type)
 		{
 			type::WithConversionFor<TomlString*>([&] (std::any convert)
 			{
 			convert::ToToml([&] (std::any custom)
 			{
-			std::wstring::Join(L"\t", custom);
+			std::string::Join("\t", custom);
 			}).FromToml([&] (std::any tmlString)
 			{
 			GetModsTypesFromString(tmlString->Value);
 		});
 			});
-		}).ConfigureType<std::vector<(std::wstring, std::wstring)*>>([&] (std::any type)
+		}).ConfigureType<std::vector<(std::string, std::string)*>>([&] (std::any type)
 		{
 			type::WithConversionFor<TomlString*>([&] (std::any convert)
 			{
 			convert::ToToml([&] (std::any custom)
 			{
-			std::wstring::Join(L"\t\t", custom->Select([&] (std::any b)
+			std::string::Join("\t\t", custom->Select([&] (std::any b)
 			{
-			return b::Item1 + L"\t" + b::Item2;
+			return b::Item1 + "\t" + b::Item2;
 			}));
 			}).FromToml([&] (std::any tmlString)
 			{
@@ -123,9 +123,9 @@ TomlSettings *const MetaMorpheusTask::tomlConfig = TomlSettings::Create([&] (std
 		privateCommonParameters = value;
 	}
 
-const std::wstring MetaMorpheusTask::IndexFolderName = L"DatabaseIndex";
+const std::string MetaMorpheusTask::IndexFolderName = "DatabaseIndex";
 
-	std::vector<Ms2ScanWithSpecificMass*> MetaMorpheusTask::GetMs2Scans(MsDataFile *myMSDataFile, const std::wstring &fullFilePath, EngineLayer::CommonParameters *commonParameters)
+	std::vector<Ms2ScanWithSpecificMass*> MetaMorpheusTask::GetMs2Scans(MsDataFile *myMSDataFile, const std::string &fullFilePath, EngineLayer::CommonParameters *commonParameters)
 	{
 		auto ms2Scans = myMSDataFile->GetAllScansList().Where([&] (std::any x)
 		{
@@ -157,7 +157,7 @@ const std::wstring MetaMorpheusTask::IndexFolderName = L"DatabaseIndex";
 						}
 						catch (const MzLibException &ex)
 						{
-							Warn(L"Could not get precursor ion for MS2 scan #" + ms2scan->OneBasedScanNumber + L"; " + ex->Message);
+							Warn("Could not get precursor ion for MS2 scan #" + ms2scan->OneBasedScanNumber + "; " + ex->Message);
 							continue;
 						}
     
@@ -256,16 +256,16 @@ const std::wstring MetaMorpheusTask::IndexFolderName = L"DatabaseIndex";
 		return returnParams;
 	}
 
-	MyTaskResults *MetaMorpheusTask::RunTask(const std::wstring &output_folder, std::vector<DbForTask*> &currentProteinDbFilenameList, std::vector<std::wstring> &currentRawDataFilepathList, const std::wstring &displayName)
+	MyTaskResults *MetaMorpheusTask::RunTask(const std::string &output_folder, std::vector<DbForTask*> &currentProteinDbFilenameList, std::vector<std::string> &currentRawDataFilepathList, const std::string &displayName)
 	{
 		StartingSingleTask(displayName);
 
 //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
-		auto tomlFileName = FileSystem::combine(Directory::GetParent(output_folder)->ToString(), L"Task Settings", displayName + L"config.toml");
+		auto tomlFileName = FileSystem::combine(Directory::GetParent(output_folder)->ToString(), "Task Settings", displayName + "config.toml");
 		Toml::WriteFile(this, tomlFileName, tomlConfig);
-		FinishedWritingFile(tomlFileName, std::vector<std::wstring> {displayName});
+		FinishedWritingFile(tomlFileName, std::vector<std::string> {displayName});
 
-		MetaMorpheusEngine::FinishedSingleEngineHandler->addListener(L"SingleEngineHandlerInTask", [&] (std::any sender, SingleEngineFinishedEventArgs* e) {SingleEngineHandlerInTask(sender, e);});
+		MetaMorpheusEngine::FinishedSingleEngineHandler->addListener("SingleEngineHandlerInTask", [&] (std::any sender, SingleEngineFinishedEventArgs* e) {SingleEngineHandlerInTask(sender, e);});
 		try
 		{
 			auto stopWatch = new Stopwatch();
@@ -278,10 +278,10 @@ const std::wstring MetaMorpheusTask::IndexFolderName = L"DatabaseIndex";
 				{
 					break;
 				}
-				std::wstring rawFilePath = currentRawDataFilepathList[i];
+				std::string rawFilePath = currentRawDataFilepathList[i];
 //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
-				std::wstring directory = Directory::GetParent(rawFilePath)->ToString();
-				std::wstring fileSpecificTomlPath = FileSystem::combine(directory, Path::GetFileNameWithoutExtension(rawFilePath)) + L".toml";
+				std::string directory = Directory::GetParent(rawFilePath)->ToString();
+				std::string fileSpecificTomlPath = FileSystem::combine(directory, Path::GetFileNameWithoutExtension(rawFilePath)) + ".toml";
 				if (FileSystem::fileExists(fileSpecificTomlPath))
 				{
 					TomlTable *fileSpecificSettings = Toml::ReadFile(fileSpecificTomlPath, tomlConfig);
@@ -293,7 +293,7 @@ const std::wstring MetaMorpheusTask::IndexFolderName = L"DatabaseIndex";
 					{
 						// file-specific toml has already been validated in the GUI when the spectra files were added, so...
 						// probably the only time you can get here is if the user modifies the file-specific parameter file in the middle of a run...
-						Warn(L"Problem parsing the file-specific toml " + FileSystem::getFileName(fileSpecificTomlPath) + L"; " + e->what() + L"; is the toml from an older version of MetaMorpheus?");
+						Warn("Problem parsing the file-specific toml " + FileSystem::getFileName(fileSpecificTomlPath) + "; " + e->what() + "; is the toml from an older version of MetaMorpheus?");
 					}
 				}
 			}
@@ -301,116 +301,116 @@ const std::wstring MetaMorpheusTask::IndexFolderName = L"DatabaseIndex";
 			RunSpecific(output_folder, currentProteinDbFilenameList, currentRawDataFilepathList, displayName, fileSettingsList);
 			stopWatch->Stop();
 			MyTaskResults->Time = stopWatch->Elapsed;
-			auto resultsFileName = FileSystem::combine(output_folder, L"results.txt");
+			auto resultsFileName = FileSystem::combine(output_folder, "results.txt");
 //C# TO C++ CONVERTER NOTE: The following 'using' block is replaced by its C++ equivalent:
 //ORIGINAL LINE: using (StreamWriter file = new StreamWriter(resultsFileName))
 			{
 				StreamWriter file = StreamWriter(resultsFileName);
-				file.WriteLine(L"MetaMorpheus: version " + GlobalVariables::getMetaMorpheusVersion());
+				file.WriteLine("MetaMorpheus: version " + GlobalVariables::getMetaMorpheusVersion());
 //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
 				file.Write(MyTaskResults->ToString());
 			}
-			FinishedWritingFile(resultsFileName, std::vector<std::wstring> {displayName});
+			FinishedWritingFile(resultsFileName, std::vector<std::string> {displayName});
 			FinishedSingleTask(displayName);
 
 			delete stopWatch;
 		}
 		catch (const std::runtime_error &e)
 		{
-			MetaMorpheusEngine::FinishedSingleEngineHandler->removeListener(L"SingleEngineHandlerInTask");
-			auto resultsFileName = FileSystem::combine(output_folder, L"results.txt");
-			e.Data->Add(L"folder", output_folder);
+			MetaMorpheusEngine::FinishedSingleEngineHandler->removeListener("SingleEngineHandlerInTask");
+			auto resultsFileName = FileSystem::combine(output_folder, "results.txt");
+			e.Data->Add("folder", output_folder);
 //C# TO C++ CONVERTER NOTE: The following 'using' block is replaced by its C++ equivalent:
 //ORIGINAL LINE: using (StreamWriter file = new StreamWriter(resultsFileName))
 			{
 				StreamWriter file = StreamWriter(resultsFileName);
-				file.WriteLine(GlobalVariables::getMetaMorpheusVersion() == L"1.0.0.0" ? L"MetaMorpheus: Not a release version" : L"MetaMorpheus: version " + GlobalVariables::getMetaMorpheusVersion());
+				file.WriteLine(GlobalVariables::getMetaMorpheusVersion() == "1.0.0.0" ? "MetaMorpheus: Not a release version" : "MetaMorpheus: version " + GlobalVariables::getMetaMorpheusVersion());
 				file.WriteLine(SystemInfo::CompleteSystemInfo()); //OS, OS Version, .Net Version, RAM, processor count, MSFileReader .dll versions X3
-				file.Write(L"e: " + e);
-				file.Write(L"e.Message: " + e.what());
-				file.Write(L"e.InnerException: " + e.InnerException);
-				file.Write(L"e.Source: " + e.Source);
-				file.Write(L"e.StackTrace: " + e.StackTrace);
-				file.Write(L"e.TargetSite: " + e.TargetSite);
+				file.Write("e: " + e);
+				file.Write("e.Message: " + e.what());
+				file.Write("e.InnerException: " + e.InnerException);
+				file.Write("e.Source: " + e.Source);
+				file.Write("e.StackTrace: " + e.StackTrace);
+				file.Write("e.TargetSite: " + e.TargetSite);
 			}
 			throw;
 		}
 
 		{
-			auto proseFilePath = FileSystem::combine(output_folder, L"prose.txt");
+			auto proseFilePath = FileSystem::combine(output_folder, "prose.txt");
 //C# TO C++ CONVERTER NOTE: The following 'using' block is replaced by its C++ equivalent:
 //ORIGINAL LINE: using (StreamWriter file = new StreamWriter(proseFilePath))
 			{
 				StreamWriter file = StreamWriter(proseFilePath);
-				file.Write(L"The data analysis was performed using MetaMorpheus version " + GlobalVariables::getMetaMorpheusVersion() + L", available at " + L"https://github.com/smith-chem-wisc/MetaMorpheus.");
+				file.Write("The data analysis was performed using MetaMorpheus version " + GlobalVariables::getMetaMorpheusVersion() + ", available at " + "https://github.com/smith-chem-wisc/MetaMorpheus.");
 				file.Write(ProseCreatedWhileRunning->toString());
-				file.Write(SystemInfo::SystemProse()->Replace(L"\r\n", L"") + L" ");
-				file.WriteLine(L"The total time to perform the " + getTaskType() + L" task on " + std::to_wstring(currentRawDataFilepathList.size()) + L" spectra file(s) was " + std::wstring::Format(L"{0:0.00}", MyTaskResults->Time.TotalMinutes) + L" minutes.");
+				file.Write(SystemInfo::SystemProse()->Replace("\r\n", "") + " ");
+				file.WriteLine("The total time to perform the " + getTaskType() + " task on " + std::to_string(currentRawDataFilepathList.size()) + " spectra file(s) was " + std::string::Format("{0:0.00}", MyTaskResults->Time.TotalMinutes) + " minutes.");
 				file.WriteLine();
-				file.WriteLine(L"Published works using MetaMorpheus software are encouraged to cite: Solntsev, S. K.; Shortreed, M. R.; Frey, B. L.; Smith, L. M. Enhanced Global Post-translational Modification Discovery with MetaMorpheus. Journal of Proteome Research. 2018, 17 (5), 1844-1851.");
+				file.WriteLine("Published works using MetaMorpheus software are encouraged to cite: Solntsev, S. K.; Shortreed, M. R.; Frey, B. L.; Smith, L. M. Enhanced Global Post-translational Modification Discovery with MetaMorpheus. Journal of Proteome Research. 2018, 17 (5), 1844-1851.");
 
 				file.WriteLine();
-				file.WriteLine(L"Spectra files: ");
-				file.WriteLine(std::wstring::Join(L"\r\n", currentRawDataFilepathList.Select([&] (std::any b)
+				file.WriteLine("Spectra files: ");
+				file.WriteLine(std::string::Join("\r\n", currentRawDataFilepathList.Select([&] (std::any b)
 				{
 					return L'\t' + b;
 				})));
-				file.WriteLine(L"Databases:");
-				file.Write(std::wstring::Join(L"\r\n", currentProteinDbFilenameList.Select([&] (std::any b)
+				file.WriteLine("Databases:");
+				file.Write(std::string::Join("\r\n", currentProteinDbFilenameList.Select([&] (std::any b)
 				{
-					return L'\t' + (b::IsContaminant ? L"Contaminant " : L"") + b::FilePath;
+					return L'\t' + (b::IsContaminant ? "Contaminant " : "") + b::FilePath;
 				})));
 			}
-			FinishedWritingFile(proseFilePath, std::vector<std::wstring> {displayName});
+			FinishedWritingFile(proseFilePath, std::vector<std::string> {displayName});
 		}
 
-		MetaMorpheusEngine::FinishedSingleEngineHandler->removeListener(L"SingleEngineHandlerInTask");
+		MetaMorpheusEngine::FinishedSingleEngineHandler->removeListener("SingleEngineHandlerInTask");
 		return MyTaskResults;
 	}
 
-	std::vector<Protein*> MetaMorpheusTask::LoadProteins(const std::wstring &taskId, std::vector<DbForTask*> &dbFilenameList, bool searchTarget, DecoyType *decoyType, std::vector<std::wstring> &localizeableModificationTypes, EngineLayer::CommonParameters *commonParameters)
+	std::vector<Protein*> MetaMorpheusTask::LoadProteins(const std::string &taskId, std::vector<DbForTask*> &dbFilenameList, bool searchTarget, DecoyType *decoyType, std::vector<std::string> &localizeableModificationTypes, EngineLayer::CommonParameters *commonParameters)
 	{
-		Status(L"Loading proteins...", std::vector<std::wstring> {taskId});
+		Status("Loading proteins...", std::vector<std::string> {taskId});
 		int emptyProteinEntries = 0;
 		std::vector<Protein*> proteinList;
 		for (auto db : dbFilenameList)
 		{
 			int emptyProteinEntriesForThisDb = 0;
-			Dictionary<std::wstring, Modification*> unknownModifications;
+			Dictionary<std::string, Modification*> unknownModifications;
 			auto dbProteinList = LoadProteinDb(db->getFilePath(), searchTarget, decoyType, localizeableModificationTypes, db->getIsContaminant(), unknownModifications, emptyProteinEntriesForThisDb, commonParameters);
 			proteinList = proteinList.Concat(dbProteinList)->ToList();
 			emptyProteinEntries += emptyProteinEntriesForThisDb;
 		}
 		if (!proteinList.Any())
 		{
-			Warn(L"Warning: No protein entries were found in the database");
+			Warn("Warning: No protein entries were found in the database");
 		}
 		else if (emptyProteinEntries > 0)
 		{
-			Warn(L"Warning: " + std::to_wstring(emptyProteinEntries) + L" empty protein entries ignored");
+			Warn("Warning: " + std::to_string(emptyProteinEntries) + " empty protein entries ignored");
 		}
 		return proteinList;
 	}
 
-	std::vector<Protein*> MetaMorpheusTask::LoadProteinDb(const std::wstring &fileName, bool generateTargets, DecoyType *decoyType, std::vector<std::wstring> &localizeableModificationTypes, bool isContaminant, std::unordered_map<std::wstring, Modification*> &um, int &emptyEntriesCount, EngineLayer::CommonParameters *commonParameters)
+	std::vector<Protein*> MetaMorpheusTask::LoadProteinDb(const std::string &fileName, bool generateTargets, DecoyType *decoyType, std::vector<std::string> &localizeableModificationTypes, bool isContaminant, std::unordered_map<std::string, Modification*> &um, int &emptyEntriesCount, EngineLayer::CommonParameters *commonParameters)
 	{
-		std::vector<std::wstring> dbErrors;
+		std::vector<std::string> dbErrors;
 		std::vector<Protein*> proteinList;
 
 //C# TO C++ CONVERTER TODO TASK: There is no direct native C++ equivalent to this .NET String method:
-		std::wstring theExtension = Path::GetExtension(fileName).ToLowerInvariant();
-		bool compressed = StringHelper::endsWith(theExtension, L"gz"); // allows for .bgz and .tgz, too which are used on occasion
+		std::string theExtension = Path::GetExtension(fileName).ToLowerInvariant();
+		bool compressed = StringHelper::endsWith(theExtension, "gz"); // allows for .bgz and .tgz, too which are used on occasion
 //C# TO C++ CONVERTER TODO TASK: There is no direct native C++ equivalent to this .NET String method:
 		theExtension = compressed ? Path::GetExtension(Path::GetFileNameWithoutExtension(fileName)).ToLowerInvariant() : theExtension;
 
-		if (theExtension == L".fasta" || theExtension == L".fa")
+		if (theExtension == ".fasta" || theExtension == ".fa")
 		{
 			um.clear();
 			proteinList = ProteinDbLoader::LoadProteinFasta(fileName, generateTargets, decoyType, isContaminant, ProteinDbLoader::UniprotAccessionRegex, ProteinDbLoader::UniprotFullNameRegex, ProteinDbLoader::UniprotFullNameRegex, ProteinDbLoader::UniprotGeneNameRegex, ProteinDbLoader::UniprotOrganismRegex, dbErrors, commonParameters->getMaxThreadsToUsePerFile());
 		}
 		else
 		{
-			std::vector<std::wstring> modTypesToExclude = GlobalVariables::getAllModTypesKnown().Where([&] (std::any b)
+			std::vector<std::string> modTypesToExclude = GlobalVariables::getAllModTypesKnown().Where([&] (std::any b)
 			{
 				!std::find(localizeableModificationTypes.begin(), localizeableModificationTypes.end(), b) != localizeableModificationTypes.end();
 			}).ToList();
@@ -427,10 +427,10 @@ const std::wstring MetaMorpheusTask::IndexFolderName = L"DatabaseIndex";
 		}).ToList();
 	}
 
-	void MetaMorpheusTask::LoadModifications(const std::wstring &taskId, std::vector<Modification*> &variableModifications, std::vector<Modification*> &fixedModifications, std::vector<std::wstring> &localizableModificationTypes)
+	void MetaMorpheusTask::LoadModifications(const std::string &taskId, std::vector<Modification*> &variableModifications, std::vector<Modification*> &fixedModifications, std::vector<std::string> &localizableModificationTypes)
 	{
 		// load modifications
-		Status(L"Loading modifications...", taskId);
+		Status("Loading modifications...", taskId);
 		variableModifications = GlobalVariables::getAllModsKnown().OfType<Modification*>().Where([&] (std::any b)
 		{
 			getCommonParameters()->ListOfModsVariable->Contains((b::ModificationType, b::IdWithMotif));
@@ -459,11 +459,11 @@ const std::wstring MetaMorpheusTask::IndexFolderName = L"DatabaseIndex";
 		}).Except(recognizedFixed));
 		for (auto unrecognizedMod : unknownMods)
 		{
-			Warn(L"Unrecognized mod " + unrecognizedMod + L"; are you using an old .toml?");
+			Warn("Unrecognized mod " + unrecognizedMod + "; are you using an old .toml?");
 		}
 	}
 
-	void MetaMorpheusTask::WritePsmsToTsv(std::vector<PeptideSpectralMatch*> &psms, const std::wstring &filePath, IReadOnlyDictionary<std::wstring, int> *modstoWritePruned)
+	void MetaMorpheusTask::WritePsmsToTsv(std::vector<PeptideSpectralMatch*> &psms, const std::string &filePath, IReadOnlyDictionary<std::string, int> *modstoWritePruned)
 	{
 //C# TO C++ CONVERTER NOTE: The following 'using' block is replaced by its C++ equivalent:
 //ORIGINAL LINE: using (StreamWriter output = new StreamWriter(filePath))
@@ -483,57 +483,57 @@ const std::wstring MetaMorpheusTask::IndexFolderName = L"DatabaseIndex";
 		OutProgressHandler +== nullptr ? nullptr : OutProgressHandler::Invoke(this, v);
 	}
 
-	void MetaMorpheusTask::FinishedWritingFile(const std::wstring &path, std::vector<std::wstring> &nestedIDs)
+	void MetaMorpheusTask::FinishedWritingFile(const std::string &path, std::vector<std::string> &nestedIDs)
 	{
 		SingleFileEventArgs tempVar(path, nestedIDs);
 		FinishedWritingFileHandler +== nullptr ? nullptr : FinishedWritingFileHandler::Invoke(this, &tempVar);
 	}
 
-	void MetaMorpheusTask::StartingDataFile(const std::wstring &v, std::vector<std::wstring> &nestedIDs)
+	void MetaMorpheusTask::StartingDataFile(const std::string &v, std::vector<std::string> &nestedIDs)
 	{
 		StringEventArgs tempVar(v, nestedIDs);
 		StartingDataFileHandler +== nullptr ? nullptr : StartingDataFileHandler::Invoke(this, &tempVar);
 	}
 
-	void MetaMorpheusTask::FinishedDataFile(const std::wstring &v, std::vector<std::wstring> &nestedIDs)
+	void MetaMorpheusTask::FinishedDataFile(const std::string &v, std::vector<std::string> &nestedIDs)
 	{
 		StringEventArgs tempVar(v, nestedIDs);
 		FinishedDataFileHandler +== nullptr ? nullptr : FinishedDataFileHandler::Invoke(this, &tempVar);
 	}
 
-	void MetaMorpheusTask::Status(const std::wstring &v, const std::wstring &id)
+	void MetaMorpheusTask::Status(const std::string &v, const std::string &id)
 	{
-		StringEventArgs tempVar(v, new std::vector<std::wstring> {id});
+		StringEventArgs tempVar(v, new std::vector<std::string> {id});
 		OutLabelStatusHandler +== nullptr ? nullptr : OutLabelStatusHandler::Invoke(this, &tempVar);
 	}
 
-	void MetaMorpheusTask::Status(const std::wstring &v, std::vector<std::wstring> &nestedIds)
+	void MetaMorpheusTask::Status(const std::string &v, std::vector<std::string> &nestedIds)
 	{
 		StringEventArgs tempVar(v, nestedIds);
 		OutLabelStatusHandler +== nullptr ? nullptr : OutLabelStatusHandler::Invoke(this, &tempVar);
 	}
 
-	void MetaMorpheusTask::Warn(const std::wstring &v)
+	void MetaMorpheusTask::Warn(const std::string &v)
 	{
 		StringEventArgs tempVar(v, nullptr);
 		WarnHandler +== nullptr ? nullptr : WarnHandler::Invoke(nullptr, &tempVar);
 	}
 
-	void MetaMorpheusTask::Log(const std::wstring &v, std::vector<std::wstring> &nestedIds)
+	void MetaMorpheusTask::Log(const std::string &v, std::vector<std::string> &nestedIds)
 	{
 		StringEventArgs tempVar(v, nestedIds);
 		LogHandler +== nullptr ? nullptr : LogHandler::Invoke(this, &tempVar);
 	}
 
-	void MetaMorpheusTask::NewCollection(const std::wstring &displayName, std::vector<std::wstring> &nestedIds)
+	void MetaMorpheusTask::NewCollection(const std::string &displayName, std::vector<std::string> &nestedIds)
 	{
 		StringEventArgs tempVar(displayName, nestedIds);
 		NewCollectionHandler +== nullptr ? nullptr : NewCollectionHandler::Invoke(this, &tempVar);
 	}
 
-	std::vector<std::wstring> MetaMorpheusTask::GetModsTypesFromString(const std::wstring &value)
+	std::vector<std::string> MetaMorpheusTask::GetModsTypesFromString(const std::string &value)
 	{
-		return value.Split({L"\t"}, StringSplitOptions::RemoveEmptyEntries).ToList();
+		return value.Split({"\t"}, StringSplitOptions::RemoveEmptyEntries).ToList();
 	}
 
 	void MetaMorpheusTask::SingleEngineHandlerInTask(std::any sender, SingleEngineFinishedEventArgs *e)
@@ -542,13 +542,13 @@ const std::wstring MetaMorpheusTask::IndexFolderName = L"DatabaseIndex";
 		MyTaskResults->AddResultText(e->ToString());
 	}
 
-	void MetaMorpheusTask::FinishedSingleTask(const std::wstring &displayName)
+	void MetaMorpheusTask::FinishedSingleTask(const std::string &displayName)
 	{
 		SingleTaskEventArgs tempVar(displayName);
 		FinishedSingleTaskHandler +== nullptr ? nullptr : FinishedSingleTaskHandler::Invoke(this, &tempVar);
 	}
 
-	void MetaMorpheusTask::StartingSingleTask(const std::wstring &displayName)
+	void MetaMorpheusTask::StartingSingleTask(const std::string &displayName)
 	{
 		SingleTaskEventArgs tempVar(displayName);
 		StartingSingleTaskHander +== nullptr ? nullptr : StartingSingleTaskHander::Invoke(this, &tempVar);
@@ -560,7 +560,7 @@ const std::wstring MetaMorpheusTask::IndexFolderName = L"DatabaseIndex";
 		yield return type;
 	}
 
-	bool MetaMorpheusTask::SameSettings(const std::wstring &pathToOldParamsFile, IndexingEngine *indexEngine)
+	bool MetaMorpheusTask::SameSettings(const std::string &pathToOldParamsFile, IndexingEngine *indexEngine)
 	{
 //C# TO C++ CONVERTER NOTE: The following 'using' block is replaced by its C++ equivalent:
 //ORIGINAL LINE: using (StreamReader reader = new StreamReader(pathToOldParamsFile))
@@ -575,7 +575,7 @@ const std::wstring MetaMorpheusTask::IndexFolderName = L"DatabaseIndex";
 		return false;
 	}
 
-	void MetaMorpheusTask::WritePeptideIndex(std::vector<PeptideWithSetModifications*> &peptideIndex, const std::wstring &peptideIndexFile)
+	void MetaMorpheusTask::WritePeptideIndex(std::vector<PeptideWithSetModifications*> &peptideIndex, const std::string &peptideIndexFile)
 	{
 		auto messageTypes = GetSubclassesAndItself(std::vector<PeptideWithSetModifications*>::typeid);
 		auto ser = new NetSerializer::Serializer(messageTypes);
@@ -590,7 +590,7 @@ const std::wstring MetaMorpheusTask::IndexFolderName = L"DatabaseIndex";
 		delete ser;
 	}
 
-	void MetaMorpheusTask::WriteFragmentIndexNetSerializer(std::vector<std::vector<int>&> &fragmentIndex, const std::wstring &fragmentIndexFile)
+	void MetaMorpheusTask::WriteFragmentIndexNetSerializer(std::vector<std::vector<int>&> &fragmentIndex, const std::string &fragmentIndexFile)
 	{
 		auto messageTypes = GetSubclassesAndItself(std::vector<std::vector<int>>::typeid);
 		auto ser = new NetSerializer::Serializer(messageTypes);
@@ -605,17 +605,17 @@ const std::wstring MetaMorpheusTask::IndexFolderName = L"DatabaseIndex";
 		delete ser;
 	}
 
-	std::wstring MetaMorpheusTask::GetExistingFolderWithIndices(IndexingEngine *indexEngine, std::vector<DbForTask*> &dbFilenameList)
+	std::string MetaMorpheusTask::GetExistingFolderWithIndices(IndexingEngine *indexEngine, std::vector<DbForTask*> &dbFilenameList)
 	{
 		for (auto database : dbFilenameList)
 		{
-			std::wstring baseDir = FileSystem::getDirectoryName(database->getFilePath());
+			std::string baseDir = FileSystem::getDirectoryName(database->getFilePath());
 			DirectoryInfo *indexDirectory = new DirectoryInfo(FileSystem::combine(baseDir, IndexFolderName));
 
 			if (!FileSystem::directoryExists(indexDirectory->FullName))
 			{
 				delete indexDirectory;
-				return L"";
+				return "";
 			}
 
 			// all directories in the same directory as the protein database
@@ -624,9 +624,9 @@ const std::wstring MetaMorpheusTask::IndexFolderName = L"DatabaseIndex";
 			// look in each subdirectory to find indexes folder
 			for (auto possibleFolder : directories)
 			{
-				std::wstring result = CheckFiles(indexEngine, possibleFolder);
+				std::string result = CheckFiles(indexEngine, possibleFolder);
 
-				if (result != L"")
+				if (result != "")
 				{
 					delete indexDirectory;
 					return result;
@@ -636,19 +636,19 @@ const std::wstring MetaMorpheusTask::IndexFolderName = L"DatabaseIndex";
 			delete indexDirectory;
 		}
 
-		return L"";
+		return "";
 	}
 
-	std::wstring MetaMorpheusTask::CheckFiles(IndexingEngine *indexEngine, DirectoryInfo *folder)
+	std::string MetaMorpheusTask::CheckFiles(IndexingEngine *indexEngine, DirectoryInfo *folder)
 	{
-		if (FileSystem::fileExists(FileSystem::combine(folder->FullName, L"indexEngine.params")) && FileSystem::fileExists(FileSystem::combine(folder->FullName, L"peptideIndex.ind")) && FileSystem::fileExists(FileSystem::combine(folder->FullName, L"fragmentIndex.ind")) && (FileSystem::fileExists(FileSystem::combine(folder->FullName, L"precursorIndex.ind")) || !indexEngine->GeneratePrecursorIndex) && SameSettings(FileSystem::combine(folder->FullName, L"indexEngine.params"), indexEngine))
+		if (FileSystem::fileExists(FileSystem::combine(folder->FullName, "indexEngine.params")) && FileSystem::fileExists(FileSystem::combine(folder->FullName, "peptideIndex.ind")) && FileSystem::fileExists(FileSystem::combine(folder->FullName, "fragmentIndex.ind")) && (FileSystem::fileExists(FileSystem::combine(folder->FullName, "precursorIndex.ind")) || !indexEngine->GeneratePrecursorIndex) && SameSettings(FileSystem::combine(folder->FullName, "indexEngine.params"), indexEngine))
 		{
 			return folder->FullName;
 		}
-		return L"";
+		return "";
 	}
 
-	void MetaMorpheusTask::WriteIndexEngineParams(IndexingEngine *indexEngine, const std::wstring &fileName)
+	void MetaMorpheusTask::WriteIndexEngineParams(IndexingEngine *indexEngine, const std::string &fileName)
 	{
 //C# TO C++ CONVERTER NOTE: The following 'using' block is replaced by its C++ equivalent:
 //ORIGINAL LINE: using (StreamWriter output = new StreamWriter(fileName))
@@ -658,7 +658,7 @@ const std::wstring MetaMorpheusTask::IndexFolderName = L"DatabaseIndex";
 		}
 	}
 
-	std::wstring MetaMorpheusTask::GenerateOutputFolderForIndices(std::vector<DbForTask*> &dbFilenameList)
+	std::string MetaMorpheusTask::GenerateOutputFolderForIndices(std::vector<DbForTask*> &dbFilenameList)
 	{
 		auto pathToIndexes = FileSystem::combine(FileSystem::getDirectoryName(dbFilenameList.front().FilePath), IndexFolderName);
 		if (!FileSystem::fileExists(pathToIndexes))
@@ -666,60 +666,60 @@ const std::wstring MetaMorpheusTask::IndexFolderName = L"DatabaseIndex";
 			FileSystem::createDirectory(pathToIndexes);
 		}
 //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
-		auto folder = FileSystem::combine(pathToIndexes, DateTime::Now.ToString(L"yyyy-MM-dd-HH-mm-ss", CultureInfo::InvariantCulture));
+		auto folder = FileSystem::combine(pathToIndexes, DateTime::Now.ToString("yyyy-MM-dd-HH-mm-ss", CultureInfo::InvariantCulture));
 		FileSystem::createDirectory(folder);
 		return folder;
 	}
 
-	void MetaMorpheusTask::GenerateIndexes(IndexingEngine *indexEngine, std::vector<DbForTask*> &dbFilenameList, std::vector<PeptideWithSetModifications*> &peptideIndex, std::vector<std::vector<int>> &fragmentIndex, std::vector<std::vector<int>> &precursorIndex, std::vector<Protein*> &allKnownProteins, std::vector<Modification*> &allKnownModifications, const std::wstring &taskId)
+	void MetaMorpheusTask::GenerateIndexes(IndexingEngine *indexEngine, std::vector<DbForTask*> &dbFilenameList, std::vector<PeptideWithSetModifications*> &peptideIndex, std::vector<std::vector<int>> &fragmentIndex, std::vector<std::vector<int>> &precursorIndex, std::vector<Protein*> &allKnownProteins, std::vector<Modification*> &allKnownModifications, const std::string &taskId)
 	{
-		std::wstring pathToFolderWithIndices = GetExistingFolderWithIndices(indexEngine, dbFilenameList);
-		if (pathToFolderWithIndices == L"")
+		std::string pathToFolderWithIndices = GetExistingFolderWithIndices(indexEngine, dbFilenameList);
+		if (pathToFolderWithIndices == "")
 		{
 			auto output_folderForIndices = GenerateOutputFolderForIndices(dbFilenameList);
-			Status(L"Writing params...", std::vector<std::wstring> {taskId});
-			auto paramsFile = FileSystem::combine(output_folderForIndices, L"indexEngine.params");
+			Status("Writing params...", std::vector<std::string> {taskId});
+			auto paramsFile = FileSystem::combine(output_folderForIndices, "indexEngine.params");
 			WriteIndexEngineParams(indexEngine, paramsFile);
-			FinishedWritingFile(paramsFile, std::vector<std::wstring> {taskId});
+			FinishedWritingFile(paramsFile, std::vector<std::string> {taskId});
 
-			Status(L"Running Index Engine...", std::vector<std::wstring> {taskId});
+			Status("Running Index Engine...", std::vector<std::string> {taskId});
 			auto indexResults = static_cast<IndexingResults*>(indexEngine->Run());
 			peptideIndex = indexResults->getPeptideIndex();
 			fragmentIndex = indexResults->getFragmentIndex();
 			precursorIndex = indexResults->getPrecursorIndex();
 
-			Status(L"Writing peptide index...", std::vector<std::wstring> {taskId});
-			auto peptideIndexFile = FileSystem::combine(output_folderForIndices, L"peptideIndex.ind");
+			Status("Writing peptide index...", std::vector<std::string> {taskId});
+			auto peptideIndexFile = FileSystem::combine(output_folderForIndices, "peptideIndex.ind");
 			WritePeptideIndex(peptideIndex, peptideIndexFile);
-			FinishedWritingFile(peptideIndexFile, std::vector<std::wstring> {taskId});
+			FinishedWritingFile(peptideIndexFile, std::vector<std::string> {taskId});
 
-			Status(L"Writing fragment index...", std::vector<std::wstring> {taskId});
-			auto fragmentIndexFile = FileSystem::combine(output_folderForIndices, L"fragmentIndex.ind");
+			Status("Writing fragment index...", std::vector<std::string> {taskId});
+			auto fragmentIndexFile = FileSystem::combine(output_folderForIndices, "fragmentIndex.ind");
 			WriteFragmentIndexNetSerializer(fragmentIndex, fragmentIndexFile);
-			FinishedWritingFile(fragmentIndexFile, std::vector<std::wstring> {taskId});
+			FinishedWritingFile(fragmentIndexFile, std::vector<std::string> {taskId});
 
 			if (indexEngine->GeneratePrecursorIndex)
 			{
-				Status(L"Writing precursor index...", std::vector<std::wstring> {taskId});
-				auto precursorIndexFile = FileSystem::combine(output_folderForIndices, L"precursorIndex.ind");
+				Status("Writing precursor index...", std::vector<std::string> {taskId});
+				auto precursorIndexFile = FileSystem::combine(output_folderForIndices, "precursorIndex.ind");
 				WriteFragmentIndexNetSerializer(precursorIndex, precursorIndexFile);
-				FinishedWritingFile(precursorIndexFile, std::vector<std::wstring> {taskId});
+				FinishedWritingFile(precursorIndexFile, std::vector<std::string> {taskId});
 			}
 		}
 		else
 		{
-			Status(L"Reading peptide index...", std::vector<std::wstring> {taskId});
+			Status("Reading peptide index...", std::vector<std::string> {taskId});
 			auto messageTypes = GetSubclassesAndItself(std::vector<PeptideWithSetModifications*>::typeid);
 			auto ser = new NetSerializer::Serializer(messageTypes);
 //C# TO C++ CONVERTER NOTE: The following 'using' block is replaced by its C++ equivalent:
 //ORIGINAL LINE: using (var file = File.OpenRead(Path.Combine(pathToFolderWithIndices, "peptideIndex.ind")))
 			{
-				auto file = File::OpenRead(FileSystem::combine(pathToFolderWithIndices, L"peptideIndex.ind"));
+				auto file = File::OpenRead(FileSystem::combine(pathToFolderWithIndices, "peptideIndex.ind"));
 				peptideIndex = static_cast<std::vector<PeptideWithSetModifications*>>(ser->Deserialize(file));
 			}
 
 			// populate dictionaries of known proteins for deserialization
-			std::unordered_map<std::wstring, Protein*> proteinDictionary;
+			std::unordered_map<std::string, Protein*> proteinDictionary;
 
 			for (auto protein : allKnownProteins)
 			{
@@ -730,7 +730,7 @@ const std::wstring MetaMorpheusTask::IndexFolderName = L"DatabaseIndex";
 				else if (proteinDictionary[protein->Accession]->BaseSequence != protein->BaseSequence)
 				{
 					delete ser;
-					throw MetaMorpheusException(StringHelper::formatSimple(L"The protein database contained multiple proteins with accession {0} ! This is not allowed for index-based searches (modern, non-specific, crosslink searches)", protein->Accession));
+					throw MetaMorpheusException(StringHelper::formatSimple("The protein database contained multiple proteins with accession {0} ! This is not allowed for index-based searches (modern, non-specific, crosslink searches)", protein->Accession));
 				}
 			}
 
@@ -740,25 +740,25 @@ const std::wstring MetaMorpheusTask::IndexFolderName = L"DatabaseIndex";
 				peptide->SetNonSerializedPeptideInfo(GlobalVariables::getAllModsKnownDictionary(), proteinDictionary);
 			}
 
-			Status(L"Reading fragment index...", std::vector<std::wstring> {taskId});
+			Status("Reading fragment index...", std::vector<std::string> {taskId});
 			messageTypes = GetSubclassesAndItself(std::vector<std::vector<int>>::typeid);
 			ser = new NetSerializer::Serializer(messageTypes);
 //C# TO C++ CONVERTER NOTE: The following 'using' block is replaced by its C++ equivalent:
 //ORIGINAL LINE: using (var file = File.OpenRead(Path.Combine(pathToFolderWithIndices, "fragmentIndex.ind")))
 			{
-				auto file = File::OpenRead(FileSystem::combine(pathToFolderWithIndices, L"fragmentIndex.ind"));
+				auto file = File::OpenRead(FileSystem::combine(pathToFolderWithIndices, "fragmentIndex.ind"));
 				fragmentIndex = static_cast<std::vector<std::vector<int>>>(ser->Deserialize(file));
 			}
 
 			if (indexEngine->GeneratePrecursorIndex)
 			{
-				Status(L"Reading precursor index...", std::vector<std::wstring> {taskId});
+				Status("Reading precursor index...", std::vector<std::string> {taskId});
 				messageTypes = GetSubclassesAndItself(std::vector<std::vector<int>>::typeid);
 				ser = new NetSerializer::Serializer(messageTypes);
 //C# TO C++ CONVERTER NOTE: The following 'using' block is replaced by its C++ equivalent:
 //ORIGINAL LINE: using (var file = File.OpenRead(Path.Combine(pathToFolderWithIndices, "precursorIndex.ind")))
 				{
-					auto file = File::OpenRead(FileSystem::combine(pathToFolderWithIndices, L"precursorIndex.ind"));
+					auto file = File::OpenRead(FileSystem::combine(pathToFolderWithIndices, "precursorIndex.ind"));
 					precursorIndex = static_cast<std::vector<std::vector<int>>>(ser->Deserialize(file));
 				}
 			}

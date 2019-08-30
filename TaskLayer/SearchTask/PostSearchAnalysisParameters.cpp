@@ -24,12 +24,12 @@ namespace TaskLayer
 		privateSearchTaskResults = value;
 	}
 
-	std::wstring PostSearchAnalysisParameters::getSearchTaskId() const
+	std::string PostSearchAnalysisParameters::getSearchTaskId() const
 	{
 		return privateSearchTaskId;
 	}
 
-	void PostSearchAnalysisParameters::setSearchTaskId(const std::wstring &value)
+	void PostSearchAnalysisParameters::setSearchTaskId(const std::string &value)
 	{
 		privateSearchTaskId = value;
 	}
@@ -114,22 +114,22 @@ namespace TaskLayer
 		privateNumNotches = value;
 	}
 
-	std::wstring PostSearchAnalysisParameters::getOutputFolder() const
+	std::string PostSearchAnalysisParameters::getOutputFolder() const
 	{
 		return privateOutputFolder;
 	}
 
-	void PostSearchAnalysisParameters::setOutputFolder(const std::wstring &value)
+	void PostSearchAnalysisParameters::setOutputFolder(const std::string &value)
 	{
 		privateOutputFolder = value;
 	}
 
-	std::wstring PostSearchAnalysisParameters::getIndividualResultsOutputFolder() const
+	std::string PostSearchAnalysisParameters::getIndividualResultsOutputFolder() const
 	{
 		return privateIndividualResultsOutputFolder;
 	}
 
-	void PostSearchAnalysisParameters::setIndividualResultsOutputFolder(const std::wstring &value)
+	void PostSearchAnalysisParameters::setIndividualResultsOutputFolder(const std::string &value)
 	{
 		privateIndividualResultsOutputFolder = value;
 	}
@@ -144,12 +144,12 @@ namespace TaskLayer
 		privateFileSettingsList = value;
 	}
 
-	std::unordered_map<std::wstring, std::vector<int>> PostSearchAnalysisParameters::getNumMs2SpectraPerFile() const
+	std::unordered_map<std::string, std::vector<int>> PostSearchAnalysisParameters::getNumMs2SpectraPerFile() const
 	{
 		return privateNumMs2SpectraPerFile;
 	}
 
-	void PostSearchAnalysisParameters::setNumMs2SpectraPerFile(const std::unordered_map<std::wstring, std::vector<int>> &value)
+	void PostSearchAnalysisParameters::setNumMs2SpectraPerFile(const std::unordered_map<std::string, std::vector<int>> &value)
 	{
 		privateNumMs2SpectraPerFile = value;
 	}
@@ -174,12 +174,12 @@ namespace TaskLayer
 		privateDatabaseFilenameList = value;
 	}
 
-	std::vector<std::wstring> PostSearchAnalysisParameters::getCurrentRawFileList() const
+	std::vector<std::string> PostSearchAnalysisParameters::getCurrentRawFileList() const
 	{
 		return privateCurrentRawFileList;
 	}
 
-	void PostSearchAnalysisParameters::setCurrentRawFileList(const std::vector<std::wstring> &value)
+	void PostSearchAnalysisParameters::setCurrentRawFileList(const std::vector<std::string> &value)
 	{
 		privateCurrentRawFileList = value;
 	}

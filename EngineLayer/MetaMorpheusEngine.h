@@ -7,14 +7,29 @@
 #include "tangible_event.h"
 
 //C# TO C++ CONVERTER NOTE: Forward class declarations:
-namespace EngineLayer { class CommonParameters; }
+//namespace EngineLayer { class CommonParameters; }
+#include "CommonParameters.h"
+
 namespace EngineLayer { class Ms2ScanWithSpecificMass; }
 namespace EngineLayer { class MetaMorpheusEngineResults; }
-namespace EngineLayer { class ProgressEventArgs; }
 
+//namespace EngineLayer { class ProgressEventArgs; }
+#include "EventArgs/ProgressEventArgs.h"
+#include "EventArgs/SingleEngineEventArgs.h"
+#include "EventArgs/SingleEngineFinishedEventArgs.h"
+#include "EventArgs/StringEventArgs.h"
+
+
+#include "Chemistry/Chemistry.h"
 using namespace Chemistry;
+
+#include "MassSpectrometry/MassSpectrometry.h"
 using namespace MassSpectrometry;
+
+#include "MzLibUtil.h"
 using namespace MzLibUtil;
+
+#include "Proteomics/Fragmentation/Fragmentation.h"
 using namespace Proteomics::Fragmentation;
 
 namespace EngineLayer
@@ -22,7 +37,7 @@ namespace EngineLayer
 	class MetaMorpheusEngine
 	{
 	protected:
-		static const std::unordered_map<DissociationType*, double> complementaryIonConversionDictionary;
+		static const std::unordered_map<DissociationType, double> complementaryIonConversionDictionary;
 
 		CommonParameters *const commonParameters;
 

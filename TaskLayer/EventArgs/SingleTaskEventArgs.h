@@ -8,12 +8,12 @@ namespace TaskLayer
 	class SingleTaskEventArgs : public EventArgs
 	{
 	private:
-		std::wstring privateDisplayName;
+		std::string privateDisplayName;
 
 	public:
-		SingleTaskEventArgs(const std::wstring &displayName);
+		SingleTaskEventArgs(const std::string &displayName);
 
-		std::wstring getDisplayName() const;
-		void setDisplayName(const std::wstring &value);
+		std::string getDisplayName() const;
+		void setDisplayName(const std::string &value);
 	};
 }

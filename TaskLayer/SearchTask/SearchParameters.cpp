@@ -27,17 +27,17 @@ namespace TaskLayer
 		setWriteMzId(true);
 		setWritePepXml(false);
 
-		setModsToWriteSelection(std::unordered_map<std::wstring, int>
+		setModsToWriteSelection(std::unordered_map<std::string, int>
 		{
-			{L"N-linked glycosylation", 3},
-			{L"O-linked glycosylation", 3},
-			{L"Other glycosylation", 3},
-			{L"Common Biological", 3},
-			{L"Less Common", 3},
-			{L"Metal", 3},
-			{L"2+ nucleotide substitution", 3},
-			{L"1 nucleotide substitution", 3},
-			{L"UniProt", 2}
+			{"N-linked glycosylation", 3},
+			{"O-linked glycosylation", 3},
+			{"Other glycosylation", 3},
+			{"Common Biological", 3},
+			{"Less Common", 3},
+			{"Metal", 3},
+			{"2+ nucleotide substitution", 3},
+			{"1 nucleotide substitution", 3},
+			{"UniProt", 2}
 		});
 
 		setWriteDecoys(true);
@@ -215,12 +215,12 @@ namespace TaskLayer
 		privateLocalFdrCategories = value;
 	}
 
-	std::wstring SearchParameters::getCustomMdac() const
+	std::string SearchParameters::getCustomMdac() const
 	{
 		return privateCustomMdac;
 	}
 
-	void SearchParameters::setCustomMdac(const std::wstring &value)
+	void SearchParameters::setCustomMdac(const std::string &value)
 	{
 		privateCustomMdac = value;
 	}
@@ -245,12 +245,12 @@ namespace TaskLayer
 		privateHistogramBinTolInDaltons = value;
 	}
 
-	std::unordered_map<std::wstring, int> SearchParameters::getModsToWriteSelection() const
+	std::unordered_map<std::string, int> SearchParameters::getModsToWriteSelection() const
 	{
 		return privateModsToWriteSelection;
 	}
 
-	void SearchParameters::setModsToWriteSelection(const std::unordered_map<std::wstring, int> &value)
+	void SearchParameters::setModsToWriteSelection(const std::unordered_map<std::string, int> &value)
 	{
 		privateModsToWriteSelection = value;
 	}

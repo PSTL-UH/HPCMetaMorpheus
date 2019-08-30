@@ -60,102 +60,102 @@ namespace TaskLayer
 		privateCrosslinkSearchTopNum = value;
 	}
 
-	std::wstring XlSearchParameters::getCrosslinkerName() const
+	std::string XlSearchParameters::getCrosslinkerName() const
 	{
 		return privateCrosslinkerName;
 	}
 
-	void XlSearchParameters::setCrosslinkerName(const std::wstring &value)
+	void XlSearchParameters::setCrosslinkerName(const std::string &value)
 	{
 		privateCrosslinkerName = value;
 	}
 
-	Nullable<double> XlSearchParameters::getCrosslinkerTotalMass() const
+	std::optional<double> XlSearchParameters::getCrosslinkerTotalMass() const
 	{
 		return privateCrosslinkerTotalMass;
 	}
 
-	void XlSearchParameters::setCrosslinkerTotalMass(Nullable<double> value)
+	void XlSearchParameters::setCrosslinkerTotalMass(std::optional<double> value)
 	{
 		privateCrosslinkerTotalMass = value;
 	}
 
-	Nullable<double> XlSearchParameters::getCrosslinkerShortMass() const
+	std::optional<double> XlSearchParameters::getCrosslinkerShortMass() const
 	{
 		return privateCrosslinkerShortMass;
 	}
 
-	void XlSearchParameters::setCrosslinkerShortMass(Nullable<double> value)
+	void XlSearchParameters::setCrosslinkerShortMass(std::optional<double> value)
 	{
 		privateCrosslinkerShortMass = value;
 	}
 
-	Nullable<double> XlSearchParameters::getCrosslinkerLongMass() const
+	std::optional<double> XlSearchParameters::getCrosslinkerLongMass() const
 	{
 		return privateCrosslinkerLongMass;
 	}
 
-	void XlSearchParameters::setCrosslinkerLongMass(Nullable<double> value)
+	void XlSearchParameters::setCrosslinkerLongMass(std::optional<double> value)
 	{
 		privateCrosslinkerLongMass = value;
 	}
 
-	Nullable<double> XlSearchParameters::getCrosslinkerLoopMass() const
+	std::optional<double> XlSearchParameters::getCrosslinkerLoopMass() const
 	{
 		return privateCrosslinkerLoopMass;
 	}
 
-	void XlSearchParameters::setCrosslinkerLoopMass(Nullable<double> value)
+	void XlSearchParameters::setCrosslinkerLoopMass(std::optional<double> value)
 	{
 		privateCrosslinkerLoopMass = value;
 	}
 
-	std::wstring XlSearchParameters::getCrosslinkerResidues() const
+	std::string XlSearchParameters::getCrosslinkerResidues() const
 	{
 		return privateCrosslinkerResidues;
 	}
 
-	void XlSearchParameters::setCrosslinkerResidues(const std::wstring &value)
+	void XlSearchParameters::setCrosslinkerResidues(const std::string &value)
 	{
 		privateCrosslinkerResidues = value;
 	}
 
-	std::wstring XlSearchParameters::getCrosslinkerResidues2() const
+	std::string XlSearchParameters::getCrosslinkerResidues2() const
 	{
 		return privateCrosslinkerResidues2;
 	}
 
-	void XlSearchParameters::setCrosslinkerResidues2(const std::wstring &value)
+	void XlSearchParameters::setCrosslinkerResidues2(const std::string &value)
 	{
 		privateCrosslinkerResidues2 = value;
 	}
 
-	Nullable<double> XlSearchParameters::getCrosslinkerDeadEndMassH2O() const
+	std::optional<double> XlSearchParameters::getCrosslinkerDeadEndMassH2O() const
 	{
 		return privateCrosslinkerDeadEndMassH2O;
 	}
 
-	void XlSearchParameters::setCrosslinkerDeadEndMassH2O(Nullable<double> value)
+	void XlSearchParameters::setCrosslinkerDeadEndMassH2O(std::optional<double> value)
 	{
 		privateCrosslinkerDeadEndMassH2O = value;
 	}
 
-	Nullable<double> XlSearchParameters::getCrosslinkerDeadEndMassNH2() const
+	std::optional<double> XlSearchParameters::getCrosslinkerDeadEndMassNH2() const
 	{
 		return privateCrosslinkerDeadEndMassNH2;
 	}
 
-	void XlSearchParameters::setCrosslinkerDeadEndMassNH2(Nullable<double> value)
+	void XlSearchParameters::setCrosslinkerDeadEndMassNH2(std::optional<double> value)
 	{
 		privateCrosslinkerDeadEndMassNH2 = value;
 	}
 
-	Nullable<double> XlSearchParameters::getCrosslinkerDeadEndMassTris() const
+	std::optional<double> XlSearchParameters::getCrosslinkerDeadEndMassTris() const
 	{
 		return privateCrosslinkerDeadEndMassTris;
 	}
 
-	void XlSearchParameters::setCrosslinkerDeadEndMassTris(Nullable<double> value)
+	void XlSearchParameters::setCrosslinkerDeadEndMassTris(std::optional<double> value)
 	{
 		privateCrosslinkerDeadEndMassTris = value;
 	}

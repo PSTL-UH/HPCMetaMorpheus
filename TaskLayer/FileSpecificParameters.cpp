@@ -19,36 +19,36 @@ namespace TaskLayer
 			{
 				// we're using the name of the variable here and not a fixed string
 				// in case the variable name changes at some point
-				case L"PrecursorMassTolerance":
+				case "PrecursorMassTolerance":
 					setPrecursorMassTolerance(keyValuePair->Value->Get<Tolerance*>());
 					break;
-				case L"ProductMassTolerance":
+				case "ProductMassTolerance":
 					setProductMassTolerance(keyValuePair->Value->Get<Tolerance*>());
 					break;
-				case L"Protease":
+				case "Protease":
 					setProtease(keyValuePair->Value->Get<getProtease()*>());
 					break;
-				case L"MinPeptideLength":
+				case "MinPeptideLength":
 					setMinPeptideLength(keyValuePair->Value->Get<int>());
 					break;
-				case L"MaxPeptideLength":
+				case "MaxPeptideLength":
 					setMaxPeptideLength(keyValuePair->Value->Get<int>());
 					break;
-				case L"MaxMissedCleavages":
+				case "MaxMissedCleavages":
 					setMaxMissedCleavages(keyValuePair->Value->Get<int>());
 					break;
-				case L"MaxModsForPeptide":
+				case "MaxModsForPeptide":
 					setMaxModsForPeptide(keyValuePair->Value->Get<int>());
 					break;
 
 
-				case L"DissociationType":
+				case "DissociationType":
 					setDissociationType(keyValuePair->Value->Get<MassSpectrometry::DissociationType*>());
 					break;
 
 
 				default:
-					throw MetaMorpheusException(L"Unrecognized parameter \"" + keyValuePair->Key + L"\" in file-specific parameters toml");
+					throw MetaMorpheusException("Unrecognized parameter \"" + keyValuePair->Key + "\" in file-specific parameters toml");
 			}
 		}
 	}
@@ -88,52 +88,52 @@ namespace TaskLayer
 		privateProtease = value;
 	}
 
-	Nullable<int> FileSpecificParameters::getMinPeptideLength() const
+	std::optional<int> FileSpecificParameters::getMinPeptideLength() const
 	{
 		return privateMinPeptideLength;
 	}
 
-	void FileSpecificParameters::setMinPeptideLength(Nullable<int> value)
+	void FileSpecificParameters::setMinPeptideLength(std::optional<int> value)
 	{
 		privateMinPeptideLength = value;
 	}
 
-	Nullable<int> FileSpecificParameters::getMaxPeptideLength() const
+	std::optional<int> FileSpecificParameters::getMaxPeptideLength() const
 	{
 		return privateMaxPeptideLength;
 	}
 
-	void FileSpecificParameters::setMaxPeptideLength(Nullable<int> value)
+	void FileSpecificParameters::setMaxPeptideLength(std::optional<int> value)
 	{
 		privateMaxPeptideLength = value;
 	}
 
-	Nullable<int> FileSpecificParameters::getMaxMissedCleavages() const
+	std::optional<int> FileSpecificParameters::getMaxMissedCleavages() const
 	{
 		return privateMaxMissedCleavages;
 	}
 
-	void FileSpecificParameters::setMaxMissedCleavages(Nullable<int> value)
+	void FileSpecificParameters::setMaxMissedCleavages(std::optional<int> value)
 	{
 		privateMaxMissedCleavages = value;
 	}
 
-	Nullable<int> FileSpecificParameters::getMaxModsForPeptide() const
+	std::optional<int> FileSpecificParameters::getMaxModsForPeptide() const
 	{
 		return privateMaxModsForPeptide;
 	}
 
-	void FileSpecificParameters::setMaxModsForPeptide(Nullable<int> value)
+	void FileSpecificParameters::setMaxModsForPeptide(std::optional<int> value)
 	{
 		privateMaxModsForPeptide = value;
 	}
 
-	Nullable<DissociationType*> FileSpecificParameters::getDissociationType() const
+	std::optional<DissociationType*> FileSpecificParameters::getDissociationType() const
 	{
 		return privateDissociationType;
 	}
 
-	void FileSpecificParameters::setDissociationType(Nullable<DissociationType*> value)
+	void FileSpecificParameters::setDissociationType(std::optional<DissociationType*> value)
 	{
 		privateDissociationType = value;
 	}
@@ -142,40 +142,40 @@ namespace TaskLayer
 	{
 		CommonParameters *temp = new CommonParameters();
 
-		if (L"PrecursorMassTolerance" != L"PrecursorMassTolerance")
+		if ("PrecursorMassTolerance" != "PrecursorMassTolerance")
 		{
 			delete temp;
-			throw MetaMorpheusException(L"Precursor tol variable name is inconsistent");
+			throw MetaMorpheusException("Precursor tol variable name is inconsistent");
 		}
-		if (L"ProductMassTolerance" != L"ProductMassTolerance")
+		if ("ProductMassTolerance" != "ProductMassTolerance")
 		{
 			delete temp;
-			throw MetaMorpheusException(L"Product tol variable name is inconsistent");
+			throw MetaMorpheusException("Product tol variable name is inconsistent");
 		}
-		if (L"Protease" != L"Protease")
+		if ("Protease" != "Protease")
 		{
 			delete temp;
-			throw MetaMorpheusException(L"Protease variable name is inconsistent");
+			throw MetaMorpheusException("Protease variable name is inconsistent");
 		}
-		if (L"MinPeptideLength" != L"MinPeptideLength")
+		if ("MinPeptideLength" != "MinPeptideLength")
 		{
 			delete temp;
-			throw MetaMorpheusException(L"Min peptide length variable name is inconsistent");
+			throw MetaMorpheusException("Min peptide length variable name is inconsistent");
 		}
-		if (L"MaxPeptideLength" != L"MaxPeptideLength")
+		if ("MaxPeptideLength" != "MaxPeptideLength")
 		{
 			delete temp;
-			throw MetaMorpheusException(L"Max peptide length variable name is inconsistent");
+			throw MetaMorpheusException("Max peptide length variable name is inconsistent");
 		}
-		if (L"MaxMissedCleavages" != L"MaxMissedCleavages")
+		if ("MaxMissedCleavages" != "MaxMissedCleavages")
 		{
 			delete temp;
-			throw MetaMorpheusException(L"Max missed cleavages variable name is inconsistent");
+			throw MetaMorpheusException("Max missed cleavages variable name is inconsistent");
 		}
-		if (L"MaxModsForPeptide" != L"MaxModsForPeptide")
+		if ("MaxModsForPeptide" != "MaxModsForPeptide")
 		{
 			delete temp;
-			throw MetaMorpheusException(L"Max mods per peptide variable name is inconsistent");
+			throw MetaMorpheusException("Max mods per peptide variable name is inconsistent");
 		}
 
 		delete temp;

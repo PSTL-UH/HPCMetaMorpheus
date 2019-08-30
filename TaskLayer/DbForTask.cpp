@@ -3,14 +3,14 @@
 namespace TaskLayer
 {
 
-	DbForTask::DbForTask(const std::wstring &filePath, bool isContaminant)
+	DbForTask::DbForTask(const std::string &filePath, bool isContaminant)
 	{
-		FilePath = filePath;
-		IsContaminant = isContaminant;
-		FileName = FileSystem::getFileName(filePath);
+            privateFilePath = filePath;
+            privateIsContaminant = isContaminant;
+            privateFileName = FileSystem::getFileName(filePath);
 	}
 
-	std::wstring DbForTask::getFilePath() const
+	std::string DbForTask::getFilePath() const
 	{
 		return privateFilePath;
 	}
@@ -20,7 +20,7 @@ namespace TaskLayer
 		return privateIsContaminant;
 	}
 
-	std::wstring DbForTask::getFileName() const
+	std::string DbForTask::getFileName() const
 	{
 		return privateFileName;
 	}

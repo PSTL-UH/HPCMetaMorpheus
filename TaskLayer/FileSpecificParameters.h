@@ -14,11 +14,11 @@ namespace TaskLayer
 		Tolerance *privatePrecursorMassTolerance;
 		Tolerance *privateProductMassTolerance;
 		Protease *privateProtease;
-		Nullable<int> privateMinPeptideLength;
-		Nullable<int> privateMaxPeptideLength;
-		Nullable<int> privateMaxMissedCleavages;
-		Nullable<int> privateMaxModsForPeptide;
-		Nullable<DissociationType*> privateDissociationType;
+		std::optional<int> privateMinPeptideLength;
+		std::optional<int> privateMaxPeptideLength;
+		std::optional<int> privateMaxMissedCleavages;
+		std::optional<int> privateMaxModsForPeptide;
+		std::optional<DissociationType*> privateDissociationType;
 
 	public:
 		FileSpecificParameters(TomlTable *tomlTable);
@@ -31,16 +31,16 @@ namespace TaskLayer
 		void setProductMassTolerance(Tolerance *value);
 		Protease *getProtease() const;
 		void setProtease(Protease *value);
-		Nullable<int> getMinPeptideLength() const;
-		void setMinPeptideLength(Nullable<int> value);
-		Nullable<int> getMaxPeptideLength() const;
-		void setMaxPeptideLength(Nullable<int> value);
-		Nullable<int> getMaxMissedCleavages() const;
-		void setMaxMissedCleavages(Nullable<int> value);
-		Nullable<int> getMaxModsForPeptide() const;
-		void setMaxModsForPeptide(Nullable<int> value);
-		Nullable<DissociationType*> getDissociationType() const;
-		void setDissociationType(Nullable<DissociationType*> value);
+		std::optional<int> getMinPeptideLength() const;
+		void setMinPeptideLength(std::optional<int> value);
+		std::optional<int> getMaxPeptideLength() const;
+		void setMaxPeptideLength(std::optional<int> value);
+		std::optional<int> getMaxMissedCleavages() const;
+		void setMaxMissedCleavages(std::optional<int> value);
+		std::optional<int> getMaxModsForPeptide() const;
+		void setMaxModsForPeptide(std::optional<int> value);
+		std::optional<DissociationType*> getDissociationType() const;
+		void setDissociationType(std::optional<DissociationType*> value);
 
 		// This method is to make sure developers keep consistent naming between CommonParameters and FileSpecificParameters.
 		// It's supposed to immediately crash MetaMorpheus if you rename a Common Parameter and don't rename it here.

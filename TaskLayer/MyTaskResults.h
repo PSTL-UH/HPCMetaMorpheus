@@ -5,8 +5,11 @@
 #include "stringbuilder.h"
 
 //C# TO C++ CONVERTER NOTE: Forward class declarations:
-namespace TaskLayer { class DbForTask; }
-namespace TaskLayer { class MetaMorpheusTask; }
+//namespace TaskLayer { class DbForTask; }
+#include "DbForTask.h"
+
+//namespace TaskLayer { class MetaMorpheusTask; }
+#include "MetaMorpheusTask.h"
 
 
 namespace TaskLayer
@@ -14,13 +17,13 @@ namespace TaskLayer
 	class MyTaskResults
 	{
 	public:
-		std::vector<std::wstring> NewSpectra; // calibration writes new calibrated spectra
+		std::vector<std::string> NewSpectra; // calibration writes new calibrated spectra
 		std::vector<DbForTask*> NewDatabases; // gptmd writes new annotated databases
-		std::vector<std::wstring> NewFileSpecificTomls; // calibration writes suggested ppm tolerances
+		std::vector<std::string> NewFileSpecificTomls; // calibration writes suggested ppm tolerances
 		TimeSpan Time;
 
 	private:
-		const std::vector<std::wstring> resultTexts;
+		const std::vector<std::string> resultTexts;
 
 		StringBuilder *const niceText = new StringBuilder();
 
@@ -32,10 +35,10 @@ namespace TaskLayer
 
 		MyTaskResults(MetaMorpheusTask *s);
 
-		std::wstring ToString() override;
+		std::string ToString();
 
-		void AddResultText(const std::wstring &resultsText);
+		void AddResultText(const std::string &resultsText);
 
-		void AddNiceText(const std::wstring &niceTextString);
+		void AddNiceText(const std::string &niceTextString);
 	};
 }

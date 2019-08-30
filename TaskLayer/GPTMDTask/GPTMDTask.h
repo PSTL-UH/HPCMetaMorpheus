@@ -54,7 +54,7 @@ namespace TaskLayer
 		void setGptmdParameters(EngineLayer::GptmdParameters *value);
 
 	protected:
-		MyTaskResults *RunSpecific(const std::wstring &OutputFolder, std::vector<DbForTask*> &dbFilenameList, std::vector<std::wstring> &currentRawFileList, const std::wstring &taskId, std::vector<FileSpecificParameters*> &fileSettingsList) override;
+		MyTaskResults *RunSpecific(const std::string &OutputFolder, std::vector<DbForTask*> &dbFilenameList, std::vector<std::string> &currentRawFileList, const std::string &taskId, std::vector<FileSpecificParameters*> &fileSettingsList) override;
 
 	private:
 		static std::vector<std::tuple<double, double>> LoadCombos(std::vector<Modification*> &modificationsThatCanBeCombined);

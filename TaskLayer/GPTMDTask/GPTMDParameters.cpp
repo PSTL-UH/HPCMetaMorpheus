@@ -9,14 +9,14 @@ namespace EngineLayer
 	{
 		ListOfModsGptmd = GlobalVariables::getAllModsKnown().Where([&] (std::any b)
 		{
-			return b::ModificationType->Equals(L"Common Artifact") || b::ModificationType->Equals(L"Common Biological") || b::ModificationType->Equals(L"Metal") || b::ModificationType->Equals(L"Less Common");
+			return b::ModificationType->Equals("Common Artifact") || b::ModificationType->Equals("Common Biological") || b::ModificationType->Equals("Metal") || b::ModificationType->Equals("Less Common");
 		})->Select([&] (std::any b)
 		{
 			(b::ModificationType, b::IdWithMotif);
 		}).ToList();
 	}
 
-	private *List < GptmdParameters::(std::wstring, std::wstring)
+	private *List < GptmdParameters::(std::string, std::string)
 	{
 		get;;
 
@@ -26,4 +26,4 @@ namespace EngineLayer
 	set;
 	}
 }
-	}
+}

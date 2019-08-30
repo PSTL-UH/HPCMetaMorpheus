@@ -42,11 +42,11 @@ namespace TaskLayer
 		void setXlSearchParameters(TaskLayer::XlSearchParameters *value);
 
 	protected:
-		MyTaskResults *RunSpecific(const std::wstring &OutputFolder, std::vector<DbForTask*> &dbFilenameList, std::vector<std::wstring> &currentRawFileList, const std::wstring &taskId, std::vector<FileSpecificParameters*> &fileSettingsList) override;
+		MyTaskResults *RunSpecific(const std::string &OutputFolder, std::vector<DbForTask*> &dbFilenameList, std::vector<std::string> &currentRawFileList, const std::string &taskId, std::vector<FileSpecificParameters*> &fileSettingsList) override;
 
 		//Calculate the FDR of single peptide FP/TP
 	private:
-		void SingleFDRAnalysis(std::vector<CrosslinkSpectralMatch*> &items, std::vector<std::wstring> &taskIds);
+		void SingleFDRAnalysis(std::vector<CrosslinkSpectralMatch*> &items, std::vector<std::string> &taskIds);
 
 		//Calculate the FDR of crosslinked peptide FP/TP
 		void DoCrosslinkFdrAnalysis(std::vector<CrosslinkSpectralMatch*> &csms);
@@ -56,10 +56,10 @@ namespace TaskLayer
 		static Crosslinker *GenerateUserDefinedCrosslinker(TaskLayer::XlSearchParameters *xlSearchParameters);
 
 
-		void WritePsmCrossToTsv(std::vector<CrosslinkSpectralMatch*> &items, const std::wstring &filePath, int writeType);
+		void WritePsmCrossToTsv(std::vector<CrosslinkSpectralMatch*> &items, const std::string &filePath, int writeType);
 
-		void WriteCrosslinkToTxtForPercolator(std::vector<CrosslinkSpectralMatch*> &items, const std::wstring &outputFolder, const std::wstring &fileName, Crosslinker *crosslinker, std::vector<std::wstring> &nestedIds);
+		void WriteCrosslinkToTxtForPercolator(std::vector<CrosslinkSpectralMatch*> &items, const std::string &outputFolder, const std::string &fileName, Crosslinker *crosslinker, std::vector<std::string> &nestedIds);
 
-		void WritePepXML_xl(std::vector<CrosslinkSpectralMatch*> &items, std::vector<Protein*> &proteinList, const std::wstring &databasePath, std::vector<Modification*> &variableModifications, std::vector<Modification*> &fixedModifications, std::vector<std::wstring> &localizeableModificationTypes, const std::wstring &outputFolder, const std::wstring &fileName, std::vector<std::wstring> &nestedIds);
+		void WritePepXML_xl(std::vector<CrosslinkSpectralMatch*> &items, std::vector<Protein*> &proteinList, const std::string &databasePath, std::vector<Modification*> &variableModifications, std::vector<Modification*> &fixedModifications, std::vector<std::string> &localizeableModificationTypes, const std::string &outputFolder, const std::string &fileName, std::vector<std::string> &nestedIds);
 	};
 }

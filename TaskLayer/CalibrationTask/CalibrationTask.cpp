@@ -46,7 +46,7 @@ namespace TaskLayer
 		privateCalibrationParameters = value;
 	}
 
-	MyTaskResults *CalibrationTask::RunSpecific(const std::wstring &OutputFolder, std::vector<DbForTask*> &dbFilenameList, std::vector<std::wstring> &currentRawFileList, const std::wstring &taskId, std::vector<FileSpecificParameters*> &fileSettingsList)
+	MyTaskResults *CalibrationTask::RunSpecific(const std::string &OutputFolder, std::vector<DbForTask*> &dbFilenameList, std::vector<std::string> &currentRawFileList, const std::string &taskId, std::vector<FileSpecificParameters*> &fileSettingsList)
 	{
 		std::vector<Modification> variableModifications;
 		std::vector<Modification> fixedModifications;
@@ -57,40 +57,40 @@ namespace TaskLayer
 		std::vector<Protein*> proteinList = LoadProteins(taskId, dbFilenameList, true, DecoyType::Reverse, localizeableModificationTypes, getCommonParameters());
 
 		// write prose settings
-		ProseCreatedWhileRunning->append(L"The following calibration settings were used: ");
-		ProseCreatedWhileRunning->append(L"protease = " + getCommonParameters()->getDigestionParams()->Protease + L"; ");
-		ProseCreatedWhileRunning->append(L"maximum missed cleavages = " + getCommonParameters()->getDigestionParams()->MaxMissedCleavages + L"; ");
-		ProseCreatedWhileRunning->append(L"minimum peptide length = " + getCommonParameters()->getDigestionParams()->MinPeptideLength + L"; ");
-		ProseCreatedWhileRunning->append(getCommonParameters()->getDigestionParams()->MaxPeptideLength == std::numeric_limits<int>::max() ? L"maximum peptide length = unspecified; " : L"maximum peptide length = " + getCommonParameters()->getDigestionParams()->MaxPeptideLength + L"; ");
-		ProseCreatedWhileRunning->append(L"initiator methionine behavior = " + getCommonParameters()->getDigestionParams()->InitiatorMethionineBehavior + L"; ");
-		ProseCreatedWhileRunning->append(L"fixed modifications = " + std::wstring::Join(L", ", fixedModifications->Select([&] (std::any m)
+		ProseCreatedWhileRunning->append("The following calibration settings were used: ");
+		ProseCreatedWhileRunning->append("protease = " + getCommonParameters()->getDigestionParams()->Protease + "; ");
+		ProseCreatedWhileRunning->append("maximum missed cleavages = " + getCommonParameters()->getDigestionParams()->MaxMissedCleavages + "; ");
+		ProseCreatedWhileRunning->append("minimum peptide length = " + getCommonParameters()->getDigestionParams()->MinPeptideLength + "; ");
+		ProseCreatedWhileRunning->append(getCommonParameters()->getDigestionParams()->MaxPeptideLength == std::numeric_limits<int>::max() ? "maximum peptide length = unspecified; " : "maximum peptide length = " + getCommonParameters()->getDigestionParams()->MaxPeptideLength + "; ");
+		ProseCreatedWhileRunning->append("initiator methionine behavior = " + getCommonParameters()->getDigestionParams()->InitiatorMethionineBehavior + "; ");
+		ProseCreatedWhileRunning->append("fixed modifications = " + std::string::Join(", ", fixedModifications->Select([&] (std::any m)
 		{
 			m::IdWithMotif;
-		})) + L"; ");
-		ProseCreatedWhileRunning->append(L"variable modifications = " + std::wstring::Join(L", ", variableModifications->Select([&] (std::any m)
+		})) + "; ");
+		ProseCreatedWhileRunning->append("variable modifications = " + std::string::Join(", ", variableModifications->Select([&] (std::any m)
 		{
 			m::IdWithMotif;
-		})) + L"; ");
-		ProseCreatedWhileRunning->append(L"max mods per peptide = " + getCommonParameters()->getDigestionParams()->MaxModsForPeptide + L"; ");
-		ProseCreatedWhileRunning->append(L"max modification isoforms = " + getCommonParameters()->getDigestionParams()->MaxModificationIsoforms + L"; ");
-		ProseCreatedWhileRunning->append(L"precursor mass tolerance = " + getCommonParameters()->getPrecursorMassTolerance() + L"; ");
-		ProseCreatedWhileRunning->append(L"product mass tolerance = " + getCommonParameters()->getProductMassTolerance() + L". ");
-		ProseCreatedWhileRunning->append(L"The combined search database contained " + proteinList.size()([&] (std::any p)
+		})) + "; ");
+		ProseCreatedWhileRunning->append("max mods per peptide = " + getCommonParameters()->getDigestionParams()->MaxModsForPeptide + "; ");
+		ProseCreatedWhileRunning->append("max modification isoforms = " + getCommonParameters()->getDigestionParams()->MaxModificationIsoforms + "; ");
+		ProseCreatedWhileRunning->append("precursor mass tolerance = " + getCommonParameters()->getPrecursorMassTolerance() + "; ");
+		ProseCreatedWhileRunning->append("product mass tolerance = " + getCommonParameters()->getProductMassTolerance() + ". ");
+		ProseCreatedWhileRunning->append("The combined search database contained " + proteinList.size()([&] (std::any p)
 		{
 			!p::IsDecoy;
-		}) + L" non-decoy protein entries including " + proteinList.size()([&] (std::any p)
+		}) + " non-decoy protein entries including " + proteinList.size()([&] (std::any p)
 		{
 			p::IsContaminant;
-		}) + L" contaminant sequences. ");
+		}) + " contaminant sequences. ");
 
 		// start the calibration task
-		Status(L"Calibrating...", std::vector<std::wstring> {taskId});
+		Status("Calibrating...", std::vector<std::string> {taskId});
 		MyTaskResults = new MyTaskResults(this);
-		MyTaskResults->NewSpectra = std::vector<std::wstring>();
-		MyTaskResults->NewFileSpecificTomls = std::vector<std::wstring>();
+		MyTaskResults->NewSpectra = std::vector<std::string>();
+		MyTaskResults->NewFileSpecificTomls = std::vector<std::string>();
 
 		auto myFileManager = new MyFileManager(true);
-		std::vector<std::wstring> spectraFilesAfterCalibration;
+		std::vector<std::string> spectraFilesAfterCalibration;
 
 		for (int spectraFileIndex = 0; spectraFileIndex < currentRawFileList.size(); spectraFileIndex++)
 		{
@@ -104,20 +104,20 @@ namespace TaskLayer
 			// get filename stuff
 			auto originalUncalibratedFilePath = currentRawFileList[spectraFileIndex];
 			auto originalUncalibratedFilenameWithoutExtension = Path::GetFileNameWithoutExtension(originalUncalibratedFilePath);
-			std::wstring calibratedFilePath = FileSystem::combine(OutputFolder, originalUncalibratedFilenameWithoutExtension + CalibSuffix + L".mzML");
+			std::string calibratedFilePath = FileSystem::combine(OutputFolder, originalUncalibratedFilenameWithoutExtension + CalibSuffix + ".mzM");
 
 			// mark the file as in-progress
-			StartingDataFile(originalUncalibratedFilePath, std::vector<std::wstring> {taskId, L"Individual Spectra Files", originalUncalibratedFilePath});
+			StartingDataFile(originalUncalibratedFilePath, std::vector<std::string> {taskId, "Individual Spectra Files", originalUncalibratedFilePath});
 
 			EngineLayer::CommonParameters *combinedParams = SetAllFileSpecificCommonParams(getCommonParameters(), fileSettingsList[spectraFileIndex]);
 
 			// load the file
-			Status(L"Loading spectra file...", std::vector<std::wstring> {taskId, L"Individual Spectra Files"});
+			Status("Loading spectra file...", std::vector<std::string> {taskId, "Individual Spectra Files"});
 
 			auto myMsDataFile = myFileManager->LoadFile(originalUncalibratedFilePath, std::make_optional(getCommonParameters()->getTopNpeaks()), std::make_optional(getCommonParameters()->getMinRatio()), getCommonParameters()->getTrimMs1Peaks(), getCommonParameters()->getTrimMsMsPeaks(), getCommonParameters());
 
 			// get datapoints to fit calibration function to
-			Status(L"Acquiring calibration data points...", std::vector<std::wstring> {taskId, L"Individual Spectra Files"});
+			Status("Acquiring calibration data points...", std::vector<std::string> {taskId, "Individual Spectra Files"});
 			DataPointAquisitionResults *acquisitionResults = nullptr;
 
 			for (int i = 1; i <= 5; i++)
@@ -155,29 +155,29 @@ namespace TaskLayer
 				{
 					if (acquisitionResults->Psms.size() < NumRequiredPsms)
 					{
-						Warn(L"Calibration failure! Could not find enough high-quality PSMs. Required " + std::to_wstring(NumRequiredPsms) + L", saw " + std::to_wstring(acquisitionResults->Psms.size()));
+						Warn("Calibration failure! Could not find enough high-quality PSMs. Required " + std::to_string(NumRequiredPsms) + ", saw " + std::to_string(acquisitionResults->Psms.size()));
 					}
 					if (acquisitionResults->getMs1List().size() < NumRequiredMs1Datapoints)
 					{
-						Warn(L"Calibration failure! Could not find enough MS1 datapoints. Required " + std::to_wstring(NumRequiredMs1Datapoints) + L", saw " + std::to_wstring(acquisitionResults->getMs1List().size()));
+						Warn("Calibration failure! Could not find enough MS1 datapoints. Required " + std::to_string(NumRequiredMs1Datapoints) + ", saw " + std::to_string(acquisitionResults->getMs1List().size()));
 					}
 					if (acquisitionResults->getMs2List().size() < NumRequiredMs2Datapoints)
 					{
-						Warn(L"Calibration failure! Could not find enough MS2 datapoints. Required " + std::to_wstring(NumRequiredMs2Datapoints) + L", saw " + std::to_wstring(acquisitionResults->getMs2List().size()));
+						Warn("Calibration failure! Could not find enough MS2 datapoints. Required " + std::to_string(NumRequiredMs2Datapoints) + ", saw " + std::to_string(acquisitionResults->getMs2List().size()));
 					}
 
 					couldNotFindEnoughDatapoints = true;
-					FinishedDataFile(originalUncalibratedFilePath, std::vector<std::wstring> {taskId, L"Individual Spectra Files", originalUncalibratedFilePath});
+					FinishedDataFile(originalUncalibratedFilePath, std::vector<std::string> {taskId, "Individual Spectra Files", originalUncalibratedFilePath});
 					break;
 				}
 
-				Warn(L"Could not find enough PSMs to calibrate with; opening up tolerances to " + std::round(getCommonParameters()->getPrecursorMassTolerance()->Value * std::pow(10, 2)) / std::pow(10, 2) + L" ppm precursor and " + std::round(getCommonParameters()->getProductMassTolerance()->Value * std::pow(10, 2)) / std::pow(10, 2) + L" ppm product");
+				Warn("Could not find enough PSMs to calibrate with; opening up tolerances to " + std::round(getCommonParameters()->getPrecursorMassTolerance()->Value * std::pow(10, 2)) / std::pow(10, 2) + " ppm precursor and " + std::round(getCommonParameters()->getProductMassTolerance()->Value * std::pow(10, 2)) / std::pow(10, 2) + " ppm product");
 			}
 
 			if (couldNotFindEnoughDatapoints)
 			{
 				spectraFilesAfterCalibration.push_back(Path::GetFileNameWithoutExtension(currentRawFileList[spectraFileIndex]));
-				ProgressEventArgs tempVar7(100, L"Failed to calibrate!", new std::vector<std::wstring> {taskId, L"Individual Spectra Files", originalUncalibratedFilenameWithoutExtension});
+				ProgressEventArgs tempVar7(100, "Failed to calibrate!", new std::vector<std::string> {taskId, "Individual Spectra Files", originalUncalibratedFilenameWithoutExtension});
 				ReportProgress(&tempVar7);
 				continue;
 			}
@@ -188,20 +188,20 @@ namespace TaskLayer
 			double preCalibrationProductErrorIqr = acquisitionResults->PsmProductIqrPpmError;
 
 			// generate calibration function and shift data points
-			Status(L"Calibrating...", std::vector<std::wstring> {taskId, L"Individual Spectra Files"});
-			CalibrationEngine *engine = new CalibrationEngine(myMsDataFile, acquisitionResults, getCommonParameters(), std::vector<std::wstring> {taskId, L"Individual Spectra Files", originalUncalibratedFilenameWithoutExtension});
+			Status("Calibrating...", std::vector<std::string> {taskId, "Individual Spectra Files"});
+			CalibrationEngine *engine = new CalibrationEngine(myMsDataFile, acquisitionResults, getCommonParameters(), std::vector<std::string> {taskId, "Individual Spectra Files", originalUncalibratedFilenameWithoutExtension});
 			engine->Run();
 
 			//update file
 			myMsDataFile = engine->getCalibratedDataFile();
 
 			// do another search to evaluate calibration results
-			Status(L"Post-calibration search...", std::vector<std::wstring> {taskId, L"Individual Spectra Files"});
+			Status("Post-calibration search...", std::vector<std::string> {taskId, "Individual Spectra Files"});
 			acquisitionResults = GetDataAcquisitionResults(myMsDataFile, originalUncalibratedFilePath, variableModifications, fixedModifications, proteinList, taskId, combinedParams, combinedParams->getPrecursorMassTolerance(), combinedParams->getProductMassTolerance());
 
 			//generate calibration function and shift data points AGAIN because it's fast and contributes new data
-			Status(L"Calibrating...", std::vector<std::wstring> {taskId, L"Individual Spectra Files"});
-			engine = new CalibrationEngine(myMsDataFile, acquisitionResults, getCommonParameters(), std::vector<std::wstring> {taskId, L"Individual Spectra Files", originalUncalibratedFilenameWithoutExtension});
+			Status("Calibrating...", std::vector<std::string> {taskId, "Individual Spectra Files"});
+			engine = new CalibrationEngine(myMsDataFile, acquisitionResults, getCommonParameters(), std::vector<std::string> {taskId, "Individual Spectra Files", originalUncalibratedFilenameWithoutExtension});
 			engine->Run();
 
 			//update file
@@ -220,7 +220,7 @@ namespace TaskLayer
 			bool improvement = ImprovGlobal(preCalibrationPrecursorErrorIqr, preCalibrationProductErrorIqr, prevPsmCount, postCalibrationPsmCount, postCalibrationPrecursorErrorIqr, postCalibrationProductErrorIqr);
 
 			// write toml settings for the calibrated file
-			auto newTomlFileName = FileSystem::combine(OutputFolder, originalUncalibratedFilenameWithoutExtension + CalibSuffix + L".toml");
+			auto newTomlFileName = FileSystem::combine(OutputFolder, originalUncalibratedFilenameWithoutExtension + CalibSuffix + ".toml");
 
 			auto fileSpecificParams = new FileSpecificParameters();
 
@@ -238,15 +238,15 @@ namespace TaskLayer
 
 			Toml::WriteFile(fileSpecificParams, newTomlFileName, tomlConfig);
 
-			FinishedWritingFile(newTomlFileName, std::vector<std::wstring> {taskId, L"Individual Spectra Files", originalUncalibratedFilenameWithoutExtension});
+			FinishedWritingFile(newTomlFileName, std::vector<std::string> {taskId, "Individual Spectra Files", originalUncalibratedFilenameWithoutExtension});
 
 			// finished calibrating this file
 			spectraFilesAfterCalibration.push_back(Path::GetFileNameWithoutExtension(calibratedFilePath));
-			FinishedWritingFile(calibratedFilePath, std::vector<std::wstring> {taskId, L"Individual Spectra Files", originalUncalibratedFilenameWithoutExtension});
+			FinishedWritingFile(calibratedFilePath, std::vector<std::string> {taskId, "Individual Spectra Files", originalUncalibratedFilenameWithoutExtension});
 			MyTaskResults->NewSpectra.push_back(calibratedFilePath);
 			MyTaskResults->NewFileSpecificTomls.push_back(newTomlFileName);
-			FinishedDataFile(originalUncalibratedFilePath, std::vector<std::wstring> {taskId, L"Individual Spectra Files", originalUncalibratedFilePath});
-			ProgressEventArgs tempVar10(100, L"Done!", new std::vector<std::wstring> {taskId, L"Individual Spectra Files", originalUncalibratedFilenameWithoutExtension});
+			FinishedDataFile(originalUncalibratedFilePath, std::vector<std::string> {taskId, "Individual Spectra Files", originalUncalibratedFilePath});
+			ProgressEventArgs tempVar10(100, "Done!", new std::vector<std::string> {taskId, "Individual Spectra Files", originalUncalibratedFilenameWithoutExtension});
 			ReportProgress(&tempVar10);
 
 //C# TO C++ CONVERTER TODO TASK: A 'delete fileSpecificParams' statement was not added since fileSpecificParams was passed to a method or constructor. Handle memory management manually.
@@ -254,7 +254,7 @@ namespace TaskLayer
 		}
 
 		// re-write experimental design (if it has been defined) with new calibrated file names
-		std::wstring assumedPathToExperDesign = Directory::GetParent(currentRawFileList.front())->FullName;
+		std::string assumedPathToExperDesign = Directory::GetParent(currentRawFileList.front())->FullName;
 		assumedPathToExperDesign = FileSystem::combine(assumedPathToExperDesign, GlobalVariables::getExperimentalDesignFileName());
 
 		if (FileSystem::fileExists(assumedPathToExperDesign))
@@ -263,14 +263,14 @@ namespace TaskLayer
 		}
 
 		// finished calibrating all files for the task
-		ProgressEventArgs tempVar11(100, L"Done!", new std::vector<std::wstring> {taskId, L"Individual Spectra Files"});
+		ProgressEventArgs tempVar11(100, "Done!", new std::vector<std::string> {taskId, "Individual Spectra Files"});
 		ReportProgress(&tempVar11);
 
 		delete myFileManager;
 		return MyTaskResults;
 	}
 
-const std::wstring CalibrationTask::CalibSuffix = L"-calib";
+const std::string CalibrationTask::CalibSuffix = "-calib";
 
 	bool CalibrationTask::ImprovGlobal(double prevPrecTol, double prevProdTol, int prevPsmCount, int thisRoundPsmCount, double thisRoundPrecTol, double thisRoundProdTol)
 	{
@@ -291,7 +291,7 @@ const std::wstring CalibrationTask::CalibSuffix = L"-calib";
 		return countRatio > 0.9 && precRatio + prodRatio < 1.8;
 	}
 
-	DataPointAquisitionResults *CalibrationTask::GetDataAcquisitionResults(MsDataFile *myMsDataFile, const std::wstring &currentDataFile, std::vector<Modification*> &variableModifications, std::vector<Modification*> &fixedModifications, std::vector<Protein*> &proteinList, const std::wstring &taskId, EngineLayer::CommonParameters *combinedParameters, Tolerance *initPrecTol, Tolerance *initProdTol)
+	DataPointAquisitionResults *CalibrationTask::GetDataAcquisitionResults(MsDataFile *myMsDataFile, const std::string &currentDataFile, std::vector<Modification*> &variableModifications, std::vector<Modification*> &fixedModifications, std::vector<Protein*> &proteinList, const std::string &taskId, EngineLayer::CommonParameters *combinedParameters, Tolerance *initPrecTol, Tolerance *initProdTol)
 	{
 		auto fileNameWithoutExtension = Path::GetFileNameWithoutExtension(currentDataFile);
 		SinglePpmAroundZeroSearchMode tempVar(initPrecTol->Value);
@@ -303,10 +303,10 @@ const std::wstring CalibrationTask::CalibSuffix = L"-calib";
 		})->ToArray();
 		std::vector<PeptideSpectralMatch*> allPsmsArray(listOfSortedms2Scans.size());
 
-		Log(L"Searching with searchMode: " + searchMode, std::vector<std::wstring> {taskId, L"Individual Spectra Files", fileNameWithoutExtension});
-		Log(L"Searching with productMassTolerance: " + initProdTol, std::vector<std::wstring> {taskId, L"Individual Spectra Files", fileNameWithoutExtension});
+		Log("Searching with searchMode: " + searchMode, std::vector<std::string> {taskId, "Individual Spectra Files", fileNameWithoutExtension});
+		Log("Searching with productMassTolerance: " + initProdTol, std::vector<std::string> {taskId, "Individual Spectra Files", fileNameWithoutExtension});
 
-		ClassicSearchEngine tempVar2(allPsmsArray, listOfSortedms2Scans, variableModifications, fixedModifications, proteinList, searchMode, combinedParameters, new std::vector<std::wstring> {taskId, L"Individual Spectra Files", fileNameWithoutExtension});
+		ClassicSearchEngine tempVar2(allPsmsArray, listOfSortedms2Scans, variableModifications, fixedModifications, proteinList, searchMode, combinedParameters, new std::vector<std::string> {taskId, "Individual Spectra Files", fileNameWithoutExtension});
 		(&tempVar2)->Run();
 		std::vector<PeptideSpectralMatch*> allPsms = allPsmsArray.Where([&] (std::any b)
 		{
@@ -327,7 +327,7 @@ const std::wstring CalibrationTask::CalibSuffix = L"-calib";
 			b::First();
 		}).ToList();
 
-		FdrAnalysisEngine tempVar3(allPsms, searchMode->NumNotches, getCommonParameters(), new std::vector<std::wstring> {taskId, L"Individual Spectra Files", fileNameWithoutExtension});
+		FdrAnalysisEngine tempVar3(allPsms, searchMode->NumNotches, getCommonParameters(), new std::vector<std::string> {taskId, "Individual Spectra Files", fileNameWithoutExtension});
 		(&tempVar3)->Run();
 
 		std::vector<PeptideSpectralMatch*> goodIdentifications = allPsms.Where([&] (std::any b)
@@ -340,39 +340,39 @@ const std::wstring CalibrationTask::CalibSuffix = L"-calib";
 			return new DataPointAquisitionResults(nullptr, std::vector<PeptideSpectralMatch*>(), std::vector<LabeledDataPoint*>(), std::vector<LabeledDataPoint*>(), 0, 0, 0, 0);
 		}
 
-		DataPointAcquisitionEngine tempVar4(goodIdentifications, myMsDataFile, initPrecTol, getCalibrationParameters()->getMinMS1IsotopicPeaksNeededForConfirmedIdentification(), getCommonParameters(), new std::vector<std::wstring> {taskId, L"Individual Spectra Files", fileNameWithoutExtension});
+		DataPointAcquisitionEngine tempVar4(goodIdentifications, myMsDataFile, initPrecTol, getCalibrationParameters()->getMinMS1IsotopicPeaksNeededForConfirmedIdentification(), getCommonParameters(), new std::vector<std::string> {taskId, "Individual Spectra Files", fileNameWithoutExtension});
 		DataPointAquisitionResults *currentResult = static_cast<DataPointAquisitionResults*>((&tempVar4)->Run());
 
 		return currentResult;
 	}
 
-	void CalibrationTask::WriteNewExperimentalDesignFile(const std::wstring &assumedPathToExperDesign, const std::wstring &outputFolder, std::vector<std::wstring> &spectraFilesAfterCalibration)
+	void CalibrationTask::WriteNewExperimentalDesignFile(const std::string &assumedPathToExperDesign, const std::string &outputFolder, std::vector<std::string> &spectraFilesAfterCalibration)
 	{
 		auto lines = File::ReadAllLines(assumedPathToExperDesign);
-		std::vector<std::wstring> newExperimentalDesignOutput = std::vector<std::vector<std::wstring>>(0) };
+		std::vector<std::string> newExperimentalDesignOutput = std::vector<std::vector<std::string>>(0) };
 
 		for (int i = 1; i < lines.size(); i++)
 		{
 			auto split = StringHelper::split(lines[i], L'\t');
-			std::wstring oldFileName = Path::GetFileNameWithoutExtension(split[0]);
-			std::wstring newFileName = oldFileName + CalibSuffix;
-			std::wstring newline;
+			std::string oldFileName = Path::GetFileNameWithoutExtension(split[0]);
+			std::string newFileName = oldFileName + CalibSuffix;
+			std::string newline;
 
 			if (!std::find(spectraFilesAfterCalibration.begin(), spectraFilesAfterCalibration.end(), newFileName) != spectraFilesAfterCalibration.end())
 			{
 				// file was not successfully calibrated
-				newline = oldFileName + L"\t";
+				newline = oldFileName + "\t";
 			}
 			else
 			{
 				// file was successfully calibrated
-				newline = newFileName + L"\t";
+				newline = newFileName + "\t";
 			}
 
 			// add condition, biorep, etc info
 			for (int j = 1; j < split.size(); j++)
 			{
-				newline += split[j] + L"\t";
+				newline += split[j] + "\t";
 			}
 
 			// write the line

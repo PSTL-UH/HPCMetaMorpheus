@@ -24,7 +24,7 @@ namespace TaskLayer
 	{
 	private:
 		MyTaskResults *privateSearchTaskResults;
-		std::wstring privateSearchTaskId;
+		std::string privateSearchTaskId;
 		TaskLayer::SearchParameters *privateSearchParameters;
 		std::vector<Protein*> privateProteinList;
 		std::vector<Modification*> privateVariableModifications;
@@ -33,19 +33,19 @@ namespace TaskLayer
 		FlashLfqResults *privateFlashLfqResults;
 		std::vector<Modification*> privateFixedModifications;
 		int privateNumNotches = 0;
-		std::wstring privateOutputFolder;
-		std::wstring privateIndividualResultsOutputFolder;
+		std::string privateOutputFolder;
+		std::string privateIndividualResultsOutputFolder;
 		std::vector<FileSpecificParameters*> privateFileSettingsList;
-		std::unordered_map<std::wstring, std::vector<int>> privateNumMs2SpectraPerFile;
+		std::unordered_map<std::string, std::vector<int>> privateNumMs2SpectraPerFile;
 		TaskLayer::MyFileManager *privateMyFileManager;
 		std::vector<DbForTask*> privateDatabaseFilenameList;
-		std::vector<std::wstring> privateCurrentRawFileList;
+		std::vector<std::string> privateCurrentRawFileList;
 
 	public:
 		MyTaskResults *getSearchTaskResults() const;
 		void setSearchTaskResults(MyTaskResults *value);
-		std::wstring getSearchTaskId() const;
-		void setSearchTaskId(const std::wstring &value);
+		std::string getSearchTaskId() const;
+		void setSearchTaskId(const std::string &value);
 		TaskLayer::SearchParameters *getSearchParameters() const;
 		void setSearchParameters(TaskLayer::SearchParameters *value);
 		std::vector<Protein*> getProteinList() const;
@@ -62,19 +62,19 @@ namespace TaskLayer
 		void setFixedModifications(const std::vector<Modification*> &value);
 		int getNumNotches() const;
 		void setNumNotches(int value);
-		std::wstring getOutputFolder() const;
-		void setOutputFolder(const std::wstring &value);
-		std::wstring getIndividualResultsOutputFolder() const;
-		void setIndividualResultsOutputFolder(const std::wstring &value);
+		std::string getOutputFolder() const;
+		void setOutputFolder(const std::string &value);
+		std::string getIndividualResultsOutputFolder() const;
+		void setIndividualResultsOutputFolder(const std::string &value);
 		std::vector<FileSpecificParameters*> getFileSettingsList() const;
 		void setFileSettingsList(const std::vector<FileSpecificParameters*> &value);
-		std::unordered_map<std::wstring, std::vector<int>> getNumMs2SpectraPerFile() const;
-		void setNumMs2SpectraPerFile(const std::unordered_map<std::wstring, std::vector<int>> &value);
+		std::unordered_map<std::string, std::vector<int>> getNumMs2SpectraPerFile() const;
+		void setNumMs2SpectraPerFile(const std::unordered_map<std::string, std::vector<int>> &value);
 		TaskLayer::MyFileManager *getMyFileManager() const;
 		void setMyFileManager(TaskLayer::MyFileManager *value);
 		std::vector<DbForTask*> getDatabaseFilenameList() const;
 		void setDatabaseFilenameList(const std::vector<DbForTask*> &value);
-		std::vector<std::wstring> getCurrentRawFileList() const;
-		void setCurrentRawFileList(const std::vector<std::wstring> &value);
+		std::vector<std::string> getCurrentRawFileList() const;
+		void setCurrentRawFileList(const std::vector<std::string> &value);
 	};
 }

@@ -13,31 +13,31 @@ using namespace MassSpectrometry;
 namespace TaskLayer
 {
 
-const std::wstring MyFileManager::AssumedThermoMsFileReaderDllPath = LR"(C:\Program Files\Thermo\MSFileReader)";
-const std::wstring MyFileManager::DesiredFileIoVersion = L"3.0";
-const std::wstring MyFileManager::DesiredFregistryVersion = L"3.0";
-const std::wstring MyFileManager::DesiredXRawFileVersion = L"3.0.29.0";
+const std::string MyFileManager::AssumedThermoMsFileReaderDllPath = LR"(C:\Program Files\Thermo\MSFileReader)";
+const std::string MyFileManager::DesiredFileIoVersion = "3.0";
+const std::string MyFileManager::DesiredFregistryVersion = "3.0";
+const std::string MyFileManager::DesiredXRawFileVersion = "3.0.29.0";
 
 	MyFileManager::MyFileManager(bool disposeOfFileWhenDone) : DisposeOfFileWhenDone(disposeOfFileWhenDone)
 	{
 	}
 
-	bool MyFileManager::SeeIfOpen(const std::wstring &path)
+	bool MyFileManager::SeeIfOpen(const std::string &path)
 	{
 		return (MyMsDataFiles.find(path) != MyMsDataFiles.end() && MyMsDataFiles[path] != nullptr);
 	}
 
 	MyFileManager::ThermoMsFileReaderVersionCheck MyFileManager::ValidateThermoMsFileReaderVersion()
 	{
-		std::wstring fileIoAssumedPath = FileSystem::combine(AssumedThermoMsFileReaderDllPath, L"Fileio_x64.dll");
-		std::wstring fregistryAssumedPath = FileSystem::combine(AssumedThermoMsFileReaderDllPath, L"fregistry_x64.dll");
-		std::wstring xRawFileAssumedPath = FileSystem::combine(AssumedThermoMsFileReaderDllPath, L"XRawfile2_x64.dll");
+		std::string fileIoAssumedPath = FileSystem::combine(AssumedThermoMsFileReaderDllPath, "Fileio_x64.dll");
+		std::string fregistryAssumedPath = FileSystem::combine(AssumedThermoMsFileReaderDllPath, "fregistry_x64.dll");
+		std::string xRawFileAssumedPath = FileSystem::combine(AssumedThermoMsFileReaderDllPath, "XRawfile2_x64.dll");
 
 		if (FileSystem::fileExists(fileIoAssumedPath) && FileSystem::fileExists(fregistryAssumedPath) && FileSystem::fileExists(xRawFileAssumedPath))
 		{
-			std::wstring fileIoVersion = FileVersionInfo::GetVersionInfo(fileIoAssumedPath)->FileVersion;
-			std::wstring fregistryVersion = FileVersionInfo::GetVersionInfo(fregistryAssumedPath)->FileVersion;
-			std::wstring xRawFileVersion = FileVersionInfo::GetVersionInfo(xRawFileAssumedPath)->FileVersion;
+			std::string fileIoVersion = FileVersionInfo::GetVersionInfo(fileIoAssumedPath)->FileVersion;
+			std::string fregistryVersion = FileVersionInfo::GetVersionInfo(fregistryAssumedPath)->FileVersion;
+			std::string xRawFileVersion = FileVersionInfo::GetVersionInfo(xRawFileAssumedPath)->FileVersion;
 
 			if (fileIoVersion == DesiredFileIoVersion && fregistryVersion == DesiredFregistryVersion && xRawFileVersion == DesiredXRawFileVersion)
 			{
@@ -56,11 +56,11 @@ const std::wstring MyFileManager::DesiredXRawFileVersion = L"3.0.29.0";
 		return ThermoMsFileReaderVersionCheck::DllsNotFound;
 	}
 
-	MsDataFile *MyFileManager::LoadFile(const std::wstring &origDataFile, std::optional<int> &topNpeaks, std::optional<double> &minRatio, bool trimMs1Peaks, bool trimMsMsPeaks, CommonParameters *commonParameters)
+	MsDataFile *MyFileManager::LoadFile(const std::string &origDataFile, std::optional<int> &topNpeaks, std::optional<double> &minRatio, bool trimMs1Peaks, bool trimMsMsPeaks, CommonParameters *commonParameters)
 	{
 		FilteringParams *filter = new FilteringParams(topNpeaks, minRatio, 1, trimMs1Peaks, trimMsMsPeaks);
 		MsDataFile value;
-		std::unordered_map<std::wstring, MsDataFile*>::const_iterator MyMsDataFiles_iterator = MyMsDataFiles.find(origDataFile);
+		std::unordered_map<std::string, MsDataFile*>::const_iterator MyMsDataFiles_iterator = MyMsDataFiles.find(origDataFile);
 		if (MyMsDataFiles_iterator != MyMsDataFiles.end() && value != nullptr)
 		{
 			value = MyMsDataFiles_iterator->second;
@@ -77,12 +77,12 @@ const std::wstring MyFileManager::DesiredXRawFileVersion = L"3.0.29.0";
 		// By now know that need to load this file!!!
 			std::lock_guard<std::mutex> lock(FileLoadingLock);
 //C# TO C++ CONVERTER TODO TASK: The following .NET 'String.Equals' reference is not converted:
-			if (Path::GetExtension(origDataFile).Equals(L".mzML", StringComparison::OrdinalIgnoreCase))
+			if (Path::GetExtension(origDataFile).Equals(".mzM", StringComparison::OrdinalIgnoreCase))
 			{
 				MyMsDataFiles[origDataFile] = Mzml::LoadAllStaticData(origDataFile, filter, commonParameters->getMaxThreadsToUsePerFile());
 			}
 //C# TO C++ CONVERTER TODO TASK: The following .NET 'String.Equals' reference is not converted:
-			else if (Path::GetExtension(origDataFile).Equals(L".mgf", StringComparison::OrdinalIgnoreCase))
+			else if (Path::GetExtension(origDataFile).Equals(".mgf", StringComparison::OrdinalIgnoreCase))
 			{
 				MyMsDataFiles[origDataFile] = Mgf::LoadAllStaticData(origDataFile, filter);
 			}
@@ -91,7 +91,7 @@ const std::wstring MyFileManager::DesiredXRawFileVersion = L"3.0.29.0";
 	#if defined(NETFRAMEWORK)
 				MyMsDataFiles[origDataFile] = ThermoStaticData::LoadAllStaticData(origDataFile, filter);
 	#else
-				Warn(L"No capability for reading " + origDataFile);
+				Warn("No capability for reading " + origDataFile);
 	#endif
 			}
 
@@ -102,7 +102,7 @@ const std::wstring MyFileManager::DesiredXRawFileVersion = L"3.0.29.0";
 //C# TO C++ CONVERTER TODO TASK: A 'delete filter' statement was not added since filter was passed to a method or constructor. Handle memory management manually.
 	}
 
-	void MyFileManager::DoneWithFile(const std::wstring &origDataFile)
+	void MyFileManager::DoneWithFile(const std::string &origDataFile)
 	{
 		if (DisposeOfFileWhenDone)
 		{
@@ -110,7 +110,7 @@ const std::wstring MyFileManager::DesiredXRawFileVersion = L"3.0.29.0";
 		}
 	}
 
-	void MyFileManager::Warn(const std::wstring &v)
+	void MyFileManager::Warn(const std::string &v)
 	{
 		StringEventArgs tempVar(v, nullptr);
 		WarnHandler +== nullptr ? nullptr : WarnHandler::Invoke(this, &tempVar);

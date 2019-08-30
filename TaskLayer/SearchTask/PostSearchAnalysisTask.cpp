@@ -51,12 +51,12 @@ namespace TaskLayer
 		privateProteinGroups = value;
 	}
 
-	std::vector<IGrouping<std::wstring, PeptideSpectralMatch*>*> PostSearchAnalysisTask::getPsmsGroupedByFile() const
+	std::vector<IGrouping<std::string, PeptideSpectralMatch*>*> PostSearchAnalysisTask::getPsmsGroupedByFile() const
 	{
 		return privatePsmsGroupedByFile;
 	}
 
-	void PostSearchAnalysisTask::setPsmsGroupedByFile(const std::vector<IGrouping<std::wstring, PeptideSpectralMatch*>*> &value)
+	void PostSearchAnalysisTask::setPsmsGroupedByFile(const std::vector<IGrouping<std::string, PeptideSpectralMatch*>*> &value)
 	{
 		privatePsmsGroupedByFile = value;
 	}
@@ -116,7 +116,7 @@ namespace TaskLayer
 		ProteinAnalysis();
 		QuantificationAnalysis();
 
-		ProgressEventArgs tempVar(100, L"Done!", new std::vector<std::wstring> {getParameters()->getSearchTaskId(), L"Individual Spectra Files"});
+		ProgressEventArgs tempVar(100, "Done!", new std::vector<std::string> {getParameters()->getSearchTaskId(), "Individual Spectra Files"});
 		ReportProgress(&tempVar);
 
 		HistogramAnalysis();
@@ -128,7 +128,7 @@ namespace TaskLayer
 		return getParameters()->getSearchTaskResults();
 	}
 
-	MyTaskResults *PostSearchAnalysisTask::RunSpecific(const std::wstring &OutputFolder, std::vector<DbForTask*> &dbFilenameList, std::vector<std::wstring> &currentRawFileList, const std::wstring &taskId, std::vector<FileSpecificParameters*> &fileSettingsList)
+	MyTaskResults *PostSearchAnalysisTask::RunSpecific(const std::string &OutputFolder, std::vector<DbForTask*> &dbFilenameList, std::vector<std::string> &currentRawFileList, const std::string &taskId, std::vector<FileSpecificParameters*> &fileSettingsList)
 	{
 		return nullptr;
 	}
@@ -139,9 +139,9 @@ namespace TaskLayer
 		// for example, here it may be treated as a decoy PSM, where as in parsimony it will be determined by the parsimony algorithm which is agnostic of target/decoy assignments
 		// this could cause weird PSM FDR issues
 
-		Status(L"Estimating PSM FDR...", getParameters()->getSearchTaskId());
+		Status("Estimating PSM FDR...", getParameters()->getSearchTaskId());
 		int massDiffAcceptorNumNotches = getParameters()->getNumNotches();
-		FdrAnalysisEngine tempVar(getParameters()->getAllPsms(), massDiffAcceptorNumNotches, getCommonParameters(), new std::vector<std::wstring> {getParameters()->getSearchTaskId()});
+		FdrAnalysisEngine tempVar(getParameters()->getAllPsms(), massDiffAcceptorNumNotches, getCommonParameters(), new std::vector<std::string> {getParameters()->getSearchTaskId()});
 		(&tempVar)->Run();
 
 		// sort by q-value because of group FDR stuff
@@ -157,7 +157,7 @@ namespace TaskLayer
 			p::FdrInfo::CumulativeTarget;
 		}).ToList());
 
-		Status(L"Done estimating PSM FDR!", getParameters()->getSearchTaskId());
+		Status("Done estimating PSM FDR!", getParameters()->getSearchTaskId());
 	}
 
 	void PostSearchAnalysisTask::ProteinAnalysis()
@@ -167,14 +167,14 @@ namespace TaskLayer
 			return;
 		}
 
-		Status(L"Constructing protein groups...", getParameters()->getSearchTaskId());
+		Status("Constructing protein groups...", getParameters()->getSearchTaskId());
 
 		// run parsimony
-		ProteinParsimonyEngine tempVar(getParameters()->getAllPsms(), getParameters()->getSearchParameters()->getModPeptidesAreDifferent(), getCommonParameters(), new std::vector<std::wstring> {getParameters()->getSearchTaskId()});
+		ProteinParsimonyEngine tempVar(getParameters()->getAllPsms(), getParameters()->getSearchParameters()->getModPeptidesAreDifferent(), getCommonParameters(), new std::vector<std::string> {getParameters()->getSearchTaskId()});
 		ProteinParsimonyResults *proteinAnalysisResults = static_cast<ProteinParsimonyResults*>((&tempVar)->Run());
 
 		// score protein groups and calculate FDR
-		ProteinScoringAndFdrEngine tempVar2(proteinAnalysisResults->getProteinGroups(), getParameters()->getAllPsms(), getParameters()->getSearchParameters()->getNoOneHitWonders(), getParameters()->getSearchParameters()->getModPeptidesAreDifferent(), true, getCommonParameters(), new std::vector<std::wstring> {getParameters()->getSearchTaskId()});
+		ProteinScoringAndFdrEngine tempVar2(proteinAnalysisResults->getProteinGroups(), getParameters()->getAllPsms(), getParameters()->getSearchParameters()->getNoOneHitWonders(), getParameters()->getSearchParameters()->getModPeptidesAreDifferent(), true, getCommonParameters(), new std::vector<std::string> {getParameters()->getSearchTaskId()});
 		ProteinScoringAndFdrResults *proteinScoringAndFdrResults = static_cast<ProteinScoringAndFdrResults*>((&tempVar2)->Run());
 
 		setProteinGroups(proteinScoringAndFdrResults->SortedAndScoredProteinGroups);
@@ -184,34 +184,34 @@ namespace TaskLayer
 			psm->ResolveAllAmbiguities();
 		}
 
-		Status(L"Done constructing protein groups!", getParameters()->getSearchTaskId());
+		Status("Done constructing protein groups!", getParameters()->getSearchTaskId());
 	}
 
 	void PostSearchAnalysisTask::DoMassDifferenceLocalizationAnalysis()
 	{
 		if (getParameters()->getSearchParameters()->getDoLocalizationAnalysis())
 		{
-			Status(L"Running mass-difference localization analysis...", getParameters()->getSearchTaskId());
+			Status("Running mass-difference localization analysis...", getParameters()->getSearchTaskId());
 			for (int spectraFileIndex = 0; spectraFileIndex < getParameters()->getCurrentRawFileList().size(); spectraFileIndex++)
 			{
 				EngineLayer::CommonParameters *combinedParams = SetAllFileSpecificCommonParams(getCommonParameters(), getParameters()->getFileSettingsList()[spectraFileIndex]);
 
 				auto origDataFile = getParameters()->getCurrentRawFileList()[spectraFileIndex];
-				Status(L"Running mass-difference localization analysis...", std::vector<std::wstring> {getParameters()->getSearchTaskId(), L"Individual Spectra Files", origDataFile});
+				Status("Running mass-difference localization analysis...", std::vector<std::string> {getParameters()->getSearchTaskId(), "Individual Spectra Files", origDataFile});
 				MsDataFile *myMsDataFile = getParameters()->getMyFileManager()->LoadFile(origDataFile, std::make_optional(combinedParams->getTopNpeaks()), std::make_optional(combinedParams->getMinRatio()), combinedParams->getTrimMs1Peaks(), combinedParams->getTrimMsMsPeaks(), combinedParams);
 				LocalizationEngine tempVar(getParameters()->getAllPsms().Where([&] (std::any b)
 				{
 					b::FullFilePath->Equals(origDataFile);
-				}).ToList(), myMsDataFile, combinedParams, new std::vector<std::wstring> {getParameters()->getSearchTaskId(), L"Individual Spectra Files", origDataFile});
+				}).ToList(), myMsDataFile, combinedParams, new std::vector<std::string> {getParameters()->getSearchTaskId(), "Individual Spectra Files", origDataFile});
 				(&tempVar)->Run();
 				getParameters()->getMyFileManager()->DoneWithFile(origDataFile);
-				ProgressEventArgs tempVar2(100, L"Done with localization analysis!", new std::vector<std::wstring> {getParameters()->getSearchTaskId(), L"Individual Spectra Files", origDataFile});
+				ProgressEventArgs tempVar2(100, "Done with localization analysis!", new std::vector<std::string> {getParameters()->getSearchTaskId(), "Individual Spectra Files", origDataFile});
 				ReportProgress(&tempVar2);
 			}
 		}
 
 		// count different modifications observed
-		ModificationAnalysisEngine tempVar3(getParameters()->getAllPsms(), getCommonParameters(), new std::vector<std::wstring> {getParameters()->getSearchTaskId()});
+		ModificationAnalysisEngine tempVar3(getParameters()->getAllPsms(), getCommonParameters(), new std::vector<std::string> {getParameters()->getSearchTaskId()});
 		(&tempVar3)->Run();
 	}
 
@@ -223,7 +223,7 @@ namespace TaskLayer
 		}
 
 		// pass quantification parameters to FlashLFQ
-		Status(L"Quantifying...", getParameters()->getSearchTaskId());
+		Status("Quantifying...", getParameters()->getSearchTaskId());
 
 		// construct file info for FlashLFQ
 		auto spectraFileInfo = std::vector<SpectraFileInfo*>();
@@ -231,7 +231,7 @@ namespace TaskLayer
 		// get experimental design info for normalization
 		if (getParameters()->getSearchParameters()->getNormalize())
 		{
-			std::wstring assumedExperimentalDesignPath = Directory::GetParent(getParameters()->getCurrentRawFileList().front())->FullName;
+			std::string assumedExperimentalDesignPath = Directory::GetParent(getParameters()->getCurrentRawFileList().front())->FullName;
 			assumedExperimentalDesignPath = FileSystem::combine(assumedExperimentalDesignPath, GlobalVariables::getExperimentalDesignFileName());
 
 			if (FileSystem::fileExists(assumedExperimentalDesignPath))
@@ -246,12 +246,12 @@ namespace TaskLayer
 
 				for (auto file : getParameters()->getCurrentRawFileList())
 				{
-					std::wstring filename = Path::GetFileNameWithoutExtension(file);
+					std::string filename = Path::GetFileNameWithoutExtension(file);
 
 					auto expDesignForThisFile = experimentalDesign[filename];
 					auto split = expDesignForThisFile.Split(L'\t');
 
-					std::wstring condition = split[1];
+					std::string condition = split[1];
 					int biorep = std::stoi(split[2]);
 					int fraction = std::stoi(split[3]);
 					int techrep = std::stoi(split[4]);
@@ -265,7 +265,7 @@ namespace TaskLayer
 			}
 			else
 			{
-				throw MetaMorpheusException(L"Could not find experimental design file at location:\n" + assumedExperimentalDesignPath);
+				throw MetaMorpheusException("Could not find experimental design file at location:\n" + assumedExperimentalDesignPath);
 			}
 		}
 		else
@@ -273,7 +273,7 @@ namespace TaskLayer
 			for (auto file : getParameters()->getCurrentRawFileList())
 			{
 				// experimental design info passed in here for each spectra file
-				SpectraFileInfo tempVar2(fullFilePathWithExtension: file, condition: L"", biorep: 0, fraction: 0, techrep: 0);
+				SpectraFileInfo tempVar2(fullFilePathWithExtension: file, condition: "", biorep: 0, fraction: 0, techrep: 0);
 				spectraFileInfo.push_back(&tempVar2);
 				getParameters()->getMyFileManager()->DoneWithFile(file);
 			}
@@ -301,13 +301,13 @@ namespace TaskLayer
 					p::Accession;
 				});
 
-				auto flashLfqProteinGroup = new FlashLFQ::ProteinGroup(proteinGroup->getProteinGroupName(), std::wstring::Join(L"|", proteinsOrderedByAccession->Select([&] (std::any p)
+				auto flashLfqProteinGroup = new FlashLFQ::ProteinGroup(proteinGroup->getProteinGroupName(), std::string::Join("|", proteinsOrderedByAccession->Select([&] (std::any p)
 				{
 					p::GeneNames->Select([&] (std::any x)
 					{
 						x::Item2;
 					}).FirstOrDefault();
-				})), std::wstring::Join(L"|", proteinsOrderedByAccession->Select([&] (std::any p)
+				})), std::string::Join("|", proteinsOrderedByAccession->Select([&] (std::any p)
 				{
 					p::Organism;
 				}).Distinct()));
@@ -338,7 +338,7 @@ namespace TaskLayer
 		else
 		{
 			// if protein groups were not constructed, just use accession numbers
-			auto accessionToPg = std::unordered_map<std::wstring, FlashLFQ::ProteinGroup*>();
+			auto accessionToPg = std::unordered_map<std::string, FlashLFQ::ProteinGroup*>();
 			for (auto psm : unambiguousPsmsBelowOnePercentFdr)
 			{
 				auto proteins = psm.BestMatchingPeptides->Select([&] (std::any b)
@@ -350,7 +350,7 @@ namespace TaskLayer
 				{
 					if (accessionToPg.find(protein->Accession) == accessionToPg.end())
 					{
-						FlashLFQ::ProteinGroup tempVar3(protein->Accession, std::wstring::Join(L"|", protein->GeneNames->Select([&] (std::any p)
+						FlashLFQ::ProteinGroup tempVar3(protein->Accession, std::string::Join("|", protein->GeneNames->Select([&] (std::any p)
 						{
 							p::Item2;
 						}).Distinct()), protein->Organism);
@@ -375,7 +375,7 @@ namespace TaskLayer
 
 		// some PSMs may not have protein groups (if 2 peptides are required to construct a protein group, some PSMs will be left over)
 		// the peptides should still be quantified but not considered for protein quantification
-		auto undefinedPg = new FlashLFQ::ProteinGroup(L"UNDEFINED", L"", L"");
+		auto undefinedPg = new FlashLFQ::ProteinGroup("UNDEFINED", "", "");
 		//sort the unambiguous psms by protease to make MBR compatible with multiple proteases
 		std::unordered_map<Protease*, std::vector<PeptideSpectralMatch*>> proteaseSortedPsms;
 		std::unordered_map<Protease*, FlashLfqResults*> proteaseSortedFlashLFQResults;
@@ -504,12 +504,12 @@ namespace TaskLayer
 				!b::IsDecoy;
 			}))
 			{
-				Status(L"Running histogram analysis...", std::vector<std::wstring> {getParameters()->getSearchTaskId()});
+				Status("Running histogram analysis...", std::vector<std::string> {getParameters()->getSearchTaskId()});
 				auto myTreeStructure = new BinTreeStructure();
 				myTreeStructure->GenerateBins(limitedpsms_with_fdr, getParameters()->getSearchParameters()->getHistogramBinTolInDaltons());
-				auto writtenFile = FileSystem::combine(getParameters()->getOutputFolder(), L"MassDifferenceHistogram.tsv");
+				auto writtenFile = FileSystem::combine(getParameters()->getOutputFolder(), "MassDifferenceHistogram.tsv");
 				WriteTree(myTreeStructure, writtenFile);
-				FinishedWritingFile(writtenFile, std::vector<std::wstring> {getParameters()->getSearchTaskId()});
+				FinishedWritingFile(writtenFile, std::vector<std::string> {getParameters()->getSearchTaskId()});
 
 //C# TO C++ CONVERTER TODO TASK: A 'delete myTreeStructure' statement was not added since myTreeStructure was passed to a method or constructor. Handle memory management manually.
 			}
@@ -518,7 +518,7 @@ namespace TaskLayer
 
 	void PostSearchAnalysisTask::WritePsmResults()
 	{
-		Status(L"Writing results...", getParameters()->getSearchTaskId());
+		Status("Writing results...", getParameters()->getSearchTaskId());
 		std::vector<PeptideSpectralMatch*> filteredPsmListForOutput = getParameters()->getAllPsms().Where([&] (std::any p)
 		{
 			return p::FdrInfo::QValue <= getCommonParameters()->getQValueOutputFilter() && p::FdrInfo::QValueNotch <= getCommonParameters()->getQValueOutputFilter();
@@ -540,17 +540,17 @@ namespace TaskLayer
 		}
 
 		// write PSMs
-		std::wstring writtenFile = FileSystem::combine(getParameters()->getOutputFolder(), L"AllPSMs.psmtsv");
+		std::string writtenFile = FileSystem::combine(getParameters()->getOutputFolder(), "AllPSMs.psmtsv");
 		WritePsmsToTsv(filteredPsmListForOutput, writtenFile, getParameters()->getSearchParameters()->getModsToWriteSelection());
-		FinishedWritingFile(writtenFile, std::vector<std::wstring> {getParameters()->getSearchTaskId()});
+		FinishedWritingFile(writtenFile, std::vector<std::string> {getParameters()->getSearchTaskId()});
 
 		// write PSMs for percolator
-		writtenFile = FileSystem::combine(getParameters()->getOutputFolder(), L"AllPSMs_FormattedForPercolator.tsv");
+		writtenFile = FileSystem::combine(getParameters()->getOutputFolder(), "AllPSMs_FormattedForPercolator.tsv");
 		WritePsmsForPercolator(filteredPsmListForOutput, writtenFile, getCommonParameters()->getQValueOutputFilter());
-		FinishedWritingFile(writtenFile, std::vector<std::wstring> {getParameters()->getSearchTaskId()});
+		FinishedWritingFile(writtenFile, std::vector<std::string> {getParameters()->getSearchTaskId()});
 
 		// write best (highest-scoring) PSM per peptide
-		writtenFile = FileSystem::combine(getParameters()->getOutputFolder(), L"AllPeptides.psmtsv");
+		writtenFile = FileSystem::combine(getParameters()->getOutputFolder(), "AllPeptides.psmtsv");
 		std::vector<PeptideSpectralMatch*> peptides = getParameters()->getAllPsms().GroupBy([&] (std::any b)
 		{
 			b::FullSequence;
@@ -565,23 +565,23 @@ namespace TaskLayer
 		{
 			b::FirstOrDefault();
 		}).ToList(), writtenFile, getParameters()->getSearchParameters()->getModsToWriteSelection());
-		FinishedWritingFile(writtenFile, std::vector<std::wstring> {getParameters()->getSearchTaskId()});
+		FinishedWritingFile(writtenFile, std::vector<std::string> {getParameters()->getSearchTaskId()});
 
 		// write summary text
-		getParameters()->getSearchTaskResults()->AddNiceText(L"All target PSMS within 1% FDR: " + getParameters()->getAllPsms().size()([&] (std::any a)
+		getParameters()->getSearchTaskResults()->AddNiceText("All target PSMS within 1% FDR: " + getParameters()->getAllPsms().size()([&] (std::any a)
 		{
 			return a::FdrInfo::QValue <= 0.01 && !a::IsDecoy;
 		}));
-		getParameters()->getSearchTaskResults()->AddNiceText(L"All target peptides within 1% FDR: " + peptides.size()([&] (std::any a)
+		getParameters()->getSearchTaskResults()->AddNiceText("All target peptides within 1% FDR: " + peptides.size()([&] (std::any a)
 		{
 			return a::FdrInfo::QValue <= 0.01 && !a::IsDecoy;
 		}));
 		if (getParameters()->getSearchParameters()->getDoParsimony())
 		{
-			getParameters()->getSearchTaskResults()->AddNiceText(L"All target protein groups within 1% FDR: " + std::to_wstring(getProteinGroups().size()([&] (std::any b)
+			getParameters()->getSearchTaskResults()->AddNiceText("All target protein groups within 1% FDR: " + std::to_string(getProteinGroups().size()([&] (std::any b)
 			{
 				return b::QValue <= 0.01 && !b::IsDecoy;
-			})) + L"\r\n");
+			})) + "\r\n");
 		}
 
 		setPsmsGroupedByFile(filteredPsmListForOutput.GroupBy([&] (std::any p)
@@ -593,7 +593,7 @@ namespace TaskLayer
 		{
 			// write summary text
 			auto psmsForThisFile = file->ToList();
-			std::wstring strippedFileName = Path::GetFileNameWithoutExtension(file->First().FullFilePath);
+			std::string strippedFileName = Path::GetFileNameWithoutExtension(file->First().FullFilePath);
 			auto peptidesForFile = psmsForThisFile.GroupBy([&] (std::any b)
 			{
 				b::FullSequence;
@@ -602,16 +602,16 @@ namespace TaskLayer
 				b::FirstOrDefault();
 			}).ToList();
 
-			getParameters()->getSearchTaskResults()->AddNiceText(L"MS2 spectra in " + strippedFileName + L": " + std::to_wstring(getParameters()->getNumMs2SpectraPerFile()[strippedFileName][0]));
-			getParameters()->getSearchTaskResults()->AddNiceText(L"Precursors fragmented in " + strippedFileName + L": " + std::to_wstring(getParameters()->getNumMs2SpectraPerFile()[strippedFileName][1]));
-			getParameters()->getSearchTaskResults()->AddNiceText(L"Target PSMs within 1% FDR in " + strippedFileName + L": " + psmsForThisFile.size()([&] (std::any a)
+			getParameters()->getSearchTaskResults()->AddNiceText("MS2 spectra in " + strippedFileName + ": " + std::to_string(getParameters()->getNumMs2SpectraPerFile()[strippedFileName][0]));
+			getParameters()->getSearchTaskResults()->AddNiceText("Precursors fragmented in " + strippedFileName + ": " + std::to_string(getParameters()->getNumMs2SpectraPerFile()[strippedFileName][1]));
+			getParameters()->getSearchTaskResults()->AddNiceText("Target PSMs within 1% FDR in " + strippedFileName + ": " + psmsForThisFile.size()([&] (std::any a)
 			{
 				return a::FdrInfo::QValue <= 0.01 && !a::IsDecoy;
 			}));
-			getParameters()->getSearchTaskResults()->AddNiceText(L"Target peptides within 1% FDR in " + strippedFileName + L": " + std::to_wstring(peptidesForFile.size()([&] (std::any a)
+			getParameters()->getSearchTaskResults()->AddNiceText("Target peptides within 1% FDR in " + strippedFileName + ": " + std::to_string(peptidesForFile.size()([&] (std::any a)
 			{
 				return a::FdrInfo::QValue <= 0.01 && !a::IsDecoy;
-			})) + L"\r\n");
+			})) + "\r\n");
 
 			// writes all individual spectra file search results to subdirectory
 			if (getParameters()->getCurrentRawFileList().size() > 1)
@@ -620,19 +620,19 @@ namespace TaskLayer
 				FileSystem::createDirectory(getParameters()->getIndividualResultsOutputFolder());
 
 				// write PSMs
-				writtenFile = FileSystem::combine(getParameters()->getIndividualResultsOutputFolder(), strippedFileName + L"_PSMs.psmtsv");
+				writtenFile = FileSystem::combine(getParameters()->getIndividualResultsOutputFolder(), strippedFileName + "_PSMs.psmtsv");
 				WritePsmsToTsv(psmsForThisFile, writtenFile, getParameters()->getSearchParameters()->getModsToWriteSelection());
-				FinishedWritingFile(writtenFile, std::vector<std::wstring> {getParameters()->getSearchTaskId(), L"Individual Spectra Files", file->First().FullFilePath});
+				FinishedWritingFile(writtenFile, std::vector<std::string> {getParameters()->getSearchTaskId(), "Individual Spectra Files", file->First().FullFilePath});
 
 				// write PSMs for percolator
-				writtenFile = FileSystem::combine(getParameters()->getIndividualResultsOutputFolder(), strippedFileName + L"_PSMsFormattedForPercolator.tsv");
+				writtenFile = FileSystem::combine(getParameters()->getIndividualResultsOutputFolder(), strippedFileName + "_PSMsFormattedForPercolator.tsv");
 				WritePsmsForPercolator(psmsForThisFile, writtenFile, getCommonParameters()->getQValueOutputFilter());
-				FinishedWritingFile(writtenFile, std::vector<std::wstring> {getParameters()->getSearchTaskId(), L"Individual Spectra Files", file->First().FullFilePath});
+				FinishedWritingFile(writtenFile, std::vector<std::string> {getParameters()->getSearchTaskId(), "Individual Spectra Files", file->First().FullFilePath});
 
 				// write best (highest-scoring) PSM per peptide
-				writtenFile = FileSystem::combine(getParameters()->getIndividualResultsOutputFolder(), strippedFileName + L"_Peptides.psmtsv");
+				writtenFile = FileSystem::combine(getParameters()->getIndividualResultsOutputFolder(), strippedFileName + "_Peptides.psmtsv");
 				WritePsmsToTsv(peptidesForFile, writtenFile, getParameters()->getSearchParameters()->getModsToWriteSelection());
-				FinishedWritingFile(writtenFile, std::vector<std::wstring> {getParameters()->getSearchTaskId(), L"Individual Spectra Files", file->First().FullFilePath});
+				FinishedWritingFile(writtenFile, std::vector<std::string> {getParameters()->getSearchTaskId(), "Individual Spectra Files", file->First().FullFilePath});
 			}
 		}
 	}
@@ -642,7 +642,7 @@ namespace TaskLayer
 		if (getParameters()->getSearchParameters()->getDoParsimony())
 		{
 			// write protein groups to tsv
-			std::wstring writtenFile = FileSystem::combine(getParameters()->getOutputFolder(), L"AllProteinGroups.tsv");
+			std::string writtenFile = FileSystem::combine(getParameters()->getOutputFolder(), "AllProteinGroups.tsv");
 			WriteProteinGroupsToTsv(getProteinGroups(), writtenFile, {getParameters()->getSearchTaskId()}, getCommonParameters()->getQValueOutputFilter());
 
 			// write all individual file results to subdirectory
@@ -656,7 +656,7 @@ namespace TaskLayer
 					v::Key;
 				}))
 				{
-					std::wstring strippedFileName = Path::GetFileNameWithoutExtension(fullFilePath);
+					std::string strippedFileName = Path::GetFileNameWithoutExtension(fullFilePath);
 
 					std::vector<PeptideSpectralMatch*> psmsForThisFile = getPsmsGroupedByFile().Where([&] (std::any p)
 					{
@@ -670,12 +670,12 @@ namespace TaskLayer
 						p::ConstructSubsetProteinGroup(fullFilePath);
 					}).ToList();
 
-					ProteinScoringAndFdrEngine tempVar(subsetProteinGroupsForThisFile, psmsForThisFile, getParameters()->getSearchParameters()->getNoOneHitWonders(), getParameters()->getSearchParameters()->getModPeptidesAreDifferent(), false, getCommonParameters(), new std::vector<std::wstring> {getParameters()->getSearchTaskId(), L"Individual Spectra Files", fullFilePath});
+					ProteinScoringAndFdrEngine tempVar(subsetProteinGroupsForThisFile, psmsForThisFile, getParameters()->getSearchParameters()->getNoOneHitWonders(), getParameters()->getSearchParameters()->getModPeptidesAreDifferent(), false, getCommonParameters(), new std::vector<std::string> {getParameters()->getSearchTaskId(), "Individual Spectra Files", fullFilePath});
 					ProteinScoringAndFdrResults *subsetProteinScoringAndFdrResults = static_cast<ProteinScoringAndFdrResults*>((&tempVar)->Run());
 
 					subsetProteinGroupsForThisFile = subsetProteinScoringAndFdrResults->SortedAndScoredProteinGroups;
 
-					getParameters()->getSearchTaskResults()->AddNiceText(L"Target protein groups within 1 % FDR in " + strippedFileName + L": " + subsetProteinGroupsForThisFile.size()([&] (std::any b)
+					getParameters()->getSearchTaskResults()->AddNiceText("Target protein groups within 1 % FDR in " + strippedFileName + ": " + subsetProteinGroupsForThisFile.size()([&] (std::any b)
 					{
 						return b::QValue <= 0.01 && !b::IsDecoy;
 					}));
@@ -683,33 +683,33 @@ namespace TaskLayer
 					// write individual spectra file protein groups results to tsv
 					if (getParameters()->getCurrentRawFileList().size() > 1)
 					{
-						writtenFile = FileSystem::combine(getParameters()->getIndividualResultsOutputFolder(), strippedFileName + L"_ProteinGroups.tsv");
-						WriteProteinGroupsToTsv(subsetProteinGroupsForThisFile, writtenFile, {getParameters()->getSearchTaskId(), L"Individual Spectra Files", fullFilePath}, getCommonParameters()->getQValueOutputFilter());
+						writtenFile = FileSystem::combine(getParameters()->getIndividualResultsOutputFolder(), strippedFileName + "_ProteinGroups.tsv");
+						WriteProteinGroupsToTsv(subsetProteinGroupsForThisFile, writtenFile, {getParameters()->getSearchTaskId(), "Individual Spectra Files", fullFilePath}, getCommonParameters()->getQValueOutputFilter());
 					}
 
 					// write mzID
 					if (getParameters()->getSearchParameters()->getWriteMzId())
 					{
-						Status(L"Writing mzID...", std::vector<std::wstring> {getParameters()->getSearchTaskId(), L"Individual Spectra Files", fullFilePath});
+						Status("Writing mzID...", std::vector<std::string> {getParameters()->getSearchTaskId(), "Individual Spectra Files", fullFilePath});
 
-						auto mzidFilePath = FileSystem::combine(getParameters()->getIndividualResultsOutputFolder(), strippedFileName + L".mzID");
+						auto mzidFilePath = FileSystem::combine(getParameters()->getIndividualResultsOutputFolder(), strippedFileName + ".mzID");
 						MzIdentMLWriter::WriteMzIdentMl(psmsForThisFile, subsetProteinGroupsForThisFile, getParameters()->getVariableModifications(), getParameters()->getFixedModifications(), {getCommonParameters()->getDigestionParams()->Protease}, getCommonParameters()->getQValueOutputFilter(), getCommonParameters()->getProductMassTolerance(), getCommonParameters()->getPrecursorMassTolerance(), getCommonParameters()->getDigestionParams()->MaxMissedCleavages, mzidFilePath);
 
-						FinishedWritingFile(mzidFilePath, std::vector<std::wstring> {getParameters()->getSearchTaskId(), L"Individual Spectra Files", fullFilePath});
+						FinishedWritingFile(mzidFilePath, std::vector<std::string> {getParameters()->getSearchTaskId(), "Individual Spectra Files", fullFilePath});
 					}
 
 					// write pepXML
 					if (getParameters()->getSearchParameters()->getWritePepXml())
 					{
-						Status(L"Writing pepXML...", std::vector<std::wstring> {getParameters()->getSearchTaskId(), L"Individual Spectra Files", fullFilePath});
+						Status("Writing pepXML...", std::vector<std::string> {getParameters()->getSearchTaskId(), "Individual Spectra Files", fullFilePath});
 
-						auto pepXMLFilePath = FileSystem::combine(getParameters()->getIndividualResultsOutputFolder(), strippedFileName + L".pep.XML");
+						auto pepXMLFilePath = FileSystem::combine(getParameters()->getIndividualResultsOutputFolder(), strippedFileName + ".pep.XM");
 						PepXMLWriter::WritePepXml(psmsForThisFile, getParameters()->getDatabaseFilenameList(), getParameters()->getVariableModifications(), getParameters()->getFixedModifications(), getCommonParameters(), pepXMLFilePath, getCommonParameters()->getQValueOutputFilter());
 
-						FinishedWritingFile(pepXMLFilePath, std::vector<std::wstring> {getParameters()->getSearchTaskId(), L"Individual Spectra Files", fullFilePath});
+						FinishedWritingFile(pepXMLFilePath, std::vector<std::string> {getParameters()->getSearchTaskId(), "Individual Spectra Files", fullFilePath});
 					}
 
-					ProgressEventArgs tempVar2(100, L"Done!", new std::vector<std::wstring> {getParameters()->getSearchTaskId(), L"Individual Spectra Files", fullFilePath});
+					ProgressEventArgs tempVar2(100, "Done!", new std::vector<std::string> {getParameters()->getSearchTaskId(), "Individual Spectra Files", fullFilePath});
 					ReportProgress(&tempVar2);
 				}
 			}
@@ -721,17 +721,17 @@ namespace TaskLayer
 		if (getParameters()->getSearchParameters()->getDoQuantification() && getParameters()->getFlashLfqResults() != nullptr)
 		{
 			// write peaks
-			WritePeakQuantificationResultsToTsv(getParameters()->getFlashLfqResults(), getParameters()->getOutputFolder(), L"AllQuantifiedPeaks", std::vector<std::wstring> {getParameters()->getSearchTaskId()});
+			WritePeakQuantificationResultsToTsv(getParameters()->getFlashLfqResults(), getParameters()->getOutputFolder(), "AllQuantifiedPeaks", std::vector<std::string> {getParameters()->getSearchTaskId()});
 
 			// write peptide quant results
-			WritePeptideQuantificationResultsToTsv(getParameters()->getFlashLfqResults(), getParameters()->getOutputFolder(), L"AllQuantifiedPeptides", std::vector<std::wstring> {getParameters()->getSearchTaskId()});
+			WritePeptideQuantificationResultsToTsv(getParameters()->getFlashLfqResults(), getParameters()->getOutputFolder(), "AllQuantifiedPeptides", std::vector<std::string> {getParameters()->getSearchTaskId()});
 
 			// write individual results
 			if (getParameters()->getCurrentRawFileList().size() > 1)
 			{
 				for (auto file : getParameters()->getFlashLfqResults()->Peaks)
 				{
-					WritePeakQuantificationResultsToTsv(getParameters()->getFlashLfqResults(), getParameters()->getIndividualResultsOutputFolder(), file->Key->FilenameWithoutExtension + L"_QuantifiedPeaks", std::vector<std::wstring> {getParameters()->getSearchTaskId(), L"Individual Spectra Files", file->Key->FullFilePathWithExtension});
+					WritePeakQuantificationResultsToTsv(getParameters()->getFlashLfqResults(), getParameters()->getIndividualResultsOutputFolder(), file->Key->FilenameWithoutExtension + "_QuantifiedPeaks", std::vector<std::string> {getParameters()->getSearchTaskId(), "Individual Spectra Files", file->Key->FullFilePathWithExtension});
 				}
 			}
 		}
@@ -741,7 +741,7 @@ namespace TaskLayer
 	{
 		if (getParameters()->getSearchParameters()->getWritePrunedDatabase())
 		{
-			Status(L"Writing Pruned Database...", std::vector<std::wstring> {getParameters()->getSearchTaskId()});
+			Status("Writing Pruned Database...", std::vector<std::string> {getParameters()->getSearchTaskId()});
 			std::unordered_set<Modification*> modificationsToWriteIfBoth;
 			std::unordered_set<Modification*> modificationsToWriteIfInDatabase;
 			std::unordered_set<Modification*> modificationsToWriteIfObserved;
@@ -956,42 +956,42 @@ namespace TaskLayer
 				!b::IsContaminant;
 			}))
 			{
-				std::wstring outputXMLdbFullName = FileSystem::combine(getParameters()->getOutputFolder(), std::wstring::Join(L"-", getParameters()->getDatabaseFilenameList().Where([&] (std::any b)
+				std::string outputXMLdbFullName = FileSystem::combine(getParameters()->getOutputFolder(), std::string::Join("-", getParameters()->getDatabaseFilenameList().Where([&] (std::any b)
 				{
 					!b::IsContaminant;
 				})->Select([&] (std::any b)
 				{
 					Path::GetFileNameWithoutExtension(b::FilePath);
-				})) + L"pruned.xml");
-				ProteinDbWriter::WriteXmlDatabase(std::unordered_map<std::wstring, std::unordered_set<std::tuple<int, Modification*>>>(), getParameters()->getProteinList().Select([&] (std::any p)
+				})) + "pruned.xml");
+				ProteinDbWriter::WriteXmlDatabase(std::unordered_map<std::string, std::unordered_set<std::tuple<int, Modification*>>>(), getParameters()->getProteinList().Select([&] (std::any p)
 				{
 					p::NonVariantProtein;
 				}).Where([&] (std::any b)
 				{
 					return !b::IsDecoy && !b::IsContaminant;
 				}).ToList(), outputXMLdbFullName);
-				FinishedWritingFile(outputXMLdbFullName, std::vector<std::wstring> {getParameters()->getSearchTaskId()});
+				FinishedWritingFile(outputXMLdbFullName, std::vector<std::string> {getParameters()->getSearchTaskId()});
 			}
 			if (getParameters()->getDatabaseFilenameList().Any([&] (std::any b)
 			{
 				b::IsContaminant;
 			}))
 			{
-				std::wstring outputXMLdbFullNameContaminants = FileSystem::combine(getParameters()->getOutputFolder(), std::wstring::Join(L"-", getParameters()->getDatabaseFilenameList().Where([&] (std::any b)
+				std::string outputXMLdbFullNameContaminants = FileSystem::combine(getParameters()->getOutputFolder(), std::string::Join("-", getParameters()->getDatabaseFilenameList().Where([&] (std::any b)
 				{
 					b::IsContaminant;
 				})->Select([&] (std::any b)
 				{
 					Path::GetFileNameWithoutExtension(b::FilePath);
-				})) + L"pruned.xml");
-				ProteinDbWriter::WriteXmlDatabase(std::unordered_map<std::wstring, std::unordered_set<std::tuple<int, Modification*>>>(), getParameters()->getProteinList().Select([&] (std::any p)
+				})) + "pruned.xml");
+				ProteinDbWriter::WriteXmlDatabase(std::unordered_map<std::string, std::unordered_set<std::tuple<int, Modification*>>>(), getParameters()->getProteinList().Select([&] (std::any p)
 				{
 					p::NonVariantProtein;
 				}).Where([&] (std::any b)
 				{
 					return !b::IsDecoy && b::IsContaminant;
 				}).ToList(), outputXMLdbFullNameContaminants);
-				FinishedWritingFile(outputXMLdbFullNameContaminants, std::vector<std::wstring> {getParameters()->getSearchTaskId()});
+				FinishedWritingFile(outputXMLdbFullNameContaminants, std::vector<std::string> {getParameters()->getSearchTaskId()});
 			}
 
 			//writes only detected proteins
@@ -1000,36 +1000,36 @@ namespace TaskLayer
 				!b::IsContaminant;
 			}))
 			{
-				std::wstring outputXMLdbFullName = FileSystem::combine(getParameters()->getOutputFolder(), std::wstring::Join(L"-", getParameters()->getDatabaseFilenameList().Where([&] (std::any b)
+				std::string outputXMLdbFullName = FileSystem::combine(getParameters()->getOutputFolder(), std::string::Join("-", getParameters()->getDatabaseFilenameList().Where([&] (std::any b)
 				{
 					!b::IsContaminant;
 				})->Select([&] (std::any b)
 				{
 					Path::GetFileNameWithoutExtension(b::FilePath);
-				})) + L"proteinPruned.xml");
-				ProteinDbWriter::WriteXmlDatabase(std::unordered_map<std::wstring, std::unordered_set<std::tuple<int, Modification*>>>(), proteinToConfidentBaseSequences.Keys->Where([&] (std::any b)
+				})) + "proteinPruned.xml");
+				ProteinDbWriter::WriteXmlDatabase(std::unordered_map<std::string, std::unordered_set<std::tuple<int, Modification*>>>(), proteinToConfidentBaseSequences.Keys->Where([&] (std::any b)
 				{
 					return !b::IsDecoy && !b::IsContaminant;
 				}).ToList(), outputXMLdbFullName);
-				FinishedWritingFile(outputXMLdbFullName, std::vector<std::wstring> {getParameters()->getSearchTaskId()});
+				FinishedWritingFile(outputXMLdbFullName, std::vector<std::string> {getParameters()->getSearchTaskId()});
 			}
 			if (getParameters()->getDatabaseFilenameList().Any([&] (std::any b)
 			{
 				b::IsContaminant;
 			}))
 			{
-				std::wstring outputXMLdbFullNameContaminants = FileSystem::combine(getParameters()->getOutputFolder(), std::wstring::Join(L"-", getParameters()->getDatabaseFilenameList().Where([&] (std::any b)
+				std::string outputXMLdbFullNameContaminants = FileSystem::combine(getParameters()->getOutputFolder(), std::string::Join("-", getParameters()->getDatabaseFilenameList().Where([&] (std::any b)
 				{
 					b::IsContaminant;
 				})->Select([&] (std::any b)
 				{
 					Path::GetFileNameWithoutExtension(b::FilePath);
-				})) + L"proteinPruned.xml");
-				ProteinDbWriter::WriteXmlDatabase(std::unordered_map<std::wstring, std::unordered_set<std::tuple<int, Modification*>>>(), proteinToConfidentBaseSequences.Keys->Where([&] (std::any b)
+				})) + "proteinPruned.xml");
+				ProteinDbWriter::WriteXmlDatabase(std::unordered_map<std::string, std::unordered_set<std::tuple<int, Modification*>>>(), proteinToConfidentBaseSequences.Keys->Where([&] (std::any b)
 				{
 					return !b::IsDecoy && b::IsContaminant;
 				}).ToList(), outputXMLdbFullNameContaminants);
-				FinishedWritingFile(outputXMLdbFullNameContaminants, std::vector<std::wstring> {getParameters()->getSearchTaskId()});
+				FinishedWritingFile(outputXMLdbFullNameContaminants, std::vector<std::string> {getParameters()->getSearchTaskId()});
 			}
 		}
 	}
@@ -1047,20 +1047,20 @@ namespace TaskLayer
 		return peptideWithSetModifications->OneBasedStartResidueInProtein + oneIsNterminus - 2;
 	}
 
-	void PostSearchAnalysisTask::WriteTree(BinTreeStructure *myTreeStructure, const std::wstring &writtenFile)
+	void PostSearchAnalysisTask::WriteTree(BinTreeStructure *myTreeStructure, const std::string &writtenFile)
 	{
 //C# TO C++ CONVERTER NOTE: The following 'using' block is replaced by its C++ equivalent:
 //ORIGINAL LINE: using (StreamWriter output = new StreamWriter(writtenFile))
 		{
 			StreamWriter output = StreamWriter(writtenFile);
-			output.WriteLine(L"MassShift\tCount\tCountDecoy\tCountTarget\tCountLocalizeableTarget\tCountNonLocalizeableTarget\tFDR\tArea 0.01t\tArea 0.255\tFracLocalizeableTarget\tMine\tUnimodID\tUnimodFormulas\tUnimodDiffs\tAA\tCombos\tModsInCommon\tAAsInCommon\tResidues\tprotNtermLocFrac\tpepNtermLocFrac\tpepCtermLocFrac\tprotCtermLocFrac\tFracWithSingle\tOverlappingFrac\tMedianLength\tUniprot");
+			output.WriteLine("MassShift\tCount\tCountDecoy\tCountTarget\tCountLocalizeableTarget\tCountNonLocalizeableTarget\tFDR\tArea 0.01t\tArea 0.255\tFracLocalizeableTarget\tMine\tUnimodID\tUnimodFormulas\tUnimodDiffs\tAA\tCombos\tModsInCommon\tAAsInCommon\tResidues\tprotNtermLocFrac\tpepNtermLocFrac\tpepCtermLocFrac\tprotCtermLocFrac\tFracWithSingle\tOverlappingFrac\tMedianLength\tUniprot");
 			for (Bin *bin : myTreeStructure->getFinalBins().OrderByDescending([&] (std::any b)
 			{
 				b->Count;
 			}))
 			{
 //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
-				output.WriteLine(bin::MassShift.ToString(L"F4", CultureInfo::InvariantCulture) + L"\t" + bin->Count.ToString(CultureInfo::InvariantCulture) + L"\t" + bin::CountDecoy.ToString(CultureInfo::InvariantCulture) + L"\t" + bin::CountTarget.ToString(CultureInfo::InvariantCulture) + L"\t" + bin::LocalizeableTarget.ToString(CultureInfo::InvariantCulture) + L"\t" + (bin::CountTarget - bin::LocalizeableTarget).ToString(CultureInfo::InvariantCulture) + L"\t" + (bin->Count == 0 ? NAN : static_cast<double>(bin::CountDecoy) / bin->Count).ToString(L"F3", CultureInfo::InvariantCulture) + L"\t" + (Normal::CDF(0, 1, bin::ComputeZ(0.01))).ToString(L"F3", CultureInfo::InvariantCulture) + L"\t" + (Normal::CDF(0, 1, bin::ComputeZ(0.255))).ToString(L"F3", CultureInfo::InvariantCulture) + L"\t" + (bin->CountTarget == 0 ? NAN : static_cast<double>(bin::LocalizeableTarget) / bin::CountTarget).ToString(L"F3", CultureInfo::InvariantCulture) + L"\t" + bin::Mine + L"\t" + bin::UnimodId + L"\t" + bin::UnimodFormulas + L"\t" + bin::UnimodDiffs + L"\t" + bin::AA + L"\t" + bin::Combos + L"\t" + std::wstring::Join(L",", bin::ModsInCommon::OrderByDescending([&] (std::any b)
+				output.WriteLine(bin::MassShift.ToString("F4", CultureInfo::InvariantCulture) + "\t" + bin->Count.ToString(CultureInfo::InvariantCulture) + "\t" + bin::CountDecoy.ToString(CultureInfo::InvariantCulture) + "\t" + bin::CountTarget.ToString(CultureInfo::InvariantCulture) + "\t" + bin::LocalizeableTarget.ToString(CultureInfo::InvariantCulture) + "\t" + (bin::CountTarget - bin::LocalizeableTarget).ToString(CultureInfo::InvariantCulture) + "\t" + (bin->Count == 0 ? NAN : static_cast<double>(bin::CountDecoy) / bin->Count).ToString("F3", CultureInfo::InvariantCulture) + "\t" + (Normal::CDF(0, 1, bin::ComputeZ(0.01))).ToString("F3", CultureInfo::InvariantCulture) + "\t" + (Normal::CDF(0, 1, bin::ComputeZ(0.255))).ToString("F3", CultureInfo::InvariantCulture) + "\t" + (bin->CountTarget == 0 ? NAN : static_cast<double>(bin::LocalizeableTarget) / bin::CountTarget).ToString("F3", CultureInfo::InvariantCulture) + "\t" + bin::Mine + "\t" + bin::UnimodId + "\t" + bin::UnimodFormulas + "\t" + bin::UnimodDiffs + "\t" + bin::AA + "\t" + bin::Combos + "\t" + std::string::Join(",", bin::ModsInCommon::OrderByDescending([&] (std::any b)
 				{
 					b->Value;
 				}).Where([&] (std::any b)
@@ -1068,8 +1068,8 @@ namespace TaskLayer
 					return b->Value > bin::CountTarget / 10.0;
 				})->Select([&] (std::any b)
 				{
-					return b::Key + L":" + (static_cast<double>(b->Value) / bin::CountTarget).ToString(L"F3", CultureInfo::InvariantCulture);
-				})) + L"\t" + std::wstring::Join(L",", bin::AAsInCommon::OrderByDescending([&] (std::any b)
+					return b::Key + ":" + (static_cast<double>(b->Value) / bin::CountTarget).ToString("F3", CultureInfo::InvariantCulture);
+				})) + "\t" + std::string::Join(",", bin::AAsInCommon::OrderByDescending([&] (std::any b)
 				{
 					b->Value;
 				}).Where([&] (std::any b)
@@ -1077,26 +1077,26 @@ namespace TaskLayer
 					return b->Value > bin::CountTarget / 10.0;
 				})->Select([&] (std::any b)
 				{
-					return b::Key + L":" + (static_cast<double>(b->Value) / bin::CountTarget).ToString(L"F3", CultureInfo::InvariantCulture);
-				})) + L"\t" + std::wstring::Join(L",", bin::ResidueCount::OrderByDescending([&] (std::any b)
+					return b::Key + ":" + (static_cast<double>(b->Value) / bin::CountTarget).ToString("F3", CultureInfo::InvariantCulture);
+				})) + "\t" + std::string::Join(",", bin::ResidueCount::OrderByDescending([&] (std::any b)
 				{
 					b->Value;
 				})->Select([&] (std::any b)
 				{
-					return b::Key + L":" + b->Value;
-				})) + L"\t" + (bin->LocalizeableTarget == 0 ? NAN : static_cast<double>(bin::ProtNlocCount) / bin::LocalizeableTarget).ToString(L"F3", CultureInfo::InvariantCulture) + L"\t" + (bin->LocalizeableTarget == 0 ? NAN : static_cast<double>(bin::PepNlocCount) / bin::LocalizeableTarget).ToString(L"F3", CultureInfo::InvariantCulture) + L"\t" + (bin->LocalizeableTarget == 0 ? NAN : static_cast<double>(bin::PepClocCount) / bin::LocalizeableTarget).ToString(L"F3", CultureInfo::InvariantCulture) + L"\t" + (bin->LocalizeableTarget == 0 ? NAN : static_cast<double>(bin::ProtClocCount) / bin::LocalizeableTarget).ToString(L"F3", CultureInfo::InvariantCulture) + L"\t" + (bin::FracWithSingle).ToString(L"F3", CultureInfo::InvariantCulture) + L"\t" + (static_cast<double>(bin::Overlapping) / bin::CountTarget).ToString(L"F3", CultureInfo::InvariantCulture) + L"\t" + (bin::MedianLength).ToString(L"F3", CultureInfo::InvariantCulture) + L"\t" + bin::UniprotID);
+					return b::Key + ":" + b->Value;
+				})) + "\t" + (bin->LocalizeableTarget == 0 ? NAN : static_cast<double>(bin::ProtNlocCount) / bin::LocalizeableTarget).ToString("F3", CultureInfo::InvariantCulture) + "\t" + (bin->LocalizeableTarget == 0 ? NAN : static_cast<double>(bin::PepNlocCount) / bin::LocalizeableTarget).ToString("F3", CultureInfo::InvariantCulture) + "\t" + (bin->LocalizeableTarget == 0 ? NAN : static_cast<double>(bin::PepClocCount) / bin::LocalizeableTarget).ToString("F3", CultureInfo::InvariantCulture) + "\t" + (bin->LocalizeableTarget == 0 ? NAN : static_cast<double>(bin::ProtClocCount) / bin::LocalizeableTarget).ToString("F3", CultureInfo::InvariantCulture) + "\t" + (bin::FracWithSingle).ToString("F3", CultureInfo::InvariantCulture) + "\t" + (static_cast<double>(bin::Overlapping) / bin::CountTarget).ToString("F3", CultureInfo::InvariantCulture) + "\t" + (bin::MedianLength).ToString("F3", CultureInfo::InvariantCulture) + "\t" + bin::UniprotID);
 			}
 		}
 	}
 
-	void PostSearchAnalysisTask::WritePsmsForPercolator(std::vector<PeptideSpectralMatch*> &psmList, const std::wstring &writtenFileForPercolator, double qValueCutoff)
+	void PostSearchAnalysisTask::WritePsmsForPercolator(std::vector<PeptideSpectralMatch*> &psmList, const std::string &writtenFileForPercolator, double qValueCutoff)
 	{
 //C# TO C++ CONVERTER NOTE: The following 'using' block is replaced by its C++ equivalent:
 //ORIGINAL LINE: using (StreamWriter output = new StreamWriter(writtenFileForPercolator))
 		{
 			StreamWriter output = StreamWriter(writtenFileForPercolator);
-			output.WriteLine(L"SpecId\tLabel\tScanNr\tF1\tF2\tPeptide\tProteins");
-			output.WriteLine(L"DefaultDirection\t-\t-\t1\t1\t\t");
+			output.WriteLine("SpecId\tLabel\tScanNr\tF1\tF2\tPeptide\tProteins");
+			output.WriteLine("DefaultDirection\t-\t-\t1\t1\t\t");
 			for (int i = 0; i < psmList.size(); i++)
 			{
 				auto psm = psmList[i];
@@ -1106,18 +1106,18 @@ namespace TaskLayer
 					continue;
 				}
 
-				output.Write(std::to_wstring(i));
-				output.Write(L'\t' + std::to_wstring(psm->getIsDecoy() ? -1 : 1));
-				output.Write(L'\t' + std::to_wstring(psm->getScanNumber()));
+				output.Write(std::to_string(i));
+				output.Write(L'\t' + std::to_string(psm->getIsDecoy() ? -1 : 1));
+				output.Write(L'\t' + std::to_string(psm->getScanNumber()));
 
 				// Features
-				output.Write(StringHelper::toString(L'\t') + std::wstring::Join(L"\t", psm->getFeatures()));
+				output.Write(StringHelper::toString(L'\t') + std::string::Join("\t", psm->getFeatures()));
 
 				// HACKY: Ignores all ambiguity
 				auto pwsm = psm->BestMatchingPeptides.First().Peptide;
 
 //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
-				output.Write(L'\t' + (pwsm->PreviousAminoAcid + L"." + pwsm->FullSequence + L"." + pwsm->NextAminoAcid).ToString());
+				output.Write(L'\t' + (pwsm->PreviousAminoAcid + "." + pwsm->FullSequence + "." + pwsm->NextAminoAcid).ToString());
 //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
 				output.Write(L'\t' + (pwsm->Protein.Accession).ToString());
 				output.WriteLine();
@@ -1125,7 +1125,7 @@ namespace TaskLayer
 		}
 	}
 
-	void PostSearchAnalysisTask::WriteProteinGroupsToTsv(std::vector<EngineLayer::ProteinGroup*> &proteinGroups, const std::wstring &filePath, std::vector<std::wstring> &nestedIds, double qValueCutoff)
+	void PostSearchAnalysisTask::WriteProteinGroupsToTsv(std::vector<EngineLayer::ProteinGroup*> &proteinGroups, const std::string &filePath, std::vector<std::string> &nestedIds, double qValueCutoff)
 	{
 		if (proteinGroups.size() > 0 && proteinGroups.Any())
 		{
@@ -1151,18 +1151,18 @@ namespace TaskLayer
 		}
 	}
 
-	void PostSearchAnalysisTask::WritePeptideQuantificationResultsToTsv(FlashLfqResults *flashLFQResults, const std::wstring &outputFolder, const std::wstring &fileName, std::vector<std::wstring> &nestedIds)
+	void PostSearchAnalysisTask::WritePeptideQuantificationResultsToTsv(FlashLfqResults *flashLFQResults, const std::string &outputFolder, const std::string &fileName, std::vector<std::string> &nestedIds)
 	{
-		auto fullSeqPath = FileSystem::combine(outputFolder, fileName + L".tsv");
+		auto fullSeqPath = FileSystem::combine(outputFolder, fileName + ".tsv");
 
 		flashLFQResults->WriteResults(nullptr, fullSeqPath, nullptr);
 
 		FinishedWritingFile(fullSeqPath, nestedIds);
 	}
 
-	void PostSearchAnalysisTask::WritePeakQuantificationResultsToTsv(FlashLfqResults *flashLFQResults, const std::wstring &outputFolder, const std::wstring &fileName, std::vector<std::wstring> &nestedIds)
+	void PostSearchAnalysisTask::WritePeakQuantificationResultsToTsv(FlashLfqResults *flashLFQResults, const std::string &outputFolder, const std::string &fileName, std::vector<std::string> &nestedIds)
 	{
-		auto peaksPath = FileSystem::combine(outputFolder, fileName + L".tsv");
+		auto peaksPath = FileSystem::combine(outputFolder, fileName + ".tsv");
 
 		flashLFQResults->WriteResults(peaksPath, nullptr, nullptr);
 

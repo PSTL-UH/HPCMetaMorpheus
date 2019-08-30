@@ -10,4 +10,6 @@ namespace EngineLayer
 	public:
 		GptmdParameters();
 
-		private *List < (std::wstring, std::wstring);
+		private *List < (std::string, std::string);
+        };
+}

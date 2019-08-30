@@ -11,9 +11,9 @@ using namespace EngineLayer;
 namespace TaskLayer
 {
 
-	EverythingRunnerEngine::EverythingRunnerEngine(std::vector<(std::wstring, MetaMorpheusTask)*> &taskList, std::vector<std::wstring> &startingRawFilenameList, std::vector<DbForTask*> &startingXmlDbFilenameList, const std::wstring &outputFolder) : TaskList(taskList)
+	EverythingRunnerEngine::EverythingRunnerEngine(std::vector<(std::string, MetaMorpheusTask)*> &taskList, std::vector<std::string> &startingRawFilenameList, std::vector<DbForTask*> &startingXmlDbFilenameList, const std::string &outputFolder) : TaskList(taskList)
 	{
-		OutputFolder = StringHelper::trim(outputFolder, L""");
+		OutputFolder = StringHelper::trim(outputFolder, "");
 
 		CurrentRawDataFilenameList = startingRawFilenameList;
 		CurrentXmlDbFilenameList = startingXmlDbFilenameList;
@@ -27,17 +27,16 @@ namespace TaskLayer
 
 		if (!CurrentRawDataFilenameList.Any())
 		{
-			Warn(L"No spectra files selected");
-			FinishedAllTasks(L"");
+			Warn("No spectra files selected");
+			FinishedAllTasks("");
 
 			delete stopWatch;
 			return;
 		}
 
-//C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
-		auto startTimeForAllFilenames = DateTime::Now.ToString(L"yyyy-MM-dd-HH-mm-ss", CultureInfo::InvariantCulture);
+		auto startTimeForAllFilenames = DateTime::Now.ToString("yyyy-MM-dd-HH-mm-ss", CultureInfo::InvariantCulture);
 
-		OutputFolder = StringHelper::replace(OutputFolder, L"$DATETIME", startTimeForAllFilenames);
+		OutputFolder = StringHelper::replace(OutputFolder, "$DATETIME", startTimeForAllFilenames);
 
 		StringBuilder *allResultsText = new StringBuilder();
 
@@ -45,7 +44,7 @@ namespace TaskLayer
 		{
 			if (!CurrentRawDataFilenameList.Any())
 			{
-				Warn(L"Cannot proceed. No spectra files selected.");
+				Warn("Cannot proceed. No spectra files selected.");
 				FinishedAllTasks(OutputFolder);
 
 				delete allResultsText;
@@ -54,7 +53,7 @@ namespace TaskLayer
 			}
 			if (!CurrentXmlDbFilenameList.Any())
 			{
-				Warn(L"Cannot proceed. No protein database files selected.");
+				Warn("Cannot proceed. No protein database files selected.");
 				FinishedAllTasks(OutputFolder);
 
 				delete allResultsText;
@@ -89,7 +88,7 @@ namespace TaskLayer
 					// at least one file was not successfully calibrated
 					auto successfullyCalibFiles = myTaskResults->NewSpectra->Select([&] (std::any p)
 					{
-						StringHelper::replace(Path::GetFileNameWithoutExtension(p), CalibrationTask::CalibSuffix, L"");
+						StringHelper::replace(Path::GetFileNameWithoutExtension(p), CalibrationTask::CalibSuffix, "");
 					}).ToList();
 					auto origFiles = CurrentRawDataFilenameList.Select([&] (std::any p)
 					{
@@ -110,17 +109,17 @@ namespace TaskLayer
 			{
 				NewFileSpecificToml(myTaskResults->NewFileSpecificTomls);
 			}
-//C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
-			allResultsText->appendLine(L"\r\n" + L"\r\n" + L"\r\n" + L"\r\n" + myTaskResults->ToString());
+
+			allResultsText->appendLine("\r\n" + "\r\n" + "\r\n" + "\r\n" + myTaskResults->ToString());
 		}
 		stopWatch->Stop();
-		auto resultsFileName = FileSystem::combine(OutputFolder, L"allResults.txt");
+		auto resultsFileName = FileSystem::combine(OutputFolder, "allResults.txt");
 //C# TO C++ CONVERTER NOTE: The following 'using' block is replaced by its C++ equivalent:
 //ORIGINAL LINE: using (StreamWriter file = new StreamWriter(resultsFileName))
 		{
 			StreamWriter file = StreamWriter(resultsFileName);
-			file.WriteLine(L"MetaMorpheus: version " + GlobalVariables::getMetaMorpheusVersion());
-			file.WriteLine(L"Total time: " + stopWatch->Elapsed);
+			file.WriteLine("MetaMorpheus: version " + GlobalVariables::getMetaMorpheusVersion());
+			file.WriteLine("Total time: " + stopWatch->Elapsed);
 			file.Write(allResultsText->toString());
 		}
 		StringEventArgs tempVar(resultsFileName, nullptr);
@@ -131,7 +130,7 @@ namespace TaskLayer
 		delete stopWatch;
 	}
 
-	void EverythingRunnerEngine::Warn(const std::wstring &v)
+	void EverythingRunnerEngine::Warn(const std::string &v)
 	{
 		StringEventArgs tempVar(v, nullptr);
 		WarnHandler +== nullptr ? nullptr : WarnHandler::Invoke(this, &tempVar);
@@ -142,19 +141,19 @@ namespace TaskLayer
 		StartingAllTasksEngineHandler +== nullptr ? nullptr : StartingAllTasksEngineHandler::Invoke(this, EventArgs::Empty);
 	}
 
-	void EverythingRunnerEngine::FinishedAllTasks(const std::wstring &rootOutputDir)
+	void EverythingRunnerEngine::FinishedAllTasks(const std::string &rootOutputDir)
 	{
 		StringEventArgs tempVar(rootOutputDir, nullptr);
 		FinishedAllTasksEngineHandler +== nullptr ? nullptr : FinishedAllTasksEngineHandler::Invoke(this, &tempVar);
 	}
 
-	void EverythingRunnerEngine::NewSpectras(std::vector<std::wstring> &newSpectra)
+	void EverythingRunnerEngine::NewSpectras(std::vector<std::string> &newSpectra)
 	{
 		StringListEventArgs tempVar(newSpectra);
 		NewSpectrasHandler +== nullptr ? nullptr : NewSpectrasHandler::Invoke(this, &tempVar);
 	}
 
-	void EverythingRunnerEngine::NewFileSpecificToml(std::vector<std::wstring> &newFileSpecificTomls)
+	void EverythingRunnerEngine::NewFileSpecificToml(std::vector<std::string> &newFileSpecificTomls)
 	{
 		StringListEventArgs tempVar(newFileSpecificTomls);
 		NewFileSpecificTomlHandler +== nullptr ? nullptr : NewFileSpecificTomlHandler::Invoke(this, &tempVar);

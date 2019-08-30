@@ -8,15 +8,15 @@ namespace TaskLayer
 	class DbForTask
 	{
 	private:
-		std::wstring privateFilePath;
+		std::string privateFilePath;
 		bool privateIsContaminant = false;
-		std::wstring privateFileName;
+		std::string privateFileName;
 
 	public:
-		DbForTask(const std::wstring &filePath, bool isContaminant);
+		DbForTask(const std::string &filePath, bool isContaminant);
 
-		std::wstring getFilePath() const;
+		std::string getFilePath() const;
 		bool getIsContaminant() const;
-		std::wstring getFileName() const;
+		std::string getFileName() const;
 	};
 }

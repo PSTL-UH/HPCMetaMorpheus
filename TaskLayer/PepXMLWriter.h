@@ -20,6 +20,6 @@ namespace TaskLayer
 	class PepXMLWriter final
 	{
 	public:
-		static void WritePepXml(std::vector<PeptideSpectralMatch*> &psms, std::vector<DbForTask*> &database, std::vector<Modification*> &variableModifications, std::vector<Modification*> &fixedModifications, CommonParameters *CommonParameters, const std::wstring &outputPath, double qValueFilter);
+		static void WritePepXml(std::vector<PeptideSpectralMatch*> &psms, std::vector<DbForTask*> &database, std::vector<Modification*> &variableModifications, std::vector<Modification*> &fixedModifications, CommonParameters *CommonParameters, const std::string &outputPath, double qValueFilter);
 	};
 }

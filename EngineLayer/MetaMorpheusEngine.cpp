@@ -15,7 +15,7 @@ using namespace Proteomics::Fragmentation;
 namespace EngineLayer
 {
 
-const std::unordered_map<DissociationType*, double> MetaMorpheusEngine::complementaryIonConversionDictionary = std::unordered_map<DissociationType*, double>
+const std::unordered_map<DissociationType, double> MetaMorpheusEngine::complementaryIonConversionDictionary = std::unordered_map<DissociationType, double>
 {
 	{DissociationType::HCD, Constants::ProtonMass},
 	{DissociationType::ETD, 2 * Constants::ProtonMass},
