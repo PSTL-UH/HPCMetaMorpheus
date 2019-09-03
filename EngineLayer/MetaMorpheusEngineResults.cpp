@@ -18,7 +18,7 @@ namespace EngineLayer
     std::string MetaMorpheusEngineResults::ToString()
 	{
             auto sb = new StringBuilder();
-            sb->append("Time to run: " + Time);
+            sb->append("Time to run: " + std::to_string(Time));
             
             std::string s =  sb->toString();
             delete sb;

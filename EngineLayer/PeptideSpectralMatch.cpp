@@ -779,88 +779,112 @@ namespace EngineLayer
             
             if (!nullPsm)
             {
-                auto matchedIons = psm->MatchedFragmentIons;
+                std::vector<MatchedFragmentIon*> matchedIons = psm->getMatchedFragmentIons();
                 if (matchedIons == nullptr)
                 {
-                    matchedIons = psm->getPeptidesToMatchingFragments().First()->Value;
+                    matchedIons = psm->getPeptidesToMatchingFragments().front()->value();
                 }
                 
                 // using ", " instead of "," improves human readability
                 const std::string delimiter = ", ";
                 
+#ifdef ORIG
                 auto matchedIonsGroupedByProductType = matchedIons->GroupBy([&] (std::any i) {
                         i::NeutralTheoreticalProduct::ProductType;
                     }).OrderBy([&] (std::any i)  {
                             i::Key;
 			}).ToList();
+#endif
+                std::sort(matchedIons.begin(), matchedIons.end(), [&] (MatchedFragmentIon *l, MatchedFramgentIon *r) {
+                        return l->NeutralTheoreticalProduct->ProductType < r->NeutralTheoreticalProduct->ProductType;
+                    });
+                std::vector<std::vector<MatchedFragmentIon*>> matchedIonsGroupedByProductType;
+                int current=0;
+                for ( auto i: matchedIons.begin(); i!= matchedIons.end(); m++ ) {
+                    if ( i == matchedIons.begin() ) {
+                        std::vector<MatchedFragmentIon *> *v = new std::vector<MatchedFragmentIon *>;
+                        matchedIonsGroupedByProductType.push_back(*v);
+                    }
+                    else {
+                        auto j = i - 1;
+                        if ( i->NeutralTheoreticalProduct->ProductType != j->NeutralTheoreticalProduct->ProductType ) {
+                            std::vector<MatchedFragmentIon *> *v = new std::vector<MatchedFragmentIon *>;
+                            matchedIonsGroupedByProductType.push_back(*v);
+                            current++;
+                        }
+                    }
+                    matchedIonsGroupedByProductType[current].push_back(*m);
+                }
+                
+                
+                for (auto productType : matchedIonsGroupedByProductType)
+                {
+#ifdef ORIG
+                    auto products = productType.OrderBy([&] (std::any p) {
+                            p::NeutralTheoreticalProduct::TerminusFragment::FragmentNumber;
+                        }).ToList();
+#endif
+                    std::vector<MatchedFragmentIon *> products (productType.begin(), productType.end());
+                    std::sort(products.begin(), products.end(), [&] (MatchedFragmentIon *l, MatchedFramgentIon *r) {
+                            return l->NeutralTheoreticalProduct->TerminusFragment->FragmentNumber < r->NeutralTheoreticalProduct->TerminusFragment->FragmentNumber; } );
+                    std::for_each(stringBuilders.begin(), stringBuilders.end(), [&] (std::any p) {
+                            p->Append("[");
+                        });
 
-			for (auto productType : matchedIonsGroupedByProductType)
-			{
-                            auto products = productType.OrderBy([&] (std::any p)
-				{
-                                    p::NeutralTheoreticalProduct::TerminusFragment::FragmentNumber;
-				}).ToList();
-
-                            std::for_each(stringBuilders.begin(), stringBuilders.end(), [&] (std::any p)
-				{
-                                    p->Append("[");
-				});
-
-                            for (int i = 0; i < products.size(); i++)
-                            {
-                                MatchedFragmentIon *ion = products[i];
-                                std::string ionLabel;
+                    for (int i = 0; i < products.size(); i++)
+                    {
+                        MatchedFragmentIon *ion = products[i];
+                        std::string ionLabel;
                                 
-                                double massError = ion->Mz.ToMass(ion->Charge) - ion->NeutralTheoreticalProduct.NeutralMass;
-                                double ppmMassError = massError / ion->NeutralTheoreticalProduct.NeutralMass * 1e6;
+                        double massError = Chemistry::ClassExtensions::ToMass(ion->Mz, ion->Charge) - ion->NeutralTheoreticalProduct.NeutralMass;
+                        double ppmMassError = massError / ion->NeutralTheoreticalProduct.NeutralMass * 1e6;
                                 
-                                if (ion->NeutralTheoreticalProduct->NeutralLoss == 0)
-                                {
-                                    // no neutral loss
-                                    ionLabel = ion->NeutralTheoreticalProduct.ProductType + "" + ion->NeutralTheoreticalProduct.TerminusFragment.FragmentNumber + "+" + ion->Charge;
-                                }
-                                else
-                                {
-                                    // ion label with neutral loss
-                                    
-                                    ionLabel = "(" + ion->NeutralTheoreticalProduct.ProductType + "" + ion->NeutralTheoreticalProduct.TerminusFragment.FragmentNumber + "-" + ion->NeutralTheoreticalProduct.NeutralLoss.ToString("F2") + ")" + "+" + ion->Charge;
-                                }
-                                
-                                // append ion label
-                                seriesStringBuilder->append(ionLabel);
-                                
-                                // append experimental m/z
-                                
-                                mzStringBuilder->append(ionLabel + ":" + ion->Mz.ToString("F5"));
-                                
-                                // append absolute mass error
-                                
-                                fragmentDaErrorStringBuilder->append(ionLabel + ":" + massError.ToString("F5"));
-                                
-                                // append ppm mass error
-                                
-                                fragmentPpmErrorStringBuilder->append(ionLabel + ":" + ppmMassError.ToString("F2"));
-                                
-                                // append fragment ion intensity
-                                
-                                fragmentIntensityStringBuilder->append(ionLabel + ":" + ion->Intensity.ToString("F0"));
-                                
-                                // append delimiter ", "
-                                if (i < products.size() - 1)
-                                {
-                                    std::for_each(stringBuilders.begin(), stringBuilders.end(), [&] (std::any p)  {
-                                            p->Append(delimiter);
-                                        });
-                                }
-                            }
+                        if (ion->NeutralTheoreticalProduct->NeutralLoss == 0)
+                        {
+                            // no neutral loss
+                            ionLabel = ion->NeutralTheoreticalProduct.ProductType + "" +
+                                ion->NeutralTheoreticalProduct.TerminusFragment.FragmentNumber + "+" + ion->Charge;
+                        }
+                        else
+                        {
+                            // ion label with neutral loss
                             
-                            // append product type delimiter
+                            ionLabel = "(" + ion->NeutralTheoreticalProduct.ProductType + "" +
+                                ion->NeutralTheoreticalProduct.TerminusFragment.FragmentNumber + "-" +
+                                ion->NeutralTheoreticalProduct.NeutralLoss.ToString("F2") + ")" + "+" + ion->Charge;
+                        }
+                                
+                        // append ion label
+                        seriesStringBuilder->append(ionLabel);
+                        
+                        // append experimental m/z
+                        mzStringBuilder->append(ionLabel + ":" + ion->Mz.ToString("F5"));
+                        
+                        // append absolute mass error
+                        fragmentDaErrorStringBuilder->append(ionLabel + ":" + massError.ToString("F5"));
+                        
+                        // append ppm mass error                        
+                        fragmentPpmErrorStringBuilder->append(ionLabel + ":" + ppmMassError.ToString("F2"));
+                                
+                        // append fragment ion intensity
+                        fragmentIntensityStringBuilder->append(ionLabel + ":" + ion->Intensity.ToString("F0"));
+                                
+                        // append delimiter ", "
+                        if (i < products.size() - 1)
+                        {
+                            std::for_each(stringBuilders.begin(), stringBuilders.end(), [&] (std::any p)  {
+                                    p->Append(delimiter);
+                                });
+                        }
+                    }
                             
-                            >
-                            {
-                                p->Append("];
+                    // append product type delimiter                           
+                    //>
+                    {
+                        p->Append("];
 				}"));
-			}}s["Matched Ion Series"] = nullPsm ? " " : seriesStringBuilder->ToString()->TrimEnd(L';');
+                }}s["Matched Ion Series"] = nullPsm ? " " : seriesStringBuilder->ToString()->TrimEnd(L';');
+
             //C# TO C++ CONVERTER TODO TASK: The following lambda expression could not be converted:
             stringBuilders.ForEach(p => TangibleLambdaToken86}s["Matched Ion Series"];
             s["Matched Ion Mass-To-Charge Ratios"] = nullPsm ? " " : mzStringBuilder->toString()->TrimEnd(L';');

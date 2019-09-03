@@ -3,8 +3,8 @@
 
 namespace EngineLayer
 {
-
-	MetaMorpheusException::MetaMorpheusException(const std::string &message) : Exception(message)
-	{
-	}
+    
+    MetaMorpheusException::MetaMorpheusException(const std::string &message) : runtime_error(message)
+    {
+    }
 }
