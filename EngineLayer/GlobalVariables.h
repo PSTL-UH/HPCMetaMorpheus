@@ -21,6 +21,9 @@ using namespace Proteomics;
 
 #include "UsefulProteomicsDatabases/UsefulProteomicsDatabases.h"
 
+//for toml files
+#include "../include/TomlReadFile.h"
+
 namespace EngineLayer
 {
 	class GlobalVariables final
@@ -30,7 +33,7 @@ namespace EngineLayer
 		static bool privateStopLoops;
 		static std::string privateElementsLocation;
 		static std::string privateMetaMorpheusVersion;
-		static IGlobalSettings *privateGlobalSettings;
+		static GlobalSettings privateGlobalSettings;
 		static std::vector<Modification*> privateUnimodDeserialized;
 		static std::vector<Modification*> privateUniprotDeseralized;
 		static UsefulProteomicsDatabases::Generated::obo *privatePsiModDeserialized;
@@ -60,7 +63,7 @@ namespace EngineLayer
 		static void setStopLoops(bool value);
 		static std::string getElementsLocation();
 		static std::string getMetaMorpheusVersion();
-		static IGlobalSettings *getGlobalSettings();
+		static GlobalSettings getGlobalSettings();
 		static std::vector<Modification*> getUnimodDeserialized();
 		static std::vector<Modification*> getUniprotDeseralized();
 		static UsefulProteomicsDatabases::Generated::obo *getPsiModDeserialized();

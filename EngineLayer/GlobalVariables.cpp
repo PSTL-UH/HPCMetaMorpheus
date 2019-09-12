@@ -3,6 +3,8 @@
 
 #include <experimental/filesystem>
 
+#include "../include/TomlReadFile.h"
+
 using namespace MassSpectrometry;
 //using namespace Nett;
 using namespace Proteomics;
@@ -110,6 +112,14 @@ namespace EngineLayer
         // Todo for Nick: Replace the Nett functionality here.
         GlobalSettings = Toml::ReadFile<getGlobalSettings()*>(FileSystem::combine(getDataDir(), "settings.toml"));
 #endif
+        GlobalSettings globalSettings;
+
+        TomlReadFile trf;
+        const toml::Value* Global_Variables = trf.tomlReadFile(privateDataDir + "/settings.toml", "WriteExcelCompatibleTSVs");
+
+        //set privateWriteExcelCompatibleTSVs to Global_Variables boolean value 
+        if (Global_Variables && Global_Variables->is<bool>())
+            globalSettings.setWriteExcelCompatibleTSVs(Global_Variables->as<bool>());
 
 #ifdef ORIG
         setAllSupportedDissociationTypes(std::unordered_map<std::string, DissociationType> {
@@ -157,7 +167,7 @@ namespace EngineLayer
         return privateMetaMorpheusVersion;
     }
     
-    IGlobalSettings *GlobalVariables::getGlobalSettings()
+    GlobalSettings GlobalVariables::getGlobalSettings()
     {
         return privateGlobalSettings;
     }
