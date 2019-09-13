@@ -3,8 +3,6 @@
 
 #include <experimental/filesystem>
 
-#include "../include/TomlReadFile.h"
-
 using namespace MassSpectrometry;
 //using namespace Nett;
 using namespace Proteomics;
@@ -16,7 +14,7 @@ namespace EngineLayer
     bool GlobalVariables::privateStopLoops = false;
     std::string GlobalVariables::privateElementsLocation;
     std::string GlobalVariables::privateMetaMorpheusVersion;
-    IGlobalSettings *GlobalVariables::privateGlobalSettings;
+    GlobalSettings GlobalVariables::privateGlobalSettings;
     std::vector<Modification*> GlobalVariables::privateUnimodDeserialized;
     std::vector<Modification*> GlobalVariables::privateUniprotDeseralized;
     UsefulProteomicsDatabases::Generated::obo *GlobalVariables::privatePsiModDeserialized;
@@ -112,14 +110,13 @@ namespace EngineLayer
         // Todo for Nick: Replace the Nett functionality here.
         GlobalSettings = Toml::ReadFile<getGlobalSettings()*>(FileSystem::combine(getDataDir(), "settings.toml"));
 #endif
-        GlobalSettings globalSettings;
 
         TomlReadFile trf;
         const toml::Value* Global_Variables = trf.tomlReadFile(privateDataDir + "/settings.toml", "WriteExcelCompatibleTSVs");
 
         //set privateWriteExcelCompatibleTSVs to Global_Variables boolean value 
         if (Global_Variables && Global_Variables->is<bool>())
-            globalSettings.setWriteExcelCompatibleTSVs(Global_Variables->as<bool>());
+            privateGlobalSettings.setWriteExcelCompatibleTSVs(Global_Variables->as<bool>());
 
 #ifdef ORIG
         setAllSupportedDissociationTypes(std::unordered_map<std::string, DissociationType> {
@@ -335,7 +332,7 @@ namespace EngineLayer
     
     std::string GlobalVariables::CheckLengthOfOutput(const std::string &psmString)
     {
-        if (psmString.length() > 32000 && getGlobalSettings()->getWriteExcelCompatibleTSVs())
+        if (psmString.length() > 32000 && privateGlobalSettings.getWriteExcelCompatibleTSVs())
         {
             return "Output too long for Excel";
         }
