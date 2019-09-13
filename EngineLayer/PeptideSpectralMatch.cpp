@@ -1,5 +1,6 @@
 ﻿#include "PeptideSpectralMatch.h"
 #include "IScan.h"
+#include "bankersrounding.h"
 
 using namespace Chemistry;
 using namespace EngineLayer::FdrAnalysis;
@@ -10,7 +11,7 @@ using namespace Proteomics::ProteolyticDigestion;
 namespace EngineLayer
 {
 
-	PeptideSpectralMatch::PeptideSpectralMatch(PeptideWithSetModifications *peptide, int notch, double score, int scanIndex, IScan *scan, DigestionParams *digestionParams, std::vector<MatchedFragmentIon*> &matchedFragmentIons) : DigestionParams(digestionParams)
+	PeptideSpectralMatch::PeptideSpectralMatch(PeptideWithSetModifications *peptide, int notch, double score, int scanIndex, IScan *scan, DigestionParams *digestionParams, std::vector<MatchedFragmentIon*> &matchedFragmentIons) 
 	{
             _bestMatchingPeptides = std::vector<std::tuple<int, PeptideWithSetModifications*>>();
             privateScanIndex = scanIndex;
@@ -25,7 +26,8 @@ namespace EngineLayer
             privateScanPrecursorMass = scan->getPrecursorMass();
             setAllScores(std::vector<double>());
             setPeptidesToMatchingFragments(std::unordered_map<PeptideWithSetModifications*, std::vector<MatchedFragmentIon*>>());
-
+            this->digestionParams = new DigestionParams(*digestionParams);
+            
             AddOrReplace(peptide, score, notch, true, matchedFragmentIons);
 	}
 
@@ -324,7 +326,7 @@ namespace EngineLayer
         
 	std::vector<double> PeptideSpectralMatch::getFeatures() const
 	{
-            return std::vector<std::any> {BankersRounding::round(getScore()), getScore() - BankersRounding::round(getScore())};
+            return std::vector<double> {BankersRounding::round(getScore()), getScore() - BankersRounding::round(getScore())};
 	}
 
 	std::string PeptideSpectralMatch::GetTabSeparatedHeader()
@@ -751,7 +753,7 @@ namespace EngineLayer
 		{
                     kv->Value;
 		});
-            PeptideWithSetModifications *variantWithAnyMods = new PeptideWithSetModifications(p->Protein, p->DigestionParams,
+            PeptideWithSetModifications *variantWithAnyMods = new PeptideWithSetModifications(p->Protein, p->digestionParams,
                                                                                               applied->OneBasedBeginPosition,
                                                                                               applied->OneBasedEndPosition,
                                                                                               p->CleavageSpecificityForFdrCategory,
@@ -827,10 +829,11 @@ namespace EngineLayer
                     std::vector<MatchedFragmentIon *> products (productType.begin(), productType.end());
                     std::sort(products.begin(), products.end(), [&] (MatchedFragmentIon *l, MatchedFramgentIon *r) {
                             return l->NeutralTheoreticalProduct->TerminusFragment->FragmentNumber < r->NeutralTheoreticalProduct->TerminusFragment->FragmentNumber; } );
-                    std::for_each(stringBuilders.begin(), stringBuilders.end(), [&] (std::any p) {
+
+                    std::for_each(stringBuilders.begin(), stringBuilders.end(), [&] (StringBuilder *p) {
                             p->Append("[");
                         });
-
+                    
                     for (int i = 0; i < products.size(); i++)
                     {
                         MatchedFragmentIon *ion = products[i];
@@ -838,7 +841,7 @@ namespace EngineLayer
                                 
                         double massError = Chemistry::ClassExtensions::ToMass(ion->Mz, ion->Charge) - ion->NeutralTheoreticalProduct.NeutralMass;
                         double ppmMassError = massError / ion->NeutralTheoreticalProduct.NeutralMass * 1e6;
-                                
+                        
                         if (ion->NeutralTheoreticalProduct->NeutralLoss == 0)
                         {
                             // no neutral loss
@@ -872,25 +875,26 @@ namespace EngineLayer
                         // append delimiter ", "
                         if (i < products.size() - 1)
                         {
-                            std::for_each(stringBuilders.begin(), stringBuilders.end(), [&] (std::any p)  {
+                            std::for_each(stringBuilders.begin(), stringBuilders.end(), [&] (StringBuilder* p)  {
                                     p->Append(delimiter);
                                 });
                         }
                     }
                             
                     // append product type delimiter                           
-                    //>
-                    {
-                        p->Append("];
-				}"));
-                }}s["Matched Ion Series"] = nullPsm ? " " : seriesStringBuilder->ToString()->TrimEnd(L';');
+                    std::for_each (stringBuilders.begin(), stringBuilders.end(), [&] (StringBuilder *p)  {
+                            p->Append("]");
+                        });
+                }
+            }
 
+            s["Matched Ion Series"] = nullPsm ? " " : seriesStringBuilder->ToString()->TrimEnd(';');
             //C# TO C++ CONVERTER TODO TASK: The following lambda expression could not be converted:
             stringBuilders.ForEach(p => TangibleLambdaToken86}s["Matched Ion Series"];
-            s["Matched Ion Mass-To-Charge Ratios"] = nullPsm ? " " : mzStringBuilder->toString()->TrimEnd(L';');
-            s["Matched Ion Mass Diff (Da)"] = nullPsm ? " " : fragmentDaErrorStringBuilder->toString()->TrimEnd(L';');
-            s["Matched Ion Mass Diff (Ppm)"] = nullPsm ? " " : fragmentPpmErrorStringBuilder->toString()->TrimEnd(L';');
-            s["Matched Ion Intensities"] = nullPsm ? " " : fragmentIntensityStringBuilder->toString()->TrimEnd(L';');
+            s["Matched Ion Mass-To-Charge Ratios"] = nullPsm ? " " : mzStringBuilder->toString()->TrimEnd(';');
+            s["Matched Ion Mass Diff (Da)"] = nullPsm ? " " : fragmentDaErrorStringBuilder->toString()->TrimEnd(';');
+            s["Matched Ion Mass Diff (Ppm)"] = nullPsm ? " " : fragmentPpmErrorStringBuilder->toString()->TrimEnd(';');
+            s["Matched Ion Intensities"] = nullPsm ? " " : fragmentIntensityStringBuilder->toString()->TrimEnd(';');
             
             // number of matched ions
             s["Matched Ion Counts"] = nullPsm ? " " : std::to_string(psm->MatchedFragmentIons->Count);

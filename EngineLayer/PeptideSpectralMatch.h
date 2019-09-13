@@ -72,7 +72,7 @@ namespace EngineLayer
         
         virtual ~PeptideSpectralMatch()
         {
-            delete DigestionParams;
+            delete digestionParams;
         }
         
         PeptideSpectralMatch(PeptideWithSetModifications *peptide, int notch, double score, int scanIndex, IScan *scan, DigestionParams *digestionParams, std::vector<MatchedFragmentIon*> &matchedFragmentIons);
@@ -131,7 +131,7 @@ namespace EngineLayer
         void setIsDecoy(bool value);
         bool getIsContaminant() const;
         void setIsContaminant(bool value);
-        DigestionParams *const DigestionParams;
+        DigestionParams *digestionParams;
         std::vector<double> getAllScores() const;
         void setAllScores(const std::vector<double> &value);
         std::unordered_map<PeptideWithSetModifications*, std::vector<MatchedFragmentIon*>> getPeptidesToMatchingFragments() const;
@@ -152,7 +152,9 @@ namespace EngineLayer
                           std::vector<MatchedFragmentIon*> &matchedFragmentIons);
         
         std::string ToString();
-        std::string ToString(IReadOnlyDictionary<std::string, int> *ModstoWritePruned);
+        //std::string ToString(IReadOnlyDictionary<std::string, int> *ModstoWritePruned);
+        std::string ToString(std::unordered_map<std::string, int> *ModstoWritePruned);
+        
         
         static std::unordered_map<std::string, std::string> DataDictionary(PeptideSpectralMatch *psm,
                                                                          std::unordered_map<std::string, int> *ModsToWritePruned);
@@ -170,23 +172,21 @@ namespace EngineLayer
         /// </summary>
         void ResolveAllAmbiguities();
         
-        // TODO: technically, different peptide options for this PSM can have different matched ions
-        // we can write a Resolve method for this if we want...
-        setMatchedFragmentIons(getPeptidesToMatchingFragments().First()->Value);
-    
+        
+    public:
         /// <summary>
         /// This method is used by protein parsimony to remove PeptideWithSetModifications objects
         /// that have non-parsimonious protein associations
         /// </summary>
         //C# TO C++ CONVERTER TODO TASK: The following line could not be converted:
-        public void TrimProteinMatches(std::vector<Protein*> parsimoniousProteins);
+        void TrimProteinMatches(std::vector<Protein*> parsimoniousProteins);
     
         /// <summary>
         /// This method is used by protein parsimony to add PeptideWithSetModifications objects for
         /// modification-agnostic parsimony
         /// </summary>
         //C# TO C++ CONVERTER TODO TASK: The following line could not be converted:
-        public void AddProteinMatch(std::tuple<int, PeptideWithSetModifications> peptideWithNotch);
+        void AddProteinMatch(std::tuple<int, PeptideWithSetModifications> peptideWithNotch);
     
     private:
         /// <summary>
@@ -204,7 +204,7 @@ namespace EngineLayer
         
         //C# TO C++ CONVERTER TODO TASK: Methods returning tuples are not converted by C# to C++ Converter:
         //static(string ResolvedString, Dictionary<string, int> ResolvedValue) Resolve(IEnumerable<Dictionary<int, Modification>> enumerable);
-        static std::tuple<std::string, std::unordered_map<std::string, int>> Resolve(std::vector<std::unoredered_map<int, Modification*>> enumerable);
+        static std::tuple<std::string, std::unordered_map<std::string, int>> Resolve(std::vector<std::unordered_map<int, Modification*>> enumerable);
 
         //C# TO C++ CONVERTER TODO TASK: Methods returning tuples are not converted by C# to C++ Converter:
         //static(string ResolvedString, Nullable<double> ResolvedValue) ResolveF2(IEnumerable<double> enumerable);
@@ -216,7 +216,7 @@ namespace EngineLayer
 
         //C# TO C++ CONVERTER TODO TASK: Methods returning tuples are not converted by C# to C++ Converter:
         //static(string ResolvedString, Nullable<int> ResolvedValue) Resolve(IEnumerable<int> enumerable);
-        static std::tuple<std::string, std::optional<int>>  Resolve(IEnumerable<int> enumerable);
+        static std::tuple<std::string, std::optional<int>>  Resolve(std::vector<int> enumerable);
         
         //C# TO C++ CONVERTER TODO TASK: Methods returning tuples are not converted by C# to C++ Converter:
         //static(string ResolvedString, string ResolvedValue) Resolve(IEnumerable<string> enumerable);
@@ -263,7 +263,7 @@ namespace EngineLayer
         /// <param name="d"></param>
         /// <returns></returns>
         //C# TO C++ CONVERTER TODO TASK: The following line could not be converted:
-        static string SequenceVariantString(PeptideWithSetModifications p, SequenceVariation applied);
+        static std::string SequenceVariantString(PeptideWithSetModifications p, SequenceVariation applied);
 
         //C# TO C++ CONVERTER TODO TASK: The following line could not be converted:
         //static void AddMatchedIonsData(Dictionary<string, string> s, PeptideSpectralMatch psm);
