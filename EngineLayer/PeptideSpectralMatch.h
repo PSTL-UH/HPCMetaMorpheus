@@ -200,7 +200,8 @@ namespace EngineLayer
 
         //C# TO C++ CONVERTER TODO TASK: Methods returning tuples are not converted by C# to C++ Converter:
         //static(string ResolvedString, ChemicalFormula ResolvedValue) Resolve(IEnumerable<IEnumerable<Modification>> enumerable);
-        static std::tuple<std::string, ChemicalFormula*> Resolve(std::vector<std::vector<Modification *>> enumerable);
+        // static std::tuple<std::string, ChemicalFormula*> Resolve(std::vector<std::vector<Modification *>> enumerable);
+        static std::tuple<std::string, ChemicalFormula*> Resolve(std::vector<Modification *> enumerable);
         
         //C# TO C++ CONVERTER TODO TASK: Methods returning tuples are not converted by C# to C++ Converter:
         //static(string ResolvedString, Dictionary<string, int> ResolvedValue) Resolve(IEnumerable<Dictionary<int, Modification>> enumerable);
@@ -234,8 +235,8 @@ namespace EngineLayer
         //static void AddPeptideSequenceData(Dictionary<string, string> s, PeptideSpectralMatch psm,
         //                                   IReadOnlyDictionary<string, int> ModsToWritePruned);
         static void AddPeptideSequenceData(std::unordered_map<std::string, std::string> s,
-                                           PeptideSpectralMatch psm,
-                                           std::unordered_map<std::string, int> ModsToWritePruned);
+                                           PeptideSpectralMatch *psm,
+                                           std::unordered_map<std::string, int> *ModsToWritePruned);
 
         /// <summary>
         /// Determines whether a peptide includes a splice site
@@ -267,11 +268,11 @@ namespace EngineLayer
 
         //C# TO C++ CONVERTER TODO TASK: The following line could not be converted:
         //static void AddMatchedIonsData(Dictionary<string, string> s, PeptideSpectralMatch psm);
-        static void AddMatchedIonsData(std::unordered_map<std::string, std::string> s, PeptideSpectralMatch psm);
+        static void AddMatchedIonsData(std::unordered_map<std::string, std::string> s, PeptideSpectralMatch *psm);
 
         //C# TO C++ CONVERTER TODO TASK: Local functions are not converted by C# to C++ Converter:
         //static void AddMatchScoreData(Dictionary<string, string> s, PeptideSpectralMatch peptide)
-        static void AddMatchScoreData(std::unordered_map<std::string, std::string> s, PeptideSpectralMatch peptide);
+        static void AddMatchScoreData(std::unordered_map<std::string, std::string> s, PeptideSpectralMatch *peptide);
 
     };
 }

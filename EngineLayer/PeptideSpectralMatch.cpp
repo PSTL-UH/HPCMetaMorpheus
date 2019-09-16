@@ -331,7 +331,13 @@ namespace EngineLayer
 
 	std::string PeptideSpectralMatch::GetTabSeparatedHeader()
 	{
-            return std::string::Join("\t", DataDictionary(nullptr, nullptr).Keys);
+            // return std::string::Join("\t", DataDictionary(nullptr, nullptr).Keys);
+            std::unordered_map<std::string, std::string> dict = DataDictionary(nullptr, nullptr);
+            std::string s;
+            for ( auto it = dict.begin(); it != dict.end(); it++ ) {
+                s += it->first + "\t";
+            }
+            return s;
 	}
 
 	void PeptideSpectralMatch::AddOrReplace(PeptideWithSetModifications *pwsm, double newScore, int notch,
@@ -340,7 +346,7 @@ namespace EngineLayer
             if (newScore - getScore() > ToleranceForScoreDifferentiation) //if new score beat the old score, overwrite it
             {
                 _bestMatchingPeptides.clear();
-                _bestMatchingPeptides.push_back((notch, pwsm));
+                _bestMatchingPeptides.push_back(std::make_tuple(notch, pwsm));
                 
                 if (getScore() - getRunnerUpScore() > ToleranceForScoreDifferentiation)
                 {
@@ -354,7 +360,7 @@ namespace EngineLayer
             }
             else if (newScore - getScore() > -ToleranceForScoreDifferentiation && reportAllAmbiguity) //else if the same score and ambiguity is allowed
             {
-                _bestMatchingPeptides.push_back((notch, pwsm));
+                _bestMatchingPeptides.push_back(std::make_tuple(notch, pwsm));
                 
                 if (getPeptidesToMatchingFragments().find(pwsm) == getPeptidesToMatchingFragments().end())
                 {
@@ -369,16 +375,24 @@ namespace EngineLayer
         
 	std::string PeptideSpectralMatch::ToString()
 	{
-            return ToString(std::unordered_map<std::string, int>());
+            std::unordered_map<std::string, int> mymap = std::unordered_map<std::string, int>();
+            return ToString(&mymap);
 	}
         
-	std::string PeptideSpectralMatch::ToString(IReadOnlyDictionary<std::string, int> *ModstoWritePruned)
+	std::string PeptideSpectralMatch::ToString(std::unordered_map<std::string, int> *ModstoWritePruned)
 	{
-            return std::string::Join("\t", DataDictionary(this, ModstoWritePruned).Values);
+            // return std::string::Join("\t", DataDictionary(this, ModstoWritePruned).Values);
+            std::unordered_map<std::string, std::string> dict = DataDictionary(this, ModstoWritePruned);
+            std::string s;
+            for ( auto it = dict.begin(); it != dict.end(); it++ ) {
+                s += it->second + "\t";
+            }
+            return s;
+
 	}
         
 	std::unordered_map<std::string, std::string> PeptideSpectralMatch::DataDictionary(PeptideSpectralMatch *psm,
-                                                                                          std::unordered_map<std::string, int> *ModsToWritePruned)
+                                                            std::unordered_map<std::string, int> *ModsToWritePruned)
 	{
             std::unordered_map<std::string, std::string> s;
             AddBasicMatchData(s, psm);
@@ -397,7 +411,7 @@ namespace EngineLayer
                                                 double cumulativeDecoyNotch, double qValueNotch, double maximumLikelihood, double eValue,
                                                 double eScore, bool calculateEValue)
 	{
-            FdrInfo tempVar();
+            FdrInfo tempVar= FdrInfo();
             setFdrInfo(&tempVar);
             getFdrInfo()->setCumulativeTarget(cumulativeTarget);
             getFdrInfo()->setCumulativeDecoy(cumulativeDecoy);
@@ -413,64 +427,189 @@ namespace EngineLayer
         
 	void PeptideSpectralMatch::ResolveAllAmbiguities()
 	{
+#ifdef ORIG
+            // EDGAR Note: Pwsm is the name of the second element in the tuple
+            // in the C# version. The C++ version does not use 'names' for
+            // the elements of the tuple. Its still the second element,
+            // so we access it using std::get<1>
             setIsDecoy(_bestMatchingPeptides.Any([&] (std::any p)  {
                         p::Pwsm::Protein::IsDecoy;
                     }));
-
+#endif
+            bool found = false;
+            for ( auto p: _bestMatchingPeptides ) {
+                if ( std::get<1>(p)->getProtein()->getIsDecoy()) {
+                    found = true;
+                    break;
+                }
+            }
+            setIsDecoy(found);
+            
+#ifdef ORIG
             setIsContaminant(_bestMatchingPeptides.Any([&] (std::any p) {
 			p::Pwsm::Protein::IsContaminant;
                     }));
+#endif
+            found = false;
+            for ( auto p: _bestMatchingPeptides ) {
+                if ( std::get<1>(p)->getProtein()->getIsContaminant()) {
+                    found = true;
+                    break;
+                }
+            }
+            setIsContaminant(found);
             
+#ifdef ORIG
             setFullSequence(Resolve(_bestMatchingPeptides.Select([&] (std::any b) {
                             b::Pwsm::FullSequence;
                         }))->ResolvedValue);
-
+#endif
+            std::vector<std::string> vs;
+            for ( auto b: _bestMatchingPeptides ) {
+                vs.push_back( std::get<1>(b)->getFullSequence() );
+            }
+            std::tuple<std::string, std::string> res = Resolve(vs);
+            setFullSequence(std::get<1>(res));
+                            
+            
+#ifdef ORIG
             setBaseSequence(Resolve(_bestMatchingPeptides.Select([&] (std::any b) {
                             b::Pwsm::BaseSequence;
                         }))->ResolvedValue);
-
+#endif
+            vs.clear();
+            for ( auto b: _bestMatchingPeptides ) {
+                vs.push_back( std::get<1>(b)->getBaseSequence() );
+            }
+            std::tuple<std::string, std::string> res2 = Resolve(vs);
+            setBaseSequence(std::get<1>(res2));
+            
+            
+#ifdef ORIG
             setPeptideLength(Resolve(_bestMatchingPeptides.Select([&] (std::any b){
                             b::Pwsm->Length;
                         }))->ResolvedValue);
-
+#endif
+            std::vector<int> vi;
+            for ( auto b: _bestMatchingPeptides ) {
+                vi.push_back( std::get<1>(b)->getLength() );
+            }
+            std::tuple<std::string, std::optional<int>> res3 = Resolve(vi);
+            setPeptideLength(std::get<1>(res3));
+            
+#ifdef ORIG            
             setOneBasedStartResidueInProtein(Resolve(_bestMatchingPeptides.Select([&] (std::any b) {
                             b::Pwsm::OneBasedStartResidueInProtein;
                         }))->ResolvedValue);
-
+#endif
+            vi.clear();
+            for ( auto b: _bestMatchingPeptides ) {
+                vi.push_back( std::get<1>(b)->getOneBasedStartResidueInProtein() );
+            }
+            std::tuple<std::string, std::optional<int>> res4 = Resolve(vi);
+            setOneBasedStartResidueInProtein(std::get<1>(res4));
+            
+#ifdef ORIG
             setOneBasedEndResidueInProtein(Resolve(_bestMatchingPeptides.Select([&] (std::any b) {
                             b::Pwsm::OneBasedEndResidueInProtein;
                         }))->ResolvedValue);
-            
+#endif
+            vi.clear();
+            for ( auto b: _bestMatchingPeptides ) {
+                vi.push_back( std::get<1>(b)->getOneBasedEndResidueInProtein() );
+            }
+            std::tuple<std::string, std::optional<int>> res5 = Resolve(vi);
+            setOneBasedEndResidueInProtein(std::get<1>(res5));
+
+#ifdef ORIG
             setProteinLength(Resolve(_bestMatchingPeptides.Select([&] (std::any b) {
                             b::Pwsm::Protein->Length;
                         }))->ResolvedValue);
+#endif
+            vi.clear();
+            for ( auto b: _bestMatchingPeptides ) {
+                vi.push_back( std::get<1>(b)->getProtein()->getLength() );
+            }
+            std::tuple<std::string, std::optional<int>> res6 = Resolve(vi);
+            setProteinLength(std::get<1>(res6));
 
+#ifdef ORIG
             setPeptideMonisotopicMass(Resolve(_bestMatchingPeptides.Select([&] (std::any b)  {
                             b::Pwsm::MonoisotopicMass;
                         }))->ResolvedValue);
-
+#endif
+            std::vector <double> vo;
+            for ( auto b: _bestMatchingPeptides ) {
+                vo.push_back( std::get<1>(b)->getMonoisotopicMass() );
+            }
+            std::tuple<std::string, std::optional<double>> res7 = Resolve(vo);
+            setPeptideMonisotopicMass(std::get<1>(res7));
+            
+#ifdef ORIG
             setProteinAccession(Resolve(_bestMatchingPeptides.Select([&] (std::any b)	{
                             b::Pwsm::Protein::Accession;
                         }))->ResolvedValue);
-
+#endif
+            vs.clear();
+            for ( auto b: _bestMatchingPeptides ) {
+                vs.push_back( std::get<1>(b)->getProtein()->getAccession() );
+            }
+            std::tuple<std::string, std::string> res8 = Resolve(vs);
+            setProteinAccession(std::get<1>(res8));
+            
+#ifdef ORIG
             setOrganism(Resolve(_bestMatchingPeptides.Select([&] (std::any b)	{
                             b::Pwsm::Protein::Organism;
                         }))->ResolvedValue);
-
+#endif
+            vs.clear();
+            for ( auto b: _bestMatchingPeptides ) {
+                vs.push_back( std::get<1>(b)->getProtein()->getOrganism() );
+            }
+            std::tuple<std::string, std::string> res9 = Resolve(vs);
+            setOrganism(std::get<1>(res9));
+            
+#ifdef ORIG
             setModsIdentified(Resolve(_bestMatchingPeptides.Select([&] (std::any b)	{
                             b::Pwsm::AllModsOneIsNterminus;
                         }))->ResolvedValue);
-
+#endif
+            std::vector<std::unordered_map<int, Modification*>> vmap;
+            for ( auto b: _bestMatchingPeptides ) {
+                vmap.push_back( std::get<1>(b)->getAllModsOneIsNterminus() );
+            }
+            std::tuple<std::string, std::unordered_map<std::string, int>> res10 = Resolve(vmap);
+            setModsIdentified(std::get<1>(res10));
+                        
+#ifdef ORIG
             setModsChemicalFormula(Resolve(_bestMatchingPeptides.Select([&] (std::any b){
                             b::Pwsm::AllModsOneIsNterminus->Select([&] (std::any c)  {
                                     (c->Value);
                                 });
                         }))->ResolvedValue);
-
+#endif
+            std::vector<Modification *> vmod;
+            for ( auto b: _bestMatchingPeptides ) {
+                for ( auto c: std::get<1>(b)->getAllModsOneIsNterminus() ) {
+                    vmod.push_back(std::get<1>(c));
+                }
+            }
+            std::tuple<std::string, ChemicalFormula *> res11 = Resolve (vmod);
+            setModsChemicalFormula(std::get<1>(res11));
+            
+#ifdef ORIG
             setNotch(Resolve(_bestMatchingPeptides.Select([&] (std::any b)  {
                             b::Notch;
                         }))->ResolvedValue);
-
+#endif
+            vi.clear();
+            for ( auto b: _bestMatchingPeptides ) {
+                vi.push_back(std::get<0>(b));
+            }
+            std::tuple<std::string, std::optional<int>> res12 = Resolve (vi);
+            setNotch(std::get<1>(res12));
+            
+            
             // if the PSM matches a target and a decoy and they are the SAME SEQUENCE, remove the decoy
             if (getIsDecoy())
             {
@@ -956,7 +1095,7 @@ namespace EngineLayer
 
         //C# TO C++ CONVERTER TODO TASK: Methods returning tuples are not converted by C# to C++ Converter:
         //static(string ResolvedString, ChemicalFormula ResolvedValue) Resolve(IEnumerable<IEnumerable<Modification>> enumerable);
-        static std::tuple<std::string, ChemicalFormula*> Resolve(std::vector<std::vector<Modification *>> enumerable)
+        static std::tuple<std::string, ChemicalFormula*> Resolve(std::vector<Modification *> enumerable)
         {
 //			var list = enumerable.ToList();
 //			ChemicalFormula firstChemFormula = new ChemicalFormula();
@@ -1000,7 +1139,7 @@ namespace EngineLayer
         }
 
 
-        static std::tuple<std::string, std::unordered_map<std::string, int>> Resolve(std::vector<std::unoredered_map<int, Modification*>> enumerable)
+        static std::tuple<std::string, std::unordered_map<std::string, int>> Resolve(std::vector<std::unordered_map<int, Modification*>> enumerable)
         {
 //			var list = enumerable.ToList();
 //			Dictionary<string, int> firstDict = list[0].Values.OrderBy(b => b.IdWithMotif).GroupBy(b => b.IdWithMotif).ToDictionary(b => b.Key, b => b.Count());
@@ -1061,7 +1200,7 @@ namespace EngineLayer
 
         //C# TO C++ CONVERTER TODO TASK: Methods returning tuples are not converted by C# to C++ Converter:
         //static(string ResolvedString, Nullable<int> ResolvedValue) Resolve(IEnumerable<int> enumerable);
-        static std::tuple<std::string, std::optional<int>>  Resolve(IEnumerable<int> enumerable)
+        static std::tuple<std::string, std::optional<int>>  Resolve(std::vector<int> enumerable)
         {
 //			var list = enumerable.ToList();
 //			var first = list[0];
