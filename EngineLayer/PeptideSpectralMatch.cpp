@@ -2,6 +2,10 @@
 #include "IScan.h"
 #include "bankersrounding.h"
 
+#include <vector>
+#include <tuple>
+#include <experimental/filesystem>
+
 using namespace Chemistry;
 using namespace EngineLayer::FdrAnalysis;
 using namespace Proteomics;
@@ -614,23 +618,77 @@ namespace EngineLayer
             if (getIsDecoy())
             {
                 bool removedPeptides = false;
+#ifdef ORIG
                 auto hits = _bestMatchingPeptides.GroupBy([&] (std::any p)  {
                         p::Pwsm::FullSequence;
                     });
+#endif     
+                std::sort(_bestMatchingPeptides.begin(), _bestMatchingPeptides.end(), [&]
+                          ( std::tuple<int, PeptideWithSetModifications*> l,
+                            std::tuple<int, PeptideWithSetModifications*> r ) {
+                              return std::get<1>(l)->getFullSequence() < std::get<1>(r)->getFullSequence();
+                          });
+                std::vector<std::vector<std::tuple<int, PeptideWithSetModifications*>>> hits;
+                int current=0;
+                for ( auto p = _bestMatchingPeptides.begin(); p!= _bestMatchingPeptides.end(); p++ ){
+                    if ( p == _bestMatchingPeptides.begin() ) {
+                        std::vector<std::tuple<int, PeptideWithSetModifications*>> *v = new std::vector<std::tuple<int, PeptideWithSetModifications*>>;
+                        hits.push_back(*v);
+                    }
+                    else {
+                        auto j = p - 1;
+                        if ( std::get<1>(*p)->getFullSequence() != std::get<1>(*j)->getFullSequence() ) {
+                            std::vector<std::tuple<int, PeptideWithSetModifications*>> *v = new std::vector<std::tuple<int, PeptideWithSetModifications*>>;
+                            hits.push_back(*v);
+                            current++;
+                        }
+                    }
+                    hits[current].push_back(*p);
+                }
+
                 
                 for (auto hit : hits)
                 {
+# ifdef ORIG
                     if (hit->Any([&] (std::any p) {
                                 p::Pwsm::Protein::IsDecoy;
-                            }) && hit->Any([&] (std::any p) {
-                                    !p::Pwsm::Protein::IsDecoy;
-				})){_bestMatchingPeptides.RemoveAll([&] (std::any p)   {
+                            })                   &&
+                        hit->Any([&] (std::any p) {
+                                !p::Pwsm::Protein::IsDecoy;
+                            })) {
+                        _bestMatchingPeptides.RemoveAll([&] (std::any p)   {
                                 return p::Pwsm->FullSequence == hit->Key && p::Pwsm::Protein::IsDecoy;
                             });
                         {
                             removedPeptides = true;
                         }
                     }
+#endif
+                    bool someisdecoy=false, someisnotdecoy=false; 
+                    for ( auto p: hit ) {
+                        if ( std::get<1>(p)->getProtein()->getIsDecoy() ) {
+                            someisdecoy = true;
+                            break;
+                        }
+                    }
+                    for ( auto p: hit ) {
+                        if ( !std::get<1>(p)->getProtein()->getIsDecoy() ) {
+                            someisnotdecoy = true;
+                            break;
+                        }
+                    }
+
+                    if ( someisdecoy && someisnotdecoy ) {
+                        for ( auto p = _bestMatchingPeptides.begin(); p != _bestMatchingPeptides.end(); p++ ) {
+                            if ( std::get<1>(*p)->getFullSequence() == std::get<1>(hit[0])->getFullSequence() &&
+                                 std::get<1>(*p)->getProtein()->getIsDecoy()             ) {
+                                _bestMatchingPeptides.erase(p);
+                                removedPeptides = true;
+                            }
+                        }
+                    }
+                           
+                    
 		}
 
                 if (removedPeptides)
@@ -640,10 +698,11 @@ namespace EngineLayer
             }
         }
         
-	void PeptideSpectralMatch::TrimProteinMatches(std::unordered_set<Protein*> &parsimoniousProteins)
+	void PeptideSpectralMatch::TrimProteinMatches(std::vector<Protein*> parsimoniousProteins)
 	{
-            if (IsDecoy)
+            if (privateIsDecoy)
             {
+#ifdef ORIG
                 if (_bestMatchingPeptides::Any([&] (std::any p) {
                      return std::find(parsimoniousProteins.begin(), parsimoniousProteins.end(), p::Pwsm::Protein) != parsimoniousProteins.end() &&
                          p::Pwsm::Protein::IsDecoy;
@@ -653,43 +712,80 @@ namespace EngineLayer
                             std::find(parsimoniousProteins.begin(), parsimoniousProteins.end(), p::Item2->Protein) == parsimoniousProteins.end();
                         });
                 }
+#endif
+                bool found =false;
+                for ( auto p = _bestMatchingPeptides.begin(); p !=_bestMatchingPeptides.end(); p++ ) {
+                    if ( std::find(parsimoniousProteins.begin(), parsimoniousProteins.end(), std::get<1>(*p)->getProtein() ) != parsimoniousProteins.end() &&
+                         std::get<1>(*p)->getProtein()->getIsDecoy() ) {
+                        found = true;
+                        break;
+                    }
+                }
+                if ( found ) {
+                    for ( auto p = _bestMatchingPeptides.begin(); p !=_bestMatchingPeptides.end(); p++ ) {
+                        if ( std::find(parsimoniousProteins.begin(), parsimoniousProteins.end(), std::get<1>(*p)->getProtein() ) != parsimoniousProteins.end()) {
+                            _bestMatchingPeptides.erase (p);
+                        }
+                    }
+                }
+
+                
                 // else do nothing
             }
             else
             {
+#ifdef ORIG
                 _bestMatchingPeptides::RemoveAll([&] (std::any p){
                         std::find(parsimoniousProteins.begin(), parsimoniousProteins.end(), p::Item2->Protein) == parsimoniousProteins.end();
                     });
+#endif
+                for ( auto p = _bestMatchingPeptides.begin(); p !=_bestMatchingPeptides.end(); p++ ) {
+                    if ( std::find(parsimoniousProteins.begin(), parsimoniousProteins.end(), std::get<1>(*p)->getProtein() ) != parsimoniousProteins.end()) {
+                        _bestMatchingPeptides.erase (p);
+                    }
+                }
             }
             
             ResolveAllAmbiguities();
 	}
 
-	public void PeptideSpectralMatch::AddProteinMatch((int, PeptideWithSetModifications)  *peptideWithNotch)
+	void PeptideSpectralMatch::AddProteinMatch(std::tuple<int, PeptideWithSetModifications*>  peptideWithNotch)
 	{
-            _bestMatchingPeptides->Add(peptideWithNotch);
+            _bestMatchingPeptides.push_back(peptideWithNotch);
             ResolveAllAmbiguities();
 	}
 
-	private void PeptideSpectralMatch::AddBasicMatchData(std::unordered_map<std::string, std::string> &s, PeptideSpectralMatch *psm)
+	void PeptideSpectralMatch::AddBasicMatchData(std::unordered_map<std::string, std::string> &s, PeptideSpectralMatch *psm)
 	{
-            s["File Name"] = psm == nullptr ? " " : Path::GetFileNameWithoutExtension(psm->getFullFilePath());
-            s["Scan Number"] = psm == nullptr ? " " : psm->getScanNumber().ToString(CultureInfo::InvariantCulture);
-            s["Scan Retention Time"] = psm == nullptr ? " " : psm->getScanRetentionTime().ToString("F5", CultureInfo::InvariantCulture);
-            s["Num Experimental Peaks"] = psm == nullptr ? " " : psm->getScanExperimentalPeaks().ToString("F5", CultureInfo::InvariantCulture);
-            s["Total Ion Current"] = psm == nullptr ? " " : psm->getTotalIonCurrent().ToString("F5", CultureInfo::InvariantCulture);
-            s["Precursor Scan Number"] = psm == nullptr ? " " : psm->getPrecursorScanNumber().HasValue ? psm->getPrecursorScanNumber().Value.ToString(CultureInfo::InvariantCulture) : "unknown";
-            s["Precursor Charge"] = psm == nullptr ? " " : psm->getScanPrecursorCharge().ToString("F5", CultureInfo::InvariantCulture);
-            s["Precursor MZ"] = psm == nullptr ? " " : psm->getScanPrecursorMonoisotopicPeakMz().ToString("F5", CultureInfo::InvariantCulture);
-            s["Precursor Mass"] = psm == nullptr ? " " : psm->getScanPrecursorMass().ToString("F5", CultureInfo::InvariantCulture);
-            s["Score"] = psm == nullptr ? " " : psm->getScore().ToString("F3", CultureInfo::InvariantCulture);
-            s["Delta Score"] = psm == nullptr ? " " : psm->getDeltaScore().ToString("F3", CultureInfo::InvariantCulture);
+            // s["File Name"] = psm == nullptr ? " " : Path::GetFileNameWithoutExtension(psm->getFullFilePath());
+            s["File Name"] = psm == nullptr ? " " : std::experimental::filesystem::path(psm->getFullFilePath()).stem();
+            s["Scan Number"] = psm == nullptr ? " " : std::to_string(psm->getScanNumber());
+            s["Scan Retention Time"] = psm == nullptr ? " " : std::to_string(psm->getScanRetentionTime());
+            s["Num Experimental Peaks"] = psm == nullptr ? " " : std::to_string(psm->getScanExperimentalPeaks());
+            s["Total Ion Current"] = psm == nullptr ? " " : std::to_string(psm->getTotalIonCurrent());
+            s["Precursor Scan Number"] = psm == nullptr ? " " : psm->getPrecursorScanNumber().has_value() ? std::to_string(psm->getPrecursorScanNumber().value()) : "unknown";
+            s["Precursor Charge"] = psm == nullptr ? " " : std::to_string(psm->getScanPrecursorCharge());
+            s["Precursor MZ"] = psm == nullptr ? " " : std::to_string(psm->getScanPrecursorMonoisotopicPeakMz());
+            s["Precursor Mass"] = psm == nullptr ? " " : std::to_string(psm->getScanPrecursorMass());
+            s["Score"] = psm == nullptr ? " " : std::to_string(psm->getScore());
+            s["Delta Score"] = psm == nullptr ? " " : std::to_string(psm->getDeltaScore());
+#ifdef ORIG
             s["Notch"] = psm == nullptr ? " " : Resolve(psm->BestMatchingPeptides->Select([&] (std::any p)
             {
                 p::Notch;
             }))->ResolvedString;
-            
-            s["Different Peak Matches"] = psm == nullptr ? " " : psm->getNumDifferentMatchingPeptides().ToString("F5", CultureInfo::InvariantCulture);
+#endif
+            if ( psm == nullptr ) {
+                s["Notch"]  = " ";
+            }
+            else {
+                for ( auto p: psm->BestMatchingPeptides ) {
+                    v.push_back (std::get<0>(*p));
+                }
+                std::tuple<> res = Resolve ( v);
+                s["Notch"] = std::get<>(res);
+            }
+            s["Different Peak Matches"] = psm == nullptr ? " " : std::to_string(psm->getNumDifferentMatchingPeptides());
 	}
 
 	void PeptideSpectralMatch::AddPeptideSequenceData(std::unordered_map<std::string, std::string> s, PeptideSpectralMatch *psm,
@@ -941,7 +1037,7 @@ namespace EngineLayer
                     });
                 std::vector<std::vector<MatchedFragmentIon*>> matchedIonsGroupedByProductType;
                 int current=0;
-                for ( auto i: matchedIons.begin(); i!= matchedIons.end(); m++ ) {
+                for ( auto i: matchedIons.begin(); i!= matchedIons.end(); i++ ) {
                     if ( i == matchedIons.begin() ) {
                         std::vector<MatchedFragmentIon *> *v = new std::vector<MatchedFragmentIon *>;
                         matchedIonsGroupedByProductType.push_back(*v);
@@ -954,7 +1050,7 @@ namespace EngineLayer
                             current++;
                         }
                     }
-                    matchedIonsGroupedByProductType[current].push_back(*m);
+                    matchedIonsGroupedByProductType[current].push_back(*i);
                 }
                 
                 

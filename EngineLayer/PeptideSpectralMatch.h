@@ -186,7 +186,7 @@ namespace EngineLayer
         /// modification-agnostic parsimony
         /// </summary>
         //C# TO C++ CONVERTER TODO TASK: The following line could not be converted:
-        void AddProteinMatch(std::tuple<int, PeptideWithSetModifications> peptideWithNotch);
+        void AddProteinMatch(std::tuple<int, PeptideWithSetModifications*> peptideWithNotch);
     
     private:
         /// <summary>
