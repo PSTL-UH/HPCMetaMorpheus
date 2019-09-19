@@ -881,7 +881,7 @@ namespace EngineLayer
                 std::tuple<std::string, std::unordered_map<std::string, int>>res = Resolve(vc);
                 s["Mods"] = std::get<0>(res);
             }
-
+            
 #ifdef ORIG
             s["Mods Chemical Formulas"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any p)
 		{
@@ -899,9 +899,10 @@ namespace EngineLayer
                 for ( auto b : pepsWithMods ) {
                     for ( auto v : b->getAllModsOneIsNterminus() ) {
                         vm.push_back(std::get<1>(v));
+                    }
                 }
                 std::tuple<std::string, ChemicalFormula *>res = Resolve(vm);
-                s["Mods Chemical Formulas"] = std::get<0>(res);
+                s["Mods Chemical Formulas"] = std::get<0>(res);                
             }
 
 #ifdef ORIG
@@ -921,6 +922,7 @@ namespace EngineLayer
                 for ( auto b : pepsWithMods ) {
                     for ( auto v : b->getAllModsOneIsNterminus() ) {
                         vm.push_back(std::get<1>(v));
+                    }
                 }
                 std::tuple<std::string, ChemicalFormula *>res = Resolve(vm);
                 s["Mods Combined Chemical Formula"] = std::get<0>(res);
@@ -1095,14 +1097,22 @@ namespace EngineLayer
 		}))->ResolvedString;
 #endif
             if ( pepWithModsIsNull ) {
-                s[""] = " ";
+                s["Intersecting Sequence Variations"] = " ";
             }
             else {
                 std::vector<std::string> vs;
                 for ( auto b : pepsWithMods ) {
+                    std::string s;
+                    std::vector<SequenceVariation*> variations = b->getProtein()->getAppliedSequenceVariations();
+                    for ( auto av = variations.begin(); av == variations.end(); av++ ) {
+                        if ( IntersectsWithVariation(b, *av, false ) ) {
+                            s += SequenceVariantString(b, *av ) + ", ";
+                        }
+                        vs.push_back(s);
+                    }
                 }
                 std::tuple<std::string, std::string>res = Resolve(vs );
-                s[""] = std::get<0>(res);
+                s["Intersecting Sequence Variations"] = std::get<0>(res);
             }
                     
 #ifdef ORIG
@@ -1118,14 +1128,22 @@ namespace EngineLayer
 		}))->ResolvedString;
 #endif
             if ( pepWithModsIsNull ) {
-                s[""] = " ";
+                s["Identified Sequence Variations"] = " ";
             }
             else {
                 std::vector<std::string> vs;
                 for ( auto b : pepsWithMods ) {
+                    std::string s;
+                    std::vector<SequenceVariation*> variations = b->getProtein()->getAppliedSequenceVariations();
+                    for ( auto av = variations.begin(); av == variations.end(); av++ ) {
+                        if ( IntersectsWithVariation(b, *av, true ) ) {
+                            s += SequenceVariantString(b, *av ) + ", ";
+                        }
+                        vs.push_back(s);
+                    }
                 }
                 std::tuple<std::string, std::string>res = Resolve(vs );
-                s[""] = std::get<0>(res);
+                s["Identified Sequence Variations"] = std::get<0>(res);
             }
 
 #ifdef ORIG
@@ -1141,14 +1159,22 @@ namespace EngineLayer
 		}))->ResolvedString;
 #endif
             if ( pepWithModsIsNull ) {
-                s[""] = " ";
+                s["Splice Sites"] = " ";
             }
             else {
                 std::vector<std::string> vs;
                 for ( auto b : pepsWithMods ) {
+                    std::string s;
+                    std::vector<SpliceSite*> sites = b->getProtein()->getSpliceSites();
+                    for ( auto d = sites.begin(); d == sites.end(); d++ ) {
+                        if ( Includes (b, *d) ) {
+                            s+= std::to_string((*d)->getOneBasedBeginPosition()) + "-" + std::to_string((*d)->getOneBasedEndPosition());
+                        }
+                        vs.push_back(s);                        
+                    }
                 }
                 std::tuple<std::string, std::string>res = Resolve(vs );
-                s[""] = std::get<0>(res);
+                s["Splice Sites"] = std::get<0>(res);
             }
 
 #ifdef ORIG
@@ -1159,14 +1185,15 @@ namespace EngineLayer
 
 #endif
             if ( pepWithModsIsNull ) {
-                s[""] = " ";
+                s["Organism Name"] = " ";
             }
             else {
                 std::vector<std::string> vs;
                 for ( auto b : pepsWithMods ) {
+                    vs.push_back(b->getProtein()->getOrganism());
                 }
                 std::tuple<std::string, std::string>res = Resolve(vs);
-                s[""] = std::get<0>(res);
+                s["Organism Name"] = std::get<0>(res);
             }
 
 #ifdef ORIG
@@ -1176,14 +1203,22 @@ namespace EngineLayer
 		}))->Item1;
 #endif
             if ( pepWithModsIsNull ) {
-                s[""] = " ";
+                s["Contaminant"] = " ";
             }
             else {
                 std::vector<std::string> vs;
                 for ( auto b : pepsWithMods ) {
+                    std::string yes = "Y";
+                    std::string no = "N";
+                    if ( b->getProtein()->getIsContaminant() ) {
+                        vs.push_back(yes);
+                    }
+                    else {
+                        vs.push_back(no);
+                    }
                 }
                 std::tuple<std::string, std::string>res = Resolve(vs);
-                s[""] = std::get<0>(res);
+                s["Contaminant"] = std::get<0>(res);
             }
 
 #ifdef ORIG
@@ -1193,16 +1228,23 @@ namespace EngineLayer
 		}))->Item1;
 #endif
             if ( pepWithModsIsNull ) {
-                s[""] = " ";
+                s["Decoy"] = " ";
             }
             else {
                 std::vector<std::string> vs;
                 for ( auto b : pepsWithMods ) {
+                    std::string yes = "Y";
+                    std::string no = "N";
+                    if ( b->getProtein()->getIsDecoy() ) {
+                        vs.push_back(yes);
+                    }
+                    else {
+                        vs.push_back(no);
+                    }
                 }
                 std::tuple<std::string, std::string>res = Resolve(vs );
-                s[""] = std::get<0>(res);
+                s["Decoy"] = std::get<0>(res);
             }
-
 
 #ifdef ORIG
             s["Peptide Description"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
@@ -1212,14 +1254,15 @@ namespace EngineLayer
 
 #endif
             if ( pepWithModsIsNull ) {
-                s[""] = " ";
+                s["Peptide Description"] = " ";
             }
             else {
                 std::vector<std::string> vs;
                 for ( auto b : pepsWithMods ) {
+                    vs.push_back(b->getPeptideDescription() );
                 }
                 std::tuple<std::string, std::string>res = Resolve(vs);
-                s[""] = std::get<0>(res);
+                s["Peptide Description"] = std::get<0>(res);
             }
 
 #ifdef ORIG
@@ -1230,14 +1273,18 @@ namespace EngineLayer
 		}), psm->getFullSequence())->ResolvedString;
 #endif
             if ( pepWithModsIsNull ) {
-                s[""] = " ";
+                s["Start and End Residues In Protein"] = " ";
             }
             else {
                 std::vector<std::string> vs;
                 for ( auto b : pepsWithMods ) {
+                    std::string s;
+                    s = std::to_string(b->getOneBasedStartResidueInProtein()) + " to " +
+                        std::to_string(b->getOneBasedEndResidueInProtein());
+                    vs.push_back(s);
                 }
-                std::tuple<std::string, std::string>res = Resolve(vs);
-                s[""] = std::get<0>(res);
+                std::tuple<std::string, std::string>res = Resolve(vs, psm->getFullSequence() );
+                s["Start and End Residues In Protein"] = std::get<0>(res);
             }
 
 #ifdef ORIG
@@ -1248,14 +1295,15 @@ namespace EngineLayer
 
 #endif
             if ( pepWithModsIsNull ) {
-                s[""] = " ";
+                s["Previous Amino Acid"] = " ";
             }
             else {
                 std::vector<std::string> vs;
                 for ( auto b : pepsWithMods ) {
+                    vs.push_back(std::to_string(b->getPreviousAminoAcid()) );
                 }
                 std::tuple<std::string, std::string>res = Resolve(vs);
-                s[""] = std::get<0>(res);
+                s["Previous Amino Acid"] = std::get<0>(res);
             }
 
 #ifdef ORIG
@@ -1266,43 +1314,52 @@ namespace EngineLayer
             
 #endif
             if ( pepWithModsIsNull ) {
-                s[""] = " ";
+                s["Next Amino Acid"] = " ";
             }
             else {
                 std::vector<std::string> vs;
                 for ( auto b : pepsWithMods ) {
+                    vs.push_back(std::to_string(b->getNextAminoAcid() ));
                 }
                 std::tuple<std::string, std::string>res = Resolve(vs );
-                s[""] = std::get<0>(res);
+                s["Next Amino Acid"] = std::get<0>(res);
             }
             
             std::string allScores = " ";
             std::string theoreticalsSearched = " ";
             if (!pepWithModsIsNull && psm->getFdrInfo() != nullptr && psm->getFdrInfo()->getCalculateEValue())
             {
+#ifdef ORIG
                 allScores = std::string::Join(";", psm->getAllScores().Select([&] (std::any p)
                 {
                     p.ToString("F2", CultureInfo::InvariantCulture);
                 }));
+#endif
+                std::vector<double> scores = psm->getAllScores();
+                for ( auto p = scores.begin(); p == scores.end(); p++ ) {
+                    allScores += std::to_string(*p) + ";";
+                }
                 theoreticalsSearched = std::to_string(psm->getAllScores().size());
             }
-
+            
             s["All Scores"] = allScores;
             s["Theoreticals Searched"] = theoreticalsSearched;
             s["Decoy/Contaminant/Target"] = pepWithModsIsNull ? " " : psm->getIsDecoy() ? "D" : psm->getIsContaminant() ? "C" : "T";
-	}
+        }
+            
 
 	bool PeptideSpectralMatch::Includes(PeptideWithSetModifications *pep, SpliceSite *site)
 	{
-            return pep->OneBasedStartResidueInProtein <= site->OneBasedBeginPosition &&
-                pep->OneBasedEndResidueInProtein >= site->OneBasedEndPosition;
+            return pep->getOneBasedStartResidueInProtein() <= site->getOneBasedBeginPosition() &&
+                pep->getOneBasedEndResidueInProtein() >= site->getOneBasedEndPosition();
 	}
 
-	bool PeptideSpectralMatch::IntersectsWithVariation(PeptideWithSetModifications *pep, SequenceVariation *appliedVariation, bool checkUnique)
+	bool PeptideSpectralMatch::IntersectsWithVariation(PeptideWithSetModifications *pep, SequenceVariation *appliedVariation,
+                                                           bool checkUnique)
 	{
             // does it intersect? 
-            int intersectOneBasedStart = std::max(pep->OneBasedStartResidueInProtein, appliedVariation->OneBasedBeginPosition);
-            int intersectOneBasedEnd = std::min(pep->OneBasedEndResidueInProtein, appliedVariation->OneBasedEndPosition);
+            int intersectOneBasedStart = std::max(pep->getOneBasedStartResidueInProtein(), appliedVariation->getOneBasedBeginPosition());
+            int intersectOneBasedEnd = std::min(pep->getOneBasedEndResidueInProtein(), appliedVariation->getOneBasedEndPosition());
             if (intersectOneBasedEnd < intersectOneBasedStart)
             {
                 return false;
@@ -1315,26 +1372,32 @@ namespace EngineLayer
             {
                 // if the original sequence is too short or long, the intersect of the peptide and variant is unique
                 int intersectSize = intersectOneBasedEnd - intersectOneBasedStart + 1;
-                int variantZeroBasedStart = intersectOneBasedStart - appliedVariation->OneBasedBeginPosition;
-                bool origSeqIsShort = appliedVariation->OriginalSequence->Length - variantZeroBasedStart < intersectSize;
-                bool origSeqIsLong = appliedVariation->OriginalSequence->Length > intersectSize && pep->OneBasedEndResidueInProtein > intersectOneBasedEnd;
+                int variantZeroBasedStart = intersectOneBasedStart - appliedVariation->getOneBasedBeginPosition();
+                bool origSeqIsShort = (int)appliedVariation->getOriginalSequence().size() - variantZeroBasedStart < intersectSize;
+                bool origSeqIsLong = (int)appliedVariation->getOriginalSequence().size() > intersectSize &&
+                    pep->getOneBasedEndResidueInProtein() > intersectOneBasedEnd;
                 if (origSeqIsShort || origSeqIsLong)
                 {
                     return true;
                 }
                 
                 // is the variant sequence intersecting the peptide different than the original sequence?
-                std::string originalAtIntersect = appliedVariation->OriginalSequence->substr(intersectOneBasedStart - appliedVariation->OneBasedBeginPosition, intersectSize);
-                std::string variantAtIntersect = appliedVariation->VariantSequence->substr(intersectOneBasedStart - appliedVariation->OneBasedBeginPosition, intersectSize);
+                std::string originalAtIntersect = appliedVariation->getOriginalSequence().substr(intersectOneBasedStart -
+                                                              appliedVariation->getOneBasedBeginPosition(), intersectSize);
+                std::string variantAtIntersect = appliedVariation->getVariantSequence().substr(intersectOneBasedStart -
+                                                              appliedVariation->getOneBasedBeginPosition(), intersectSize);
                 return originalAtIntersect != variantAtIntersect;
             }
 	}
 
 	std::string PeptideSpectralMatch::SequenceVariantString(PeptideWithSetModifications *p, SequenceVariation *applied)
 	{
+#ifdef ORIG
             auto modsOnVariantOneIsNTerm = p->AllModsOneIsNterminus.Where([&] (std::any kv)
 		{
-                    return kv->Key == 1 && applied->OneBasedBeginPosition == 1 || applied->OneBasedBeginPosition <= kv::Key - 2 + p->OneBasedStartResidueInProtein && kv::Key - 2 + p->OneBasedStartResidueInProtein <= applied->OneBasedEndPosition;
+                    return kv->Key == 1 && applied->OneBasedBeginPosition == 1 ||
+                        applied->OneBasedBeginPosition <= kv::Key - 2 + p->OneBasedStartResidueInProtein &&
+                        kv::Key - 2 + p->OneBasedStartResidueInProtein <= applied->OneBasedEndPosition;
 		}).ToDictionary([&] (std::any kv)
 		{
                     return kv::Key - applied->OneBasedBeginPosition + 1;
@@ -1342,6 +1405,17 @@ namespace EngineLayer
 		{
                     kv->Value;
 		});
+#endif
+            std::unordered_map<int, Modification*> modsOnVariantOneIsNTerm;
+            std::unordered_map<int, Modification*> tmp = p->getAllModsOneIsNterminus();
+            for ( auto kv = tmp.begin(); kv == tmp.end(); kv++ ) {
+                if ( (kv->first == 1 && applied->getOneBasedBeginPosition() == 1)  ||
+                     applied->getOneBasedBeginPosition() <= kv->first - 2 + p->getOneBasedStartResidueInProtein() &&
+                     kv->first -2 + p->getOneBasedStartResidueInProtein() <= applied ->getOneBasedEndPosition() ) {
+                    modsOnVariantOneIsNTerm.insert((kv->first - applied->getOneBasedBeginPosition() + 1),kv->second);
+                }
+            }
+            
             PeptideWithSetModifications *variantWithAnyMods = new PeptideWithSetModifications(p->Protein, p->digestionParams,
                                                                                               applied->OneBasedBeginPosition,
                                                                                               applied->OneBasedEndPosition,

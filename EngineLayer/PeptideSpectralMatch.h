@@ -245,7 +245,7 @@ namespace EngineLayer
         /// <param name="site"></param>
         /// <returns></returns>
         //C# TO C++ CONVERTER TODO TASK: The following line could not be converted:
-        static bool Includes(PeptideWithSetModifications pep, SpliceSite site);
+        static bool Includes(PeptideWithSetModifications *pep, SpliceSite *site);
             
         /// <summary>
         /// Checks for an intersection between a peptide and applied variant that shows a sequence change.
@@ -254,7 +254,7 @@ namespace EngineLayer
         /// <param name="appliedVariation"></param>
         /// <returns></returns>
         //C# TO C++ CONVERTER TODO TASK: The following line could not be converted:
-        static bool IntersectsWithVariation(PeptideWithSetModifications pep, SequenceVariation appliedVariation,
+        static bool IntersectsWithVariation(PeptideWithSetModifications *pep, SequenceVariation *appliedVariation,
                                             bool checkUnique);
 
         /// <summary>
@@ -264,7 +264,7 @@ namespace EngineLayer
         /// <param name="d"></param>
         /// <returns></returns>
         //C# TO C++ CONVERTER TODO TASK: The following line could not be converted:
-        static std::string SequenceVariantString(PeptideWithSetModifications p, SequenceVariation applied);
+        static std::string SequenceVariantString(PeptideWithSetModifications *p, SequenceVariation *applied);
 
         //C# TO C++ CONVERTER TODO TASK: The following line could not be converted:
         //static void AddMatchedIonsData(Dictionary<string, string> s, PeptideSpectralMatch psm);
