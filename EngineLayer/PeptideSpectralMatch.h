@@ -268,7 +268,7 @@ namespace EngineLayer
 
         //C# TO C++ CONVERTER TODO TASK: The following line could not be converted:
         //static void AddMatchedIonsData(Dictionary<string, string> s, PeptideSpectralMatch psm);
-        static void AddMatchedIonsData(std::unordered_map<std::string, std::string> s, PeptideSpectralMatch *psm);
+        static void AddMatchedIonsData(std::unordered_map<std::string, std::string> &s, PeptideSpectralMatch *psm);
 
         //C# TO C++ CONVERTER TODO TASK: Local functions are not converted by C# to C++ Converter:
         //static void AddMatchScoreData(Dictionary<string, string> s, PeptideSpectralMatch peptide)
