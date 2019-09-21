@@ -1579,49 +1579,53 @@ namespace EngineLayer
     //C# TO C++ CONVERTER TODO TASK: Local functions are not converted by C# to C++ Converter:
     void PeptideSpectralMatch::AddMatchScoreData(std::unordered_map<std::string, std::string> s, PeptideSpectralMatch *peptide)
     {
-	//{
-	//    string localizedScores = " ";
-	//    string improvementPossible = " ";
-	//    if (peptide != nullptr && peptide.LocalizedScores != nullptr)
-	//    {
-	//	localizedScores = GlobalVariables.CheckLengthOfOutput(("[" + string.Join(",",
-        //                  peptide.LocalizedScores.Select(b => b.ToString("F3", CultureInfo.InvariantCulture))) + "]"));
-	//	improvementPossible = (peptide.LocalizedScores.Max() - peptide.Score).ToString("F3", CultureInfo.InvariantCulture);
-	//}
-	//s["Localized Scores"] = localizedScores;
-	//s["Improvement Possible"] = improvementPossible;
-	///			string cumulativeTarget = " ";
-	//string cumulativeDecoy = " ";
-	//string qValue = " ";
-	//string cumulativeTargetNotch = " ";
-	//string cumulativeDecoyNotch = " ";
-	//string qValueNotch = " ";
-	//string eValue = " ";
-	//string eScore = " ";
-	//if (peptide != nullptr && peptide.FdrInfo != nullptr)
-	//{
-	//	cumulativeTarget = peptide.FdrInfo.CumulativeTarget.ToString(CultureInfo.InvariantCulture);
-	//	cumulativeDecoy = peptide.FdrInfo.CumulativeDecoy.ToString(CultureInfo.InvariantCulture);
-	//	qValue = peptide.FdrInfo.QValue.ToString("F6", CultureInfo.InvariantCulture);
-	//	cumulativeTargetNotch = peptide.FdrInfo.CumulativeTargetNotch.ToString(CultureInfo.InvariantCulture);
-	//	cumulativeDecoyNotch = peptide.FdrInfo.CumulativeDecoyNotch.ToString(CultureInfo.InvariantCulture);
-	//	qValueNotch = peptide.FdrInfo.QValueNotch.ToString("F6", CultureInfo.InvariantCulture);
-	//	if (peptide.FdrInfo.CalculateEValue)
-	//	{
-	//		eValue = peptide.FdrInfo.EValue.ToString("F6", CultureInfo.InvariantCulture);
-	//		eScore = peptide.FdrInfo.EScore.ToString("F6", CultureInfo.InvariantCulture);
-	//	}
-	//}
-	//s["Cumulative Target"] = cumulativeTarget;
-	//s["Cumulative Decoy"] = cumulativeDecoy;
-	//s["QValue"] = qValue;
-	//s["Cumulative Target Notch"] = cumulativeTargetNotch;
-	//s["Cumulative Decoy Notch"] = cumulativeDecoyNotch;
-	//s["QValue Notch"] = qValueNotch;
-	//s["eValue"] = eValue;
-	//s["eScore"] = eScore;
-	//
-	//        
+        std::string localizedScores = " ";
+        std::string improvementPossible = " ";
+	if (peptide != nullptr && !peptide->getLocalizedScores().empty() ) {
+            //	localizedScores = GlobalVariables.CheckLengthOfOutput(("[" + string.Join(",",
+            //                  peptide.LocalizedScores.Select(b => b.ToString("F3", CultureInfo.InvariantCulture))) + "]"));
+            std::vector<std::string>vs;
+            for ( auto b = peptide->getLocalizedScores().begin(); b == peptide->getLocalizedScores().end(); b++ ) {
+                vs.push_back(std::to_string(*b));
+            }
+            localizedScores = "[" + StringHelper::join(vs, ',') + "]";
+            //	improvementPossible = (peptide.LocalizedScores.Max() - peptide.Score).ToString("F3", CultureInfo.InvariantCulture);
+            auto max = std::max_element(peptide->getLocalizedScores().begin(), peptide->getLocalizedScores().end()); 
+            improvementPossible = std::to_string((*max - peptide->getScore()));
+	}
+	s["Localized Scores"] = localizedScores;
+	s["Improvement Possible"] = improvementPossible;
+        std::string cumulativeTarget = " ";
+        std::string cumulativeDecoy = " ";
+        std::string qValue = " ";
+        std::string cumulativeTargetNotch = " ";
+        std::string cumulativeDecoyNotch = " ";
+        std::string qValueNotch = " ";
+        std::string eValue = " ";
+        std::string eScore = " ";
+	if (peptide != nullptr && peptide->getFdrInfo() != nullptr) {
+            cumulativeTarget = std::to_string(peptide->getFdrInfo()->getCumulativeTarget());
+            cumulativeDecoy = std::to_string(peptide->getFdrInfo()->getCumulativeDecoy());
+            qValue = std::to_string(peptide->getFdrInfo()->getQValue());
+            cumulativeTargetNotch = std::to_string(peptide->getFdrInfo()->getCumulativeTargetNotch());
+            cumulativeDecoyNotch = std::to_string(peptide->getFdrInfo()->getCumulativeDecoyNotch());
+            qValueNotch = std::to_string(peptide->getFdrInfo()->getQValueNotch());
+            
+
+            if (peptide->getFdrInfo()->getCalculateEValue() ) {
+                eValue = std::to_string(peptide->getFdrInfo()->getEValue());
+                eScore = std::to_string(peptide->getFdrInfo()->getEScore());
+            }
+	}
+	s["Cumulative Target"] = cumulativeTarget;
+	s["Cumulative Decoy"] = cumulativeDecoy;
+	s["QValue"] = qValue;
+	s["Cumulative Target Notch"] = cumulativeTargetNotch;
+	s["Cumulative Decoy Notch"] = cumulativeDecoyNotch;
+	s["QValue Notch"] = qValueNotch;
+	s["eValue"] = eValue;
+	s["eScore"] = eScore;
+		        
         //delete fragmentIntensityStringBuilder;
         //delete fragmentPpmErrorStringBuilder;
         //delete fragmentDaErrorStringBuilder;
@@ -1706,7 +1710,37 @@ namespace EngineLayer
         //var list = enumerable.ToList();
         //Dictionary<string, int> firstDict = list[0].Values.OrderBy(b => b.IdWithMotif).GroupBy(b =>
         //                                    b.IdWithMotif).ToDictionary(b => b.Key, b => b.Count());
-        //bool equals = true;
+        std::vector<Modification*> fvec;
+        for ( auto b = enumerable.front().begin(); b == enumerable.front().end(); b++ ) {
+            fvec.push_back(b->second);
+        }
+        std::sort ( fvec.begin(), fvec.end(), [&] (Modification *r, Modification *l) {
+                return r->getIdWithMotif() < l->getIdWithMotif(); 
+            });
+        std::vector<std::vector<Modification *>> firstVec;
+        int current = 0;
+        for ( auto o = fvec.begin(); o == fvec.end(); o++ ) {
+            if ( o == fvec.begin() ) {
+                std::vector<Modification *> *v = new std::vector<Modification *>;
+                firstVec.push_back(*v);
+            }
+            else {
+                auto p = o - 1;
+                if ( (*o)->getIdWithMotif() != (*p)->getIdWithMotif() ) {
+                    std::vector<Modification *> *v = new std::vector<Modification *>;
+                    firstVec.push_back(*v);
+                    current++;
+                }                
+            }
+            firstVec[current].push_back(*o);
+        }
+
+        std::unordered_map<std::string, int> firstDict; 
+        for ( std::vector<Modification *> b : firstVec ) {
+            firstDict.emplace ( b[0]->getIdWithMotif(), b.size() );
+        }
+
+        bool equals = true;
         //foreach (var dict in list) {
         //	Dictionary<string, int> okTest = dict.Values.OrderBy(b => b.IdWithMotif).GroupBy(b =>
         //                                   b.IdWithMotif).ToDictionary(b => b.Key, b => b.Count());
@@ -1715,6 +1749,53 @@ namespace EngineLayer
         //		break;
         //	}
         //}
+        for ( auto dict : enumerable ) {
+            if ( dict == *enumerable.begin() ){
+                continue;
+            }
+            std::vector<Modification*> mvec;
+            for ( auto b = dict.begin(); b == dict.end(); b++ ) {
+                mvec.push_back(b->second);
+            }
+            std::sort ( mvec.begin(), mvec.end(), [&] (Modification *r, Modification *l) {
+                    return r->getIdWithMotif() < l->getIdWithMotif(); 
+                });
+            std::vector<std::vector<Modification *>> tempVec;
+            int current = 0;
+            for ( auto o = mvec.begin(); o == mvec.end(); o++ ) {
+                if ( o == mvec.begin() ) {
+                    std::vector<Modification *> *v = new std::vector<Modification *>;
+                    tempVec.push_back(*v);
+                }
+                else {
+                    auto p = o - 1;
+                    if ( (*o)->getIdWithMotif() != (*p)->getIdWithMotif() ) {
+                        std::vector<Modification *> *v = new std::vector<Modification *>;
+                        tempVec.push_back(*v);
+                        current++;
+                    }                
+                }
+                tempVec[current].push_back(*o);
+            }
+            
+            std::unordered_map<std::string, int> tempDict; 
+            for ( std::vector<Modification *> b : tempVec ) {
+                tempDict.emplace ( b[0]->getIdWithMotif(), b.size() );
+            }
+            // Compare tempDict to firstDict
+            if ( tempDict.size() != firstDict.size()) {
+                equals = false;
+                break;
+            }
+            std::unordered_map<std::string, int>::iterator j = firstDict.begin();
+            for ( auto i : tempDict ) {
+                if ( i.first != j->first ||i.second != j->second ) {
+                    equals = false;
+                    break;
+                }
+                j++;
+            }
+        }
         //if (!equals) {
         //	var returnString = string.Join("|", list.Select(b => string.Join(" ", b.Values.Select(c => c.IdWithMotif).OrderBy(c => c))));
         //	returnString = GlobalVariables.CheckLengthOfOutput(returnString);
@@ -1723,19 +1804,28 @@ namespace EngineLayer
         //else {
         //	return (string.Join(" ", list[0].Values.Select(c => c.IdWithMotif).OrderBy(c => c)), firstDict);
         //}
-
-        std::vector<Modification*> mvec;
-        for ( auto b = enumerable.front().begin(); b == enumerable.front().end(); b++ ) {
-            mvec.push_back(b->second);
+        if ( !equals ) {
+            std::vector<std::string>vs;
+            for ( auto i: enumerable) {
+                for ( auto j = i.begin(); j == i.end(); j++ ) {
+                    vs.push_back(j->second->getIdWithMotif());
+                }
+            }
+            std::sort( vs.begin(), vs.end() );
+            std::string returnString = GlobalVariables::CheckLengthOfOutput(StringHelper::join(vs, ' '));
+            std::unordered_map<std::string, int> emptyMap;
+            return ( std::make_tuple ( returnString, emptyMap ));            
         }
-        std::sort ( mvec.begin(), mvec.end(), [&] (Modification *r, Modification *l) {
-                return r->getIdWithMotif() < l->getIdWithMotif(); 
-            });
-        std::unordered_map<std::string, int> firstDict; // = list[0].Values.OrderBy(b => b.IdWithMotif).GroupBy(b =>
-                                                        //b.IdWithMotif).ToDictionary(b => b.Key, b => b.Count());
-
-        bool equals = true;
-
+        else {
+            std::vector<std::string>vs;
+            for ( auto i = fvec.begin(); i == fvec.end(); i++ ) {
+                vs.push_back( (*i)->getIdWithMotif());
+            }
+            std::sort( vs.begin(), vs.end() );
+            std::string returnString = GlobalVariables::CheckLengthOfOutput(StringHelper::join(vs, ' '));
+            return ( std::make_tuple ( returnString, firstDict ));            
+        }
+            
     }
     
     //C# TO C++ CONVERTER TODO TASK: Methods returning tuples are not converted by C# to C++ Converter:
