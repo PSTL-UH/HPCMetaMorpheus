@@ -2,10 +2,14 @@
 #include "IScan.h"
 #include "bankersrounding.h"
 #include "stringhelper.h"
+#include "GlobalVariables.h"
 
+#include <algorithm>
 #include <vector>
 #include <tuple>
 #include <experimental/filesystem>
+#include <optional>
+#include <numeric>
 
 using namespace Chemistry;
 using namespace EngineLayer::FdrAnalysis;
@@ -1580,7 +1584,8 @@ namespace EngineLayer
 	//    string improvementPossible = " ";
 	//    if (peptide != nullptr && peptide.LocalizedScores != nullptr)
 	//    {
-	//	localizedScores = GlobalVariables.CheckLengthOfOutput(("[" + string.Join(",", peptide.LocalizedScores.Select(b => b.ToString("F3", CultureInfo.InvariantCulture))) + "]"));
+	//	localizedScores = GlobalVariables.CheckLengthOfOutput(("[" + string.Join(",",
+        //                  peptide.LocalizedScores.Select(b => b.ToString("F3", CultureInfo.InvariantCulture))) + "]"));
 	//	improvementPossible = (peptide.LocalizedScores.Max() - peptide.Score).ToString("F3", CultureInfo.InvariantCulture);
 	//}
 	//s["Localized Scores"] = localizedScores;
@@ -1630,68 +1635,107 @@ namespace EngineLayer
     {
         //var list = enumerable.ToList();
         //ChemicalFormula firstChemFormula = new ChemicalFormula();
-        //foreach (var firstMods in list[0])
-        //{
-        //	if (firstMods == nullptr || firstMods.ChemicalFormula == nullptr)
-        //	{
+        //foreach (var firstMods in list[0]) {
+        //	if (firstMods == nullptr || firstMods.ChemicalFormula == nullptr) {
         //		return ("unknown", nullptr);
         //	}
         //	firstChemFormula.Add(firstMods.ChemicalFormula);
         //}
-        //      //			bool equals = true;
+        //bool equals = true;
         //List<ChemicalFormula> formulas = new List<ChemicalFormula>();
-        //foreach (var anEnum in list)
-        //{
+        //foreach (var anEnum in list) {
         //	ChemicalFormula fhere = new ChemicalFormula();
-        //	foreach (var mod in anEnum)
-        //	{
-        //		if (mod == nullptr || mod.ChemicalFormula == nullptr)
-        //		{
+        //	foreach (var mod in anEnum){
+        //		if (mod == nullptr || mod.ChemicalFormula == nullptr)	{
         //			return ("unknown", nullptr);
         //		}
         //		fhere.Add(mod.ChemicalFormula);
         //	}
-        //	if (!firstChemFormula.Equals(fhere))
-        //	{
+        //	if (!firstChemFormula.Equals(fhere)) {
         //		equals = false;
         //	}
         //	formulas.Add(fhere);
         //}
-        //if (!equals)
-        //{
+        //if (!equals) {
         //	var returnString = GlobalVariables.CheckLengthOfOutput(string.Join("|", formulas.Select(b => b.Formula)));
         //	return (returnString, nullptr);
         //}
-        //else
-        //{
+        //else {
         //	return (firstChemFormula.Formula, firstChemFormula);
         //}
+
+        // Note: C++ version assumes that we have a std::vector<Modification*>, not a std::vector<std::vector<Modification*>>
+        // Might have to revisit if this is not correct.
+        ChemicalFormula *firstChemFormula = new ChemicalFormula();
+        bool equals = true;
+        auto firstMods = enumerable.front();
+        if (firstMods == nullptr || firstMods->getChemicalFormula() == nullptr) {
+            return (std::make_tuple("unknown", nullptr));
+        }
+        firstChemFormula->Add(firstMods->getChemicalFormula());
+
+        std::vector<ChemicalFormula> *formulas = new std::vector<ChemicalFormula>();
+        for (auto anEnum : enumerable ) {
+            ChemicalFormula *fhere = new ChemicalFormula();
+            if (anEnum == nullptr || anEnum->getChemicalFormula() == nullptr)	{
+                return (std::make_tuple("unknown", nullptr));
+            }
+            fhere->Add(anEnum->getChemicalFormula());
+            if (!firstChemFormula->Equals(fhere)) {
+                equals = false;
+            }
+            formulas->push_back(fhere);
+        }
+        if (!equals) {
+            std::vector<std::string> vs;
+            for ( auto f: *formulas ) {
+                vs.push_back ( f.getFormula() );
+            }
+            std::string returnString = GlobalVariables::CheckLengthOfOutput(StringHelper::join(vs, '|'));
+            return (std::make_tuple(returnString, nullptr));
+        }
+        else {
+            return (std::make_tuple(firstChemFormula->getFormula(), firstChemFormula));
+        }
+
+        
     }  
 
     std::tuple<std::string, std::unordered_map<std::string, int>> PeptideSpectralMatch::Resolve(std::vector<std::unordered_map<int, Modification*>> enumerable)
     {
         //var list = enumerable.ToList();
-        //Dictionary<string, int> firstDict = list[0].Values.OrderBy(b => b.IdWithMotif).GroupBy(b => b.IdWithMotif).ToDictionary(b => b.Key, b => b.Count());
-        //      //			bool equals = true;
-        //foreach (var dict in list)
-        //{
-        //	Dictionary<string, int> okTest = dict.Values.OrderBy(b => b.IdWithMotif).GroupBy(b => b.IdWithMotif).ToDictionary(b => b.Key, b => b.Count());
-        //	if (!firstDict.SequenceEqual(okTest))
-        //	{
+        //Dictionary<string, int> firstDict = list[0].Values.OrderBy(b => b.IdWithMotif).GroupBy(b =>
+        //                                    b.IdWithMotif).ToDictionary(b => b.Key, b => b.Count());
+        //bool equals = true;
+        //foreach (var dict in list) {
+        //	Dictionary<string, int> okTest = dict.Values.OrderBy(b => b.IdWithMotif).GroupBy(b =>
+        //                                   b.IdWithMotif).ToDictionary(b => b.Key, b => b.Count());
+        //	if (!firstDict.SequenceEqual(okTest)) {
         //		equals = false;
         //		break;
         //	}
         //}
-        //if (!equals)
-        //{
+        //if (!equals) {
         //	var returnString = string.Join("|", list.Select(b => string.Join(" ", b.Values.Select(c => c.IdWithMotif).OrderBy(c => c))));
         //	returnString = GlobalVariables.CheckLengthOfOutput(returnString);
         //	return (returnString, nullptr);
         //}
-        //else
-        //{
+        //else {
         //	return (string.Join(" ", list[0].Values.Select(c => c.IdWithMotif).OrderBy(c => c)), firstDict);
         //}
+
+        std::vector<Modification*> mvec;
+        for ( auto b = enumerable.front().begin(); b == enumerable.front().end(); b++ ) {
+            mvec.push_back(b->second);
+        }
+        std::sort ( mvec.begin(), mvec.end(), [&] (Modification *r, Modification *l) {
+                return r->getIdWithMotif() < l->getIdWithMotif(); 
+            });
+        std::unordered_map<std::string, int> firstDict; // = list[0].Values.OrderBy(b => b.IdWithMotif).GroupBy(b =>
+                                                        //b.IdWithMotif).ToDictionary(b => b.Key, b => b.Count());
+
+        bool equals = true;
+
     }
     
     //C# TO C++ CONVERTER TODO TASK: Methods returning tuples are not converted by C# to C++ Converter:
@@ -1699,31 +1743,48 @@ namespace EngineLayer
     std::tuple<std::string, std::optional<double>> PeptideSpectralMatch::ResolveF2(std::vector<double> enumerable)
     {
         //var list = enumerable.ToList();
-        //if (list.Max() - list.Min() < ToleranceForDoubleResolutionF2)
-        //{
+        //if (list.Max() - list.Min() < ToleranceForDoubleResolutionF2) {
         //	return (list.Average().ToString("F2", CultureInfo.InvariantCulture), list.Average());
         //}
-        //else
-        //{
-        //				var returnString = GlobalVariables.CheckLengthOfOutput(string.Join("|", list.Select(b => b.ToString("F2", CultreInfo.InvariantCulture))));
+        //else {
+        //	var returnString = GlobalVariables.CheckLengthOfOutput(string.Join("|", list.Select(b =>
+        //                   b.ToString("F2", CultreInfo.InvariantCulture))));
         //	return (returnString, nullptr);
         //}
+        double max = *std::max_element(enumerable.begin(), enumerable.end());
+        double min = *std::min_element(enumerable.begin(), enumerable.end());
+        if ( max - min < ToleranceForDoubleResolutionF2 ) {
+            double avg = std::accumulate(enumerable.begin(), enumerable.end(), 0.0 )/ enumerable.size();
+            return (std::make_tuple(std::to_string(avg),std::make_optional(avg)));
+        }
+        else {
+            std::vector<std::string>vs;
+            for ( auto i: enumerable) {
+                vs.push_back(std::to_string(i));
+            }
+            std::string returnString = GlobalVariables::CheckLengthOfOutput(StringHelper::join(vs, '|'));
+            return ( std::make_tuple ( returnString, std::nullopt ));            
+        }
     }
     
     //C# TO C++ CONVERTER TODO TASK: Methods returning tuples are not converted by C# to C++ Converter:
     //static(string ResolvedString, Nullable<double> ResolvedValue) Resolve(IEnumerable<double> enumerable);
     std::tuple<std::string, std::optional<double>> PeptideSpectralMatch::Resolve(std::vector<double> enumerable)
     {
-        //var list = enumerable.ToList();
-        //if (list.Max() - list.Min() < ToleranceForDoubleResolutionF5)
-        //{
-        //	return (list.Average().ToString("F5", CultureInfo.InvariantCulture), list.Average());
-        //}
-        //else
-        //{
-        //	var returnString = GlobalVariables.CheckLengthOfOutput(string.Join("|", list.Select(b => b.ToString("F5", CultureInfo.InvariantCulture))));
-        //	return (returnString, nullptr);
-        //}
+        double max = *std::max_element(enumerable.begin(), enumerable.end());
+        double min = *std::min_element(enumerable.begin(), enumerable.end());
+        if ( max - min < ToleranceForDoubleResolutionF5 ) {
+            double avg = std::accumulate(enumerable.begin(), enumerable.end(), 0.0 )/ enumerable.size();
+            return (std::make_tuple(std::to_string(avg),std::make_optional(avg)));
+        }
+        else {
+            std::vector<std::string>vs;
+            for ( auto i: enumerable) {
+                vs.push_back(std::to_string(i));
+            }
+            std::string returnString = GlobalVariables::CheckLengthOfOutput(StringHelper::join(vs, '|'));
+            return ( std::make_tuple ( returnString, std::nullopt ));            
+        }
     }
     
     //C# TO C++ CONVERTER TODO TASK: Methods returning tuples are not converted by C# to C++ Converter:
@@ -1732,57 +1793,92 @@ namespace EngineLayer
     {
         //var list = enumerable.ToList();
         //var first = list[0];
-        //if (list.All(b => first.Equals(b)))
-        //{
+        //if (list.All(b => first.Equals(b))) {
         //	return (first.ToString(CultureInfo.InvariantCulture), first);
         //}
-        //else
-        //{
-        //	var returnString = GlobalVariables.CheckLengthOfOutput(string.Join("|", list.Select(b => b.ToString(CultureInfo.InvariantCulture))));
+        //else{
+        //	var returnString = GlobalVariables.CheckLengthOfOutput(string.Join("|", list.Select(b =>
+        //                                                  b.ToString(CultureInfo.InvariantCulture))));
         //	return (returnString, nullptr);
         //}
+        int first = enumerable.front();
+        bool allfirst=true;
+        for ( auto b : enumerable )  {
+            if ( b != first ) {
+                allfirst = false;
+            }            
+        }
+        if ( allfirst ) {
+            return ( std::make_tuple(std::to_string(first), std::make_optional(first)));
+        }
+        else {
+            std::vector<std::string>vs;
+            for ( auto i: enumerable) {
+                vs.push_back(std::to_string(i));
+            }
+            std::string returnString = GlobalVariables::CheckLengthOfOutput(StringHelper::join(vs, '|'));
+            return ( std::make_tuple ( returnString, std::nullopt ));            
+        }
     }
     
     //C# TO C++ CONVERTER TODO TASK: Methods returning tuples are not converted by C# to C++ Converter:
     //static(string ResolvedString, string ResolvedValue) Resolve(IEnumerable<string> enumerable);
     std::tuple<std::string, std::string> PeptideSpectralMatch::Resolve(std::vector<std::string> enumerable)
     {
-        //var list = enumerable.ToList();
-        //string first = list.FirstOrDefault(b => b != nullptr);
-        //// Only first if list is either all null or all equal to the first
-        //if (list.All(b => b == nullptr) || list.All(b => first.Equals(b)))
-        //{
-        //	return (first, first);
-        //}
-        //else
-        //{
-        //	var returnString = GlobalVariables.CheckLengthOfOutput(string.Join("|", list));
-        //	return (returnString, nullptr);
-        //}
+        std::string first= enumerable.front() ;
+        std::string emptyString = "";
+        bool allnull=true, allfirst=true;
+        for ( auto b : enumerable )  {
+            if ( b != "" ) {
+                allnull = false;
+            }
+            if ( b != first ) {
+                allfirst = false;
+            }            
+        }
+        if ( allnull|| allfirst ) {
+            // Only first if list is either all null or all equal to the first
+            return ( std::make_tuple(first, first) );
+        }
+        else {
+            std::string returnString = GlobalVariables::CheckLengthOfOutput(StringHelper::join(enumerable, '|'));
+            return ( std::make_tuple ( returnString, emptyString ));
+        }
+
     }
     
     //C# TO C++ CONVERTER TODO TASK: Methods returning tuples are not converted by C# to C++ Converter:
     //static(string ResolvedString, string ResolvedValue) Resolve(IEnumerable<string> enumerable, string ambiguousIfNull);
-    std::tuple<std::string, std::string> PeptideSpectralMatch::Resolve(std::vector<std::string> enumerable, std::string ambiguousIfNull)
+    std::tuple<std::string, std::string> PeptideSpectralMatch::Resolve(std::vector<std::string> enumerable,
+                                                                       std::string ambiguousIfNull)
     {
-        //var list = enumerable.ToList();
-        //string first = list.FirstOrDefault(b => b != nullptr);
-        //// Only first if list is either all null or all equal to the first
-        //if (list.All(b => b == nullptr) || list.All(b => first.Equals(b)))
-        //{
-        //	return (first, first);
-        //}
-        //// use only distinct names if all of the base sequences are the same
-        //else if (ambiguousIfNull != nullptr)
-        //{
-        //	var returnString = GlobalVariables.CheckLengthOfOutput(string.Join("|", list.Distinct()));
-        //	return (returnString, nullptr);
-        //}
-        //else
-        //{
-        //	var returnString = GlobalVariables.CheckLengthOfOutput(string.Join("|", list));
-        //	return (returnString, nullptr);
-        //}
+        std::string first= enumerable.front() ;
+        std::string emptyString = "";
+        bool allnull=true, allfirst=true;
+        for ( auto b : enumerable )  {
+            if ( b != "" ) {
+                allnull = false;
+            }
+            if ( b != first ) {
+                allfirst = false;
+            }            
+        }
+        if ( allnull|| allfirst ) {
+            // Only first if list is either all null or all equal to the first
+            return ( std::make_tuple(first, first) );
+        }
+        else if ( ambiguousIfNull != "" ) {
+            std::vector<std::string> uniqueStrings (enumerable.begin(), enumerable.end() );
+            std::sort(uniqueStrings.begin(), uniqueStrings.end() );
+            auto last = std::unique ( uniqueStrings.begin(), uniqueStrings.end());
+            uniqueStrings.erase ( last, uniqueStrings.end());
+            std::string returnString = GlobalVariables::CheckLengthOfOutput(StringHelper::join(uniqueStrings, '|'));
+            return ( std::make_tuple ( returnString, emptyString ));
+        }
+        else {
+            std::string returnString = GlobalVariables::CheckLengthOfOutput(StringHelper::join(enumerable, '|'));
+            return ( std::make_tuple ( returnString, emptyString ));
+        }
     }
 }
 
