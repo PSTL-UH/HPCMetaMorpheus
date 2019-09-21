@@ -39,22 +39,23 @@ OBJ = 	 CommonParameters.o           \
 
 all:    
 	make $(MMORPHEUS_LIB) 
-	cd Calibration; make ; cd ..
-	cd ClassicSearch; make ; cd ..
-	cd CrosslinkSearch; make ; cd ..
 	cd EventArgs; make ; cd ..
-	cd FdrAnalysis; make ; cd ..
-	cd Gptmd; make ; cd ..
-	cd HistogramAnalysis; make ; cd ..
 	cd Indexing; make ; cd ..
-	cd Localization; make ; cd ..
-	cd MetaDraw; make ; cd ..
-	cd ModernSearch; make ; cd ..
-	cd ModificationAnalysis; make ; cd ..
-	cd NonSpecificEnzymeSearch; make ; cd ..
-	cd PrecursorSearchModes; make ; cd ..
-	cd ProteinParsimony; make ; cd ..
-	cd ProteinScoringAndFdr; make ; cd ..
+	cd CrosslinkSearch; make ; cd ..
+	cd FdrAnalysis; make ; cd ..
+
+#	cd Calibration; make ; cd ..
+#	cd ClassicSearch; make ; cd ..
+#	cd Gptmd; make ; cd ..
+#	cd HistogramAnalysis; make ; cd ..
+#	cd Localization; make ; cd ..
+#	cd MetaDraw; make ; cd ..
+#	cd ModernSearch; make ; cd ..
+#	cd ModificationAnalysis; make ; cd ..
+#	cd NonSpecificEnzymeSearch; make ; cd ..
+#	cd PrecursorSearchModes; make ; cd ..
+#	cd ProteinParsimony; make ; cd ..
+#	cd ProteinScoringAndFdr; make ; cd ..
 
 
 $(MMORPHEUS_LIB): $(HEADER) $(OBJ) 
@@ -66,19 +67,20 @@ $(OBJ):	$(HEADER)
 
 clean:  
 	rm -rf *.o *~
-	cd Calibration; make clean; cd ..
-	cd ClassicSearch; make clean; cd ..
 	cd CrosslinkSearch; make clean; cd ..
 	cd EventArgs; make clean; cd ..
-	cd FdrAnalysis; make clean; cd ..
-	cd Gptmd; make clean; cd ..
-	cd HistogramAnalysis; make clean; cd ..
 	cd Indexing; make clean; cd ..
-	cd Localization; make clean; cd ..
-	cd MetaDraw; make clean; cd ..
-	cd ModernSearch; make clean; cd ..
-	cd ModificationAnalysis; make clean; cd ..
-	cd NonSpecificEnzymeSearch; make clean; cd ..
-	cd PrecursorSearchModes; make clean; cd ..
-	cd ProteinParsimony; make clean; cd ..
-	cd ProteinScoringAndFdr; make clean; cd ..
+	cd FdrAnalysis; make clean; cd ..
+
+#	cd Calibration; make clean; cd ..
+#	cd ClassicSearch; make clean; cd ..
+#	cd Gptmd; make clean; cd ..
+#	cd HistogramAnalysis; make clean; cd ..
+#	cd Localization; make clean; cd ..
+#	cd MetaDraw; make clean; cd ..
+#	cd ModernSearch; make clean; cd ..
+#	cd ModificationAnalysis; make clean; cd ..
+#	cd NonSpecificEnzymeSearch; make clean; cd ..
+#	cd PrecursorSearchModes; make clean; cd ..
+#	cd ProteinParsimony; make clean; cd ..
+#	cd ProteinScoringAndFdr; make clean; cd ..

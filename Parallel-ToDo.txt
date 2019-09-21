@@ -1,0 +1,2 @@
+EngineLayer/Indexing/IndexingEngine.cpp:
+ - replacing parallel for loop by sequential for loop for now. 
