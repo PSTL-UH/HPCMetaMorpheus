@@ -42,7 +42,7 @@ namespace EngineLayer
 
         public:
             const bool GeneratePrecursorIndex;
-            const std::vector<FileInfo*> ProteinDatabases;
+            std::vector<FileInfo*> ProteinDatabases;
             
             virtual ~IndexingEngine()
             {
