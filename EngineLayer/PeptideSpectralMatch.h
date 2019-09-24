@@ -77,6 +77,8 @@ namespace EngineLayer
         
         PeptideSpectralMatch(PeptideWithSetModifications *peptide, int notch, double score, int scanIndex, IScan *scan, DigestionParams *digestionParams, std::vector<MatchedFragmentIon*> &matchedFragmentIons);
         
+        std::vector<std::tuple<int, PeptideWithSetModifications *>> getBestMatchingPeptides() const;
+
         // these fields will be null if they are ambiguous
         ChemicalFormula *getModsChemicalFormula() const;
         void setModsChemicalFormula(ChemicalFormula *value);
@@ -159,12 +161,6 @@ namespace EngineLayer
         static std::unordered_map<std::string, std::string> DataDictionary(PeptideSpectralMatch *psm,
                                                                          std::unordered_map<std::string, int> *ModsToWritePruned);
         
-        void CalculateDeltaScore(double scoreCutoff);
-        
-        void SetFdrValues(double cumulativeTarget, double cumulativeDecoy, double qValue, double cumulativeTargetNotch,
-                          double cumulativeDecoyNotch, double qValueNotch, double maximumLikelihood,
-                          double eValue, double eScore, bool calculateEValue);
-
         /// <summary>
         /// This method saves properties of this PSM for internal use. It is NOT used for any output.
         /// These resolved fields are (usually) null if there is more than one option.
@@ -174,6 +170,12 @@ namespace EngineLayer
         
         
     public:
+        void CalculateDeltaScore(double scoreCutoff);
+        void SetFdrValues(double cumulativeTarget, double cumulativeDecoy, double qValue, double cumulativeTargetNotch,
+                          double cumulativeDecoyNotch, double qValueNotch, double maximumLikelihood,
+                          double eValue, double eScore, bool calculateEValue);
+
+        
         /// <summary>
         /// This method is used by protein parsimony to remove PeptideWithSetModifications objects
         /// that have non-parsimonious protein associations

@@ -40,6 +40,11 @@ namespace EngineLayer
         AddOrReplace(peptide, score, notch, true, matchedFragmentIons);
     }
     
+    std::vector<std::tuple<int, PeptideWithSetModifications *>> PeptideSpectralMatch::getBestMatchingPeptides() const
+    {
+        return BestMatchingPeptides;
+    }
+
     ChemicalFormula *PeptideSpectralMatch::getModsChemicalFormula() const
     {
         return privateModsChemicalFormula;
