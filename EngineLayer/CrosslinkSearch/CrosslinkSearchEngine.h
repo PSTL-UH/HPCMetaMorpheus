@@ -8,25 +8,13 @@
 #include <limits>
 #include <tuple>
 
-//C# TO C++ CONVERTER NOTE: Forward class declarations:
-namespace EngineLayer { namespace CrosslinkSearch { class CrosslinkSpectralMatch; } }
-//#include "CrosslinkSpectralMatch.h"
-
-//namespace EngineLayer { namespace CrosslinkSearch { class Crosslinker; } }
+#include "CrosslinkSpectralMatch.h"
 #include "Crosslinker.h"
+#include "../PrecursorSearchModes/MassDiffAcceptor.h"
 
-namespace EngineLayer { class MassDiffAcceptor; }
-
-//namespace EngineLayer { class CommonParameters; }
 #include "../CommonParameters.h"
-
-//namespace EngineLayer { class Ms2ScanWithSpecificMass; }
 #include "../Ms2ScanWithSpecificMass.h"
-
-//namespace EngineLayer { class MetaMorpheusEngineResults; }
 #include "../MetaMorpheusEngineResults.h"
-
-//namespace EngineLayer { namespace CrosslinkSearch { class BestPeptideScoreNotch; } }
 #include "BestPeptideScoreNotch.h"
 
 #include "../ModernSearch/ModernSearchEngine.h"
@@ -47,11 +35,11 @@ namespace EngineLayer
         class CrosslinkSearchEngine : public ModernSearchEngine
         {
         protected:
-            std::vector<CrosslinkSpectralMatch*> const GlobalCsms;
+            std::vector<CrosslinkSpectralMatch*> GlobalCsms;
             
             // crosslinker molecule
         private:
-            Crosslinker *const Crosslinker;
+            Crosslinker *const privateCrosslinker;
             
             const bool CrosslinkSearchTopN;
             const int TopN;
@@ -68,11 +56,11 @@ namespace EngineLayer
         public:
             virtual ~CrosslinkSearchEngine()
                 {
-                    delete Crosslinker;
-                    delete XLPrecusorSearchMode;
-                    delete TrisDeadEnd;
-                    delete H2ODeadEnd;
-                    delete NH2DeadEnd;
+                    //delete Crosslinker;
+                    //delete XLPrecusorSearchMode;
+                    //delete TrisDeadEnd;
+                    //delete H2ODeadEnd;
+                    //delete NH2DeadEnd;
                     delete Loop;
                 }
             

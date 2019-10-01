@@ -9,7 +9,7 @@ namespace EngineLayer
 {
     namespace CrosslinkSearch
     {
-        std::vector<std::tuple<int, std::vector<Product*>>> CrosslinkedPeptide::XlGetTheoreticalFragments(DissociationType *dissociationType,
+        std::vector<std::tuple<int, std::vector<Product*>>> CrosslinkedPeptide::XlGetTheoreticalFragments(DissociationType dissociationType,
                                                                                      Crosslinker *crosslinker,
                                                                                      std::vector<int> &possibleCrosslinkerPositions,
                                                                                      double otherPeptideMass,
@@ -53,7 +53,7 @@ namespace EngineLayer
                                                                        peptide->NumFixedMods);
                     
                     // add fragmentation ions for this crosslinker position guess
-                    for (auto fragment : testPeptide->Fragment(*dissociationType, FragmentationTerminus::Both))
+                    for (auto fragment : testPeptide->Fragment(dissociationType, FragmentationTerminus::Both))
                     {
                         if (std::find(masses.begin(), masses.end(), fragment->NeutralMass) == masses.end())
                         {
@@ -83,11 +83,11 @@ namespace EngineLayer
             return *retvec;
         }
         
-        XLumap CrosslinkedPeptide::XlLoopGetTheoreticalFragments(DissociationType *dissociationType, Modification *loopMass,
+        XLumap CrosslinkedPeptide::XlLoopGetTheoreticalFragments(DissociationType dissociationType, Modification *loopMass,
                                                                  std::vector<int> &modPos, PeptideWithSetModifications *peptide)
         {
             XLumap AllTheoreticalFragmentsLists;
-            auto originalFragments = peptide->Fragment(*dissociationType, FragmentationTerminus::Both);
+            auto originalFragments = peptide->Fragment(dissociationType, FragmentationTerminus::Both);
             
             for (auto position1 : modPos)
             {
@@ -184,7 +184,7 @@ namespace EngineLayer
                                     p::TerminusFragment::AminoAcidPosition >= position2;
                             }));
 #endif
-                    auto tmp = peptideWithLoop->Fragment(*dissociationType, FragmentationTerminus::Both);
+                    auto tmp = peptideWithLoop->Fragment(dissociationType, FragmentationTerminus::Both);
                     for ( auto p : tmp ) {
                         if ( p->TerminusFragment->Terminus == FragmentationTerminus::N &&
                              p->TerminusFragment->AminoAcidPosition >= position2 ) {
@@ -258,7 +258,7 @@ namespace EngineLayer
                                     p::TerminusFragment::AminoAcidPosition <= position1;
                             }));
 #endif
-                    auto tmp2 = peptideWithLoop->Fragment(*dissociationType, FragmentationTerminus::Both);
+                    auto tmp2 = peptideWithLoop->Fragment(dissociationType, FragmentationTerminus::Both);
                     for ( auto p : tmp2 ) {
                         if ( p->TerminusFragment->Terminus == FragmentationTerminus::N &&
                              p->TerminusFragment->AminoAcidPosition >= position2 ) {

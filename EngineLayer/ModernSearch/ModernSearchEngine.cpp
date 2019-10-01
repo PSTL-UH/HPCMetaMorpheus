@@ -42,7 +42,8 @@ namespace EngineLayer
             double progress = 0;
             int oldPercentProgress = 0;
             ProgressEventArgs tempVar(oldPercentProgress, "Performing modern search... " + std::to_string(CurrentPartition) + "/" +
-                                      std::to_string(commonParameters->getTotalPartitions()), const_cast<std::vector<std::string>&>(nestedIds));
+                                      std::to_string(commonParameters->getTotalPartitions()),
+                                      const_cast<std::vector<std::string>&>(nestedIds));
             ReportProgress(&tempVar);
             
             unsigned char byteScoreCutoff = static_cast<unsigned char>(commonParameters->getScoreCutoff());
