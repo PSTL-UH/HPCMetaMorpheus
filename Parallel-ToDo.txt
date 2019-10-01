@@ -1,2 +1,5 @@
 EngineLayer/Indexing/IndexingEngine.cpp:
- - replacing parallel for loop by sequential for loop for now. 
+ - replacing parallel for loop by sequential for loop for now.
+
+EngineLayer/ModernSearch/ModernSearch.cpp:
+ - replacing parallel for-loop by sequential one for now.

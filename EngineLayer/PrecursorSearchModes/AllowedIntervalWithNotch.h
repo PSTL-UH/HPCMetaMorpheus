@@ -1,24 +1,25 @@
 ﻿#pragma once
 
+#include "MzLibUtil.h"
 using namespace MzLibUtil;
 
 namespace EngineLayer
 {
-	class AllowedIntervalWithNotch
-	{
-	private:
-		int privateNotch = 0;
+    class AllowedIntervalWithNotch
+    {
+    private:
+        int privateNotch = 0;
+        
+    public:
+        DoubleRange *AllowedInterval;
+        
+        virtual ~AllowedIntervalWithNotch()
+        {
+            //delete AllowedInterval;
+        }
 
-	public:
-		DoubleRange *AllowedInterval;
-
-		virtual ~AllowedIntervalWithNotch()
-		{
-			delete AllowedInterval;
-		}
-
-		AllowedIntervalWithNotch(DoubleRange *doubleRange, int j);
-
-		int getNotch() const;
-	};
+        AllowedIntervalWithNotch(DoubleRange *doubleRange, int j);
+        
+        int getNotch() const;
+    };
 }

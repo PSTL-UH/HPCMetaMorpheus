@@ -149,10 +149,7 @@ namespace EngineLayer
         std::vector<double> getFeatures() const;
         
         static std::string GetTabSeparatedHeader();
-        
-        void AddOrReplace(PeptideWithSetModifications *pwsm, double newScore, int notch, bool reportAllAmbiguity,
-                          std::vector<MatchedFragmentIon*> &matchedFragmentIons);
-        
+                
         std::string ToString();
         //std::string ToString(IReadOnlyDictionary<std::string, int> *ModstoWritePruned);
         std::string ToString(std::unordered_map<std::string, int> *ModstoWritePruned);
@@ -161,6 +158,11 @@ namespace EngineLayer
         static std::unordered_map<std::string, std::string> DataDictionary(PeptideSpectralMatch *psm,
                                                                          std::unordered_map<std::string, int> *ModsToWritePruned);
         
+        
+    public:
+        void AddOrReplace(PeptideWithSetModifications *pwsm, double newScore, int notch, bool reportAllAmbiguity,
+                          std::vector<MatchedFragmentIon*> &matchedFragmentIons);
+
         /// <summary>
         /// This method saves properties of this PSM for internal use. It is NOT used for any output.
         /// These resolved fields are (usually) null if there is more than one option.
@@ -168,8 +170,6 @@ namespace EngineLayer
         /// </summary>
         void ResolveAllAmbiguities();
         
-        
-    public:
         void CalculateDeltaScore(double scoreCutoff);
         void SetFdrValues(double cumulativeTarget, double cumulativeDecoy, double qValue, double cumulativeTargetNotch,
                           double cumulativeDecoyNotch, double qValueNotch, double maximumLikelihood,
