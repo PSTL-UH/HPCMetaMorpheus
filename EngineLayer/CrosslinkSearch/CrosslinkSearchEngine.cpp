@@ -27,7 +27,7 @@ namespace EngineLayer
         CrosslinkSearchEngine::CrosslinkSearchEngine(std::vector<CrosslinkSpectralMatch*> &globalCsms,
                                                      std::vector<Ms2ScanWithSpecificMass*> &listOfSortedms2Scans,
                                                      std::vector<PeptideWithSetModifications*> &peptideIndex,
-                                                     std::vector<std::vector<int>&> &fragmentIndex,
+                                                     std::vector<std::vector<int>> &fragmentIndex,
                                                      int currentPartition,
                                                      CommonParameters *commonParameters,
                                                      Crosslinker *crosslinker,
@@ -36,12 +36,20 @@ namespace EngineLayer
                                                      bool quench_H2O,
                                                      bool quench_NH2,
                                                      bool quench_Tris,
-                                                     std::vector<std::string> &nestedIds) : ModernSearchEngine(),
-                                                                                            GlobalCsms(globalCsms),
-                                                                                            privateCrosslinker(crosslinker),
-                                                                                            CrosslinkSearchTopN(CrosslinkSearchTop),
-                                                                                            TopN(CrosslinkSearchTopNum),
-                                                                                            QuenchH2O(quench_H2O),
+                                                     std::vector<std::string> &nestedIds) :
+            ModernSearchEngine(nullptr,
+                               listOfSortedms2Scans,
+                               peptideIndex,
+                               fragmentIndex,
+                               currentPartition,
+                               commonParameters,
+                               nullptr, 0.0,
+                               nestedIds ),
+            GlobalCsms(globalCsms),
+            privateCrosslinker(crosslinker),
+            CrosslinkSearchTopN(CrosslinkSearchTop),
+            TopN(CrosslinkSearchTopNum),
+            QuenchH2O(quench_H2O),
                                                                                             QuenchNH2(quench_NH2),
                                                                                             QuenchTris(quench_Tris)
         {
@@ -121,8 +129,8 @@ namespace EngineLayer
                                 scoringTable[p];
                             }).Take(TopN)->ToList();
 #endif
-                        std::sort(idsOfPeptidesPossiblyObserved.begin(), idsOfPeptidesPossiblyObserved.end(), [&] (int *l, int *r) {
-                                return scoringTable[*l] > scoringTable[*r];}
+                        std::sort(idsOfPeptidesPossiblyObserved.begin(), idsOfPeptidesPossiblyObserved.end(), [&] (int l, int r) {
+                                return scoringTable[l] > scoringTable[r];}
                             );
                         idsOfPeptidesPossiblyObserved.resize(TopN);
                     }
@@ -350,7 +358,7 @@ namespace EngineLayer
             // calculate delta score
             if (possibleMatches.size() > 1)
             {
-                bestPsmCross->getDeltaScore() = possibleMatches[0]->getXLTotalScore() - possibleMatches[1]->getXLTotalScore();
+                bestPsmCross->setDeltaScore( possibleMatches[0]->getXLTotalScore() - possibleMatches[1]->getXLTotalScore());
             }
             
             return bestPsmCross;
@@ -412,10 +420,17 @@ namespace EngineLayer
                     
                     for (auto possibleSite : possibleAlphaXlSites)
                     {
+#ifdef ORIG
                         for (auto setOfFragments : fragmentsForEachAlphaLocalizedPossibility.Where([&] (std::any v) {
                                     return v->Item1 == possibleSite;
-                                }))
+                                }));
+#endif
+                        for (auto setOfFragments : fragmentsForEachAlphaLocalizedPossibility )
                         {
+                            if ( std::get<0>(setOfFragments) != possibleSite ) {
+                                continue;
+                            }
+
                             auto matchedIons = MatchFragmentIons(theScan, std::get<1>(setOfFragments), commonParameters);
                             double score = CalculatePeptideScore(theScan->getTheScan(), matchedIons, 0);
                             
@@ -461,10 +476,16 @@ namespace EngineLayer
                             auto matchedIons = MatchFragmentIons(theScan, std::get<1>(setOfFragments), commonParameters);
                             
                             // remove any matched beta ions that also matched to the alpha peptide
+#ifdef ORIG
                             matchedIons.RemoveAll([&] (std::any p) {
                                     std::find(alphaMz.begin(), alphaMz.end(), p::Mz) != alphaMz.end();
                                 });
-                            
+#endif
+                            for ( auto p= matchedIons.begin(); p != matchedIons.end(); p++ ) {
+                                if ( std::find(alphaMz.begin(), alphaMz.end(), (*p)->Mz) != alphaMz.end() ) {
+                                    matchedIons.erase(p);
+                                }
+                            }
                             double score = CalculatePeptideScore(theScan->getTheScan(), matchedIons, 0);
                             
                             if (score > bestBetaLocalizedScore)
@@ -529,19 +550,24 @@ namespace EngineLayer
             
             for (auto location : possiblePositions)
             {
+#ifdef ORIG
                 std::unordered_map<int, Modification*> mods = originalPeptide->AllModsOneIsNterminus.ToDictionary([&] (std::any p) {
                         p::Key;
                     }, [&] (std::any p)
                     {
                         p->Value;
                     });
+#endif
+                std::unordered_map<int, Modification*> mods = originalPeptide->getAllModsOneIsNterminus();
+                
                 if (mods.find(location + 1) != mods.end())
                 {
                     auto alreadyAnnotatedMod = mods[location + 1];
                     double combinedMass = mods[location + 1]->getMonoisotopicMass().value() +
                         deadEndMod->getMonoisotopicMass().value();
 #ifdef ORIG
-                    Modification *combinedMod = new Modification(_originalId: alreadyAnnotatedMod->OriginalId + "+" + deadEndMod->OriginalId,
+                    Modification *combinedMod = new Modification(_originalId: alreadyAnnotatedMod->OriginalId + "+"
+                                                                 + deadEndMod->OriginalId,
                                                                  _modificationType: "Crosslink",
                                                                  _target: alreadyAnnotatedMod->Target,
                                                                  _locationRestriction: "Anywhere.",
