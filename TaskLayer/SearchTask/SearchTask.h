@@ -14,21 +14,33 @@
 #include "stringbuilder.h"
 #include "tangible_filesystem.h"
 
+#include "SearchParameters.h"
+#include "../../EngineLayer/PrecursorSearchModes/MassDiffAcceptor.h"
+#include "../DbForTask.h"
+
 //C# TO C++ CONVERTER NOTE: Forward class declarations:
-namespace TaskLayer { class SearchParameters; }
-namespace EngineLayer { class MassDiffAcceptor; }
-namespace TaskLayer { class DbForTask; }
 namespace TaskLayer { class FileSpecificParameters; }
 namespace TaskLayer { class MyTaskResults; }
 
 using namespace EngineLayer;
-using namespace EngineLayer::ClassicSearch;
+//using namespace EngineLayer::ClassicSearch;
+
+#include "../../EngineLayer/Indexing/IndexingEngine.h"
 using namespace EngineLayer::Indexing;
+
+#include "../../EngineLayer/ModernSearch/ModernSearchEngine.h"
 using namespace EngineLayer::ModernSearch;
-using namespace EngineLayer::NonSpecificEnzymeSearch;
-using namespace FlashLFQ;
+
+//using namespace EngineLayer::NonSpecificEnzymeSearch;
+//using namespace FlashLFQ;
+
+#include "MassSpectrometry/MassSpectrometry.h"
 using namespace MassSpectrometry;
+
+#include "MzLibUtil.h"
 using namespace MzLibUtil;
+
+#include  "Proteomics/Proteomics.h"
 using namespace Proteomics;
 using namespace Proteomics::Fragmentation;
 using namespace Proteomics::ProteolyticDigestion;

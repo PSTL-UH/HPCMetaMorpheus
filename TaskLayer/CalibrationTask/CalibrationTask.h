@@ -11,20 +11,34 @@
 #include "tangible_filesystem.h"
 
 //C# TO C++ CONVERTER NOTE: Forward class declarations:
-namespace TaskLayer { class CalibrationParameters; }
-namespace TaskLayer { class DbForTask; }
+//namespace TaskLayer { class CalibrationParameters; }
+#include "CalibrationParameters.h"
+
+//namespace TaskLayer { class DbForTask; }
+#include "../DbForTask.h"
+
 namespace TaskLayer { class FileSpecificParameters; }
 namespace TaskLayer { class MyTaskResults; }
-namespace EngineLayer { class CommonParameters; }
 
+//namespace EngineLayer { class CommonParameters; }
+#include "../EngineLayer/CommonParameters.h"
 using namespace EngineLayer;
-using namespace EngineLayer::Calibration;
-using namespace EngineLayer::ClassicSearch;
+
+//using namespace EngineLayer::Calibration;
+//using namespace EngineLayer::ClassicSearch;
+
+#include "../EngineLayer/FdrAnalysis/FdrAnalysisEngine.h"
 using namespace EngineLayer::FdrAnalysis;
-using namespace IO::MzML;
+//using namespace IO::MzML;
+
+#include "MassSpectrometry/MassSpectrometry.h"
 using namespace MassSpectrometry;
+
+#include "MzLibUtil.h"
 using namespace MzLibUtil;
-using namespace Nett;
+
+//using namespace Nett;
+#include "Proteomics/Proteomics.h"
 using namespace Proteomics;
 using namespace Proteomics::Fragmentation;
 using namespace UsefulProteomicsDatabases;

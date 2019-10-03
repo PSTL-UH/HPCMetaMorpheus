@@ -8,8 +8,8 @@
 //namespace TaskLayer { class DbForTask; }
 #include "DbForTask.h"
 
-//namespace TaskLayer { class MetaMorpheusTask; }
-#include "MetaMorpheusTask.h"
+namespace TaskLayer { class MetaMorpheusTask; }
+//#include "MetaMorpheusTask.h"
 
 
 namespace TaskLayer
@@ -20,10 +20,10 @@ namespace TaskLayer
 		std::vector<std::string> NewSpectra; // calibration writes new calibrated spectra
 		std::vector<DbForTask*> NewDatabases; // gptmd writes new annotated databases
 		std::vector<std::string> NewFileSpecificTomls; // calibration writes suggested ppm tolerances
-		TimeSpan Time;
-
+		//TimeSpan Time;
+                double Time;
 	private:
-		const std::vector<std::string> resultTexts;
+		std::vector<std::string> resultTexts;
 
 		StringBuilder *const niceText = new StringBuilder();
 

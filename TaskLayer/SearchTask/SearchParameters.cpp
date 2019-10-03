@@ -16,13 +16,15 @@ namespace TaskLayer
 		setDoQuantification(true);
 		setQuantifyPpmTol(5);
 		setSearchTarget(true);
-		setDecoyType(getDecoyType()->Reverse);
+		//setDecoyType(getDecoyType()->Reverse);
+                setDecoyType(DecoyType::Reverse);
 		setDoHistogramAnalysis(false);
 		setHistogramBinTolInDaltons(0.003);
 		setDoLocalizationAnalysis(true);
 		setWritePrunedDatabase(false);
 		setKeepAllUniprotMods(true);
-		setMassDiffAcceptorType(getMassDiffAcceptorType()::OneMM);
+		//setMassDiffAcceptorType(getMassDiffAcceptorType()::OneMM);
+		setMassDiffAcceptorType(MassDiffAcceptorType::OneMM);
 		setMaxFragmentSize(30000.0);
 		setWriteMzId(true);
 		setWritePepXml(false);
@@ -135,12 +137,12 @@ namespace TaskLayer
 		privateSearchTarget = value;
 	}
 
-	DecoyType *SearchParameters::getDecoyType() const
+	DecoyType SearchParameters::getDecoyType() const
 	{
 		return privateDecoyType;
 	}
 
-	void SearchParameters::setDecoyType(DecoyType *value)
+	void SearchParameters::setDecoyType(DecoyType value)
 	{
 		privateDecoyType = value;
 	}

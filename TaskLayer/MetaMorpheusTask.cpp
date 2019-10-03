@@ -102,7 +102,8 @@ namespace TaskLayer
     
     const std::string MetaMorpheusTask::IndexFolderName = "DatabaseIndex";
     
-    std::vector<Ms2ScanWithSpecificMass*> MetaMorpheusTask::GetMs2Scans(MsDataFile *myMSDataFile, const std::string &fullFilePath,
+    std::vector<Ms2ScanWithSpecificMass*> MetaMorpheusTask::GetMs2Scans(MsDataFile *myMSDataFile,
+                                                                        const std::string &fullFilePath,
                                                                         EngineLayer::CommonParameters *commonParameters)
     {
         auto ms2Scans = myMSDataFile->GetAllScansList().Where([&] (std::any x)		{

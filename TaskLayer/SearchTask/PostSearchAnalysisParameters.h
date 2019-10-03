@@ -7,14 +7,21 @@
 
 //C# TO C++ CONVERTER NOTE: Forward class declarations:
 namespace TaskLayer { class MyTaskResults; }
-namespace TaskLayer { class SearchParameters; }
-namespace EngineLayer { class PeptideSpectralMatch; }
+//namespace TaskLayer { class SearchParameters; }
+#include "SearchParameters.h"
+//namespace EngineLayer { class PeptideSpectralMatch; }
+#include "../../EngineLayer/PeptideSpectralMatch.h"
+
 namespace TaskLayer { class FileSpecificParameters; }
 namespace TaskLayer { class MyFileManager; }
-namespace TaskLayer { class DbForTask; }
+//namespace TaskLayer { class DbForTask; }
+#include "../DbForTask.h"
 
+#include "../../EngineLayer/MetaMorpheusEngine.h"
 using namespace EngineLayer;
-using namespace FlashLFQ;
+//using namespace FlashLFQ;
+
+#include "Proteomics/Proteomics.h"
 using namespace Proteomics;
 using namespace Proteomics::ProteolyticDigestion;
 

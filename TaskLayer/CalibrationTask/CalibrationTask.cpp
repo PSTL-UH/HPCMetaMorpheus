@@ -12,16 +12,8 @@
 #include "../../EngineLayer/PrecursorSearchModes/SinglePpmAroundZeroMassDiffAcceptor.h"
 #include "../../EngineLayer/PeptideSpectralMatch.h"
 
-using namespace EngineLayer;
-using namespace EngineLayer::Calibration;
-using namespace EngineLayer::ClassicSearch;
-using namespace EngineLayer::FdrAnalysis;
-using namespace IO::MzML;
-using namespace MassSpectrometry;
-using namespace MzLibUtil;
-using namespace Nett;
-using namespace Proteomics;
-using namespace Proteomics::Fragmentation;
+
+#include "UsefulProteomicsDatabases/UsefulProteomicsDatabases.h"
 using namespace UsefulProteomicsDatabases;
 
 namespace TaskLayer

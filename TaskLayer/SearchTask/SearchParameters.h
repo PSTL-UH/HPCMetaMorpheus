@@ -7,7 +7,9 @@
 #include <unordered_map>
 #include <vector>
 
+#include "UsefulProteomicsDatabases/UsefulProteomicsDatabases.h"
 using namespace UsefulProteomicsDatabases;
+
 using namespace EngineLayer;
 
 namespace TaskLayer
@@ -24,7 +26,7 @@ namespace TaskLayer
 		double privateQuantifyPpmTol = 0;
 		bool privateDoHistogramAnalysis = false;
 		bool privateSearchTarget = false;
-		DecoyType *privateDecoyType;
+		DecoyType privateDecoyType;
 		TaskLayer::MassDiffAcceptorType privateMassDiffAcceptorType = static_cast<TaskLayer::MassDiffAcceptorType>(0);
 		bool privateWritePrunedDatabase = false;
 		bool privateKeepAllUniprotMods = false;
@@ -63,8 +65,8 @@ namespace TaskLayer
 		void setDoHistogramAnalysis(bool value);
 		bool getSearchTarget() const;
 		void setSearchTarget(bool value);
-		DecoyType *getDecoyType() const;
-		void setDecoyType(DecoyType *value);
+		DecoyType getDecoyType() const;
+		void setDecoyType(DecoyType value);
 		TaskLayer::MassDiffAcceptorType getMassDiffAcceptorType() const;
 		void setMassDiffAcceptorType(TaskLayer::MassDiffAcceptorType value);
 		bool getWritePrunedDatabase() const;
