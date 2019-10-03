@@ -3,7 +3,10 @@
 #include <string>
 #include <optional>
 
+#include "../EngineLayer/CrosslinkSearch/CrosslinkSearchEngine.h"
 using namespace EngineLayer::CrosslinkSearch;
+
+#include "UsefulProteomicsDatabases/ UsefulProteomicsDatabases.h"
 using namespace UsefulProteomicsDatabases;
 
 namespace TaskLayer
