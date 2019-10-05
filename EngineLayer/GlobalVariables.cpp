@@ -111,8 +111,11 @@ namespace EngineLayer
         GlobalSettings = Toml::ReadFile<getGlobalSettings()*>(FileSystem::combine(getDataDir(), "settings.toml"));
 #endif
 
-        TomlReadFile trf;
-        const toml::Value* Global_Variables = trf.tomlReadFile(privateDataDir + "/settings.toml", "WriteExcelCompatibleTSVs");
+        Toml trw;
+        // const toml::Value* Global_Variables = trw.tomlReadFile(privateDataDir + "/settings.toml", "WriteExcelCompatibleTSVs");
+
+        toml::Value toml_value = trw.tomlReadFile(privateDataDir + "/settings.toml");
+        toml::Value* Global_Variables = trw.getValue(toml_value, "WriteExcelCompatibleTSVs");
 
         //set privateWriteExcelCompatibleTSVs to Global_Variables boolean value 
         if (Global_Variables && Global_Variables->is<bool>())

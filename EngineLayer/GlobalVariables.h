@@ -22,7 +22,7 @@ using namespace Proteomics;
 #include "UsefulProteomicsDatabases/UsefulProteomicsDatabases.h"
 
 //for toml files
-#include "../include/TomlReadFile.h"
+#include "TomlReadWrite.h"
 
 namespace EngineLayer
 {
