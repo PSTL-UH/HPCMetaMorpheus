@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include "TomlReadWrite.h"
+
 using namespace EngineLayer;
 using namespace MzLibUtil;
 using namespace Nett;
@@ -21,8 +23,11 @@ namespace TaskLayer
 		std::optional<DissociationType*> privateDissociationType;
 
 	public:
+#ifdef ORIG
 		FileSpecificParameters(TomlTable *tomlTable);
-
+#endif
+		//New constructor using tinytoml
+		FileSpecificParameters(toml::Table tomlTable);
 		FileSpecificParameters();
 
 		Tolerance *getPrecursorMassTolerance() const;
