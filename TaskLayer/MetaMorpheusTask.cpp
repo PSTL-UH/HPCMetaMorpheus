@@ -339,14 +339,14 @@ namespace TaskLayer
             
             RunSpecific(output_folder, currentProteinDbFilenameList, currentRawDataFilepathList, displayName, fileSettingsList);
             stopWatch->Stop();
-            MyTaskResults->Time = stopWatch->Elapsed;
+            myTaskResults->Time = stopWatch->Elapsed;
             auto resultsFileName = FileSystem::combine(output_folder, "results.txt");
 //C# TO C++ CONVERTER NOTE: The following 'using' block is replaced by its C++ equivalent:
 //ORIGINAL LINE: using (StreamWriter file = new StreamWriter(resultsFileName))
             {
                 StreamWriter file = StreamWriter(resultsFileName);
                 file.WriteLine("MetaMorpheus: version " + GlobalVariables::getMetaMorpheusVersion());
-                file.Write(MyTaskResults->ToString());
+                file.Write(myTaskResults->ToString());
             }
             FinishedWritingFile(resultsFileName, std::vector<std::string> {displayName});
             FinishedSingleTask(displayName);
@@ -385,7 +385,7 @@ namespace TaskLayer
                 file.Write(ProseCreatedWhileRunning->toString());
                 file.Write(SystemInfo::SystemProse()->Replace("\r\n", "") + " ");
                 file.WriteLine("The total time to perform the " + getTaskType() + " task on " + std::to_string(currentRawDataFilepathList.size()) +
-                               " spectra file(s) was " + std::string::Format("{0:0.00}", MyTaskResults->Time.TotalMinutes) + " minutes.");
+                               " spectra file(s) was " + std::string::Format("{0:0.00}", myTaskResults->Time.TotalMinutes) + " minutes.");
                 file.WriteLine();
                 file.WriteLine("Published works using MetaMorpheus software are encouraged to cite: Solntsev, S. K.; Shortreed, M. R.; Frey, B. L.; Smith, L. M. Enhanced Global Post-translational Modification Discovery with MetaMorpheus. Journal of Proteome Research. 2018, 17 (5), 1844-1851.");
 
@@ -403,11 +403,11 @@ namespace TaskLayer
         }
         
         MetaMorpheusEngine::FinishedSingleEngineHandler->removeListener("SingleEngineHandlerInTask");
-        return MyTaskResults;
+        return myTaskResults;
     }
     
     std::vector<Protein*> MetaMorpheusTask::LoadProteins(const std::string &taskId, std::vector<DbForTask*> &dbFilenameList, bool searchTarget,
-                                                         DecoyType *decoyType, std::vector<std::string> &localizeableModificationTypes,
+                                                         DecoyType decoyType, std::vector<std::string> &localizeableModificationTypes,
                                                          EngineLayer::CommonParameters *commonParameters)
     {
         Status("Loading proteins...", std::vector<std::string> {taskId});
@@ -433,7 +433,7 @@ namespace TaskLayer
         return proteinList;
     }
     
-    std::vector<Protein*> MetaMorpheusTask::LoadProteinDb(const std::string &fileName, bool generateTargets, DecoyType *decoyType,
+    std::vector<Protein*> MetaMorpheusTask::LoadProteinDb(const std::string &fileName, bool generateTargets, DecoyType decoyType,
                                                           std::vector<std::string> &localizeableModificationTypes, bool isContaminant,
                                                           std::unordered_map<std::string, Modification*> &um, int &emptyEntriesCount,
                                                           EngineLayer::CommonParameters *commonParameters)
@@ -583,7 +583,7 @@ namespace TaskLayer
     
     void MetaMorpheusTask::SingleEngineHandlerInTask(std::any sender, SingleEngineFinishedEventArgs *e)
     {
-        MyTaskResults->AddResultText(e->ToString());
+        myTaskResults->AddResultText(e->ToString());
     }
     
     void MetaMorpheusTask::FinishedSingleTask(const std::string &displayName)

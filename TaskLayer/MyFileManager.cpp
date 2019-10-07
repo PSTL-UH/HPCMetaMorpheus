@@ -56,7 +56,9 @@ const std::string MyFileManager::DesiredXRawFileVersion = "3.0.29.0";
 		return ThermoMsFileReaderVersionCheck::DllsNotFound;
 	}
 
-	MsDataFile *MyFileManager::LoadFile(const std::string &origDataFile, std::optional<int> &topNpeaks, std::optional<double> &minRatio, bool trimMs1Peaks, bool trimMsMsPeaks, CommonParameters *commonParameters)
+	MsDataFile *MyFileManager::LoadFile(const std::string &origDataFile, std::optional<int> topNpeaks,
+                                            std::optional<double> minRatio, bool trimMs1Peaks, bool trimMsMsPeaks,
+                                            CommonParameters *commonParameters)
 	{
 		FilteringParams *filter = new FilteringParams(topNpeaks, minRatio, 1, trimMs1Peaks, trimMsMsPeaks);
 		MsDataFile value;

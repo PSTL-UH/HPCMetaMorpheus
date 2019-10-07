@@ -10,37 +10,31 @@
 #include "exceptionhelper.h"
 #include "stringhelper.h"
 #include "stringbuilder.h"
-#include "tangible_event.h"
+//#include "tangible_event.h"
 #include "tangible_filesystem.h"
 
-//C# TO C++ CONVERTER NOTE: Forward class declarations:
-namespace EngineLayer { class CommonParameters; }
+#include "EventArgs/SingleTaskEventArgs.h"
 #include "../EngineLayer/CommonParameters.h"
-
-namespace TaskLayer { class MyTaskResults; }
-
-namespace EngineLayer { class Ms2ScanWithSpecificMass; }
 #include "../EngineLayer/Ms2ScanWithSpecificMass.h"
-
-namespace TaskLayer { class FileSpecificParameters; }
-namespace TaskLayer { class DbForTask; }
 #include "DbForTask.h"
 
-//namespace EngineLayer { class PeptideSpectralMatch; }
-#include "EngineLayer/PeptideSpectralMatch.h"
+//namespace TaskLayer { class MyTaskResults; }
+#include "MyTaskResults.h"
 
-//namespace EngineLayer { class ProgressEventArgs; }
-#include "EngineLayer/EventArgs/ProgressEventArgs.h"
+//namespace TaskLayer { class FileSpecificParameters; }
+#include "FileSpecificParameters.h"
 
-//namespace EngineLayer { class SingleEngineFinishedEventArgs; }
-#include "EngineLayer/EventArgs/SingleEngineEventArgs.h"
+#include "../EngineLayer/PeptideSpectralMatch.h"
+#include "../EngineLayer/EventArgs/ProgressEventArgs.h"
+#include "../EngineLayer/EventArgs/SingleEngineEventArgs.h"
+#include "../EngineLayer/EventArgs/SingleFileEventArgs.h"
 
 #include "Chemistry/Chemistry.h"
 using namespace Chemistry;
 
 using namespace EngineLayer;
 
-#include "EngineLayer/Indexing/IndexingEngine.h"
+#include "../EngineLayer/Indexing/IndexingEngine.h"
 using namespace EngineLayer::Indexing;
 
 #include "MassSpectrometry/MassSpectrometry.h"
@@ -74,44 +68,49 @@ namespace TaskLayer
 		EngineLayer::CommonParameters *privateCommonParameters;
 
 	public:
-		static TomlSettings *const tomlConfig;
+		//static TomlSettings *const tomlConfig;
 
 	protected:
 		StringBuilder *const ProseCreatedWhileRunning = new StringBuilder();
-
-		MyTaskResults *MyTaskResults;
+		MyTaskResults *myTaskResults;
 
 	public:
 		virtual ~MetaMorpheusTask()
 		{
 			delete ProseCreatedWhileRunning;
-			delete MyTaskResults;
+			delete myTaskResults;
 		}
 
 	protected:
 		MetaMorpheusTask(MyTask taskType);
 
 	public:
-		static TangibleEvent<EventHandler<SingleTaskEventArgs>> *FinishedSingleTaskHandler = new TangibleEvent<EventHandler<SingleTaskEventArgs>>();
+                // Keeping one original line for revisiting the item later.
+		//static TangibleEvent<EventHandler<SingleTaskEventArgs>> *FinishedSingleTaskHandler = new TangibleEvent<EventHandler<SingleTaskEventArgs>>();
 
-		static TangibleEvent<EventHandler<SingleFileEventArgs>> *FinishedWritingFileHandler = new TangibleEvent<EventHandler<SingleFileEventArgs>>();
-
-		static TangibleEvent<EventHandler<SingleTaskEventArgs>> *StartingSingleTaskHander = new TangibleEvent<EventHandler<SingleTaskEventArgs>>();
-
-		static TangibleEvent<EventHandler<StringEventArgs>> *StartingDataFileHandler = new TangibleEvent<EventHandler<StringEventArgs>>();
-
-		static TangibleEvent<EventHandler<StringEventArgs>> *FinishedDataFileHandler = new TangibleEvent<EventHandler<StringEventArgs>>();
-
-		static TangibleEvent<EventHandler<StringEventArgs>> *OutLabelStatusHandler = new TangibleEvent<EventHandler<StringEventArgs>>();
-
-		static TangibleEvent<EventHandler<StringEventArgs>> *WarnHandler = new TangibleEvent<EventHandler<StringEventArgs>>();
-
-		static TangibleEvent<EventHandler<StringEventArgs>> *LogHandler = new TangibleEvent<EventHandler<StringEventArgs>>();
-
-		static TangibleEvent<EventHandler<StringEventArgs>> *NewCollectionHandler = new TangibleEvent<EventHandler<StringEventArgs>>();
-
-		static TangibleEvent<EventHandler<ProgressEventArgs>> *OutProgressHandler = new TangibleEvent<EventHandler<ProgressEventArgs>>();
-
+#ifdef ORIG
+		static EventHandler<SingleTaskEventArgs> *FinishedSingleTaskHandler = new EventHandler<SingleTaskEventArgs>();
+		static EventHandler<SingleFileEventArgs> *FinishedWritingFileHandler = new EventHandler<SingleFileEventArgs>();
+		static EventHandler<SingleTaskEventArgs> *StartingSingleTaskHander = new EventHandler<SingleTaskEventArgs>();
+		static EventHandler<StringEventArgs> *StartingDataFileHandler = new EventHandler<StringEventArgs>();
+		static EventHandler<StringEventArgs> *FinishedDataFileHandler = new EventHandler<StringEventArgs>();
+		static EventHandler<StringEventArgs> *OutLabelStatusHandler = new TangibleEvent<EventHandler<StringEventArgs>();
+		static EventHandler<StringEventArgs> *WarnHandler = new EventHandler<StringEventArgs>>();
+		static EventHandler<StringEventArgs> *LogHandler = new EventHandler<StringEventArgs>>();
+		static EventHandler<StringEventArgs> *NewCollectionHandler = new EventHandler<StringEventArgs>();
+		static EventHandler<ProgressEventArgs> *OutProgressHandler = new EventHandler<ProgressEventArgs>();
+#endif
+		static EventHandler<SingleTaskEventArgs> *FinishedSingleTaskHandler;
+		static EventHandler<SingleFileEventArgs> *FinishedWritingFileHandler;
+		static EventHandler<SingleTaskEventArgs> *StartingSingleTaskHander;
+		static EventHandler<StringEventArgs> *StartingDataFileHandler;
+		static EventHandler<StringEventArgs> *FinishedDataFileHandler;
+		static EventHandler<StringEventArgs> *OutLabelStatusHandler;
+		static EventHandler<StringEventArgs> *WarnHandler;
+		static EventHandler<StringEventArgs> *LogHandler;
+		static EventHandler<StringEventArgs> *NewCollectionHandler;
+		static EventHandler<ProgressEventArgs> *OutProgressHandler;
+                
 		MyTask getTaskType() const;
 		void setTaskType(MyTask value);
 
@@ -127,13 +126,13 @@ namespace TaskLayer
 		MyTaskResults *RunTask(const std::string &output_folder, std::vector<DbForTask*> &currentProteinDbFilenameList, std::vector<std::string> &currentRawDataFilepathList, const std::string &displayName);
 
 	protected:
-		std::vector<Protein*> LoadProteins(const std::string &taskId, std::vector<DbForTask*> &dbFilenameList, bool searchTarget, DecoyType *decoyType, std::vector<std::string> &localizeableModificationTypes, EngineLayer::CommonParameters *commonParameters);
+		std::vector<Protein*> LoadProteins(const std::string &taskId, std::vector<DbForTask*> &dbFilenameList, bool searchTarget, DecoyType decoyType, std::vector<std::string> &localizeableModificationTypes, EngineLayer::CommonParameters *commonParameters);
 
-		static std::vector<Protein*> LoadProteinDb(const std::string &fileName, bool generateTargets, DecoyType *decoyType, std::vector<std::string> &localizeableModificationTypes, bool isContaminant, std::unordered_map<std::string, Modification*> &um, int &emptyEntriesCount, EngineLayer::CommonParameters *commonParameters);
+		static std::vector<Protein*> LoadProteinDb(const std::string &fileName, bool generateTargets, DecoyType decoyType, std::vector<std::string> &localizeableModificationTypes, bool isContaminant, std::unordered_map<std::string, Modification*> &um, int &emptyEntriesCount, EngineLayer::CommonParameters *commonParameters);
 
 		void LoadModifications(const std::string &taskId, std::vector<Modification*> &variableModifications, std::vector<Modification*> &fixedModifications, std::vector<std::string> &localizableModificationTypes);
 
-		static void WritePsmsToTsv(std::vector<PeptideSpectralMatch*> &psms, const std::string &filePath, IReadOnlyDictionary<std::string, int> *modstoWritePruned);
+		static void WritePsmsToTsv(std::vector<PeptideSpectralMatch*> &psms, const std::string &filePath, std::unordered_map<std::string, int> *modstoWritePruned);
 
 		void ReportProgress(ProgressEventArgs *v);
 
@@ -163,7 +162,8 @@ namespace TaskLayer
 //		{
 //			return value.Split(new string[] { "\t\t" }, StringSplitOptions.RemoveEmptyEntries).Select(b => (b.Split('\t').First(), b.Split('\t').Last())).ToList();
 //		}
-
+                static std::pair<std::string, std::string> GetModsFromString (std::string value);
+                
 		void SingleEngineHandlerInTask(std::any sender, SingleEngineFinishedEventArgs *e);
 
 		void FinishedSingleTask(const std::string &displayName);
@@ -180,7 +180,8 @@ namespace TaskLayer
 
 		static std::string GetExistingFolderWithIndices(IndexingEngine *indexEngine, std::vector<DbForTask*> &dbFilenameList);
 
-		static std::string CheckFiles(IndexingEngine *indexEngine, DirectoryInfo *folder);
+		//static std::string CheckFiles(IndexingEngine *indexEngine, DirectoryInfo *folder);
+		static std::string CheckFiles(IndexingEngine *indexEngine, std::string *folder);
 
 		static void WriteIndexEngineParams(IndexingEngine *indexEngine, const std::string &fileName);
 

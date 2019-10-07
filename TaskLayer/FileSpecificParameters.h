@@ -2,10 +2,17 @@
 
 #include "TomlReadWrite.h"
 
+#include "../EngineLayer/CommonParameters.h"
 using namespace EngineLayer;
+
+#include "MzLibUtil.h"
 using namespace MzLibUtil;
-using namespace Nett;
+//using namespace Nett;
+
+#include"Proteomics/ProteolyticDigestion/ProteinDigestion.h"
 using namespace Proteomics::ProteolyticDigestion;
+
+#include "MassSpectrometry/MassSpectrometry.h"
 using namespace MassSpectrometry;
 
 namespace TaskLayer

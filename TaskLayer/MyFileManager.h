@@ -4,15 +4,17 @@
 #include <unordered_map>
 #include <optional>
 #include <mutex>
-#include "tangible_event.h"
+//#include "tangible_event.h"
 #include "tangible_filesystem.h"
 
 //C# TO C++ CONVERTER NOTE: Forward class declarations:
 namespace EngineLayer { class CommonParameters; }
+#include "../EngineLayer/CommonParameters.h"
 
 using namespace EngineLayer;
-using namespace IO::MzML;
-using namespace IO::Mgf;
+
+//using namespace IO::MzML;
+//using namespace IO::Mgf;
 
 #if defined(NETFRAMEWORK)
 
@@ -48,13 +50,15 @@ namespace TaskLayer
 	public:
 		MyFileManager(bool disposeOfFileWhenDone);
 
-		static TangibleEvent<EventHandler<StringEventArgs>> *WarnHandler = new TangibleEvent<EventHandler<StringEventArgs>>();
+		//static TangibleEvent<EventHandler<StringEventArgs>> *WarnHandler = new TangibleEvent<EventHandler<StringEventArgs>>();
+		static EventHandler<StringEventArgs> *WarnHandler;
 
 		bool SeeIfOpen(const std::string &path);
 
 		static ThermoMsFileReaderVersionCheck ValidateThermoMsFileReaderVersion();
 
-		MsDataFile *LoadFile(const std::string &origDataFile, std::optional<int> &topNpeaks, std::optional<double> &minRatio, bool trimMs1Peaks, bool trimMsMsPeaks, CommonParameters *commonParameters);
+		MsDataFile *LoadFile(const std::string &origDataFile, std::optional<int> topNpeaks, std::optional<double> minRatio,
+                                     bool trimMs1Peaks, bool trimMsMsPeaks, CommonParameters *commonParameters);
 
 		void DoneWithFile(const std::string &origDataFile);
 

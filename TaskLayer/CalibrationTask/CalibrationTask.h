@@ -10,21 +10,25 @@
 #include "stringbuilder.h"
 #include "tangible_filesystem.h"
 
-//C# TO C++ CONVERTER NOTE: Forward class declarations:
-//namespace TaskLayer { class CalibrationParameters; }
 #include "CalibrationParameters.h"
-
-//namespace TaskLayer { class DbForTask; }
 #include "../DbForTask.h"
 
-namespace TaskLayer { class FileSpecificParameters; }
-namespace TaskLayer { class MyTaskResults; }
+//namespace TaskLayer { class FileSpecificParameters; }
+#include "../FileSpecificParameters.h"
 
-//namespace EngineLayer { class CommonParameters; }
-#include "../EngineLayer/CommonParameters.h"
+//namespace TaskLayer { class MyTaskResults; }
+#include "../MyTaskResults.h"
+
+#include "../../EngineLayer/Calibration/DataPointAquisitionResults.h"
+#include "../../EngineLayer/Calibration/DataPointAcquisitionEngine.h"
+using namespace EngineLayer::Calibration;
+
+#include "../../EngineLayer/ClassicSearch/ClassicSearchEngine.h"
+using namespace EngineLayer::ClassicSearch;
+
+#include "../../EngineLayer/CommonParameters.h"
 using namespace EngineLayer;
 
-//using namespace EngineLayer::Calibration;
 //using namespace EngineLayer::ClassicSearch;
 
 #include "../EngineLayer/FdrAnalysis/FdrAnalysisEngine.h"
@@ -41,6 +45,8 @@ using namespace MzLibUtil;
 #include "Proteomics/Proteomics.h"
 using namespace Proteomics;
 using namespace Proteomics::Fragmentation;
+
+#include "UsefulProteomicsDatabases/UsefulProteomicsDatabases.h"
 using namespace UsefulProteomicsDatabases;
 
 namespace TaskLayer
@@ -57,7 +63,9 @@ namespace TaskLayer
 		void setCalibrationParameters(TaskLayer::CalibrationParameters *value);
 
 	protected:
-		MyTaskResults *RunSpecific(const std::string &OutputFolder, std::vector<DbForTask*> &dbFilenameList, std::vector<std::string> &currentRawFileList, const std::string &taskId, std::vector<FileSpecificParameters*> &fileSettingsList) override;
+		MyTaskResults *RunSpecific(const std::string &OutputFolder, std::vector<DbForTask*> &dbFilenameList,
+                                           std::vector<std::string> &currentRawFileList, const std::string &taskId,
+                                           std::vector<FileSpecificParameters*> &fileSettingsList) override;
 
 	private:
 		int NumRequiredPsms = 20;
