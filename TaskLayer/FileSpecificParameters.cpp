@@ -55,66 +55,56 @@ namespace TaskLayer
 	}
 #endif
 
-//Dr. Gabriel,  I got a small version of this working without using the different Set functions like setPrecursorMassTolerance.
-//It looks to me like they are reading the file specific parameters from a toml table (that has already been read), and then setting various values
-//based on the parameters in the table.  I changed how the table is passed to it so it is in line with the tinytoml types we are using
-//and I changed the switch statement to if/else statements because the toml::Table keys are strings.  Im not sure if this is the best 
-//way to handle this.  I also have not yet found where the fileSpecificParameters are being read.
 	FileSpecificParameters::FileSpecificParameters(toml::Table tomlTable)
 	{
 
 		for (auto const& keyValuePair : tomlTable)
 		{
-			//From Nick:  Im not sure if the changes I made are in line with the following comment
-			//from the original constructor above:
-			//
 			// we're using the name of the variable here and not a fixed string
 			// in case the variable name changes at some point
 			if (keyValuePair.first == "PrecursorMassTolerance") {
-				
-				//Im not quite sure yet how to deal with the ->Get<Tolerance*>() parts of these
-				//of the functions calls.  The keyValuePair.second is the value associated with the 
-				//key found in the if else statements.  Here the PrecursorMassTolerance value has already been found
-				//Im not sure why we need to perform a Get() operation.  All of the if else statements have something 
-				//similar and Im not sure if it is an operation we need to perform or not.
-				setPrecursorMassTolerance(keyValuePair.second->Get<Tolerance*>());
-				break;
+				Tolerance* t = Tolerance::ParseToleranceString(keyValuePair.second.as<std::string>());
+				setPrecursorMassTolerance(t);
 			}
 			else if (keyValuePair.first == "ProductMassTolerance") {
-				setProductMassTolerance(keyValuePair.second->Get<Tolerance*>());
-				break;
+				Tolerance* t = Tolerance::ParseToleranceString(keyValuePair.second.as<std::string>());
+				setProductMassTolerance(t);
 			}
 			else if (keyValuePair.first == "Protease") {
-				setProtease(keyValuePair.second->Get<getProtease()*>());
-				break;
+				// setProtease(keyValuePair.second.as<std::string>());
+
+				//Dr. Gabriel, I'm still working on creating the correct Protease instance
+
 			}
 			else if (keyValuePair.first == "MinPeptideLength") {
-				setMinPeptideLength(keyValuePair.second->Get<int>());
-				break;
+				int MinPeptideLength = keyValuePair.second.as<int>();
+				setMinPeptideLength(std::make_optional(MinPeptideLength));
 			}
 			else if (keyValuePair.first == "MaxPeptideLength") {
-				setMaxPeptideLength(keyValuePair.second->Get<int>());
-				break;
+				int MaxPeptideLength = keyValuePair.second.as<int>();
+				setMaxPeptideLength(std::make_optional(MaxPeptideLength));
 			}
 			else if (keyValuePair.first == "MaxMissedCleavages") {
-				setMaxMissedCleavages(keyValuePair.second->Get<int>());
-				break;
+				int MaxMissedCleavages = keyValuePair.second.as<int>();
+				setMaxMissedCleavages(std::make_optional(MaxMissedCleavages));
 			}
 			else if (keyValuePair.first == "MaxModsForPeptide") {
-				setMaxModsForPeptide(keyValuePair.second->Get<int>());
-				break;
+				int MaxModsForPeptide = keyValuePair.second.as<int>();
+				setMaxModsForPeptide(std::make_optional(MaxModsForPeptide));
 			}
 			else if (keyValuePair.first == "DissociationType") {
-				setDissociationType(keyValuePair.second->Get<MassSpectrometry::DissociationType*>());
-				break;
+				// setDissociationType(keyValuePair.second->Get<MassSpectrometry::DissociationType*>());
+
+				//I'm still working on what to do with the Dissociation type
+
 			}
 
-			//Should this be an Else statement?  Not sure how to handle exception
-			// default:
-			// 	throw MetaMorpheusException("Unrecognized parameter \"" + keyValuePair->Key + "\" in file-specific parameters toml");
-			else {
-				std::cout << "Unrecognized parameter " << keyValuePair.first << " in file-specific parameters toml" << std::endl;
-			}
+			//Should this be an Else statement?  Not sure how to handle exception.  This is commented out because 
+			//both of the toml config files I was testing with had many more key-value pairs than those accounted for above,
+			//which led this to printing many Unrecognized parameter lines.
+			// else {
+			// 	std::cout << "Unrecognized parameter " << keyValuePair.first << " in file-specific parameters toml" << std::endl;
+			// }
 		}
 	}
 

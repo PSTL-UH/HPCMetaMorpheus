@@ -27,10 +27,10 @@ using namespace UsefulProteomicsDatabases;
 namespace TaskLayer
 {
 
-    //Dr. Gabriel, I havent sorted out what to do with this yet.  It looks to me like they are creating and setting the tomlConfig key-value pairs
-    //from the Tolerance, PpmTolerance, AbsoluteTolerance, and Protease configurations.  Its a little confusing because not all of these 
-    //are member variables present in MetaMorpheusTask.h or FileSpecificParameters.h.  It looks like for each of these, they are converting
-    //the value to a string and then performing some operation with that string.
+//The TomlSettings tomlConfig seems to serve as the settings required to read and process or write toml content later on.  
+//I'm having trouble determining exactly what settings it is providing though.  It clearly has Tolerance, PpmTolerance, AbsoluteTolerance, and Protease information
+//but I havent figured out how this translates to providing read or write settings yet.
+#ifdef ORIG
     TomlSettings *const MetaMorpheusTask::tomlConfig = TomlSettings::Create([&] (std::any cfg)   {
             cfg::ConfigureType<Tolerance*>([&] (std::any type) {
                     type::WithConversionFor<TomlString*>([&] (std::any convert) {
@@ -78,6 +78,7 @@ namespace TaskLayer
                                             });
                                     }); 
         });
+#endif
     
     MetaMorpheusTask::MetaMorpheusTask(MyTask taskType)
     {
@@ -280,10 +281,8 @@ namespace TaskLayer
         Toml::WriteFile(this, tomlFileName, tomlConfig);
         FinishedWritingFile(tomlFileName, std::vector<std::string> {displayName});
 #endif
-        //looks like the file is being written to the parent directory of the output_folder
-        //we need the output folder as type std::experimental::filesystem::path rather than std::string
-        //I made a new function for writing new toml files that does not require setting key-value pairs, it just outputs the Toml value to the new file.
-        //However I havent sorted out how to create the tomlConfig yet.
+        //Dr. Gabriel, maybe we can save tomlConfig as a tomlTable rather than the TomlSettings type used above?
+        //This might simplify using it here.
         std::experimental::filesystem::path output_directory = output_folder;
         std::string output_path = output_directory.parent_path().string() + "Task Settings" + displayName + "config.toml";
         Toml trw;
@@ -310,15 +309,15 @@ namespace TaskLayer
                 if (FileSystem::fileExists(fileSpecificTomlPath))
                 {
 #ifdef ORIG
-                    //Dr. Gabriel, Im not quite sure why they are passing the tomlConfig to the ReadFile function here
-                    //when it looks like theyre setting fileSpecificSettings.  We do need to find a table header to make a toml table
-                    //maybe this is the reason.  But I'm not sure what the header would be
+                    //In the Nett package the second parameter for ReadFile are the settings used to process the toml content
+                    //public static T ReadFile<T>(string filePath, TomlSettings settings)
                     TomlTable *fileSpecificSettings = Toml::ReadFile(fileSpecificTomlPath, tomlConfig);
 #endif
                     toml::Value toml_value = trw.tomlReadFile(fileSpecificTomlPath);
 
-                    //here we need a header to search for to construct the toml table.  I assume its in tomlConfig, but Im not sure what it is,
-                    //so as it is this now wont work yet.
+                    //What is the header or key we are looking for here in the toml file?
+                    //In a couple of config files I was looking at it was "CommonParameters", I'm not 
+                    //entirely sure that's correct here though.
                     toml::Value* fileParameters = trw.getValue(toml_value, tomlConfig);
                     toml::Table fileSpecificSettings = fileParameters->as<toml::Table>();
 
