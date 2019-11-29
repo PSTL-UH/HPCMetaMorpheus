@@ -42,7 +42,7 @@ namespace EngineLayer
     
     std::vector<std::tuple<int, PeptideWithSetModifications *>> PeptideSpectralMatch::getBestMatchingPeptides() const
     {
-        return BestMatchingPeptides;
+        return _bestMatchingPeptides;
     }
 
     ChemicalFormula *PeptideSpectralMatch::getModsChemicalFormula() const
@@ -796,7 +796,7 @@ namespace EngineLayer
         }
         else {
             std::vector<int> v;
-            for ( auto p: psm->BestMatchingPeptides ) {
+            for ( auto p: psm->_bestMatchingPeptides ) {
                 v.push_back (std::get<0>(p));
             }
             std::tuple<std::string, std::optional<int>> res = Resolve ( v);
@@ -813,7 +813,7 @@ namespace EngineLayer
         bool pepWithModsIsNull = psm == nullptr || psm->BestMatchingPeptides == nullptr ||
             !psm->BestMatchingPeptides.Any();
 #endif
-        bool pepWithModsIsNull = psm == nullptr || psm->BestMatchingPeptides.empty() == true;
+        bool pepWithModsIsNull = psm == nullptr || psm->_bestMatchingPeptides.empty() == true;
         
 #ifdef ORIG            
         std::vector<PeptideWithSetModifications*> pepsWithMods = pepWithModsIsNull ? nullptr : psm->BestMatchingPeptides->Select([&] (std::any p) {
@@ -821,7 +821,7 @@ namespace EngineLayer
             }).ToList();
 #endif
     std::vector<PeptideWithSetModifications*> pepsWithMods;
-    for ( auto p: psm->BestMatchingPeptides ) {
+    for ( auto p: psm->_bestMatchingPeptides ) {
         pepsWithMods.push_back(std::get<1>(p));
     }
     

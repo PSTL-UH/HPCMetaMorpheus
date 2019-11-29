@@ -47,7 +47,7 @@ namespace EngineLayer
             static std::vector<double> PopulateErrors(std::vector<LabeledDataPoint*> &datapoints, std::vector<int> &scanNumberToScanPlacement, int arrayLength);
             
             //static double CalculateAverageRelativeErrors(std::vector<std::tuple<double massError, double logIntensity>> *localRelativeErrors);
-            static double CalculateAverageRelativeErrors(std::vector<std::tuple<double, double>*> &localRelativeErrors);
+            static double CalculateAverageRelativeErrors(std::vector<std::tuple<double, double>> &localRelativeErrors);
             
             static std::vector<double> SmoothErrors(std::vector<double> &relativeErrors);
             

@@ -141,7 +141,8 @@ namespace EngineLayer
         
     private:
         //private *IEnumerable < (int Notch, PeptideWithSetModifications *Peptide) BestMatchingPeptides;
-        std::vector<std::tuple<int, PeptideWithSetModifications *>> BestMatchingPeptides;
+        // Edgar: removing this since it seems to be a duplicate of _bestMatchingPeptides;
+	//std::vector<std::tuple<int, PeptideWithSetModifications *>> BestMatchingPeptides;
 
         /// <summary>
         /// Used for Percolator output
