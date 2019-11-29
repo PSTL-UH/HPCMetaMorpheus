@@ -6,16 +6,20 @@
 #include <any>
 #include <mutex>
 
-//C# TO C++ CONVERTER NOTE: Forward class declarations:
-namespace EngineLayer { class MassDiffAcceptor; }
-namespace EngineLayer { class PeptideSpectralMatch; }
-namespace EngineLayer { class Ms2ScanWithSpecificMass; }
-namespace EngineLayer { class CommonParameters; }
-namespace EngineLayer { class MetaMorpheusEngineResults; }
-namespace EngineLayer { class ScanWithIndexAndNotchInfo; }
+#include "../PrecursorSearchModes/MassDiffAcceptor.h"
+#include "../PeptideSpectralMatch.h"
+#include "../Ms2ScanWithSpecificMass.h"
+#include "../CommonParameters.h"
+#include "../MetaMorpheusEngineResults.h"
+#include "../ScanWithIndexAndNotchInfo.h"
 
+#include "MassSpectrometry/MassSpectrometry.h"
 using namespace MassSpectrometry;
+
+#include "MzLibUtil.h"
 using namespace MzLibUtil;
+
+#include "Proteomics/Proteomics.h"
 using namespace Proteomics;
 using namespace Proteomics::Fragmentation;
 using namespace Proteomics::ProteolyticDigestion;
@@ -31,9 +35,9 @@ namespace EngineLayer
             const std::vector<Protein*> Proteins;
             const std::vector<Modification*> FixedModifications;
             const std::vector<Modification*> VariableModifications;
-            std::vector<PeptideSpectralMatch*> const PeptideSpectralMatches;
+            std::vector<PeptideSpectralMatch*> PeptideSpectralMatches;
             std::vector<Ms2ScanWithSpecificMass*> const ArrayOfSortedMS2Scans;
-            std::vector<double> const MyScanPrecursorMasses;
+            std::vector<double> MyScanPrecursorMasses;
             
         public:
             virtual ~ClassicSearchEngine()

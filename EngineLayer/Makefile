@@ -45,10 +45,10 @@ all:
 	cd ModernSearch; make ; cd ..
 	cd CrosslinkSearch; make ; cd ..
 	cd PrecursorSearchModes; make ; cd ..
+	cd Calibration; make ; cd ..
+	cd ClassicSearch; make ; cd ..
 
 
-#	cd Calibration; make ; cd ..
-#	cd ClassicSearch; make ; cd ..
 #	cd Gptmd; make ; cd ..
 #	cd HistogramAnalysis; make ; cd ..
 #	cd Localization; make ; cd ..

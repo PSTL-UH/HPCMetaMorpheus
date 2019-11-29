@@ -4,7 +4,7 @@
 #include "Ms2ScanWithSpecificMass.h"
 #include "CommonParameters.h"
 
-#include "BinarySearch.h"
+#include "Search.h"
 
 using namespace Chemistry;
 using namespace MassSpectrometry;
@@ -167,7 +167,7 @@ namespace EngineLayer
             return std::nullopt;
         }
         //int index = Array::BinarySearch(DeconvolutedMonoisotopicMasses, mass);
-        int index = binarySearch(DeconvolutedMonoisotopicMasses, mass);
+        int index = BinarySearch(DeconvolutedMonoisotopicMasses, mass);
         if (index >= 0)
         {
             return std::make_optional(index);

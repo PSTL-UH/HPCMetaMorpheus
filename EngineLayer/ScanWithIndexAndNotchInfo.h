@@ -15,7 +15,7 @@ namespace EngineLayer
         
         virtual ~ScanWithIndexAndNotchInfo()
         {
-            delete TheScan;
+            //delete TheScan;
         }
         
         ScanWithIndexAndNotchInfo(Ms2ScanWithSpecificMass *theScan, int notch, int scanIndex);
