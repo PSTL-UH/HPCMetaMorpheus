@@ -50,11 +50,11 @@ namespace EngineLayer
             std::vector<LabeledDataPoint*> getMs1List() const;
             std::vector<LabeledDataPoint*> getMs2List() const;
             
-            const double PsmPrecursorMedianPpmError;
-            const double PsmProductMedianPpmError;
-            const double PsmPrecursorIqrPpmError;
-            const double PsmProductIqrPpmError;
-            const std::vector<PeptideSpectralMatch*> Psms;
+            double PsmPrecursorMedianPpmError;
+            double PsmProductMedianPpmError;
+            double PsmPrecursorIqrPpmError;
+            double PsmProductIqrPpmError;
+            std::vector<PeptideSpectralMatch*> Psms;
             
             int getCount() const;
             

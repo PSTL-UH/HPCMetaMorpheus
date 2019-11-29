@@ -74,9 +74,9 @@ clean:
 	cd ModernSearch; make clean; cd ..
 	cd CrosslinkSearch; make clean; cd ..
 	cd PrecursorSearchModes; make clean; cd ..
+	cd Calibration; make clean; cd ..
+	cd ClassicSearch; make clean; cd ..
 
-#	cd Calibration; make clean; cd ..
-#	cd ClassicSearch; make clean; cd ..
 #	cd Gptmd; make clean; cd ..
 #	cd HistogramAnalysis; make clean; cd ..
 #	cd Localization; make clean; cd ..

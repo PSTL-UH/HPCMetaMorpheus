@@ -21,7 +21,7 @@ namespace EngineLayer
 
 			virtual ~LabeledDataPoint()
 			{
-				delete Identification;
+                            //delete Identification;
 			}
 
 			LabeledDataPoint(double experimentalMz, int scanNumber, double logTotalIonCurrent, double logInjectionTime, double logIntensity, double theoreticalMz, PeptideSpectralMatch *identification);
