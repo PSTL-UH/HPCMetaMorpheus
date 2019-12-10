@@ -322,7 +322,13 @@ namespace TaskLayer
             PpmTolerance tempVar9((4.0 * postCalibrationProductErrorIqr) + std::abs(acquisitionResults->PsmProductMedianPpmError));
             fileSpecificParams->setProductMassTolerance(&tempVar9);
             
+#ifdef ORIG
             Toml::WriteFile(fileSpecificParams, newTomlFileName, tomlConfig);
+#endif
+
+            Toml trw;
+            trw.tomlWriteNewFile(newTomlFileName, fileSpecificParams);
+
             
             std::vector<std::string> vs10 = {taskId, "Individual Spectra Files", originalUncalibratedFilenameWithoutExtension};
             FinishedWritingFile(newTomlFileName, vs10);
