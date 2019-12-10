@@ -49,6 +49,8 @@ using namespace Proteomics::Fragmentation;
 #include "UsefulProteomicsDatabases/UsefulProteomicsDatabases.h"
 using namespace UsefulProteomicsDatabases;
 
+#include "TomlReadWrite.h"
+
 namespace TaskLayer
 {
 	class CalibrationTask : public MetaMorpheusTask
