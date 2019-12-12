@@ -5,11 +5,13 @@
 #include "Mzml.h"
 
 using namespace EngineLayer;
-using namespace IO::MzML;
-using namespace IO::Mgf;
+//using namespace IO::MzML;
+//using namespace IO::Mgf;
 #if defined(NETFRAMEWORK)
 using namespace IO::Thermo;
 #endif
+
+#include "MassSpectrometry/MassSpectrometry.h"
 using namespace MassSpectrometry;
 
 namespace TaskLayer

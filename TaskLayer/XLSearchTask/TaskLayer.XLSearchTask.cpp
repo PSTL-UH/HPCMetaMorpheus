@@ -25,11 +25,25 @@ namespace TaskLayer
 
 	XLSearchTask::XLSearchTask() : MetaMorpheusTask(MyTask::XLSearch)
 	{
-		EngineLayer::CommonParameters tempVar(, , = true, = true, = 3, = 12, = true, = false, = 1, 3, , , , , , , , new PpmTolerance(10));
-		setCommonParameters(&tempVar);
+#ifdef ORIG
+            EngineLayer::CommonParameters tempVar( , , = true, = true, = 3, = 12, = true, = false, = 1, 3, , , , , , , , new PpmTolerance(10));
+#endif
+            std::string taskDescr = "";
+            DissociationType dissType = DissociationType::HCD;
+            int topNpeaks = 200;
+            double minRatio = 0.01;
+            bool trimMs1Peaks = false;
+            bool trimMsMsPeaks = true;
+            bool useDeltaScore = false;
+            bool calculateEValue = false;
 
-		TaskLayer::XlSearchParameters tempVar2();
-		setXlSearchParameters(&tempVar2);
+            EngineLayer::CommonParameters tempVar( taskDescr, dissType, true, true, 3, 12, true, false, 1, 3, topNpeaks,
+                                                   minRatio, trimMs1Peaks, trimMsMsPeaks, useDeltaScore, calculateEValue,
+                                                   nullptr, new PpmTolerance(10));
+            setCommonParameters(&tempVar);
+
+            TaskLayer::XlSearchParameters tempVar2;
+            setXlSearchParameters(&tempVar2);
 	}
 
 	TaskLayer::XlSearchParameters *XLSearchTask::getXlSearchParameters() const
@@ -44,12 +58,12 @@ namespace TaskLayer
 
 	MyTaskResults *XLSearchTask::RunSpecific(const std::string &OutputFolder, std::vector<DbForTask*> &dbFilenameList, std::vector<std::string> &currentRawFileList, const std::string &taskId, std::vector<FileSpecificParameters*> &fileSettingsList)
 	{
-		MyTaskResults = new MyTaskResults(this);
+		myTaskResults = new MyTaskResults(this);
 		std::vector<CrosslinkSpectralMatch*> allPsms;
 
-		std::vector<Modification> variableModifications;
-		std::vector<Modification> fixedModifications;
-		std::vector<string> localizeableModificationTypes;
+		std::vector<Modification*> variableModifications;
+		std::vector<Modification*> fixedModifications;
+		std::vector<std::string> localizeableModificationTypes;
 		LoadModifications(taskId, variableModifications, fixedModifications, localizeableModificationTypes);
 
 		// load proteins
@@ -64,51 +78,94 @@ namespace TaskLayer
 
 		MyFileManager *myFileManager = new MyFileManager(true);
 
+#ifdef ORIG
 		auto fileSpecificCommonParams = fileSettingsList.Select([&] (std::any b)
 		{
 			SetAllFileSpecificCommonParams(getCommonParameters(), b);
 		});
+#endif
+                std::vector<CommonParameters *> fileSpecificCommonParams;
+                for ( auto b : fileSettingsList ) {
+                    fileSpecificCommonParams.push_back(SetAllFileSpecificCommonParams(getCommonParameters(), b));
+                }
+
+#ifdef ORIG
 		std::unordered_set<DigestionParams*> ListOfDigestionParams = std::unordered_set<DigestionParams*>(fileSpecificCommonParams->Select([&] (std::any p)
 		{
 			p::DigestionParams;
 		}));
+#endif
+                std::unordered_set<DigestionParams*> ListOfDigestionParams;
+                for ( auto p : fileSpecificCommonParams ) {
+                    ListOfDigestionParams.emplace(p->getDigestionParams());
+                }
 
-		int completedFiles = 0;
+                int completedFiles = 0;
 		std::any indexLock = std::any();
 		std::any psmLock = std::any();
-
+                
 		Status("Searching files...", taskId);
 
+                DigestionParams *dPar = getCommonParameters()->getDigestionParams();
 		ProseCreatedWhileRunning->append("The following crosslink discovery were used: ");
 		ProseCreatedWhileRunning->append("crosslinker name = " + crosslinker->getCrosslinkerName() + "; ");
 		ProseCreatedWhileRunning->append("crosslinker type = " + StringHelper::toString(crosslinker->getCleavable()) + "; ");
 		ProseCreatedWhileRunning->append("crosslinker mass = " + std::to_string(crosslinker->getTotalMass()) + "; ");
 		ProseCreatedWhileRunning->append("crosslinker modification site(s) = " + crosslinker->getCrosslinkerModSites() + "; ");
 
-		ProseCreatedWhileRunning->append("protease = " + getCommonParameters()->getDigestionParams()->Protease + "; ");
-		ProseCreatedWhileRunning->append("maximum missed cleavages = " + getCommonParameters()->getDigestionParams()->MaxMissedCleavages + "; ");
-		ProseCreatedWhileRunning->append("minimum peptide length = " + getCommonParameters()->getDigestionParams()->MinPeptideLength + "; ");
-		ProseCreatedWhileRunning->append(getCommonParameters()->getDigestionParams()->MaxPeptideLength == std::numeric_limits<int>::max() ? "maximum peptide length = unspecified; " : "maximum peptide length = " + getCommonParameters()->getDigestionParams()->MaxPeptideLength + "; ");
-		ProseCreatedWhileRunning->append("initiator methionine behavior = " + getCommonParameters()->getDigestionParams()->InitiatorMethionineBehavior + "; ");
-		ProseCreatedWhileRunning->append("max modification isoforms = " + getCommonParameters()->getDigestionParams()->MaxModificationIsoforms + "; ");
-
+		ProseCreatedWhileRunning->append("protease = " + dPar->getProtease()->ToString() + "; ");
+		ProseCreatedWhileRunning->append("maximum missed cleavages = " + std::to_string(dPar->getMaxMissedCleavages()) + "; ");
+		ProseCreatedWhileRunning->append("minimum peptide length = " + std::to_string(dPar->getMinPeptideLength()) + "; ");
+		ProseCreatedWhileRunning->append(dPar->getMaxPeptideLength() == std::numeric_limits<int>::max() ?
+                                                 "maximum peptide length = unspecified; " : "maximum peptide length = " +
+                                                 std::to_string(dPar->getMaxPeptideLength()) + "; ");
+		ProseCreatedWhileRunning->append("initiator methionine behavior = " + std::to_string(static_cast<int>(dPar->getInitiatorMethionineBehavior())) + "; ");
+		ProseCreatedWhileRunning->append("max modification isoforms = " + std::to_string(dPar->getMaxModificationIsoforms()) + "; ");
+#ifdef ORIG
 		ProseCreatedWhileRunning->append("fixed modifications = " + std::string::Join(", ", fixedModifications->Select([&] (std::any m)
 		{
 			m::IdWithMotif;
 		}) + "; "));
+#endif
+                std::vector<std::string> vsv;
+                for ( auto m : fixedModifications ) {
+                    vsv.push_back(m->getIdWithMotif());
+                }
+                std::string del = ", ";
+                ProseCreatedWhileRunning->append("fixed modifications = " + StringHelper::join ( vsv, del) + "; ");
+#ifdef ORIG                
 		ProseCreatedWhileRunning->append("variable modifications = " + std::string::Join(", ", variableModifications->Select([&] (std::any m)
 		{
 			m::IdWithMotif;
 		})) + "; ");
-
-		ProseCreatedWhileRunning->append("parent mass tolerance(s) = " + getCommonParameters()->getPrecursorMassTolerance() + "; ");
-		ProseCreatedWhileRunning->append("product mass tolerance = " + getCommonParameters()->getProductMassTolerance() + "; ");
-		ProseCreatedWhileRunning->append("The combined search database contained " + std::to_string(proteinList.size()) + " total entries including " + proteinList.Where([&] (std::any p)
+#endif
+                vsv.clear();
+                for ( auto m : variableModifications ) {
+                    vsv.push_back(m->getIdWithMotif());
+                }
+                ProseCreatedWhileRunning->append("variable modifications = " + StringHelper::join ( vsv, del) + "; ");
+                
+		ProseCreatedWhileRunning->append("parent mass tolerance(s) = " +
+                                                 std::to_string(getCommonParameters()->getPrecursorMassTolerance()->getValue()) + "; ");
+		ProseCreatedWhileRunning->append("product mass tolerance = " +
+                                                 std::to_string(getCommonParameters()->getProductMassTolerance()->getValue()) + "; ");
+#ifdef ORIG
+		ProseCreatedWhileRunning->append("The combined search database contained " + std::to_string(proteinList.size()) +
+                                                 " total entries including " + proteinList.Where([&] (std::any p)
 		{
 			p::IsContaminant;
 		})->Count() + " contaminant sequences. ");
-
-		for (int spectraFileIndex = 0; spectraFileIndex < currentRawFileList.size(); spectraFileIndex++)
+#endif
+                int c1 = 0;
+                for ( auto p: proteinList ) {
+                    if (p->getIsContaminant()) {
+                        c1++;
+                    }
+                }
+                ProseCreatedWhileRunning->append("The combined search database contained " + std::to_string(proteinList.size()) +
+                                                 " total entries including " + std::to_string(c1) + " contaminant sequences. ");
+                
+		for (int spectraFileIndex = 0; spectraFileIndex < (int)currentRawFileList.size(); spectraFileIndex++)
 		{
 			auto origDataFile = currentRawFileList[spectraFileIndex];
 			EngineLayer::CommonParameters *combinedParams = SetAllFileSpecificCommonParams(getCommonParameters(), fileSettingsList[spectraFileIndex]);
@@ -131,7 +188,8 @@ namespace TaskLayer
 				std::vector<PeptideWithSetModifications*> peptideIndex;
 				std::vector<Protein*> proteinListSubset = proteinList.GetRange(currentPartition * proteinList.size()() / combinedParams->getTotalPartitions(), ((currentPartition + 1) * proteinList.size()() / combinedParams->getTotalPartitions()) - (currentPartition * proteinList.size()() / combinedParams->getTotalPartitions()));
 
-				Status("Getting fragment dictionary...", std::vector<std::string> {taskId});
+                                std::vector<std::string> vs = {taskId};
+				Status("Getting fragment dictionary...", vs);
 				auto indexEngine = new IndexingEngine(proteinListSubset, variableModifications, fixedModifications, currentPartition, UsefulProteomicsDatabases::DecoyType::Reverse, combinedParams, 30000.0, false, dbFilenameList.Select([&] (std::any p)
 				{
 					new FileInfo(p::FilePath);
