@@ -2,6 +2,8 @@
 #include "../EngineLayer/CommonParameters.h"
 #include "../EngineLayer/EventArgs/StringEventArgs.h"
 
+#include "Mzml.h"
+
 using namespace EngineLayer;
 using namespace IO::MzML;
 using namespace IO::Mgf;
@@ -81,6 +83,7 @@ const std::string MyFileManager::DesiredXRawFileVersion = "3.0.29.0";
 //C# TO C++ CONVERTER TODO TASK: The following .NET 'String.Equals' reference is not converted:
 			if (Path::GetExtension(origDataFile).Equals(".mzM", StringComparison::OrdinalIgnoreCase))
 			{
+				// arguments:  const std::string &filePath, FilteringParams *filterParams, int maxThreads
 				MyMsDataFiles[origDataFile] = Mzml::LoadAllStaticData(origDataFile, filter, commonParameters->getMaxThreadsToUsePerFile());
 			}
 //C# TO C++ CONVERTER TODO TASK: The following .NET 'String.Equals' reference is not converted:

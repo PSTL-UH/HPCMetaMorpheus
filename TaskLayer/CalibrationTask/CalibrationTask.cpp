@@ -14,7 +14,11 @@
 #include "../../EngineLayer/Calibration/CalibrationEngine.h"
 
 #include "UsefulProteomicsDatabases/UsefulProteomicsDatabases.h"
+
+#include "Mzml.h"
+
 using namespace UsefulProteomicsDatabases;
+using namespace IO::MzML;
 
 #include "stringhelper.h"
 
@@ -292,6 +296,7 @@ namespace TaskLayer
             myMsDataFile = engine->getCalibratedDataFile();
             
             // write the calibrated mzML file
+            //arguments:  MsDataFile *myMsDataFile, const std::string &outputFile, bool writeIndexed
             MzmlMethods::CreateAndWriteMyMzmlWithCalibratedSpectra(myMsDataFile, calibratedFilePath, false);
             myFileManager->DoneWithFile(originalUncalibratedFilePath);
             
