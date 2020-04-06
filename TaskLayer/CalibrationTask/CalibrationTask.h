@@ -12,11 +12,7 @@
 
 #include "CalibrationParameters.h"
 #include "../DbForTask.h"
-
-//namespace TaskLayer { class FileSpecificParameters; }
 #include "../FileSpecificParameters.h"
-
-//namespace TaskLayer { class MyTaskResults; }
 #include "../MyTaskResults.h"
 
 #include "../../EngineLayer/Calibration/DataPointAquisitionResults.h"

@@ -1,4 +1,8 @@
-﻿#include "CalibrationTask.h"
+﻿#include <experimental/filesystem>
+#include <iostream>
+#include <fstream>
+
+#include "CalibrationTask.h"
 #include "CalibrationParameters.h"
 #include "../../EngineLayer/CommonParameters.h"
 #include "../DbForTask.h"
@@ -19,6 +23,9 @@
 #include "MzML/MzmlMethods.h"
 
 using namespace UsefulProteomicsDatabases;
+using namespace IO::MzML;
+
+#include "MzML/MzmlMethods.h"
 using namespace IO::MzML;
 
 #include "stringhelper.h"
@@ -162,9 +169,14 @@ namespace TaskLayer
             
             // get filename stuff
             auto originalUncalibratedFilePath = currentRawFileList[spectraFileIndex];
+#ifdef ORIG
             std::string originalUncalibratedFilenameWithoutExtension = Path::GetFileNameWithoutExtension(originalUncalibratedFilePath);
             std::string calibratedFilePath = FileSystem::combine(OutputFolder, originalUncalibratedFilenameWithoutExtension +
                                                                  CalibSuffix + ".mzM");
+#endif
+            size_t lastindex = originalUncalibratedFilePath.find_last_of(".");
+            std::string originalUncalibratedFilenameWithoutExtension = originalUncalibratedFilePath.substr(0, lastindex);
+            std::string calibratedFilePath = OutputFolder + originalUncalibratedFilenameWithoutExtension + CalibSuffix + ".mzM";
             
             // mark the file as in-progress
             std::vector<std::string> vs2 = {taskId, "Individual Spectra Files", originalUncalibratedFilePath};
@@ -249,14 +261,18 @@ namespace TaskLayer
                 }
                 
                 Warn("Could not find enough PSMs to calibrate with; opening up tolerances to " +
-                     std::to_string(std::round(getCommonParameters()->getPrecursorMassTolerance()->getValue() * std::pow(10, 2)) / std::pow(10, 2)) +
-                     " ppm precursor and " + std::to_string(std::round(getCommonParameters()->getProductMassTolerance()->getValue() * std::pow(10, 2)) / std::pow(10, 2)) +
+                     std::to_string(std::round(getCommonParameters()->getPrecursorMassTolerance()->getValue() * std::pow(10, 2)) /
+                                    std::pow(10, 2)) +
+                     " ppm precursor and " + std::to_string(std::round(getCommonParameters()->getProductMassTolerance()->getValue() *
+                                                                       std::pow(10, 2)) / std::pow(10, 2)) +
                      " ppm product");
             }
             
             if (couldNotFindEnoughDatapoints)
             {
-                spectraFilesAfterCalibration.push_back(Path::GetFileNameWithoutExtension(currentRawFileList[spectraFileIndex]));
+                size_t lastindex = currentRawFileList[spectraFileIndex].find_last_of(".");
+                std::string fname = currentRawFileList[spectraFileIndex].substr(0, lastindex); 
+                spectraFilesAfterCalibration.push_back(fname);
                 std::vector<std::string> vs = {taskId, "Individual Spectra Files", originalUncalibratedFilenameWithoutExtension};
                 ProgressEventArgs tempVar7(100, "Failed to calibrate!", vs);
                 ReportProgress(&tempVar7);
@@ -342,7 +358,9 @@ namespace TaskLayer
             FinishedWritingFile(newTomlFileName, vs10);
             
             // finished calibrating this file
-            spectraFilesAfterCalibration.push_back(Path::GetFileNameWithoutExtension(calibratedFilePath));
+            size_t lastindex2 = calibratedFilePath.find_last_of(".");
+            std::string fname2 = calibratedFilePath.substr(0, lastindex2);
+            spectraFilesAfterCalibration.push_back(fname2);
             std::vector<std::string> vs11 = {taskId, "Individual Spectra Files", originalUncalibratedFilenameWithoutExtension};
             FinishedWritingFile(calibratedFilePath, vs11);
             myTaskResults->NewSpectra.push_back(calibratedFilePath);
@@ -359,9 +377,10 @@ namespace TaskLayer
         }
         
         // re-write experimental design (if it has been defined) with new calibrated file names
-        std::string assumedPathToExperDesign = Directory::GetParent(currentRawFileList.front())->FullName;
-        assumedPathToExperDesign = FileSystem::combine(assumedPathToExperDesign, GlobalVariables::getExperimentalDesignFileName());
-        
+        //std::string assumedPathToExperDesign = Directory::GetParent(currentRawFileList.front())->FullName;
+        std::string assumedPathToExperDesign = std::experimental::filesystem::path(currentRawFileList.front()).parent_path().string();
+        //assumedPathToExperDesign = FileSystem::combine(assumedPathToExperDesign, GlobalVariables::getExperimentalDesignFileName());
+        assumedPathToExperDesign = assumedPathToExperDesign + GlobalVariables::getExperimentalDesignFileName();
         if (FileSystem::fileExists(assumedPathToExperDesign))
         {
             WriteNewExperimentalDesignFile(assumedPathToExperDesign, OutputFolder, spectraFilesAfterCalibration);
@@ -399,7 +418,9 @@ namespace TaskLayer
     
     DataPointAquisitionResults *CalibrationTask::GetDataAcquisitionResults(MsDataFile *myMsDataFile, const std::string &currentDataFile, std::vector<Modification*> &variableModifications, std::vector<Modification*> &fixedModifications, std::vector<Protein*> &proteinList, const std::string &taskId, EngineLayer::CommonParameters *combinedParameters, Tolerance *initPrecTol, Tolerance *initProdTol)
     {
-        std::string fileNameWithoutExtension = Path::GetFileNameWithoutExtension(currentDataFile);
+        //std::string fileNameWithoutExtension = Path::GetFileNameWithoutExtension(currentDataFile);
+        size_t lastindex = currentDataFile.find_last_of(".");
+        std::string fileNameWithoutExtension = currentDataFile.substr(0, lastindex);
         SinglePpmAroundZeroSearchMode tempVar(initPrecTol->getValue());
         MassDiffAcceptor *searchMode = dynamic_cast<PpmTolerance*>(initPrecTol) != nullptr ? static_cast<MassDiffAcceptor*>(&tempVar):
             new SingleAbsoluteAroundZeroSearchMode(initPrecTol->getValue());
@@ -517,14 +538,28 @@ namespace TaskLayer
     
     void CalibrationTask::WriteNewExperimentalDesignFile(const std::string &assumedPathToExperDesign, const std::string &outputFolder, std::vector<std::string> &spectraFilesAfterCalibration)
     {
-        std::vector<std::string> lines = File::ReadAllLines(assumedPathToExperDesign);
-        //std::vector<std::string> newExperimentalDesignOutput = std::vector<std::vector<std::string>>(0) };
+        //std::vector<std::string> lines = File::ReadAllLines(assumedPathToExperDesign);
+        std::vector<std::string> lines;
+        std::ifstream input(assumedPathToExperDesign);
+        if ( input.is_open() ) {
+            std::string line;
+            while ( getline(input, line ) ) {
+                lines.push_back(line);
+            }
+        }
+        else {
+            std::cout << "Could not open file " << assumedPathToExperDesign << std::endl;
+        }
+        input.close();
         std::vector<std::string> newExperimentalDesignOutput;
         
         for (int i = 1; i < (int)lines.size(); i++)
         {
-            auto split = StringHelper::split(lines[i], L'\t');
-            std::string oldFileName = Path::GetFileNameWithoutExtension(split[0]);
+            auto split = StringHelper::split(lines[i], '\t');
+            //std::string oldFileName = Path::GetFileNameWithoutExtension(split[0]);
+            size_t lastindex = split[0].find_last_of(".");
+            std::string oldFileName = split[0].substr(0, lastindex);
+
             std::string newFileName = oldFileName + CalibSuffix;
             std::string newline;
             
@@ -549,7 +584,15 @@ namespace TaskLayer
             newExperimentalDesignOutput.push_back(newline);
         }
         
-        File::WriteAllLines(FileSystem::combine(outputFolder, GlobalVariables::getExperimentalDesignFileName()), newExperimentalDesignOutput);
+        //File::WriteAllLines(FileSystem::combine(outputFolder, GlobalVariables::getExperimentalDesignFileName()), newExperimentalDesignOutput);
+        std::string fname = outputFolder + GlobalVariables::getExperimentalDesignFileName();
+        std::ofstream output ( fname ) ;
+        if ( output.is_open() ) {
+            for ( auto l : newExperimentalDesignOutput ) {
+                output << l << std::endl;
+            }
+        }
+        output.close();
     }
 }
 
