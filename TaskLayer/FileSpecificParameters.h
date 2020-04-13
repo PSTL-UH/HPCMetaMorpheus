@@ -7,7 +7,6 @@ using namespace EngineLayer;
 
 #include "MzLibUtil.h"
 using namespace MzLibUtil;
-//using namespace Nett;
 
 #include"Proteomics/ProteolyticDigestion/ProteinDigestion.h"
 using namespace Proteomics::ProteolyticDigestion;
@@ -30,10 +29,7 @@ namespace TaskLayer
 		std::optional<DissociationType*> privateDissociationType;
 
 	public:
-#ifdef ORIG
-		FileSpecificParameters(TomlTable *tomlTable);
-#endif
-		//New constructor using tinytoml
+		
 		FileSpecificParameters(toml::Table tomlTable);
 		FileSpecificParameters();
 
@@ -53,6 +49,8 @@ namespace TaskLayer
 		void setMaxModsForPeptide(std::optional<int> value);
 		std::optional<DissociationType*> getDissociationType() const;
 		void setDissociationType(std::optional<DissociationType*> value);
+
+		toml::Table getFileSpecificParametersTomlTable();
 
 		// This method is to make sure developers keep consistent naming between CommonParameters and FileSpecificParameters.
 		// It's supposed to immediately crash MetaMorpheus if you rename a Common Parameter and don't rename it here.

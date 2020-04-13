@@ -15,7 +15,8 @@
 
 #include "UsefulProteomicsDatabases/UsefulProteomicsDatabases.h"
 
-#include "Mzml.h"
+#include "MzML/Mzml.h"
+#include "MzML/MzmlMethods.h"
 
 using namespace UsefulProteomicsDatabases;
 using namespace IO::MzML;
@@ -331,8 +332,10 @@ namespace TaskLayer
             Toml::WriteFile(fileSpecificParams, newTomlFileName, tomlConfig);
 #endif
 
+            toml::Table fileSpecificParamsTable = fileSpecificParams->getFileSpecificParametersTomlTable();
+
             Toml trw;
-            trw.tomlWriteNewFile(newTomlFileName, fileSpecificParams);
+            trw.tomlWriteNewFile(newTomlFileName, fileSpecificParamsTable);
 
             
             std::vector<std::string> vs10 = {taskId, "Individual Spectra Files", originalUncalibratedFilenameWithoutExtension};

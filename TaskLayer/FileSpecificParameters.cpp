@@ -4,7 +4,6 @@
 
 using namespace EngineLayer;
 using namespace MzLibUtil;
-using namespace Nett;
 using namespace Proteomics::ProteolyticDigestion;
 using namespace MassSpectrometry;
 
@@ -71,10 +70,14 @@ namespace TaskLayer
 				setProductMassTolerance(t);
 			}
 			else if (keyValuePair.first == "Protease") {
-				// setProtease(keyValuePair.second.as<std::string>());
-
-				//Dr. Gabriel, I'm still working on creating the correct Protease instance
-
+				std::string name = keyValuePair.second.as<std::string>();
+				std::vector<DigestionMotif*> dm;
+				
+				//create Protease instance
+				//Where do we find these parameters, I havent not found a toml file that specifies any other than "name"?
+				//Protease(const std::string &name, Proteomics::ProteolyticDigestion::CleavageSpecificity cleavageSpecificity, const std::string &psiMSAccessionNumber, const std::string &psiMSName, std::vector<DigestionMotif*> &motifList)
+				Protease p = Protease(name, Proteomics::ProteolyticDigestion::CleavageSpecificity::Unknown, "", "", dm);
+				setProtease(&p);
 			}
 			else if (keyValuePair.first == "MinPeptideLength") {
 				int MinPeptideLength = keyValuePair.second.as<int>();
@@ -94,9 +97,9 @@ namespace TaskLayer
 			}
 			else if (keyValuePair.first == "DissociationType") {
 				// setDissociationType(keyValuePair.second->Get<MassSpectrometry::DissociationType*>());
-
-				//I'm still working on what to do with the Dissociation type
-
+				std::string type = keyValuePair.second.as<std::string>();
+				MassSpectrometry::DissociationType d = MassSpectrometry::GetDissocationType::GetDissocationTypeFromString(type);
+				setDissociationType(std::make_optional(&d));
 			}
 
 			//Should this be an Else statement?  Not sure how to handle exception.  This is commented out because 
@@ -191,6 +194,54 @@ namespace TaskLayer
 	void FileSpecificParameters::setDissociationType(std::optional<DissociationType*> value)
 	{
 		privateDissociationType = value;
+	}
+
+	toml::Table FileSpecificParameters::getFileSpecificParametersTomlTable()
+	{
+		toml::Table FileParameters;
+
+		Tolerance *precursorMassTolerance = FileSpecificParameters::getPrecursorMassTolerance();
+		Tolerance *productMassTolerance = FileSpecificParameters::getProductMassTolerance();
+		Protease *protease = FileSpecificParameters::getProtease();
+		std::optional<int> minPeptideLength = FileSpecificParameters::getMinPeptideLength();
+		std::optional<int> maxPeptideLength = FileSpecificParameters::getMaxPeptideLength();
+		std::optional<int> maxMissedCleavages = FileSpecificParameters::getMaxMissedCleavages();
+		std::optional<int> maxModsforPeptide = FileSpecificParameters::getMaxModsForPeptide();
+		std::optional<DissociationType*> dissociationType = FileSpecificParameters::getDissociationType();
+
+		if (precursorMassTolerance != nullptr){
+			FileParameters["PrecursorMassTolerance"] = std::to_string(precursorMassTolerance->getValue());
+		}
+		if (productMassTolerance != nullptr){
+			FileParameters["ProductMassTolerance"] = std::to_string(productMassTolerance->getValue());
+		}
+		if (protease != nullptr){
+			FileParameters["Protease"] = protease->getName();
+			FileParameters["CleavageSpecificity"] = Proteomics::ProteolyticDigestion::CleavageSpecificityExtension::GetCleavageSpecificityAsString(protease->getCleavageSpecificity());
+			FileParameters["PsiMsAccessionNumber"] = protease->getPsiMsAccessionNumber();
+			FileParameters["PsiMsName"] = protease->getPsiMsName();
+			
+			//how to handle DigestionMotif?  Protease has a vector of DigestionMotifs.
+			//Each DigestionMotif has 3 public string attributes:  InducingCleavage, PreventingCleavage, ExcludeFromWildcard
+			//And one int attribute:  CutIndex
+		}
+		if (minPeptideLength.has_value()){
+			FileParameters["MinPeptideLength"] = std::to_string(minPeptideLength.value());
+		}
+		if (maxPeptideLength.has_value()){
+			FileParameters["MaxPeptideLength"] = std::to_string(maxPeptideLength.value());
+		}
+		if (maxMissedCleavages.has_value()){
+			FileParameters["MaxMissedCleavages"] = std::to_string(maxMissedCleavages.value());
+		}
+		if (maxModsforPeptide.has_value()){
+			FileParameters["MaxModsforPeptide"] = std::to_string(maxModsforPeptide.value());
+		}
+		if (dissociationType.has_value()){
+			FileParameters["DissociationType"] = MassSpectrometry::GetDissocationType::GetDissocationTypeAsString(*dissociationType.value());
+		}
+
+		return FileParameters;
 	}
 
 	void FileSpecificParameters::ValidateFileSpecificVariableNames()
