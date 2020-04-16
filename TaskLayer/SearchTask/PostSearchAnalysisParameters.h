@@ -9,7 +9,6 @@
 namespace TaskLayer { class MyTaskResults; }
 //namespace TaskLayer { class SearchParameters; }
 #include "SearchParameters.h"
-//namespace EngineLayer { class PeptideSpectralMatch; }
 #include "../../EngineLayer/PeptideSpectralMatch.h"
 
 namespace TaskLayer { class FileSpecificParameters; }
@@ -19,7 +18,9 @@ namespace TaskLayer { class MyFileManager; }
 
 #include "../../EngineLayer/MetaMorpheusEngine.h"
 using namespace EngineLayer;
-//using namespace FlashLFQ;
+
+#include "FlashLFQ/FlashLFQResults.h"
+using namespace FlashLFQ;
 
 #include "Proteomics/Proteomics.h"
 using namespace Proteomics;

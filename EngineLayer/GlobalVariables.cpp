@@ -17,7 +17,8 @@ namespace EngineLayer
     GlobalSettings GlobalVariables::privateGlobalSettings;
     std::vector<Modification*> GlobalVariables::privateUnimodDeserialized;
     std::vector<Modification*> GlobalVariables::privateUniprotDeseralized;
-    UsefulProteomicsDatabases::Generated::obo *GlobalVariables::privatePsiModDeserialized;
+    //UsefulProteomicsDatabases::obo *GlobalVariables::privatePsiModDeserialized;
+    obo *GlobalVariables::privatePsiModDeserialized;
     std::unordered_map<std::string, Modification*> GlobalVariables::privateAllModsKnownDictionary;
     std::unordered_map<std::string, DissociationType> GlobalVariables::privateAllSupportedDissociationTypes;
     std::string GlobalVariables::privateExperimentalDesignFileName;
@@ -182,7 +183,8 @@ namespace EngineLayer
         return privateUniprotDeseralized;
     }
     
-    UsefulProteomicsDatabases::Generated::obo *GlobalVariables::getPsiModDeserialized()
+    //UsefulProteomicsDatabases::obo *GlobalVariables::getPsiModDeserialized()
+    obo *GlobalVariables::getPsiModDeserialized()
     {
         return privatePsiModDeserialized;
     }

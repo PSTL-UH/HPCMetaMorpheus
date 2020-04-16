@@ -8,13 +8,10 @@
 #include "stringhelper.h"
 #include "tangible_filesystem.h"
 
-//C# TO C++ CONVERTER NOTE: Forward class declarations:
-//namespace EngineLayer { class IGlobalSettings; }
 #include "IGlobalSettings.h"
 
 #include "MassSpectrometry/MassSpectrometry.h"
 using namespace MassSpectrometry;
-//using namespace Nett;
 
 #include "Proteomics/Proteomics.h"
 using namespace Proteomics;
@@ -36,7 +33,8 @@ namespace EngineLayer
 		static GlobalSettings privateGlobalSettings;
 		static std::vector<Modification*> privateUnimodDeserialized;
 		static std::vector<Modification*> privateUniprotDeseralized;
-		static UsefulProteomicsDatabases::Generated::obo *privatePsiModDeserialized;
+		//static UsefulProteomicsDatabases::obo *privatePsiModDeserialized;
+		static obo *privatePsiModDeserialized;
 		static std::unordered_map<std::string, Modification*> privateAllModsKnownDictionary;
 		static std::unordered_map<std::string, DissociationType> privateAllSupportedDissociationTypes;
 		static std::string privateExperimentalDesignFileName;
@@ -66,7 +64,8 @@ namespace EngineLayer
 		static GlobalSettings getGlobalSettings();
 		static std::vector<Modification*> getUnimodDeserialized();
 		static std::vector<Modification*> getUniprotDeseralized();
-		static UsefulProteomicsDatabases::Generated::obo *getPsiModDeserialized();
+		//static UsefulProteomicsDatabases::obo *getPsiModDeserialized();
+		static obo *getPsiModDeserialized();
 		static std::vector<Modification*> getAllModsKnown();
 		//static std::vector<std::string> getAllModTypesKnown();
 		static std::unordered_set<std::string> getAllModTypesKnown();

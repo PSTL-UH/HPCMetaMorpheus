@@ -12,9 +12,13 @@
 #include "stringbuilder.h"
 
 //C# TO C++ CONVERTER NOTE: Forward class declarations:
+#include "../PeptideSpectralMatch.h"
 namespace EngineLayer { class PeptideSpectralMatch; }
 
+#include "FlashLFQ/FlashLFQ.h"
 using namespace FlashLFQ;
+
+#include "Proteomics/Proteomics.h"
 using namespace Proteomics;
 using namespace Proteomics::ProteolyticDigestion;
 
