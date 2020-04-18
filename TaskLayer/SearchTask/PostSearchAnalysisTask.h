@@ -12,24 +12,38 @@
 #include "stringhelper.h"
 #include "tangible_filesystem.h"
 
-//C# TO C++ CONVERTER NOTE: Forward class declarations:
-namespace TaskLayer { class PostSearchAnalysisParameters; }
-namespace EngineLayer { class ProteinGroup; }
-namespace EngineLayer { class PeptideSpectralMatch; }
-namespace TaskLayer { class MyTaskResults; }
-namespace TaskLayer { class DbForTask; }
-namespace TaskLayer { class FileSpecificParameters; }
+#include "PostSearchAnalysisParameters.h"
+#include "../../EngineLayer/ProteinParsimony/ProteinGroup.h"
+#include "../../EngineLayer/PeptideSpectralMatch.h"
+#include "../MyTaskResults.h"
+#include "../DbForTask.h"
+#include "../FileSpecificParameters.h"
 
+#include "../../EngineLayer/EngineLayer.h"
 using namespace EngineLayer;
 using namespace EngineLayer::FdrAnalysis;
+
+#include "../../EngineLayer/HistogramAnalysis/BinTreeStructure.h"
 using namespace EngineLayer::HistogramAnalysis;
+
+#include "../../EngineLayer/Localization/LocalizationEngineResults.h"
 using namespace EngineLayer::Localization;
+
+#include "../../EngineLayer/ModificationAnalysis/ModificationAnalysisResults.h"
 using namespace EngineLayer::ModificationAnalysis;
+
+#include "FlashLFQ/FlashLFQResults.h"
 using namespace FlashLFQ;
+
+#include "MassSpectrometry/MassSpectrometry.h"
 using namespace MassSpectrometry;
-using namespace MathNet::Numerics::Distributions;
+//using namespace MathNet::Numerics::Distributions;
+
+#include "Proteomics/Proteomics.h"
 using namespace Proteomics;
 using namespace Proteomics::ProteolyticDigestion;
+
+#include "UsefulProteomicsDatabases/UsefulProteomicsDatabases.h"
 using namespace UsefulProteomicsDatabases;
 
 namespace TaskLayer
@@ -39,7 +53,8 @@ namespace TaskLayer
 	private:
 		PostSearchAnalysisParameters *privateParameters;
 		std::vector<EngineLayer::ProteinGroup*> privateProteinGroups;
-		std::vector<IGrouping<std::string, PeptideSpectralMatch*>*> privatePsmsGroupedByFile;
+		//std::vector<IGrouping<std::string, PeptideSpectralMatch*>*> privatePsmsGroupedByFile;
+		std::vector<std::unordered_map<std::string, std::vector<PeptideSpectralMatch*>>*> privatePsmsGroupedByFile;
 
 	public:
 		PostSearchAnalysisParameters *getParameters() const;
@@ -47,8 +62,12 @@ namespace TaskLayer
 	private:
 		std::vector<EngineLayer::ProteinGroup*> getProteinGroups() const;
 		void setProteinGroups(const std::vector<EngineLayer::ProteinGroup*> &value);
-		std::vector<IGrouping<std::string, PeptideSpectralMatch*>*> getPsmsGroupedByFile() const;
-		void setPsmsGroupedByFile(const std::vector<IGrouping<std::string, PeptideSpectralMatch*>*> &value);
+
+		//std::vector<IGrouping<std::string, PeptideSpectralMatch*>*> getPsmsGroupedByFile() const;
+		std::vector<std::unordered_map<std::string, std::vector<PeptideSpectralMatch*>>*> getPsmsGroupedByFile() const;
+
+                //void setPsmsGroupedByFile(const std::vector<IGrouping<std::string, PeptideSpectralMatch*>*> &value);
+                void setPsmsGroupedByFile(const std::vector<std::unordered_map<std::string, std::vector<PeptideSpectralMatch*>>*> &value);
 
 	public:
 		PostSearchAnalysisTask();

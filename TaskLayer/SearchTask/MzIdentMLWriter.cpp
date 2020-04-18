@@ -436,8 +436,8 @@ namespace TaskLayer
                         //tempVar21->locationSpecified() = true;
                         tempVar21->monoisotopicMassDelta().set(std::get<1>(mod)->getMonoisotopicMass().value());
                         //tempVar21->monoisotopicMassDeltaSpecified() = true;
-                        std::string s21 = std::to_string(peptide->getBaseSequence()[std::min(std::max(0, mod.first - 2), peptide->getLength() - 1)]);
-                        mzIdentML110::listOfChars t21a (s21.begin(), s21.end());
+                        auto s21 = std::to_string(peptide->getBaseSequence()[std::min(std::max(0, mod.first - 2), peptide->getLength() - 1)]);
+                        mzIdentML110::listOfChars t21a (1, s21.c_str());
                         tempVar21->residues().set(t21a);
                         auto t21 = new mzIdentML110::ModificationType::cvParam_sequence();
                         t21->push_back(*GetUnimodCvParam(std::get<1>(mod)));
@@ -701,7 +701,7 @@ namespace TaskLayer
             auto t38 = new mzIdentML110::SearchModificationType::cvParam_sequence();
             t38->push_back(*GetUnimodCvParam(mod));
             tempVar38->cvParam() = *t38;
-            _mzid->AnalysisProtocolCollection().SpectrumIdentificationProtocol()[0].ModificationParams().get()[mod_index] = tempVar38;
+            _mzid->AnalysisProtocolCollection().SpectrumIdentificationProtocol()[0].ModificationParams().get().SearchModification()[mod_index] = *tempVar38;
             mod_index++;
         }
         
@@ -714,7 +714,7 @@ namespace TaskLayer
             auto t39 = new mzIdentML110::SearchModificationType::cvParam_sequence();
             t39->push_back(*GetUnimodCvParam(mod));
             tempVar39->cvParam() = *t39;
-            _mzid->AnalysisProtocolCollection().SpectrumIdentificationProtocol()[0].ModificationParams().get()[mod_index] = tempVar39;
+            _mzid->AnalysisProtocolCollection().SpectrumIdentificationProtocol()[0].ModificationParams().get().SearchModification()[mod_index] = *tempVar39;
             mod_index++;
         }
         
@@ -820,13 +820,27 @@ namespace TaskLayer
         //_indexedSerializer->Serialize(writer, _mzid);
         //writer->Close();
         //delete _indexedSerializer;
+
+        // Serialize the object model to XML.
+        //
+        xml_schema::namespace_infomap map;
+        map[""].name = "";
+        map[""].schema = "/home/gabriel/XLMS/mzlib-master/MzIdentML/mzIdentML110.xsd";
+
+        // Serialize to a file.
+        try{
+            std::ofstream ofs (outputPath);
+            mzIdentML110::MzIdentML (ofs, *_mzid, map);
+            ofs.close();
+        }
+
+        catch (const xml_schema::exception& e)
+        {
+            std::cerr << e << std::endl;
+        }
+
         
-        //C# TO C++ CONVERTER TODO TASK: A 'delete _mzid' statement was not added
-        //since _mzid was passed to a method or constructor. Handle memory management manually.
-        //C# TO C++ CONVERTER TODO TASK: A 'delete settings' statement was not added since
-        //settings was passed to a method or constructor. Handle memory management manually.
-        //C# TO C++ CONVERTER TODO TASK: A 'delete utf8EmitBOM' statement was not added since
-        //utf8EmitBOM was assigned to another object. Handle memory management manually.
+        delete _mzid;
     }
     
     mzIdentML110::CVParamType *MzIdentMLWriter::GetUnimodCvParam(Modification *mod)

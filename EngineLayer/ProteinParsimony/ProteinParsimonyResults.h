@@ -5,24 +5,23 @@
 #include <vector>
 #include "stringbuilder.h"
 
-//C# TO C++ CONVERTER NOTE: Forward class declarations:
-namespace EngineLayer { class ProteinGroup; }
+#include "ProteinGroup.h"
 namespace EngineLayer { class ProteinParsimonyEngine; }
 
 
 namespace EngineLayer
 {
-	class ProteinParsimonyResults : public MetaMorpheusEngineResults
-	{
-	private:
-		std::vector<ProteinGroup*> privateProteinGroups;
-
-	public:
-		ProteinParsimonyResults(ProteinParsimonyEngine *proteinAnalysisEngine);
-
-		std::vector<ProteinGroup*> getProteinGroups() const;
-		void setProteinGroups(const std::vector<ProteinGroup*> &value);
-
-		std::string ToString();
-	};
+    class ProteinParsimonyResults : public MetaMorpheusEngineResults
+    {
+    private:
+        std::vector<ProteinGroup*> privateProteinGroups;
+        
+    public:
+        ProteinParsimonyResults(ProteinParsimonyEngine *proteinAnalysisEngine);
+        
+        std::vector<ProteinGroup*> getProteinGroups() const;
+        void setProteinGroups(const std::vector<ProteinGroup*> &value);
+        
+        std::string ToString();
+    };
 }

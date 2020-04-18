@@ -23,7 +23,7 @@ using namespace EngineLayer::Localization;
 using namespace EngineLayer::ModificationAnalysis;
 using namespace FlashLFQ;
 using namespace MassSpectrometry;
-using namespace MathNet::Numerics::Distributions;
+//using namespace MathNet::Numerics::Distributions;
 using namespace Proteomics;
 using namespace Proteomics::ProteolyticDigestion;
 using namespace UsefulProteomicsDatabases;
@@ -73,43 +73,41 @@ namespace TaskLayer
 			return getParameters()->getSearchTaskResults();
 		}
 
-		if (getParameters()->getSearchParameters()->getMassDiffAcceptorType() == MassDiffAcceptorType::ModOpen || getParameters()->getSearchParameters()->getMassDiffAcceptorType() == MassDiffAcceptorType::Open || getParameters()->getSearchParameters()->getMassDiffAcceptorType() == MassDiffAcceptorType::Custom)
+		if ( getParameters()->getSearchParameters()->getMassDiffAcceptorType() == MassDiffAcceptorType::ModOpen ||
+                     getParameters()->getSearchParameters()->getMassDiffAcceptorType() == MassDiffAcceptorType::Open ||
+                     getParameters()->getSearchParameters()->getMassDiffAcceptorType() == MassDiffAcceptorType::Custom)
 		{
-			// This only makes sense if there is a mass difference that you want to localize. No use for exact and missed monoisotopic mass searches.
-			getParameters()->getSearchParameters()->setDoLocalizationAnalysis(true);
+                    // This only makes sense if there is a mass difference that you want to localize.
+                    //No use for exact and missed monoisotopic mass searches.
+                    getParameters()->getSearchParameters()->setDoLocalizationAnalysis(true);
 		}
 		else
 		{
-			getParameters()->getSearchParameters()->setDoLocalizationAnalysis(false);
+                    getParameters()->getSearchParameters()->setDoLocalizationAnalysis(false);
 		}
 
 		//update all psms with peptide info
-		if (getParameters()->getSearchParameters()->getSearchType() != SearchType::NonSpecific) //if it hasn't been done already
+                //if it hasn't been done already
+		if (getParameters()->getSearchParameters()->getSearchType() != SearchType::NonSpecific) 
 		{
-			getParameters()->setAllPsms(getParameters()->getAllPsms().Where([&] (std::any psm)
-			{
+                    getParameters()->setAllPsms(getParameters()->getAllPsms().Where([&] (std::any psm){
 				return psm != nullptr;
-			}).ToList());
-			std::for_each(getParameters()->AllPsms.begin(), getParameters()->AllPsms.end(), [&] (std::any psm)
-			{
-				psm::ResolveAllAmbiguities();
+                            }).ToList());
+                    std::for_each(getParameters()->AllPsms.begin(), getParameters()->AllPsms.end(), [&] (std::any psm)	{
+                            psm::ResolveAllAmbiguities();
 			});
-
-			getParameters()->setAllPsms(getParameters()->getAllPsms().OrderByDescending([&] (std::any b)
-			{
+                    
+                    getParameters()->setAllPsms(getParameters()->getAllPsms().OrderByDescending([&] (std::any b) {
 				b::Score;
-			}).ThenBy([&] (std::any b)
-			{
-				b::PeptideMonisotopicMass.HasValue ? std::abs(b::ScanPrecursorMass - b::PeptideMonisotopicMass->Value) : std::numeric_limits<double>::max();
-			}).GroupBy([&] (std::any b)
-			{
+                            }).ThenBy([&] (std::any b)	{
+                                    b::PeptideMonisotopicMass.HasValue ? std::abs(b::ScanPrecursorMass - b::PeptideMonisotopicMass->Value) : std::numeric_limits<double>::max();
+                                }).GroupBy([&] (std::any b) {
 				(b::FullFilePath, b::ScanNumber, b::PeptideMonisotopicMass);
-			})->Select([&] (std::any b)
-			{
-				b::First();
-			}).ToList());
-
-			CalculatePsmFdr();
+                                    })->Select([&] (std::any b)  {
+                                            b::First();
+                                        }).ToList());
+                    
+                    CalculatePsmFdr();
 		}
 
 		DoMassDifferenceLocalizationAnalysis();
@@ -128,7 +126,11 @@ namespace TaskLayer
 		return getParameters()->getSearchTaskResults();
 	}
 
-	MyTaskResults *PostSearchAnalysisTask::RunSpecific(const std::string &OutputFolder, std::vector<DbForTask*> &dbFilenameList, std::vector<std::string> &currentRawFileList, const std::string &taskId, std::vector<FileSpecificParameters*> &fileSettingsList)
+	MyTaskResults *PostSearchAnalysisTask::RunSpecific(const std::string &OutputFolder,
+                                                           std::vector<DbForTask*> &dbFilenameList,
+                                                           std::vector<std::string> &currentRawFileList,
+                                                           const std::string &taskId,
+                                                           std::vector<FileSpecificParameters*> &fileSettingsList)
 	{
 		return nullptr;
 	}
@@ -1160,12 +1162,15 @@ namespace TaskLayer
 		FinishedWritingFile(fullSeqPath, nestedIds);
 	}
 
-	void PostSearchAnalysisTask::WritePeakQuantificationResultsToTsv(FlashLfqResults *flashLFQResults, const std::string &outputFolder, const std::string &fileName, std::vector<std::string> &nestedIds)
+       void PostSearchAnalysisTask::WritePeakQuantificationResultsToTsv(FlashLfqResults *flashLFQResults,
+                                                                         const std::string &outputFolder,
+                                                                         const std::string &fileName,
+                                                                         std::vector<std::string> &nestedIds)
 	{
-		auto peaksPath = FileSystem::combine(outputFolder, fileName + ".tsv");
-
-		flashLFQResults->WriteResults(peaksPath, nullptr, nullptr);
-
-		FinishedWritingFile(peaksPath, nestedIds);
+            auto peaksPath = FileSystem::combine(outputFolder, fileName + ".tsv");
+            
+            flashLFQResults->WriteResults(peaksPath, nullptr, nullptr);
+            
+            FinishedWritingFile(peaksPath, nestedIds);
 	}
 }

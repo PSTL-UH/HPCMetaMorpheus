@@ -6,46 +6,51 @@
 #include <vector>
 
 //C# TO C++ CONVERTER NOTE: Forward class declarations:
-namespace EngineLayer { class PeptideSpectralMatch; }
-namespace EngineLayer { class CommonParameters; }
+#include "../PeptideSpectralMatch.h"
+#include "../CommonParameters.h"
 
+#include "ParsimonySequence.h"
 using namespace EngineLayer::ProteinParsimony;
+
+#include "Proteomics/Proteomics.h"
 using namespace Proteomics;
 using namespace Proteomics::ProteolyticDigestion;
 
 namespace EngineLayer
 {
-	class ProteinParsimonyEngine : public MetaMorpheusEngine
-	{
-		/// <summary>
-		/// All peptides meeting the prefiltering criteria for parsimony (e.g., peptides from non-ambiguous high-confidence PSMs)
-		/// </summary>
-	private:
-		const std::unordered_set<PeptideWithSetModifications*> _fdrFilteredPeptides;
-		const std::vector<PeptideSpectralMatch*> _fdrFilteredPsms;
-		const std::vector<PeptideSpectralMatch*> _allPsms;
-		static constexpr double FdrCutoffForParsimony = 0.01;
-
-		/// <summary>
-		/// User-selectable option that treats differently-modified forms of a peptide as different peptides for the purposes of parsimony
-		/// </summary>
-		const bool _treatModPeptidesAsDifferentPeptides;
-
-	public:
-		ProteinParsimonyEngine(std::vector<PeptideSpectralMatch*> &allPsms, bool modPeptidesAreDifferent, CommonParameters *commonParameters, std::vector<std::string> &nestedIds);
-				else // PSM is target
-				{
-					for (auto peptide : psm::BestMatchingPeptides->Select([&] (std::any p)
-					{
-					p::Peptide;
-					}).Where([&] (std::any p)
-					{
-					return !p::Protein::IsDecoy && !p::Protein::IsContaminant;
-				}))
-				{
-					}
-				}
-	};
+    class ProteinParsimonyEngine : public MetaMorpheusEngine
+    {
+        /// <summary>
+        /// All peptides meeting the prefiltering criteria for parsimony (e.g., peptides from non-ambiguous high-confidence PSMs)
+        /// </summary>
+    private:
+        const std::unordered_set<PeptideWithSetModifications*> _fdrFilteredPeptides;
+        const std::vector<PeptideSpectralMatch*> _fdrFilteredPsms;
+        const std::vector<PeptideSpectralMatch*> _allPsms;
+        static constexpr double FdrCutoffForParsimony = 0.01;
+        
+        /// <summary>
+        /// User-selectable option that treats differently-modified forms of a peptide as different peptides for the purposes of parsimony
+        /// </summary>
+        const bool _treatModPeptidesAsDifferentPeptides;
+        
+    public:
+        ProteinParsimonyEngine(std::vector<PeptideSpectralMatch*> &allPsms,
+                               bool modPeptidesAreDifferent, CommonParameters *commonParameters,
+                               std::vector<std::string> &nestedIds);
+#ifdef WHAT_THE_HECK
+        else // PSM is target
+        {
+            for (auto peptide : psm::BestMatchingPeptides->Select([&] (std::any p)  {
+                        p::Peptide;
+                    }).Where([&] (std::any p)  {
+                            return !p::Protein::IsDecoy && !p::Protein::IsContaminant;
+                        }))
+            {
+            }
+        }
+#endif
+    };
 }
 
 			// we're storing all PSMs (not just FDR-filtered ones) here because we will remove some protein associations 
