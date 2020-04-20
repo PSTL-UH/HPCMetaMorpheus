@@ -22,6 +22,5 @@ namespace EngineLayer
         int GetHashCode() const override;
     
         std::string ToString() const override;
-
     };
 }

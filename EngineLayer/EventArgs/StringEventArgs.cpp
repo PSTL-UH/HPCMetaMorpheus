@@ -14,23 +14,23 @@ namespace EngineLayer
         return privateS;
     }
 
-        bool StringEventArgs::Equals( EventArgs *obj) const
-        {
-            //just a temporary implementation to silence the compiler.
-            StringEventArgs*o = dynamic_cast<StringEventArgs *>(obj);
+    bool StringEventArgs::Equals( EventArgs *obj) const
+    {
+        StringEventArgs*o = dynamic_cast<StringEventArgs *>(obj);
+        if ( o != nullptr ) { 
             return o->getS() == privateS;
         }
+        return false;
+    }
     
-        int StringEventArgs::GetHashCode() const
-        {
-            //just a temporary implementation to silence the compiler.
-            return StringHelper::GetHashCode(privateS);            
-        }
+    int StringEventArgs::GetHashCode() const
+    {
+        return StringHelper::GetHashCode(privateS);            
+    }
     
-        std::string StringEventArgs::ToString() const          
-        {
-            //just a temporary implementation to silence the compiler.
-            return privateS;
-        }
-
+    std::string StringEventArgs::ToString() const          
+    {
+        return privateS;
+    }
+    
 }

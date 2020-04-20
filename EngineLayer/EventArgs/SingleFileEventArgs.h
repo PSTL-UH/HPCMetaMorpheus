@@ -7,15 +7,21 @@
 
 namespace EngineLayer
 {
-	class SingleFileEventArgs : public MyRecursiveEventArgs
-	{
-	private:
-		std::string privateWrittenFile;
+    class SingleFileEventArgs : public MyRecursiveEventArgs
+    {
+    private:
+        std::string privateWrittenFile;
+        
+    public:
+        SingleFileEventArgs(const std::string &writtenFile, std::vector<std::string> &nestedIds);
+        
+        std::string getWrittenFile() const;
+        void setWrittenFile(const std::string &value);
 
-	public:
-		SingleFileEventArgs(const std::string &writtenFile, std::vector<std::string> &nestedIds);
+        bool Equals( EventArgs *obj) const override;
+    
+        int GetHashCode() const override;
 
-		std::string getWrittenFile() const;
-		void setWrittenFile(const std::string &value);
-	};
+        std::string ToString() const override;
+    };
 }

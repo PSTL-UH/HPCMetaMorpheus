@@ -16,5 +16,12 @@ namespace TaskLayer
         
         std::string getDisplayName() const;
         void setDisplayName(const std::string &value);
+
+        bool Equals( EventArgs *obj) const override;
+    
+        int GetHashCode() const override;
+    
+        std::string ToString() const override;
+
     };
 }

@@ -10,11 +10,17 @@ namespace EngineLayer
 	class StringListEventArgs : public EventArgs
 	{
 	private:
-		std::vector<std::string> privateStringList;
+            std::vector<std::string> privateStringList;
 
 	public:
-		StringListEventArgs(std::vector<std::string> &stringList);
+            StringListEventArgs(std::vector<std::string> &stringList);
+                
+            std::vector<std::string> getStringList() const;
 
-		std::vector<std::string> getStringList() const;
-	};
+            bool Equals( EventArgs *obj) const override;
+    
+            int GetHashCode() const override;
+            
+            std::string ToString() const override;
+        };
 }
