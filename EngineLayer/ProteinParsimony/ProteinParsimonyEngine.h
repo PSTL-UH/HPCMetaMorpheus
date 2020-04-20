@@ -30,7 +30,8 @@ namespace EngineLayer
         static constexpr double FdrCutoffForParsimony = 0.01;
         
         /// <summary>
-        /// User-selectable option that treats differently-modified forms of a peptide as different peptides for the purposes of parsimony
+        /// User-selectable option that treats differently-modified forms of a peptide as different peptides
+        /// for the purposes of parsimony
         /// </summary>
         const bool _treatModPeptidesAsDifferentPeptides;
         
@@ -53,9 +54,9 @@ namespace EngineLayer
     };
 }
 
-			// we're storing all PSMs (not just FDR-filtered ones) here because we will remove some protein associations 
-			// from low-confidence PSMs if they can be explained by a parsimonious protein
-		}
+// we're storing all PSMs (not just FDR-filtered ones) here because we will remove some protein associations 
+// from low-confidence PSMs if they can be explained by a parsimonious protein
+// }
 
 //C# TO C++ CONVERTER TODO TASK: Local functions are not converted by C# to C++ Converter:
 //		protected override MetaMorpheusEngineResults RunSpecific()
@@ -408,5 +409,5 @@ namespace EngineLayer
 //
 //			return proteinGroups;
 //		}
-	}
-}
+//	}
+//}

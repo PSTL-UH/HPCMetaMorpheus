@@ -12,14 +12,9 @@
 #include "../EngineLayer/CommonParameters.h"
 using namespace EngineLayer;
 
-//using namespace IO::MzML;
-//using namespace IO::Mgf;
 
 #if defined(NETFRAMEWORK)
-
 using namespace IO::Thermo;
-
-#else
 #endif
 
 using namespace MassSpectrometry;
@@ -39,7 +34,7 @@ namespace TaskLayer
         
     private:
         const bool DisposeOfFileWhenDone;
-        const std::unordered_map<std::string, MsDataFile*> MyMsDataFiles = std::unordered_map<std::string, MsDataFile*>();
+        std::unordered_map<std::string, MsDataFile*> MyMsDataFiles = std::unordered_map<std::string, MsDataFile*>();
         std::mutex FileLoadingLock;
         static const std::string AssumedThermoMsFileReaderDllPath;
         static const std::string DesiredFileIoVersion;
@@ -52,7 +47,7 @@ namespace TaskLayer
         //static TangibleEvent<EventHandler<StringEventArgs>> *WarnHandler = new TangibleEvent<EventHandler<StringEventArgs>>();
         static EventHandler<StringEventArgs> *WarnHandler;
         
-        bool SeeIfOpen(std::string &path);
+        bool SeeIfOpen(const std::string path);
         
         static ThermoMsFileReaderVersionCheck ValidateThermoMsFileReaderVersion();
         

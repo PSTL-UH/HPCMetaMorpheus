@@ -26,7 +26,7 @@ using namespace EngineLayer::FdrAnalysis;
 #include "../../EngineLayer/HistogramAnalysis/BinTreeStructure.h"
 using namespace EngineLayer::HistogramAnalysis;
 
-#include "../../EngineLayer/Localization/LocalizationEngineResults.h"
+#include "../../EngineLayer/Localization/LocalizationEngine.h"
 using namespace EngineLayer::Localization;
 
 #include "../../EngineLayer/ModificationAnalysis/ModificationAnalysisResults.h"
@@ -53,6 +53,7 @@ namespace TaskLayer
 	private:
 		PostSearchAnalysisParameters *privateParameters;
 		std::vector<EngineLayer::ProteinGroup*> privateProteinGroups;
+
 		//std::vector<IGrouping<std::string, PeptideSpectralMatch*>*> privatePsmsGroupedByFile;
 		std::vector<std::unordered_map<std::string, std::vector<PeptideSpectralMatch*>>*> privatePsmsGroupedByFile;
 

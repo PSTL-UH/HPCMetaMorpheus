@@ -18,12 +18,12 @@ HEADER = DbForTask.h              \
 
 
 OBJ = 	 DbForTask.o              \
-	 EverythingRunnerEngine.o \
-	 FileSpecificParameters.o \
-	 MetaMorpheusTask.o       \
+	 PepXMLWriter.o           \
 	 MyFileManager.o          \
 	 MyTaskResults.o          \
-	 PepXMLWriter.o
+	 FileSpecificParameters.o \
+	 MetaMorpheusTask.o       \
+	 EverythingRunnerEngine.o 
 
 
 .SUFFIXES: .o.cpp
