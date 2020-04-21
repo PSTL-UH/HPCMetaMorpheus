@@ -115,6 +115,19 @@ namespace TaskLayer
 	{
 		// everything initialized to null
 	}
+        FileSpecificParameters::FileSpecificParameters(FileSpecificParameters *filep)
+	{
+            if ( filep != nullptr ) {
+                privatePrecursorMassTolerance = filep->getPrecursorMassTolerance();
+                privateProductMassTolerance   = filep->getProductMassTolerance();
+                privateProtease           = filep->getProtease();
+                privateMinPeptideLength   = filep->getMinPeptideLength();
+                privateMaxPeptideLength   = filep->getMaxPeptideLength();
+                privateMaxMissedCleavages = filep->getMaxMissedCleavages();
+                privateMaxModsForPeptide  = filep->getMaxModsForPeptide();
+                privateDissociationType   = filep->getDissociationType();
+            }
+	}
 
 	Tolerance *FileSpecificParameters::getPrecursorMassTolerance() const
 	{
@@ -244,6 +257,7 @@ namespace TaskLayer
 		return FileParameters;
 	}
 
+#ifdef NONSENSE
 	void FileSpecificParameters::ValidateFileSpecificVariableNames()
 	{
 		CommonParameters *temp = new CommonParameters();
@@ -286,9 +300,5 @@ namespace TaskLayer
 
 		delete temp;
 	}
-
-	FileSpecificParameters *FileSpecificParameters::Clone()
-	{
-		return static_cast<FileSpecificParameters*>(this->MemberwiseClone());
-	}
+#endif
 }

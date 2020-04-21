@@ -14,15 +14,35 @@ using namespace Proteomics::Fragmentation;
 using namespace Proteomics::ProteolyticDigestion;
 namespace EngineLayer
 {
-	namespace NonSpecificEnzymeSearch
-	{
+    namespace NonSpecificEnzymeSearch
+    {
 
-const double NonSpecificEnzymeSearchEngine::WaterMonoisotopicMass = PeriodicTable::GetElement("H").PrincipalIsotope::AtomicMass * 2 + PeriodicTable::GetElement("O").PrincipalIsotope::AtomicMass;
-
-		NonSpecificEnzymeSearchEngine::NonSpecificEnzymeSearchEngine(std::vector<std::vector<PeptideSpectralMatch*>> &globalPsms, std::vector<Ms2ScanWithSpecificMass*> &listOfSortedms2Scans, std::vector<PeptideWithSetModifications*> &peptideIndex, std::vector<std::vector<int>&> &fragmentIndex, std::vector<std::vector<int>&> &precursorIndex, int currentPartition, CommonParameters *CommonParameters, MassDiffAcceptor *massDiffAcceptor, double maximumMassThatFragmentIonScoreIsDoubled, std::vector<std::string> &nestedIds) : ModernSearchEngine(nullptr, listOfSortedms2Scans, peptideIndex, fragmentIndex, currentPartition, CommonParameters, massDiffAcceptor, maximumMassThatFragmentIonScoreIsDoubled, nestedIds), PrecursorIndex(precursorIndex), MinimumPeptideLength(commonParameters->getDigestionParams()->MinPeptideLength)
+        const double NonSpecificEnzymeSearchEngine::WaterMonoisotopicMass = PeriodicTable::GetElement("H").PrincipalIsotope::AtomicMass * 2 + PeriodicTable::GetElement("O").PrincipalIsotope::AtomicMass;
+        
+        NonSpecificEnzymeSearchEngine::NonSpecificEnzymeSearchEngine(std::vector<std::vector<PeptideSpectralMatch*>> &globalPsms,
+                                                                     std::vector<Ms2ScanWithSpecificMass*> &listOfSortedms2Scans,
+                                                                     std::vector<PeptideWithSetModifications*> &peptideIndex,
+                                                                     std::vector<std::vector<int>&> &fragmentIndex,
+                                                                     std::vector<std::vector<int>&> &precursorIndex,
+                                                                     int currentPartition,
+                                                                     CommonParameters *CommonParameters,
+                                                                     MassDiffAcceptor *massDiffAcceptor,
+                                                                     double maximumMassThatFragmentIonScoreIsDoubled,
+                                                                     std::vector<std::string> &nestedIds) : ModernSearchEngine(nullptr,
+                                                                                                                               listOfSortedms2Scans,
+                                                                                                                               peptideIndex,
+                                                                                                                               fragmentIndex,
+                                                                                                                               currentPartition,
+                                                                                                                               CommonParameters,
+                                                                                                                               massDiffAcceptor,
+                                                                                                            maximumMassThatFragmentIonScoreIsDoubled,
+                                                                                                                               nestedIds),
+                                                                                                            PrecursorIndex(precursorIndex),
+                                                                       MinimumPeptideLength(commonParameters->getDigestionParams()->MinPeptideLength)
 		{
 			GlobalCategorySpecificPsms = globalPsms;
-			ModifiedParametersNoComp = commonParameters->CloneWithNewTerminus(, std::make_optional(false));
+			//ModifiedParametersNoComp = commonParameters->CloneWithNewTerminus(, std::make_optional(false));
+			ModifiedParametersNoComp(commonParameters, std::make_optional(false));
 			ProductTypesToSearch = DissociationTypeCollection::ProductsFromDissociationType[commonParameters->getDissociationType()].Intersect(TerminusSpecificProductTypes::ProductIonTypesFromSpecifiedTerminus[commonParameters->getDigestionParams()->FragmentationTerminus])->ToList();
 		}
 

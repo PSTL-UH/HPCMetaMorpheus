@@ -73,10 +73,20 @@ namespace TaskLayer
 		static const std::string CalibSuffix;
 
 	private:
-		bool ImprovGlobal(double prevPrecTol, double prevProdTol, int prevPsmCount, int thisRoundPsmCount, double thisRoundPrecTol, double thisRoundProdTol);
+		bool ImprovGlobal(double prevPrecTol, double prevProdTol, int prevPsmCount,
+                                  int thisRoundPsmCount, double thisRoundPrecTol, double thisRoundProdTol);
 
-		DataPointAquisitionResults *GetDataAcquisitionResults(MsDataFile *myMsDataFile, const std::string &currentDataFile, std::vector<Modification*> &variableModifications, std::vector<Modification*> &fixedModifications, std::vector<Protein*> &proteinList, const std::string &taskId, EngineLayer::CommonParameters *combinedParameters, Tolerance *initPrecTol, Tolerance *initProdTol);
+		DataPointAquisitionResults *GetDataAcquisitionResults(MsDataFile *myMsDataFile,
+                                                                      const std::string &currentDataFile,
+                                                                      std::vector<Modification*> &variableModifications,
+                                                                      std::vector<Modification*> &fixedModifications,
+                                                                      std::vector<Protein*> &proteinList,
+                                                                      const std::string &taskId,
+                                                                      EngineLayer::CommonParameters *combinedParameters,
+                                                                      Tolerance *initPrecTol, Tolerance *initProdTol);
 
-		static void WriteNewExperimentalDesignFile(const std::string &assumedPathToExperDesign, const std::string &outputFolder, std::vector<std::string> &spectraFilesAfterCalibration);
+		static void WriteNewExperimentalDesignFile(const std::string &assumedPathToExperDesign,
+                                                           const std::string &outputFolder,
+                                                           std::vector<std::string> &spectraFilesAfterCalibration);
 	};
 }

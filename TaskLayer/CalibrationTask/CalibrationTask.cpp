@@ -330,13 +330,13 @@ namespace TaskLayer
             // write toml settings for the calibrated file
             auto newTomlFileName = FileSystem::combine(OutputFolder, originalUncalibratedFilenameWithoutExtension + CalibSuffix + ".toml");
             
-            auto fileSpecificParams = new FileSpecificParameters();
+            auto fileSpecificParams = new FileSpecificParameters(fileSettingsList[spectraFileIndex]);
             
             // carry over file-specific parameters from the uncalibrated file to the calibrated one
-            if (fileSettingsList[spectraFileIndex] != nullptr)
-            {
-                fileSpecificParams = fileSettingsList[spectraFileIndex]->Clone();
-            }
+            //if (fileSettingsList[spectraFileIndex] != nullptr)
+            // {
+            //    fileSpecificParams = fileSettingsList[spectraFileIndex]->Clone();
+            //}
             
             //suggest 4 * interquartile range as the ppm tolerance
             PpmTolerance tempVar8((4.0 * postCalibrationPrecursorErrorIqr) + std::abs(acquisitionResults->PsmPrecursorMedianPpmError));

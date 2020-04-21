@@ -11,7 +11,56 @@ namespace EngineLayer
     //CommonParameters::CommonParameters() : CommonParameters(, = DissociationType->HCD, = true, = true, = 3, = 12, = true, = false, = 1, = 5, = 200, = 0.01, = false, = true, = false, = false, = nullptr, = nullptr, = nullptr, = -1, nullptr)
     //{
     //}
-
+    CommonParameters::CommonParameters( CommonParameters *cp): CommonParameters(cp->getTaskDescriptor(),
+                                                                                cp->getDissociationType(),
+                                                                                cp->getDoPrecursorDeconvolution(),
+                                                                                cp->getUseProvidedPrecursorInfo(),
+                                                                                cp->getDeconvolutionIntensityRatio(),
+                                                                                cp->getDeconvolutionMaxAssumedChargeState(),
+                                                                                cp->getReportAllAmbiguity(),
+                                                                                cp->getAddCompIons(),
+                                                                                cp->getTotalPartitions(),
+                                                                                cp->getScoreCutoff(),
+                                                                                cp->getTopNpeaks(),
+                                                                                cp->getMinRatio(),
+                                                                                cp->getTrimMs1Peaks(),
+                                                                                cp->getTrimMsMsPeaks(), 
+                                                                                cp->getUseDeltaScore(),
+                                                                                cp->getCalculateEValue(),
+                                                                                cp->getProductMassTolerance(),
+                                                                                cp->getPrecursorMassTolerance(),
+                                                                                cp->getDeconvolutionMassTolerance(),
+                                                                                cp->getMaxThreadsToUsePerFile(),
+                                                                                cp->getDigestionParams(),
+                                                                                cp->getListOfModsVariable(),
+                                                                                cp->getListOfModsFixed(),
+                                                                                cp->getQValueOutputFilter(),
+                                                                                cp->getAssumeOrphanPeaksAreZ1Fragments(),
+                                                                                cp->getMaxHeterozygousVariants(),
+                                                                                cp->getMinVariantDepth() )
+    {
+    }
+    CommonParameters::CommonParameters (CommonParameters *cp, std::optional<FragmentationTerminus> terminus,
+                                        std::optional<bool> addCompIons ): CommonParameters (cp)
+    {
+        if (terminus.has_value() ) {
+            DigestionParams *dp_org = getDigestionParams();
+            DigestionParams *dp = new DigestionParams(dp_org->getProtease()->getName(),
+                                                      dp_org->getMaxMissedCleavages(),
+                                                      dp_org->getMinPeptideLength(),
+                                                      dp_org->getMaxPeptideLength(),
+                                                      dp_org->getMaxModificationIsoforms(),
+                                                      dp_org->getInitiatorMethionineBehavior(),
+                                                      dp_org->getMaxModsForPeptide(),
+                                                      dp_org->getSearchModeType(),
+                                                      terminus.value() );
+            setDigestionParams(dp);
+        }
+        if ( addCompIons.has_value() ) {
+            setAddCompIons(addCompIons.value() );
+        }
+    }
+    
 	CommonParameters::CommonParameters(const std::string &taskDescriptor,
                                            DissociationType dissociationType,
                                            bool doPrecursorDeconvolution,
@@ -56,7 +105,8 @@ namespace EngineLayer
 		setUseDeltaScore(useDeltaScore);
 		setCalculateEValue(calculateEValue);
 
-		//setMaxThreadsToUsePerFile(maxThreadsToUsePerFile == -1 ? Environment::ProcessorCount > 1 ? Environment::ProcessorCount - 1 : 1 : maxThreadsToUsePerFile);
+		//setMaxThreadsToUsePerFile(maxThreadsToUsePerFile == -1 ? Environment::ProcessorCount > 1 ?
+                //                          Environment::ProcessorCount - 1 : 1 : maxThreadsToUsePerFile);
 		setMaxThreadsToUsePerFile(maxThreadsToUsePerFile == -1 ? 4 : maxThreadsToUsePerFile);
                 
 		PpmTolerance tempVar(20);
@@ -120,26 +170,14 @@ namespace EngineLayer
 	{
 		privateMaxThreadsToUsePerFile = value;
 	}
-
-#ifdef ORIG
-    private *IEnumerable < CommonParameters::(std::string, std::string)
-	{
-		get;;
-
-	get;
-	private:
-		set;
-
-	set;
-	}
-        //C# TO C++ CONVERTER TODO TASK: Local functions are not converted by C# to C++ Converter: 
-        //	public IEnumerable<(string, string)> ListOfModsVariable
-	//		{
-	//			get;
-	//			private set;
-	//		}
-#endif
-
+        std::vector<std::tuple<std::string, std::string>>* CommonParameters::getListOfModsVariable() const
+        {
+            return privateListOfModsVariable;
+        }    
+        std::vector<std::tuple<std::string, std::string>>* CommonParameters::getListOfModsFixed() const
+        {
+            return privateListOfModsFixed;
+        }        
 	bool CommonParameters::getDoPrecursorDeconvolution() const
         {
             return privateDoPrecursorDeconvolution;
@@ -353,9 +391,5 @@ namespace EngineLayer
             privateMinVariantDepth = value;
         }
 
-//C# TO C++ CONVERTER TODO TASK: Local functions are not converted by C# to C++ Converter:
-//	public CommonParameters Clone()
-//C# TO C++ CONVERTER TODO TASK: Local functions are not converted by C# to C++ Converter:
-//	public CommonParameters CloneWithNewTerminus(Nullable<FragmentationTerminus> terminus = nullptr, Nullable<bool> addCompIons = nullptr) //for use with speedy semi-specific searches to get both termini
 }
 

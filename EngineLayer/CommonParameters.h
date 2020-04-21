@@ -77,6 +77,13 @@ namespace EngineLayer
                          bool assumeOrphanPeaksAreZ1Fragments = true,
                          int maxHeterozygousVariants = 4,
                          int minVariantDepth = 1);
+
+        //Copy Constructor: replacement for Clone
+        CommonParameters(CommonParameters *cp);
+
+        //Replacement for CloneWithNewTerminus(Nullable<FragmentationTerminus> terminus = nullptr, Nullable<bool> addCompIons = nullptr)
+        CommonParameters (CommonParameters *cp, std::optional<FragmentationTerminus> terminus, std::optional<bool> addCompIons );
+        
         
         // Notes:
         // 1) Any new property must not be nullable (such as int?) or else if it is null,
@@ -88,7 +95,6 @@ namespace EngineLayer
         void setTaskDescriptor(const std::string &value);
         int getMaxThreadsToUsePerFile() const;
         void setMaxThreadsToUsePerFile(int value);
-        // private *IEnumerable < (std::string, std::string);
         bool getDoPrecursorDeconvolution() const;
         void setDoPrecursorDeconvolution( bool value );
         bool getUseProvidedPrecursorInfo() const;                
@@ -136,5 +142,8 @@ namespace EngineLayer
         void setMaxHeterozygousVariants(int value);
         int getMinVariantDepth() const;                
         void setMinVariantDepth(int value);                                
+
+        std::vector<std::tuple<std::string, std::string>>* getListOfModsVariable() const;        
+        std::vector<std::tuple<std::string, std::string>>* getListOfModsFixed() const;        
     };
 }

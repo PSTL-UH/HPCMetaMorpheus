@@ -1,25 +1,36 @@
 ﻿#include "MetaMorpheusTask.h"
-#include "../EngineLayer/CommonParameters.h"
 #include "MyTaskResults.h"
-#include "../EngineLayer/Ms2ScanWithSpecificMass.h"
 #include "FileSpecificParameters.h"
 #include "DbForTask.h"
+#include "EventArgs/SingleTaskEventArgs.h"
+
+#include "../EngineLayer/CommonParameters.h"
+#include "../EngineLayer/Ms2ScanWithSpecificMass.h"
 #include "../EngineLayer/MetaMorpheusEngine.h"
-#include "../EngineLayer/EventArgs/SingleEngineFinishedEventArgs.h"
 #include "../EngineLayer/GlobalVariables.h"
 #include "../EngineLayer/MetaMorpheusException.h"
 #include "../EngineLayer/PeptideSpectralMatch.h"
 #include "../EngineLayer/EventArgs/ProgressEventArgs.h"
 #include "../EngineLayer/EventArgs/SingleFileEventArgs.h"
 #include "../EngineLayer/EventArgs/StringEventArgs.h"
-#include "EventArgs/SingleTaskEventArgs.h"
+#include "../EngineLayer/EventArgs/SingleEngineFinishedEventArgs.h"
+
+
+#include "Chemistry/ClassExtensions.h"
+#include "UsefulProteomicsDatabases/UsefulProteomicsDatabases.h"
+
+#include <ctime>
+#include <experimental/filesystem>
+#include <exception>
+#include <string>
+#include <locale>
+#include <algorithm>
 
 using namespace Chemistry;
 using namespace EngineLayer;
 using namespace EngineLayer::Indexing;
 using namespace MassSpectrometry;
 using namespace MzLibUtil;
-using namespace Nett;
 using namespace Proteomics;
 using namespace Proteomics::ProteolyticDigestion;
 using namespace UsefulProteomicsDatabases;
@@ -111,98 +122,149 @@ namespace TaskLayer
                                                                         const std::string &fullFilePath,
                                                                         EngineLayer::CommonParameters *commonParameters)
     {
+#ifdef ORIG
         auto ms2Scans = myMSDataFile->GetAllScansList().Where([&] (std::any x)		{
                 return x::MsnOrder > 1;
             })->ToArray();
-        std::vector<std::vector<Ms2ScanWithSpecificMass*>> scansWithPrecursors(ms2Scans.size());
+#endif
+        std::vector<MsDataScan*> ms2Scans;
+        for ( auto x : myMSDataFile->GetAllScansList() ) {
+            if ( x->getMsnOrder() > 1 ) {
+                ms2Scans.push_back(x);
+            }
+        }
+                
 
-        ParallelOptions *tempVar = new ParallelOptions();
-        tempVar->MaxDegreeOfParallelism = commonParameters->getMaxThreadsToUsePerFile();
-        Parallel::ForEach(Partitioner::Create(0, ms2Scans.size()), tempVar, [&] (partitionRange, loopState)       {
-                for (int i = partitionRange::Item1; i < partitionRange::Item2; i++)
+        std::vector<std::vector<Ms2ScanWithSpecificMass*>> scansWithPrecursors(ms2Scans.size());
+        
+#ifdef ORIG
+        //ParallelOptions *tempVar = new ParallelOptions();
+        //tempVar->MaxDegreeOfParallelism = commonParameters->getMaxThreadsToUsePerFile();
+        //Parallel::ForEach(Partitioner::Create(0, ms2Scans.size()), tempVar, [&] (partitionRange, loopState)       {
+        //        for (int i = partitionRange::Item1; i < partitionRange::Item2; i++)
+#endif
+        for ( int i = 0; i < (int)ms2Scans.size(); i++ ) {
+            if (GlobalVariables::getStopLoops())
+            {
+                break;
+            }
+            
+            MsDataScan *ms2scan = ms2Scans[i];
+            
+            std::vector<std::pair<double, int>> precursors;
+            if (ms2scan->getOneBasedPrecursorScanNumber().has_value())
+            {
+                auto precursorSpectrum = myMSDataFile->GetOneBasedScan(ms2scan->getOneBasedPrecursorScanNumber().value());
+                
+                try
                 {
-                    if (GlobalVariables::getStopLoops())
+                    ms2scan->RefineSelectedMzAndIntensity(precursorSpectrum->getMassSpectrum());
+                }
+                catch (const MzLibException &ex)
+                {
+                    //Warn("Could not get precursor ion for MS2 scan #" + ms2scan->getOneBasedScanNumber() + "; " + ex.Message);
+                    std::string s = "Could not get precursor ion for MS2 scan #";
+                    s += ms2scan->getOneBasedScanNumber() + "; ";
+                    Warn(s);
+                    continue;
+                }
+                
+                if (ms2scan->getSelectedIonMonoisotopicGuessMz().has_value())
+                {
+                    ms2scan->ComputeMonoisotopicPeakIntensity(precursorSpectrum->getMassSpectrum());
+                }
+                
+                if (commonParameters->getDoPrecursorDeconvolution())
+                {
+                    for (auto envelope : ms2scan->GetIsolatedMassesAndCharges(precursorSpectrum->getMassSpectrum(), 1,
+                                                                           commonParameters->getDeconvolutionMaxAssumedChargeState(),
+                                                                           commonParameters->getDeconvolutionMassTolerance()->getValue(),
+                                                                           commonParameters->getDeconvolutionIntensityRatio()))
                     {
-                        break;
-                    }
-                    
-                    MsDataScan *ms2scan = ms2Scans[i];
-                    
-                    std::vector<(double, int)*> precursors;
-                    if (ms2scan->OneBasedPrecursorScanNumber.HasValue)
-                    {
-                        auto precursorSpectrum = myMSDataFile->GetOneBasedScan(ms2scan->OneBasedPrecursorScanNumber->Value);
-                        
-                        try
-                        {
-                            ms2scan->RefineSelectedMzAndIntensity(precursorSpectrum->MassSpectrum);
-                        }
-                        catch (const MzLibException &ex)
-                        {
-                            Warn("Could not get precursor ion for MS2 scan #" + ms2scan->OneBasedScanNumber + "; " + ex->Message);
-                            continue;
-                        }
-                        
-                        if (ms2scan->SelectedIonMonoisotopicGuessMz.HasValue)
-                        {
-                            ms2scan->ComputeMonoisotopicPeakIntensity(precursorSpectrum->MassSpectrum);
-                        }
-                        
-                        if (commonParameters->getDoPrecursorDeconvolution())
-                        {
-                            for (auto envelope : ms2scan->GetIsolatedMassesAndCharges(precursorSpectrum->MassSpectrum, 1,
-                                                                                      commonParameters->getDeconvolutionMaxAssumedChargeState(),
-                                                                                      commonParameters->getDeconvolutionMassTolerance()->Value,
-                                                                                      commonParameters->getDeconvolutionIntensityRatio()))
-                            {
-                                auto monoPeakMz = envelope->monoisotopicMass.ToMz(envelope->charge);
-                                precursors.Add((monoPeakMz, envelope->charge));
-                            }
-                        }
-                    }
-                    
-                    if (commonParameters->getUseProvidedPrecursorInfo() && ms2scan->SelectedIonChargeStateGuess.HasValue)
-                    {
-                        auto precursorCharge = ms2scan->SelectedIonChargeStateGuess->Value;
-                        if (ms2scan->SelectedIonMonoisotopicGuessMz.HasValue)
-                        {
-                            double precursorMZ = ms2scan->SelectedIonMonoisotopicGuessMz->Value;
-                            if (!precursors.Any([&] (std::any b)   {
-                                        commonParameters->getDeconvolutionMassTolerance()->Within(precursorMZ.ToMass(precursorCharge), b::Item1->ToMass(b::Item2));
-                                    }))
-                            {
-                                precursors.Add((precursorMZ, precursorCharge));
-                            }
-                        }
-                        else
-                        {
-                            double precursorMZ = ms2scan->SelectedIonMZ->Value;
-                            if (!precursors.Any([&] (std::any b){
-                                        commonParameters->getDeconvolutionMassTolerance()->Within(precursorMZ.ToMass(precursorCharge), b::Item1->ToMass(b::Item2));
-                                    }))
-                            {
-                                precursors.Add((precursorMZ, precursorCharge));
-                            }
-                        }
-                    }
-                    
-                    scansWithPrecursors[i] = std::vector<Ms2ScanWithSpecificMass*>();
-                    std::vector<IsotopicEnvelope*> neutralExperimentalFragments = Ms2ScanWithSpecificMass::GetNeutralExperimentalFragments(ms2scan, commonParameters);
-                    
-                    for (auto precursor : precursors)
-                    {
-                        Ms2ScanWithSpecificMass tempVar2(ms2scan, precursor->Item1, precursor->Item2, fullFilePath, commonParameters, neutralExperimentalFragments);
-                        scansWithPrecursors[i].Add(&tempVar2);
+                        auto monoPeakMz = Chemistry::ClassExtensions::ToMz(envelope->monoisotopicMass, envelope->charge);
+                        precursors.push_back(std::make_pair(monoPeakMz, envelope->charge));
                     }
                 }
-            });
-        
+            }
+            
+            if (commonParameters->getUseProvidedPrecursorInfo()      &&
+                ms2scan->getSelectedIonChargeStateGuess().has_value() )
+            {
+                auto precursorCharge = ms2scan->getSelectedIonChargeStateGuess().value();
+                if (ms2scan->getSelectedIonMonoisotopicGuessMz().has_value())
+                {
+                    double precursorMZ = ms2scan->getSelectedIonMonoisotopicGuessMz().value();
+#ifdef ORIG
+                    //if (!precursors.Any([&] (std::any b)   {
+                    //            commonParameters->getDeconvolutionMassTolerance()->Within(precursorMZ.ToMass(precursorCharge),
+                    //                                                                      b::Item1->ToMass(b::Item2));
+                    //        }))
+#endif
+                    bool found = false;
+                    auto tol = commonParameters->getDeconvolutionMassTolerance();
+                    for ( auto b: precursors ) {
+                        if ( tol->Within(Chemistry::ClassExtensions::ToMass(precursorMZ, precursorCharge),
+                                         Chemistry::ClassExtensions::ToMass(b.first, b.second ))) {
+                            found = true;
+                            break;
+                        }
+                    }
+                    if ( !found )  {
+                        precursors.push_back(std::make_pair(precursorMZ, precursorCharge));
+                    }
+                }
+                else
+                {
+                    double precursorMZ = ms2scan->getSelectedIonMZ().value();
+#ifdef ORIG
+                    if (!precursors.Any([&] (std::any b){
+                                commonParameters->getDeconvolutionMassTolerance()->Within(precursorMZ.ToMass(precursorCharge),
+                                                                                          b::Item1->ToMass(b::Item2));
+                            }))
+#endif
+                    bool found = false;
+                    auto tol = commonParameters->getDeconvolutionMassTolerance();
+                    for ( auto b: precursors ) {
+                        if ( tol->Within(Chemistry::ClassExtensions::ToMass(precursorMZ, precursorCharge),
+                                         Chemistry::ClassExtensions::ToMass(b.first, b.second ))) {
+                            found = true;
+                            break;
+                        }
+                    }
+                    if ( !found )       {
+                        precursors.push_back(std::make_pair(precursorMZ, precursorCharge));
+                    }
+                }
+            }
+            
+            scansWithPrecursors[i] = std::vector<Ms2ScanWithSpecificMass*>();
+            std::vector<IsotopicEnvelope*> neutralExperimentalFragments = Ms2ScanWithSpecificMass::GetNeutralExperimentalFragments(ms2scan, commonParameters);
+            
+            for (auto precursor : precursors)
+            {
+                Ms2ScanWithSpecificMass tempVar2(ms2scan, precursor.first, precursor.second, fullFilePath,
+                                                 commonParameters, neutralExperimentalFragments);
+                scansWithPrecursors[i].push_back(&tempVar2);
+            }
+        } 
+    
+
+#ifdef ORIG
         return scansWithPrecursors.SelectMany([&] (std::any p)	{
                 return p;
             });
+#endif
+        std::vector<Ms2ScanWithSpecificMass*> tmpv;
+        for ( auto p: scansWithPrecursors ) {
+            for ( auto v: p ) {
+                tmpv.push_back(v);
+            }
+        }
+        return tmpv;
     }
     
-    EngineLayer::CommonParameters *MetaMorpheusTask::SetAllFileSpecificCommonParams(EngineLayer::CommonParameters *commonParams, FileSpecificParameters *fileSpecificParams)
+    EngineLayer::CommonParameters *MetaMorpheusTask::SetAllFileSpecificCommonParams(EngineLayer::CommonParameters *commonParams,
+                                                                                    FileSpecificParameters *fileSpecificParams)
     {
         if (fileSpecificParams == nullptr)
         {
@@ -210,38 +272,40 @@ namespace TaskLayer
         }
         
         // set file-specific digestion parameters
-        Protease tempVar = fileSpecificParams.getProtease();
-        Protease *protease = (tempVar != nullptr) ? tempVar : commonParams->getDigestionParams()->Protease;
-        std::optional<int> tempVar2 = fileSpecificParams.getMinPeptideLength();
-        int minPeptideLength = tempVar2 ? tempVar2 : commonParams->getDigestionParams()->MinPeptideLength;
-        std::optional<int> tempVar3 = fileSpecificParams.getMaxPeptideLength();
-        int maxPeptideLength = tempVar3 ? tempVar3 : commonParams->getDigestionParams()->MaxPeptideLength;
-        std::optional<int> tempVar4 = fileSpecificParams.getMaxMissedCleavages();
-        int maxMissedCleavages = tempVar4 ? tempVar4 : commonParams->getDigestionParams()->MaxMissedCleavages;
-        std::optional<int> tempVar5 = fileSpecificParams.getMaxModsForPeptide();
-        int maxModsForPeptide = tempVar5 ? tempVar5 : commonParams->getDigestionParams()->MaxModsForPeptide;
-
-        DigestionParams *fileSpecificDigestionParams = new DigestionParams(protease: protease->Name,
-                                                                           maxMissedCleavages: maxMissedCleavages,
-                                                                           minPeptideLength: minPeptideLength,
-                                                                           maxPeptideLength: maxPeptideLength,
-                                                                           maxModsForPeptides: maxModsForPeptide,
-                                                                           maxModificationIsoforms: commonParams->getDigestionParams()->MaxModificationIsoforms,
-                                                                           initiatorMethionineBehavior: commonParams->getDigestionParams()->InitiatorMethionineBehavior,
-                                                                           fragmentationTerminus: commonParams->getDigestionParams()->FragmentationTerminus,
-                                                                           searchModeType: commonParams->getDigestionParams()->SearchModeType);
+        Protease *tempVar = fileSpecificParams->getProtease();
+        Protease *protease = (tempVar != nullptr) ? tempVar : commonParams->getDigestionParams()->getProtease();
+        std::optional<int> tempVar2 = fileSpecificParams->getMinPeptideLength();
+        int minPeptideLength = tempVar2.has_value() ? tempVar2.value() : commonParams->getDigestionParams()->getMinPeptideLength();
+        std::optional<int> tempVar3 = fileSpecificParams->getMaxPeptideLength();
+        int maxPeptideLength = tempVar3.has_value() ? tempVar3.value() : commonParams->getDigestionParams()->getMaxPeptideLength();
+        std::optional<int> tempVar4 = fileSpecificParams->getMaxMissedCleavages();
+        int maxMissedCleavages = tempVar4.has_value() ? tempVar4.value() : commonParams->getDigestionParams()->getMaxMissedCleavages();
+        std::optional<int> tempVar5 = fileSpecificParams->getMaxModsForPeptide();
+        int maxModsForPeptide = tempVar5.has_value() ? tempVar5.value() : commonParams->getDigestionParams()->getMaxModsForPeptide();
+        
+        DigestionParams *fileSpecificDigestionParams = new DigestionParams(protease->getName(),
+                                                                     maxMissedCleavages,
+                                                                     minPeptideLength,
+                                                                     maxPeptideLength,
+                                                                     commonParams->getDigestionParams()->getMaxModificationIsoforms(),
+                                                                     commonParams->getDigestionParams()->getInitiatorMethionineBehavior(),
+                                                                     maxModsForPeptide,
+                                                                     commonParams->getDigestionParams()->getSearchModeType(),
+                                                                     commonParams->getDigestionParams()->getFragmentationTerminus());
         
         // set the rest of the file-specific parameters
-        Tolerance tempVar6 = fileSpecificParams.getPrecursorMassTolerance();
+        Tolerance *tempVar6 = fileSpecificParams->getPrecursorMassTolerance();
         Tolerance *precursorMassTolerance = (tempVar6 != nullptr) ? tempVar6 : commonParams->getPrecursorMassTolerance();
-        Tolerance tempVar7 = fileSpecificParams.getProductMassTolerance();
+        Tolerance *tempVar7 = fileSpecificParams->getProductMassTolerance();
         Tolerance *productMassTolerance = (tempVar7 != nullptr) ? tempVar7 : commonParams->getProductMassTolerance();
-        std::optional<DissociationType*> tempVar8 = fileSpecificParams.getDissociationType();
-        DissociationType *dissociationType = tempVar8 ? tempVar8 : commonParams->getDissociationType();
+        std::optional<DissociationType*> tempVar8 = fileSpecificParams->getDissociationType();
+        DissociationType *tempVar8val = new DissociationType();
+        *tempVar8val = commonParams->getDissociationType();
+        DissociationType *dissociationType = tempVar8.has_value() ? tempVar8.value() : tempVar8val;
         
         
         EngineLayer::CommonParameters *returnParams = new CommonParameters(commonParams->getTaskDescriptor(),
-                                                                           dissociationType,
+                                                                           *dissociationType,
                                                                            commonParams->getDoPrecursorDeconvolution(),
                                                                            commonParams->getUseProvidedPrecursorInfo(),
                                                                            commonParams->getDeconvolutionIntensityRatio(),
@@ -261,18 +325,21 @@ namespace TaskLayer
                                                                            commonParams->getDeconvolutionMassTolerance(),
                                                                            commonParams->getMaxThreadsToUsePerFile(),
                                                                            fileSpecificDigestionParams,
-                                                                           commonParams->ListOfModsVariable,
-                                                                           commonParams->ListOfModsFixed,
+                                                                           commonParams->getListOfModsVariable(),
+                                                                           commonParams->getListOfModsFixed(),
                                                                            commonParams->getQValueOutputFilter(),
                                                                            commonParams->getAssumeOrphanPeaksAreZ1Fragments());
 
-        //C# TO C++ CONVERTER TODO TASK: A 'delete returnParams' statement was not added since returnParams was used in a 'return' or 'throw' statement.
+        //C# TO C++ CONVERTER TODO TASK: A 'delete returnParams' statement was not added since returnParams
+        //was used in a 'return' or 'throw' statement.
         delete fileSpecificDigestionParams;
         return returnParams;
     }
 
-    MyTaskResults *MetaMorpheusTask::RunTask(const std::string &output_folder, std::vector<DbForTask*> &currentProteinDbFilenameList,
-                                             std::vector<std::string> &currentRawDataFilepathList, const std::string &displayName)
+    MyTaskResults *MetaMorpheusTask::RunTask(const std::string &output_folder,
+                                             std::vector<DbForTask*> &currentProteinDbFilenameList,
+                                             std::vector<std::string> &currentRawDataFilepathList,
+                                             const std::string &displayName)
     {
         StartingSingleTask(displayName);
         
@@ -289,24 +356,25 @@ namespace TaskLayer
         trw.tomlWriteNewFile(tomlFileName, tomlConfig);
 
         
-        MetaMorpheusEngine::FinishedSingleEngineHandler->addListener("SingleEngineHandlerInTask", [&] (std::any sender, SingleEngineFinishedEventArgs* e) {
-                SingleEngineHandlerInTask(sender, e);});
+        MetaMorpheusEngine::FinishedSingleEngineHandler->addListener("SingleEngineHandlerInTask", [&] (SingleEngineFinishedEventArgs* e) {
+                SingleEngineHandlerInTask( e);});
         try
         {
-            auto stopWatch = new Stopwatch();
-            stopWatch->Start();
+            clock_t begin = clock();
             
             std::vector<FileSpecificParameters*> fileSettingsList(currentRawDataFilepathList.size());
-            for (int i = 0; i < currentRawDataFilepathList.size(); i++)
+            for (int i = 0; i < (int)currentRawDataFilepathList.size(); i++)
             {
                 if (GlobalVariables::getStopLoops())
                 {
                     break;
                 }
                 std::string rawFilePath = currentRawDataFilepathList[i];
-                std::string directory = Directory::GetParent(rawFilePath)->ToString();
-                std::string fileSpecificTomlPath = FileSystem::combine(directory, Path::GetFileNameWithoutExtension(rawFilePath)) + ".toml";
-                if (FileSystem::fileExists(fileSpecificTomlPath))
+                std::experimental::filesystem::path rdpath = rawFilePath;
+                std::string directory = rdpath.parent_path();
+                std::string fname = rawFilePath.substr(rawFilePath.find_last_of("."));
+                std::string fileSpecificTomlPath = directory + "/" + fname + ".toml";
+                if (std::experimental::filesystem::exists(fileSpecificTomlPath))
                 {
 #ifdef ORIG
                     //In the Nett package the second parameter for ReadFile are the settings used to process the toml content
@@ -314,14 +382,14 @@ namespace TaskLayer
                     TomlTable *fileSpecificSettings = Toml::ReadFile(fileSpecificTomlPath, tomlConfig);
 #endif
                     toml::Value toml_value = trw.tomlReadFile(fileSpecificTomlPath);
-
+                    
                     //What is the header or key we are looking for here in the toml file?
                     //In a couple of config files I was looking at it was "CommonParameters", I'm not 
                     //entirely sure that's correct here though.
                     toml::Value* fileParameters = trw.getValue(toml_value, tomlConfig);
                     toml::Table fileSpecificSettings = fileParameters->as<toml::Table>();
-
-
+                    
+                    
                     try
                     {
                         fileSettingsList[i] = new FileSpecificParameters(fileSpecificSettings);
@@ -329,99 +397,123 @@ namespace TaskLayer
                     catch (const MetaMorpheusException &e)
                     {
                         // file-specific toml has already been validated in the GUI when the spectra files were added, so...
-                        // probably the only time you can get here is if the user modifies the file-specific parameter file in the middle of a run...
-                        Warn("Problem parsing the file-specific toml " + FileSystem::getFileName(fileSpecificTomlPath) + "; " + e->what() +
-                             "; is the toml from an older version of MetaMorpheus?");
+                        // probably the only time you can get here is if the user modifies the file-specific parameter
+                        // file in the middle of a run...
+                        //Warn("Problem parsing the file-specific toml " + FileSystem::getFileName(fileSpecificTomlPath) + "; "
+                        //     + e->what() +  "; is the toml from an older version of MetaMorpheus?");
+                        std::string sw = "Problem parsing the file-specific toml " + fileSpecificTomlPath; 
+                        Warn(sw);
                     }
                 }
             }
             
             RunSpecific(output_folder, currentProteinDbFilenameList, currentRawDataFilepathList, displayName, fileSettingsList);
-            stopWatch->Stop();
-            myTaskResults->Time = stopWatch->Elapsed;
-            auto resultsFileName = FileSystem::combine(output_folder, "results.txt");
-//C# TO C++ CONVERTER NOTE: The following 'using' block is replaced by its C++ equivalent:
-//ORIGINAL LINE: using (StreamWriter file = new StreamWriter(resultsFileName))
-            {
-                StreamWriter file = StreamWriter(resultsFileName);
-                file.WriteLine("MetaMorpheus: version " + GlobalVariables::getMetaMorpheusVersion());
-                file.Write(myTaskResults->ToString());
-            }
-            FinishedWritingFile(resultsFileName, std::vector<std::string> {displayName});
-            FinishedSingleTask(displayName);
             
-            delete stopWatch;
+            clock_t end = clock();
+            myTaskResults->Time = (end - begin)/CLOCKS_PER_SEC;
+            std::string resultsFileName = output_folder + "/results.txt";
+
+            std::ofstream file(resultsFileName);
+            
+            file << "MetaMorpheus: version " <<  GlobalVariables::getMetaMorpheusVersion() << std::endl;
+            file << myTaskResults->ToString() << std::endl;
+
+            std::vector<std::string> svec = {displayName};
+            FinishedWritingFile(resultsFileName, svec );
+            FinishedSingleTask(displayName);
         }
         catch (const std::runtime_error &e)
         {
             MetaMorpheusEngine::FinishedSingleEngineHandler->removeListener("SingleEngineHandlerInTask");
-            auto resultsFileName = FileSystem::combine(output_folder, "results.txt");
-            e.Data->Add("folder", output_folder);
-//C# TO C++ CONVERTER NOTE: The following 'using' block is replaced by its C++ equivalent:
-//ORIGINAL LINE: using (StreamWriter file = new StreamWriter(resultsFileName))
-            {
-                StreamWriter file = StreamWriter(resultsFileName);
-                file.WriteLine(GlobalVariables::getMetaMorpheusVersion() == "1.0.0.0" ? "MetaMorpheus: Not a release version" : "MetaMorpheus: version " + GlobalVariables::getMetaMorpheusVersion());
-                file.WriteLine(SystemInfo::CompleteSystemInfo()); //OS, OS Version, .Net Version, RAM, processor count, MSFileReader .dll versions X3
-                file.Write("e: " + e);
-                file.Write("e.Message: " + e.what());
-                file.Write("e.InnerException: " + e.InnerException);
-                file.Write("e.Source: " + e.Source);
-                file.Write("e.StackTrace: " + e.StackTrace);
-                file.Write("e.TargetSite: " + e.TargetSite);
+            std::string resultsFileName = output_folder + "/results.txt";
+            //e.Data->Add("folder", output_folder);
+            std::ofstream file(resultsFileName);
+            std::string ver = "1.0.0.0";
+            if (  GlobalVariables::getMetaMorpheusVersion() == ver ) {
+                file << "MetaMorpheus: Not a release version"  << std::endl;
             }
-            throw;
-        }
+            else {
+                file << "MetaMorpheus: version "  <<  GlobalVariables::getMetaMorpheusVersion() << std::endl;
+            }
+            //file.WriteLine(SystemInfo::CompleteSystemInfo());
+            //OS, OS Version, .Net Version, RAM, processor count, MSFileReader .dll versions X3
+            //file << "e: " <<  e;
+            file << "e.Message: " << e.what();
+            //file << "e.InnerException: " <<  e.InnerException;
+            //file << "e.Source: " << e.Source;
+            //file << "e.StackTrace: " << e.StackTrace;
+            //file << "e.TargetSite: " << e.TargetSite;
+        } 
+       
         
-        {
-            auto proseFilePath = FileSystem::combine(output_folder, "prose.txt");
-//C# TO C++ CONVERTER NOTE: The following 'using' block is replaced by its C++ equivalent:
-//ORIGINAL LINE: using (StreamWriter file = new StreamWriter(proseFilePath))
-            {
-                StreamWriter file = StreamWriter(proseFilePath);
-                file.Write("The data analysis was performed using MetaMorpheus version " + GlobalVariables::getMetaMorpheusVersion() + ", available at " +
-                           "https://github.com/smith-chem-wisc/MetaMorpheus.");
-                file.Write(ProseCreatedWhileRunning->toString());
-                file.Write(SystemInfo::SystemProse()->Replace("\r\n", "") + " ");
-                file.WriteLine("The total time to perform the " + getTaskType() + " task on " + std::to_string(currentRawDataFilepathList.size()) +
-                               " spectra file(s) was " + std::string::Format("{0:0.00}", myTaskResults->Time.TotalMinutes) + " minutes.");
-                file.WriteLine();
-                file.WriteLine("Published works using MetaMorpheus software are encouraged to cite: Solntsev, S. K.; Shortreed, M. R.; Frey, B. L.; Smith, L. M. Enhanced Global Post-translational Modification Discovery with MetaMorpheus. Journal of Proteome Research. 2018, 17 (5), 1844-1851.");
-
-                file.WriteLine();
-                file.WriteLine("Spectra files: ");
-                file.WriteLine(std::string::Join("\r\n", currentRawDataFilepathList.Select([&] (std::any b)    {
-                                return '\t' + b;
-                            })));
-                file.WriteLine("Databases:");
-                file.Write(std::string::Join("\r\n", currentProteinDbFilenameList.Select([&] (std::any b)		{
-                                return '\t' + (b::IsContaminant ? "Contaminant " : "") + b::FilePath;
-                            })));
-            }
-            FinishedWritingFile(proseFilePath, std::vector<std::string> {displayName});
+        std::string proseFilePath = output_folder + "/prose.txt";
+        std::ofstream file(proseFilePath);
+        file << "The data analysis was performed using MetaMorpheus version " <<
+            GlobalVariables::getMetaMorpheusVersion() <<
+            ", available at " <<   "https://github.com/smith-chem-wisc/MetaMorpheus.";
+        file << ProseCreatedWhileRunning->toString();
+        //file << SystemInfo::SystemProse()->Replace("\r\n", "") << " ";
+        file << "The total time to perform the " << static_cast<int>(getTaskType()) << " task on " <<
+            std::to_string(currentRawDataFilepathList.size()) <<
+            " spectra file(s) was " << myTaskResults->Time <<
+            " minutes." << std::endl;
+        file << "\n Published works using MetaMorpheus software are encouraged to cite: " <<
+            "Solntsev, S. K.; Shortreed, M. R.; Frey, B. L.; Smith, L. M. " <<
+            "Enhanced Global Post-translational Modification Discovery with MetaMorpheus. " <<
+            "Journal of Proteome Research. 2018, 17 (5), 1844-1851." << std::endl;
+        
+        file <<"\n Spectra files: " << std::endl;
+#ifdef ORIG
+        //file << std::string::Join("\r\n", currentRawDataFilepathList.Select([&] (std::any b)    {
+        //            return '\t' + b;
+        //            }))) << std::endl;
+#endif
+        
+        std::string sjoint1;
+        for ( auto b: currentRawDataFilepathList ) {
+            sjoint1 += '\t' + b;
         }
+        file << sjoint1 << std::endl;
+
+        file << "Databases:" << std::endl;
+#ifdef ORIG    
+        //file << std::string::Join("\r\n", currentProteinDbFilenameList.Select([&] (std::any b)		{
+        //        return '\t' + (b::IsContaminant ? "Contaminant " : "") + b::FilePath;
+        //        })) << std::endl;
+#endif
+        std::string sjoint2;
+        for ( auto b: currentProteinDbFilenameList ) {
+            sjoint2 += '\t' + (b->getIsContaminant() ? "Contaminant " : "") + b->getFilePath();
+        }
+        std::vector<std::string> svec2 = {displayName};
+        FinishedWritingFile(proseFilePath, svec2);
         
         MetaMorpheusEngine::FinishedSingleEngineHandler->removeListener("SingleEngineHandlerInTask");
         return myTaskResults;
     }
     
-    std::vector<Protein*> MetaMorpheusTask::LoadProteins(const std::string &taskId, std::vector<DbForTask*> &dbFilenameList, bool searchTarget,
-                                                         DecoyType decoyType, std::vector<std::string> &localizeableModificationTypes,
+    std::vector<Protein*> MetaMorpheusTask::LoadProteins(const std::string &taskId,
+                                                         std::vector<DbForTask*> &dbFilenameList,
+                                                         bool searchTarget,
+                                                         DecoyType decoyType,
+                                                         std::vector<std::string> &localizeableModificationTypes,
                                                          EngineLayer::CommonParameters *commonParameters)
     {
-        Status("Loading proteins...", std::vector<std::string> {taskId});
+        std::vector<std::string> svec = {taskId};
+        Status("Loading proteins...", svec);
         int emptyProteinEntries = 0;
         std::vector<Protein*> proteinList;
         for (auto db : dbFilenameList)
         {
             int emptyProteinEntriesForThisDb = 0;
-            Dictionary<std::string, Modification*> unknownModifications;
-            auto dbProteinList = LoadProteinDb(db->getFilePath(), searchTarget, decoyType, localizeableModificationTypes, db->getIsContaminant(),
-                                               unknownModifications, emptyProteinEntriesForThisDb, commonParameters);
-            proteinList = proteinList.Concat(dbProteinList)->ToList();
+            std::unordered_map<std::string, Modification*> unknownModifications;
+            proteinList = LoadProteinDb(db->getFilePath(), searchTarget, decoyType,
+                                        localizeableModificationTypes, db->getIsContaminant(),
+                                        unknownModifications, emptyProteinEntriesForThisDb,
+                                        commonParameters);
             emptyProteinEntries += emptyProteinEntriesForThisDb;
         }
-        if (!proteinList.Any())
+        if (proteinList.empty())
         {
             Warn("Warning: No protein entries were found in the database");
         }
@@ -432,34 +524,60 @@ namespace TaskLayer
         return proteinList;
     }
     
-    std::vector<Protein*> MetaMorpheusTask::LoadProteinDb(const std::string &fileName, bool generateTargets, DecoyType decoyType,
-                                                          std::vector<std::string> &localizeableModificationTypes, bool isContaminant,
-                                                          std::unordered_map<std::string, Modification*> &um, int &emptyEntriesCount,
+    std::vector<Protein*> MetaMorpheusTask::LoadProteinDb(const std::string &fileName,
+                                                          bool generateTargets,
+                                                          DecoyType decoyType,
+                                                          std::vector<std::string> &localizeableModificationTypes,
+                                                          bool isContaminant,
+                                                          std::unordered_map<std::string, Modification*> &um,
+                                                          int &emptyEntriesCount,
                                                           EngineLayer::CommonParameters *commonParameters)
     {
         std::vector<std::string> dbErrors;
         std::vector<Protein*> proteinList;
         
-//C# TO C++ CONVERTER TODO TASK: There is no direct native C++ equivalent to this .NET String method:
-        std::string theExtension = Path::GetExtension(fileName).ToLowerInvariant();
-        bool compressed = StringHelper::endsWith(theExtension, "gz"); // allows for .bgz and .tgz, too which are used on occasion
-//C# TO C++ CONVERTER TODO TASK: There is no direct native C++ equivalent to this .NET String method:
-        theExtension = compressed ? Path::GetExtension(Path::GetFileNameWithoutExtension(fileName)).ToLowerInvariant() : theExtension;
+        std::string theExtension = fileName.substr(fileName.find_last_of("."));
+        std::transform(theExtension.begin(), theExtension.end(), theExtension.begin(), [] (unsigned char c) {
+                return std::tolower(c); });
+        bool compressed = StringHelper::endsWith(theExtension, "gz");
+
+        // allows for .bgz and .tgz, too which are used on occasion
+        std::string fname = fileName.substr(0, fileName.find_last_of("."));
+        std::transform(fname.begin(), fname.end(), fname.begin(), [] (unsigned char c) {
+                return std::tolower(c); });
+
+        theExtension = compressed ? fname.substr(fname.find_last_of(".")) : theExtension;
         
         if (theExtension == ".fasta" || theExtension == ".fa")
         {
             um.clear();
-            proteinList = ProteinDbLoader::LoadProteinFasta(fileName, generateTargets, decoyType, isContaminant,
-                                                            ProteinDbLoader::UniprotAccessionRegex, ProteinDbLoader::UniprotFullNameRegex,
-                                                            ProteinDbLoader::UniprotFullNameRegex, ProteinDbLoader::UniprotGeneNameRegex,
-                                                            ProteinDbLoader::UniprotOrganismRegex, dbErrors,
+            proteinList = ProteinDbLoader::LoadProteinFasta(fileName, generateTargets,
+                                                            decoyType, isContaminant,
+                                                            ProteinDbLoader::UniprotAccessionRegex,
+                                                            ProteinDbLoader::UniprotFullNameRegex,
+                                                            ProteinDbLoader::UniprotFullNameRegex,
+                                                            ProteinDbLoader::UniprotGeneNameRegex,
+                                                            ProteinDbLoader::UniprotOrganismRegex,
+                                                            dbErrors,
                                                             commonParameters->getMaxThreadsToUsePerFile());
         }
         else
         {
-            std::vector<std::string> modTypesToExclude = GlobalVariables::getAllModTypesKnown().Where([&] (std::any b)  {
-                    std::find(localizeableModificationTypes.begin(), localizeableModificationTypes.end(), b) == localizeableModificationTypes.end();
+#ifdef ORIG
+            std::vector<std::string> modTypesToExclude = GlobalVariables::getAllModTypesKnown().Where([&] (
+                                                                                             std::any b)  {
+                    std::find(localizeableModificationTypes.begin(), localizeableModificationTypes.end(), b) ==
+                    localizeableModificationTypes.end();
                 }).ToList();
+#endif
+            std::vector<std::string> modTypesToExclude;
+            for ( auto b: GlobalVariables::getAllModTypesKnown() ) {
+                if (std::find(localizeableModificationTypes.begin(), localizeableModificationTypes.end(), b) ==
+                    localizeableModificationTypes.end()) {
+                    modTypesToExclude.push_back(b);
+                }
+            }
+            
             proteinList = ProteinDbLoader::LoadProteinXML(fileName, generateTargets, decoyType,
                                                           GlobalVariables::getAllModsKnown(), isContaminant,
                                                           modTypesToExclude, um,
@@ -471,13 +589,15 @@ namespace TaskLayer
         emptyEntriesCount = proteinList.size()([&] (std::any p)	{
                 return p::BaseSequence->Length == 0;
             });
+
         return proteinList.Where([&] (std::any p){
                 return p::BaseSequence->Length > 0;
             }).ToList();
     }
     
     void MetaMorpheusTask::LoadModifications(const std::string &taskId, std::vector<Modification*> &variableModifications,
-                                             std::vector<Modification*> &fixedModifications, std::vector<std::string> &localizableModificationTypes)
+                                             std::vector<Modification*> &fixedModifications,
+                                             std::vector<std::string> &localizableModificationTypes)
     {
         // load modifications
         Status("Loading modifications...", taskId);
@@ -580,7 +700,8 @@ namespace TaskLayer
         return value.Split({"\t"}, StringSplitOptions::RemoveEmptyEntries).ToList();
     }
     
-    void MetaMorpheusTask::SingleEngineHandlerInTask(std::any sender, SingleEngineFinishedEventArgs *e)
+    //void MetaMorpheusTask::SingleEngineHandlerInTask(std::any sender, SingleEngineFinishedEventArgs *e)
+    void MetaMorpheusTask::SingleEngineHandlerInTask(SingleEngineFinishedEventArgs *e)
     {
         myTaskResults->AddResultText(e->ToString());
     }

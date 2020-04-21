@@ -10,20 +10,16 @@
 #include "exceptionhelper.h"
 #include "stringhelper.h"
 #include "stringbuilder.h"
-//#include "tangible_event.h"
 #include "tangible_filesystem.h"
 
 #include "EventArgs/SingleTaskEventArgs.h"
-#include "../EngineLayer/CommonParameters.h"
-#include "../EngineLayer/Ms2ScanWithSpecificMass.h"
 #include "DbForTask.h"
 
-//namespace TaskLayer { class MyTaskResults; }
 #include "MyTaskResults.h"
-
-//namespace TaskLayer { class FileSpecificParameters; }
 #include "FileSpecificParameters.h"
 
+#include "../EngineLayer/CommonParameters.h"
+#include "../EngineLayer/Ms2ScanWithSpecificMass.h"
 #include "../EngineLayer/PeptideSpectralMatch.h"
 #include "../EngineLayer/EventArgs/ProgressEventArgs.h"
 #include "../EngineLayer/EventArgs/SingleEngineEventArgs.h"
@@ -42,7 +38,6 @@ using namespace MassSpectrometry;
 
 #include "MzLibUtil.h"
 using namespace MzLibUtil;
-//using namespace Nett;
 
 #include "Proteomics/Proteomics.h"
 using namespace Proteomics;
@@ -55,139 +50,165 @@ namespace TaskLayer
 {
 	enum class MyTask
 	{
-		Search,
-		Gptmd,
-		Calibrate,
-		XLSearch
-	};
+            Search = 0,
+	    Gptmd,
+	    Calibrate,
+	    XLSearch
+        };
 
 	class MetaMorpheusTask
 	{
 	private:
-		MyTask privateTaskType = static_cast<MyTask>(0);
-		EngineLayer::CommonParameters *privateCommonParameters;
-
+            MyTask privateTaskType = static_cast<MyTask>(0);
+            EngineLayer::CommonParameters *privateCommonParameters;
+            
 	public:
-		//static TomlSettings *const tomlConfig;
-
+            //static TomlSettings *const tomlConfig;
+            
 	protected:
-		StringBuilder *const ProseCreatedWhileRunning = new StringBuilder();
-		MyTaskResults *myTaskResults;
-
+            StringBuilder *const ProseCreatedWhileRunning = new StringBuilder();
+            MyTaskResults *myTaskResults;
+            
 	public:
-		virtual ~MetaMorpheusTask()
-		{
-			delete ProseCreatedWhileRunning;
-			delete myTaskResults;
-		}
-
+            virtual ~MetaMorpheusTask()
+            {
+                delete ProseCreatedWhileRunning;
+                delete myTaskResults;
+            }
+            
 	protected:
-		MetaMorpheusTask(MyTask taskType);
-
+            MetaMorpheusTask(MyTask taskType);
+            
 	public:
-                // Keeping one original line for revisiting the item later.
-		//static TangibleEvent<EventHandler<SingleTaskEventArgs>> *FinishedSingleTaskHandler = new TangibleEvent<EventHandler<SingleTaskEventArgs>>();
-
+            // Keeping one original line for revisiting the item later.
+            //static TangibleEvent<EventHandler<SingleTaskEventArgs>> *FinishedSingleTaskHandler = new TangibleEvent<EventHandler<SingleTaskEventArgs>>();
+            
 #ifdef ORIG
-		static EventHandler<SingleTaskEventArgs> *FinishedSingleTaskHandler = new EventHandler<SingleTaskEventArgs>();
-		static EventHandler<SingleFileEventArgs> *FinishedWritingFileHandler = new EventHandler<SingleFileEventArgs>();
-		static EventHandler<SingleTaskEventArgs> *StartingSingleTaskHander = new EventHandler<SingleTaskEventArgs>();
-		static EventHandler<StringEventArgs> *StartingDataFileHandler = new EventHandler<StringEventArgs>();
-		static EventHandler<StringEventArgs> *FinishedDataFileHandler = new EventHandler<StringEventArgs>();
-		static EventHandler<StringEventArgs> *OutLabelStatusHandler = new TangibleEvent<EventHandler<StringEventArgs>();
-		static EventHandler<StringEventArgs> *WarnHandler = new EventHandler<StringEventArgs>>();
-		static EventHandler<StringEventArgs> *LogHandler = new EventHandler<StringEventArgs>>();
-		static EventHandler<StringEventArgs> *NewCollectionHandler = new EventHandler<StringEventArgs>();
-		static EventHandler<ProgressEventArgs> *OutProgressHandler = new EventHandler<ProgressEventArgs>();
+            static EventHandler<SingleTaskEventArgs> *FinishedSingleTaskHandler = new EventHandler<SingleTaskEventArgs>();
+            static EventHandler<SingleFileEventArgs> *FinishedWritingFileHandler = new EventHandler<SingleFileEventArgs>();
+            static EventHandler<SingleTaskEventArgs> *StartingSingleTaskHander = new EventHandler<SingleTaskEventArgs>();
+            static EventHandler<StringEventArgs> *StartingDataFileHandler = new EventHandler<StringEventArgs>();
+            static EventHandler<StringEventArgs> *FinishedDataFileHandler = new EventHandler<StringEventArgs>();
+            static EventHandler<StringEventArgs> *OutLabelStatusHandler = new TangibleEvent<EventHandler<StringEventArgs>();
+            static EventHandler<StringEventArgs> *WarnHandler = new EventHandler<StringEventArgs>>();
+            static EventHandler<StringEventArgs> *LogHandler = new EventHandler<StringEventArgs>>();
+            static EventHandler<StringEventArgs> *NewCollectionHandler = new EventHandler<StringEventArgs>();
+            static EventHandler<ProgressEventArgs> *OutProgressHandler = new EventHandler<ProgressEventArgs>();
 #endif
-		static EventHandler<SingleTaskEventArgs> *FinishedSingleTaskHandler;
-		static EventHandler<SingleFileEventArgs> *FinishedWritingFileHandler;
-		static EventHandler<SingleTaskEventArgs> *StartingSingleTaskHander;
-		static EventHandler<StringEventArgs> *StartingDataFileHandler;
-		static EventHandler<StringEventArgs> *FinishedDataFileHandler;
-		static EventHandler<StringEventArgs> *OutLabelStatusHandler;
-		static EventHandler<StringEventArgs> *WarnHandler;
-		static EventHandler<StringEventArgs> *LogHandler;
-		static EventHandler<StringEventArgs> *NewCollectionHandler;
-		static EventHandler<ProgressEventArgs> *OutProgressHandler;
-                
-		MyTask getTaskType() const;
-		void setTaskType(MyTask value);
-
-		EngineLayer::CommonParameters *getCommonParameters() const;
-		void setCommonParameters(EngineLayer::CommonParameters *value);
-
-		static const std::string IndexFolderName;
-
-		static std::vector<Ms2ScanWithSpecificMass*> GetMs2Scans(MsDataFile *myMSDataFile, const std::string &fullFilePath, EngineLayer::CommonParameters *commonParameters);
-
-		static EngineLayer::CommonParameters *SetAllFileSpecificCommonParams(EngineLayer::CommonParameters *commonParams, FileSpecificParameters *fileSpecificParams);
-
-		MyTaskResults *RunTask(const std::string &output_folder, std::vector<DbForTask*> &currentProteinDbFilenameList, std::vector<std::string> &currentRawDataFilepathList, const std::string &displayName);
+            static EventHandler<SingleTaskEventArgs> *FinishedSingleTaskHandler;
+            static EventHandler<SingleFileEventArgs> *FinishedWritingFileHandler;
+            static EventHandler<SingleTaskEventArgs> *StartingSingleTaskHander;
+            static EventHandler<StringEventArgs> *StartingDataFileHandler;
+            static EventHandler<StringEventArgs> *FinishedDataFileHandler;
+            static EventHandler<StringEventArgs> *OutLabelStatusHandler;
+            static EventHandler<StringEventArgs> *WarnHandler;
+            static EventHandler<StringEventArgs> *LogHandler;
+            static EventHandler<StringEventArgs> *NewCollectionHandler;
+            static EventHandler<ProgressEventArgs> *OutProgressHandler;
+            
+            MyTask getTaskType() const;
+            void setTaskType(MyTask value);
+            
+            EngineLayer::CommonParameters *getCommonParameters() const;
+            void setCommonParameters(EngineLayer::CommonParameters *value);
+            
+            static const std::string IndexFolderName;
+            
+            static std::vector<Ms2ScanWithSpecificMass*> GetMs2Scans(MsDataFile *myMSDataFile,
+                                                                     const std::string &fullFilePath,
+                                                                     EngineLayer::CommonParameters *commonParameters);
+            
+            static EngineLayer::CommonParameters *SetAllFileSpecificCommonParams(EngineLayer::CommonParameters *commonParams,
+                                                                                 FileSpecificParameters *fileSpecificParams);
+            
+            MyTaskResults *RunTask(const std::string &output_folder, std::vector<DbForTask*> &currentProteinDbFilenameList,
+                                   std::vector<std::string> &currentRawDataFilepathList, const std::string &displayName);
 
 	protected:
-		std::vector<Protein*> LoadProteins(const std::string &taskId, std::vector<DbForTask*> &dbFilenameList, bool searchTarget, DecoyType decoyType, std::vector<std::string> &localizeableModificationTypes, EngineLayer::CommonParameters *commonParameters);
+            std::vector<Protein*> LoadProteins(const std::string &taskId, std::vector<DbForTask*> &dbFilenameList,
+                                               bool searchTarget, DecoyType decoyType,
+                                               std::vector<std::string> &localizeableModificationTypes,
+                                               EngineLayer::CommonParameters *commonParameters);
+            
+            static std::vector<Protein*> LoadProteinDb(const std::string &fileName, bool generateTargets,
+                                                       DecoyType decoyType,
+                                                       std::vector<std::string> &localizeableModificationTypes,
+                                                       bool isContaminant, std::unordered_map<std::string, Modification*> &um,
+                                                       int &emptyEntriesCount,
+                                                       EngineLayer::CommonParameters *commonParameters);
 
-		static std::vector<Protein*> LoadProteinDb(const std::string &fileName, bool generateTargets, DecoyType decoyType, std::vector<std::string> &localizeableModificationTypes, bool isContaminant, std::unordered_map<std::string, Modification*> &um, int &emptyEntriesCount, EngineLayer::CommonParameters *commonParameters);
+            void LoadModifications(const std::string &taskId, std::vector<Modification*> &variableModifications,
+                                   std::vector<Modification*> &fixedModifications,
+                                   std::vector<std::string> &localizableModificationTypes);
 
-		void LoadModifications(const std::string &taskId, std::vector<Modification*> &variableModifications, std::vector<Modification*> &fixedModifications, std::vector<std::string> &localizableModificationTypes);
+            static void WritePsmsToTsv(std::vector<PeptideSpectralMatch*> &psms, const std::string &filePath,
+                                       std::unordered_map<std::string, int> *modstoWritePruned);
 
-		static void WritePsmsToTsv(std::vector<PeptideSpectralMatch*> &psms, const std::string &filePath, std::unordered_map<std::string, int> *modstoWritePruned);
+            void ReportProgress(ProgressEventArgs *v);
+            
+            virtual MyTaskResults *RunSpecific(const std::string &OutputFolder, std::vector<DbForTask*> &dbFilenameList,
+                                               std::vector<std::string> &currentRawFileList, const std::string &taskId,
+                                               std::vector<FileSpecificParameters*> &fileSettingsList) = 0;
 
-		void ReportProgress(ProgressEventArgs *v);
-
-		virtual MyTaskResults *RunSpecific(const std::string &OutputFolder, std::vector<DbForTask*> &dbFilenameList, std::vector<std::string> &currentRawFileList, const std::string &taskId, std::vector<FileSpecificParameters*> &fileSettingsList) = 0;
-
-		void FinishedWritingFile(const std::string &path, std::vector<std::string> &nestedIDs);
-
-		void StartingDataFile(const std::string &v, std::vector<std::string> &nestedIDs);
-
-		void FinishedDataFile(const std::string &v, std::vector<std::string> &nestedIDs);
-
-		void Status(const std::string &v, const std::string &id);
-
-		void Status(const std::string &v, std::vector<std::string> &nestedIds);
-
-		static void Warn(const std::string &v);
-
-		void Log(const std::string &v, std::vector<std::string> &nestedIds);
-
-		void NewCollection(const std::string &displayName, std::vector<std::string> &nestedIds);
-
+            void FinishedWritingFile(const std::string &path, std::vector<std::string> &nestedIDs);
+            
+            void StartingDataFile(const std::string &v, std::vector<std::string> &nestedIDs);
+            
+            void FinishedDataFile(const std::string &v, std::vector<std::string> &nestedIDs);
+            
+            void Status(const std::string &v, const std::string &id);
+            
+            void Status(const std::string &v, std::vector<std::string> &nestedIds);
+            
+            static void Warn(const std::string &v);
+            
+            void Log(const std::string &v, std::vector<std::string> &nestedIds);
+            
+            void NewCollection(const std::string &displayName, std::vector<std::string> &nestedIds);
+            
 	private:
-		static std::vector<std::string> GetModsTypesFromString(const std::string &value);
-
-//C# TO C++ CONVERTER TODO TASK: Methods returning tuples are not converted by C# to C++ Converter:
-//		private static List<(string, string)> GetModsFromString(string value)
-//		{
-//			return value.Split(new string[] { "\t\t" }, StringSplitOptions.RemoveEmptyEntries).Select(b => (b.Split('\t').First(), b.Split('\t').Last())).ToList();
-//		}
-                static std::pair<std::string, std::string> GetModsFromString (std::string value);
-                
-		void SingleEngineHandlerInTask(std::any sender, SingleEngineFinishedEventArgs *e);
-
-		void FinishedSingleTask(const std::string &displayName);
-
-		void StartingSingleTask(const std::string &displayName);
-
-		static std::vector<std::type_info> GetSubclassesAndItself(std::type_info type);
-
-		static bool SameSettings(const std::string &pathToOldParamsFile, IndexingEngine *indexEngine);
-
-		static void WritePeptideIndex(std::vector<PeptideWithSetModifications*> &peptideIndex, const std::string &peptideIndexFile);
-
-		static void WriteFragmentIndexNetSerializer(std::vector<std::vector<int>&> &fragmentIndex, const std::string &fragmentIndexFile);
-
-		static std::string GetExistingFolderWithIndices(IndexingEngine *indexEngine, std::vector<DbForTask*> &dbFilenameList);
-
-		//static std::string CheckFiles(IndexingEngine *indexEngine, DirectoryInfo *folder);
-		static std::string CheckFiles(IndexingEngine *indexEngine, std::string *folder);
-
-		static void WriteIndexEngineParams(IndexingEngine *indexEngine, const std::string &fileName);
-
-		static std::string GenerateOutputFolderForIndices(std::vector<DbForTask*> &dbFilenameList);
-
+            static std::vector<std::string> GetModsTypesFromString(const std::string &value);
+            
+            //C# TO C++ CONVERTER TODO TASK: Methods returning tuples are not converted by C# to C++ Converter:
+            // private static List<(string, string)> GetModsFromString(string value)
+            // {
+            //      return value.Split(new string[] { "\t\t" }, StringSplitOptions.RemoveEmptyEntries).Select(
+            //                                    b => (b.Split('\t').First(), b.Split('\t').Last())).ToList();
+            // }
+            static std::pair<std::string, std::string> GetModsFromString (std::string value);
+            
+            //void SingleEngineHandlerInTask(std::any sender, SingleEngineFinishedEventArgs *e);
+            void SingleEngineHandlerInTask(SingleEngineFinishedEventArgs *e);
+            
+            void FinishedSingleTask(const std::string &displayName);
+            
+            void StartingSingleTask(const std::string &displayName);
+            
+            static std::vector<std::type_info> GetSubclassesAndItself(std::type_info type);
+            
+            static bool SameSettings(const std::string &pathToOldParamsFile, IndexingEngine *indexEngine);
+            
+            static void WritePeptideIndex(std::vector<PeptideWithSetModifications*> &peptideIndex,
+                                          const std::string &peptideIndexFile);
+            
+            static void WriteFragmentIndexNetSerializer(std::vector<std::vector<int>&> &fragmentIndex,
+                                                        const std::string &fragmentIndexFile);
+            
+            static std::string GetExistingFolderWithIndices(IndexingEngine *indexEngine, std::vector<DbForTask*> &dbFilenameList);
+            
+            static std::string CheckFiles(IndexingEngine *indexEngine, std::string *folder);
+            
+            static void WriteIndexEngineParams(IndexingEngine *indexEngine, const std::string &fileName);
+            
+            static std::string GenerateOutputFolderForIndices(std::vector<DbForTask*> &dbFilenameList);
+            
 	public:
-		void GenerateIndexes(IndexingEngine *indexEngine, std::vector<DbForTask*> &dbFilenameList, std::vector<PeptideWithSetModifications*> &peptideIndex, std::vector<std::vector<int>> &fragmentIndex, std::vector<std::vector<int>> &precursorIndex, std::vector<Protein*> &allKnownProteins, std::vector<Modification*> &allKnownModifications, const std::string &taskId);
+            void GenerateIndexes(IndexingEngine *indexEngine, std::vector<DbForTask*> &dbFilenameList,
+                                 std::vector<PeptideWithSetModifications*> &peptideIndex,
+                                 std::vector<std::vector<int>> &fragmentIndex,
+                                 std::vector<std::vector<int>> &precursorIndex,
+                                 std::vector<Protein*> &allKnownProteins,
+                                 std::vector<Modification*> &allKnownModifications,
+                                 const std::string &taskId);
 	};
 }

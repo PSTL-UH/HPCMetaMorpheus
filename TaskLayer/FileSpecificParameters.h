@@ -31,6 +31,7 @@ namespace TaskLayer
 	public:
 		
 		FileSpecificParameters(toml::Table tomlTable);
+		FileSpecificParameters(FileSpecificParameters *filep);
 		FileSpecificParameters();
 
 		Tolerance *getPrecursorMassTolerance() const;
@@ -56,8 +57,11 @@ namespace TaskLayer
 		// It's supposed to immediately crash MetaMorpheus if you rename a Common Parameter and don't rename it here.
 		// The reason this method exists is to make sure toml settings are written and parsed consistently between the tasks
 		// and the file-specific settings.
-		static void ValidateFileSpecificVariableNames();
+                //
+                // EDGAR: not needed for now in the C++ version
+		// static void ValidateFileSpecificVariableNames();
 
-		FileSpecificParameters *Clone();
+                // EDGAR: replaced in the C++ version with a copy-constructor.
+		//FileSpecificParameters *Clone();
 	};
 }
