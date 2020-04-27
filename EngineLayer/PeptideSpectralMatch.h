@@ -149,18 +149,18 @@ namespace EngineLayer
         /// </summary>
         std::vector<double> getFeatures() const;
         
+        static std::unordered_map<std::string, std::string> DataDictionary(
+            PeptideSpectralMatch *psm, std::unordered_map<std::string, int> *ModsToWritePruned);
+        
+        
+    public:
         static std::string GetTabSeparatedHeader();
                 
         std::string ToString();
         //std::string ToString(IReadOnlyDictionary<std::string, int> *ModstoWritePruned);
         std::string ToString(std::unordered_map<std::string, int> *ModstoWritePruned);
         
-        
-        static std::unordered_map<std::string, std::string> DataDictionary(PeptideSpectralMatch *psm,
-                                                                         std::unordered_map<std::string, int> *ModsToWritePruned);
-        
-        
-    public:
+
         void AddOrReplace(PeptideWithSetModifications *pwsm, double newScore, int notch, bool reportAllAmbiguity,
                           std::vector<MatchedFragmentIon*> &matchedFragmentIons);
 

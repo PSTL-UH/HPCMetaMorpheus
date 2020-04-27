@@ -31,7 +31,7 @@ CFLAGS      = -g -O0
 
 
 CXX         = g++              
-CXXFLAGS    = -Wall -g -O0 -I$(MMORPHEUS_INC_DIR) -I$(MZLIB_INC_DIR) -I$(MZLIB_DIR) -I$(MZLIB_DIR)/MzLibUtil -std=c++17
+CXXFLAGS    = -Wall -g -O0 -Wno-delete-non-virtual-dtor -I$(MMORPHEUS_INC_DIR) -I$(MZLIB_INC_DIR) -I$(MZLIB_DIR) -I$(MZLIB_DIR)/MzLibUtil -std=c++17
 CXXLOCALFLAGS = -DNDEBUG
 LDFLAGS     = -L$(MMORPHEUS_LIB_DIR) -lmmorpheus -L$(MZLIB_LIB_DIR) -lmzlib
 

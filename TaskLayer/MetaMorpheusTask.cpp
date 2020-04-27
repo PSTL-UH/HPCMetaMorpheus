@@ -14,7 +14,7 @@
 #include "../EngineLayer/EventArgs/SingleFileEventArgs.h"
 #include "../EngineLayer/EventArgs/StringEventArgs.h"
 #include "../EngineLayer/EventArgs/SingleEngineFinishedEventArgs.h"
-
+#include "../EngineLayer/Indexing/IndexingResults.h"
 
 #include "Chemistry/ClassExtensions.h"
 #include "UsefulProteomicsDatabases/UsefulProteomicsDatabases.h"
@@ -25,6 +25,8 @@
 #include <string>
 #include <locale>
 #include <algorithm>
+#include <iostream>
+#include <fstream>
 
 using namespace Chemistry;
 using namespace EngineLayer;
@@ -577,127 +579,216 @@ namespace TaskLayer
                     modTypesToExclude.push_back(b);
                 }
             }
-            
+
+            auto tmpmods = GlobalVariables::getAllModsKnown();
             proteinList = ProteinDbLoader::LoadProteinXML(fileName, generateTargets, decoyType,
-                                                          GlobalVariables::getAllModsKnown(), isContaminant,
+                                                          tmpmods,
+                                                          isContaminant,
                                                           modTypesToExclude, um,
                                                           commonParameters->getMaxThreadsToUsePerFile(),
                                                           commonParameters->getMaxHeterozygousVariants(),
                                                           commonParameters->getMinVariantDepth());
         }
 
+#ifdef ORIG
         emptyEntriesCount = proteinList.size()([&] (std::any p)	{
                 return p::BaseSequence->Length == 0;
             });
-
+#endif
+        emptyEntriesCount=0;
+        for ( auto p: proteinList ) {
+            if ( p->getBaseSequence().length() == 0 ) {
+                emptyEntriesCount++;
+            }
+        }
+        
+#ifdef ORIG
         return proteinList.Where([&] (std::any p){
                 return p::BaseSequence->Length > 0;
             }).ToList();
+#endif
+        std::vector<Proteomics::Protein*> tmpvec;
+        for ( auto p: proteinList ) {
+            if ( p->getBaseSequence().length() > 0 ) {
+                tmpvec.push_back(p);
+            }
+        }
+
+        return tmpvec;
     }
     
-    void MetaMorpheusTask::LoadModifications(const std::string &taskId, std::vector<Modification*> &variableModifications,
+    void MetaMorpheusTask::LoadModifications(const std::string &taskId,
+                                             std::vector<Modification*> &variableModifications,
                                              std::vector<Modification*> &fixedModifications,
                                              std::vector<std::string> &localizableModificationTypes)
     {
         // load modifications
         Status("Loading modifications...", taskId);
+#ifdef ORIG
         variableModifications = GlobalVariables::getAllModsKnown().OfType<Modification*>().Where([&] (std::any b)    {
                 getCommonParameters()->ListOfModsVariable->Contains((b::ModificationType, b::IdWithMotif));
             }).ToList();
+#endif
+        variableModifications.clear();
+        for ( auto b: GlobalVariables::getAllModsKnown() ) {
+            auto tmp = getCommonParameters()->getListOfModsVariable();
+            std::tuple<std::string, std::string> elem = std::make_tuple( b->getModificationType(),
+                                                                         b->getIdWithMotif());
+            if ( std::find(tmp->begin(), tmp->end(), elem ) != tmp->end() ) {
+                variableModifications.push_back(b);
+            }
+        }
+        
+#ifdef ORIG
         fixedModifications = GlobalVariables::getAllModsKnown().OfType<Modification*>().Where([&] (std::any b)	{
                 getCommonParameters()->ListOfModsFixed->Contains((b::ModificationType, b::IdWithMotif));
             }).ToList();
-        localizableModificationTypes = GlobalVariables::getAllModTypesKnown().ToList();
+#endif
+        fixedModifications.clear();
+        for ( auto b: GlobalVariables::getAllModsKnown() ) {
+            auto tmp = getCommonParameters()->getListOfModsFixed();
+            std::tuple<std::string, std::string> elem = std::make_tuple( b->getModificationType(),
+                                                                         b->getIdWithMotif());
+            if ( std::find(tmp->begin(), tmp->end(), elem ) != tmp->end() ) {
+                variableModifications.push_back(b);
+            }
+        }
         
+        //localizableModificationTypes = GlobalVariables::getAllModTypesKnown().ToList();
+        localizableModificationTypes.clear();
+        auto tmpmods = GlobalVariables::getAllModTypesKnown();
+        for ( auto p = tmpmods.begin(); p != tmpmods.end(); p++ ) {
+            localizableModificationTypes.push_back(*p);
+        }
+        
+#ifdef ORIG
         auto recognizedVariable = variableModifications.Select([&] (std::any p)      {
                 p::IdWithMotif;
             });
+#endif
+        std::vector<std::string> recognizedVariable;
+        for ( auto p: variableModifications ) {
+            recognizedVariable.push_back(p->getIdWithMotif() );
+        }
+
+#ifdef ORIG
         auto recognizedFixed = fixedModifications.Select([&] (std::any p){
                 p::IdWithMotif;
             });
+#endif
+        std::vector<std::string> recognizedFixed;
+        for ( auto p: fixedModifications ) {
+            recognizedFixed.push_back(p->getIdWithMotif() );
+        }
+
+#ifdef ORIG
         auto unknownMods = getCommonParameters()->ListOfModsVariable->Select([&] (std::any p){
                 p::Item2;
             }).Except(recognizedVariable).ToList();
         unknownMods.AddRange(getCommonParameters()->ListOfModsFixed->Select([&] (std::any p){
                     p::Item2;
 		}).Except(recognizedFixed));
+#endif
+        std::vector<std::string> unknownMods;
+        for ( auto p: *(getCommonParameters()->getListOfModsVariable()) ) {
+            if ( std::find(recognizedVariable.begin(),recognizedVariable.end(), std::get<1>(p)) !=
+                 recognizedVariable.end() ) {
+                unknownMods.push_back(std::get<1>(p));
+            }
+        }
+        for ( auto p: *(getCommonParameters()->getListOfModsFixed()) )  {
+            if ( std::find(recognizedFixed.begin(),recognizedFixed.end(), std::get<1>(p)) !=
+                 recognizedFixed.end() ) {
+                unknownMods.push_back(std::get<1>(p));
+            }
+        }
+
+        
         for (auto unrecognizedMod : unknownMods)
         {
             Warn("Unrecognized mod " + unrecognizedMod + "; are you using an old .toml?");
         }
     }
 
-    void MetaMorpheusTask::WritePsmsToTsv(std::vector<PeptideSpectralMatch*> &psms, const std::string &filePath,
-                                          IReadOnlyDictionary<std::string, int> *modstoWritePruned)
+    void MetaMorpheusTask::WritePsmsToTsv(std::vector<PeptideSpectralMatch*> &psms,
+                                          const std::string &filePath,
+                                          std::unordered_map<std::string, int> *modstoWritePruned)
     {
-//C# TO C++ CONVERTER NOTE: The following 'using' block is replaced by its C++ equivalent:
-//ORIGINAL LINE: using (StreamWriter output = new StreamWriter(filePath))
+        std::ofstream output(filePath);
+        output << PeptideSpectralMatch::GetTabSeparatedHeader() << std::endl;
+        for (auto psm : psms)
         {
-            StreamWriter output = StreamWriter(filePath);
-            output.WriteLine(PeptideSpectralMatch::GetTabSeparatedHeader());
-            for (auto psm : psms)
-            {
-                output.WriteLine(psm->ToString(modstoWritePruned));
-            }
+            output << psm->ToString(modstoWritePruned) << std::endl;
         }
     }
     
     void MetaMorpheusTask::ReportProgress(ProgressEventArgs *v)
     {
-        OutProgressHandler +== nullptr ? nullptr : OutProgressHandler::Invoke(this, v);
+        if ( OutProgressHandler != nullptr )
+            OutProgressHandler->Invoke(this, v);
     }
     
     void MetaMorpheusTask::FinishedWritingFile(const std::string &path, std::vector<std::string> &nestedIDs)
     {
         SingleFileEventArgs tempVar(path, nestedIDs);
-        FinishedWritingFileHandler +== nullptr ? nullptr : FinishedWritingFileHandler::Invoke(this, &tempVar);
+        if ( FinishedWritingFileHandler != nullptr )
+            FinishedWritingFileHandler->Invoke(this, &tempVar);
     }
     
     void MetaMorpheusTask::StartingDataFile(const std::string &v, std::vector<std::string> &nestedIDs)
     {
         StringEventArgs tempVar(v, nestedIDs);
-        StartingDataFileHandler +== nullptr ? nullptr : StartingDataFileHandler::Invoke(this, &tempVar);
+        if ( StartingDataFileHandler != nullptr )
+            StartingDataFileHandler->Invoke(this, &tempVar);
     }
     
     void MetaMorpheusTask::FinishedDataFile(const std::string &v, std::vector<std::string> &nestedIDs)
     {
         StringEventArgs tempVar(v, nestedIDs);
-        FinishedDataFileHandler +== nullptr ? nullptr : FinishedDataFileHandler::Invoke(this, &tempVar);
+        if ( FinishedDataFileHandler != nullptr )
+            FinishedDataFileHandler->Invoke(this, &tempVar);
     }
     
     void MetaMorpheusTask::Status(const std::string &v, const std::string &id)
     {
-        StringEventArgs tempVar(v, new std::vector<std::string> {id});
-        OutLabelStatusHandler +== nullptr ? nullptr : OutLabelStatusHandler::Invoke(this, &tempVar);
+        std::vector<std::string> s = {id};
+        StringEventArgs tempVar(v, s);
+        if ( OutLabelStatusHandler != nullptr )
+            OutLabelStatusHandler->Invoke(this, &tempVar);
     }
     
     void MetaMorpheusTask::Status(const std::string &v, std::vector<std::string> &nestedIds)
     {
         StringEventArgs tempVar(v, nestedIds);
-        OutLabelStatusHandler +== nullptr ? nullptr : OutLabelStatusHandler::Invoke(this, &tempVar);
+        if ( OutLabelStatusHandler != nullptr )
+            OutLabelStatusHandler->Invoke(this, &tempVar);
     }
     
     void MetaMorpheusTask::Warn(const std::string &v)
     {
-        StringEventArgs tempVar(v, nullptr);
-        WarnHandler +== nullptr ? nullptr : WarnHandler::Invoke(nullptr, &tempVar);
+        StringEventArgs tempVar(v, std::vector<std::string>() );
+        if ( WarnHandler != nullptr )
+            WarnHandler->Invoke(nullptr, &tempVar);
     }
     
     void MetaMorpheusTask::Log(const std::string &v, std::vector<std::string> &nestedIds)
     {
         StringEventArgs tempVar(v, nestedIds);
-        LogHandler +== nullptr ? nullptr : LogHandler::Invoke(this, &tempVar);
+        if ( LogHandler != nullptr )
+            LogHandler->Invoke(this, &tempVar);
     }
     
     void MetaMorpheusTask::NewCollection(const std::string &displayName, std::vector<std::string> &nestedIds)
     {
         StringEventArgs tempVar(displayName, nestedIds);
-        NewCollectionHandler +== nullptr ? nullptr : NewCollectionHandler::Invoke(this, &tempVar);
+        if ( NewCollectionHandler != nullptr )
+            NewCollectionHandler->Invoke(this, &tempVar);
     }
     
     std::vector<std::string> MetaMorpheusTask::GetModsTypesFromString(const std::string &value)
     {
-        return value.Split({"\t"}, StringSplitOptions::RemoveEmptyEntries).ToList();
+        //return value.Split({"\t"}, StringSplitOptions::RemoveEmptyEntries).ToList();
+        return StringHelper::split(value, '\t');
     }
     
     //void MetaMorpheusTask::SingleEngineHandlerInTask(std::any sender, SingleEngineFinishedEventArgs *e)
@@ -709,80 +800,76 @@ namespace TaskLayer
     void MetaMorpheusTask::FinishedSingleTask(const std::string &displayName)
     {
         SingleTaskEventArgs tempVar(displayName);
-        FinishedSingleTaskHandler +== nullptr ? nullptr : FinishedSingleTaskHandler::Invoke(this, &tempVar);
+        if ( FinishedSingleTaskHandler != nullptr )
+            FinishedSingleTaskHandler->Invoke(this, &tempVar);
     }
     
     void MetaMorpheusTask::StartingSingleTask(const std::string &displayName)
     {
         SingleTaskEventArgs tempVar(displayName);
-        StartingSingleTaskHander +== nullptr ? nullptr : StartingSingleTaskHander::Invoke(this, &tempVar);
+        if ( StartingSingleTaskHander != nullptr )
+            StartingSingleTaskHander->Invoke(this, &tempVar);
     }
     
     std::vector<std::type_info> MetaMorpheusTask::GetSubclassesAndItself(std::type_info type)
     {
-//C# TO C++ CONVERTER TODO TASK: C++ does not have an equivalent to the C# 'yield' keyword:
-        yield return type;
+        //C# TO C++ CONVERTER TODO TASK: C++ does not have an equivalent to the C# 'yield' keyword:
+        //yield return type;
+        std::vector<type> tmp;
+        return tmp;
     }
     
     bool MetaMorpheusTask::SameSettings(const std::string &pathToOldParamsFile, IndexingEngine *indexEngine)
     {
-//C# TO C++ CONVERTER NOTE: The following 'using' block is replaced by its C++ equivalent:
-//ORIGINAL LINE: using (StreamReader reader = new StreamReader(pathToOldParamsFile))
+        std::ifstream reader(pathToOldParamsFile);
+        if (reader.ReadToEnd() == indexEngine->ToString())
         {
-            StreamReader reader = StreamReader(pathToOldParamsFile);
-            if (reader.ReadToEnd() == indexEngine->ToString())
-            {
-                return true;
-            }
+            return true;
         }
         return false;
     }
     
-    void MetaMorpheusTask::WritePeptideIndex(std::vector<PeptideWithSetModifications*> &peptideIndex, const std::string &peptideIndexFile)
+    void MetaMorpheusTask::WritePeptideIndex(std::vector<PeptideWithSetModifications*> &peptideIndex,
+                                             const std::string &peptideIndexFile)
     {
         auto messageTypes = GetSubclassesAndItself(std::vector<PeptideWithSetModifications*>::typeid);
         auto ser = new NetSerializer::Serializer(messageTypes);
         
-//C# TO C++ CONVERTER NOTE: The following 'using' block is replaced by its C++ equivalent:
-//ORIGINAL LINE: using (var file = File.Create(peptideIndexFile))
-        {
-            auto file = File::Create(peptideIndexFile);
-            ser->Serialize(file, peptideIndex);
-        }
-        
-        delete ser;
+        auto file = File::Create(peptideIndexFile);
+        ser->Serialize(file, peptideIndex);
     }
     
-    void MetaMorpheusTask::WriteFragmentIndexNetSerializer(std::vector<std::vector<int>&> &fragmentIndex, const std::string &fragmentIndexFile)
+    void MetaMorpheusTask::WriteFragmentIndexNetSerializer(std::vector<std::vector<int>> &fragmentIndex,
+                                                           const std::string &fragmentIndexFile)
     {
         auto messageTypes = GetSubclassesAndItself(std::vector<std::vector<int>>::typeid);
         auto ser = new NetSerializer::Serializer(messageTypes);
         
-//C# TO C++ CONVERTER NOTE: The following 'using' block is replaced by its C++ equivalent:
-//ORIGINAL LINE: using (var file = File.Create(fragmentIndexFile))
-        {
-            auto file = File::Create(fragmentIndexFile);
-            ser->Serialize(file, fragmentIndex);
-        }
-        
-        delete ser;
+        auto file = File::Create(fragmentIndexFile);
+        ser->Serialize(file, fragmentIndex);
     }
     
-    std::string MetaMorpheusTask::GetExistingFolderWithIndices(IndexingEngine *indexEngine, std::vector<DbForTask*> &dbFilenameList)
+    std::string MetaMorpheusTask::GetExistingFolderWithIndices(IndexingEngine *indexEngine,
+                                                               std::vector<DbForTask*> &dbFilenameList)
     {
         for (auto database : dbFilenameList)
         {
-            std::string baseDir = FileSystem::getDirectoryName(database->getFilePath());
-            DirectoryInfo *indexDirectory = new DirectoryInfo(FileSystem::combine(baseDir, IndexFolderName));
+            std::string baseDir = std::experimental::filesystem::current_path().string();
+            std::string indexDirectory = baseDir + "/" + IndexFolderName;
             
-            if (!FileSystem::directoryExists(indexDirectory->FullName))
+            if (! std::experimental::filesystem::exists(indexDirectory) )
             {
-                delete indexDirectory;
                 return "";
             }
             
             // all directories in the same directory as the protein database
-            std::vector<DirectoryInfo*> directories = indexDirectory->GetDirectories();
+            std::vector<std::string> directories;
+            for ( auto p : std::experimental::filesystem::recursive_directory_iterator( indexDirectory) ){
+                if (p.is_directory() ) {
+                    directories.push_back(p.path().string() );
+                }
+            }
+            
             
             // look in each subdirectory to find indexes folder
             for (auto possibleFolder : directories)
@@ -791,54 +878,57 @@ namespace TaskLayer
                 
                 if (result != "")
                 {
-                    delete indexDirectory;
                     return result;
                 }
             }
-            
-            delete indexDirectory;
         }
         
         return "";
     }
-    
-    std::string MetaMorpheusTask::CheckFiles(IndexingEngine *indexEngine, DirectoryInfo *folder)
+
+    std::string MetaMorpheusTask::CheckFiles(IndexingEngine *indexEngine, std::string &folder)
     {
-        if (FileSystem::fileExists(FileSystem::combine(folder->FullName, "indexEngine.params"))    &&
-            FileSystem::fileExists(FileSystem::combine(folder->FullName, "peptideIndex.ind"))      &&
-            FileSystem::fileExists(FileSystem::combine(folder->FullName, "fragmentIndex.ind"))     &&
-            (FileSystem::fileExists(FileSystem::combine(folder->FullName, "precursorIndex.ind")) ||
-             !indexEngine->GeneratePrecursorIndex)                                                 &&
-            SameSettings(FileSystem::combine(folder->FullName, "indexEngine.params"), indexEngine))
+        std::string ret;
+        if ( std::experimental::filesystem::exists(folder + "/indexEngine.params")    &&
+             std::experimental::filesystem::exists(folder + "/peptideIndex.ind")      &&
+             std::experimental::filesystem::exists(folder + "/fragmentIndex.ind")     &&
+             (std::experimental::filesystem::exists(folder + "/precursorIndex.ind") ||
+              !indexEngine->GeneratePrecursorIndex)                                    &&
+             SameSettings(folder + "/indexEngine.params", indexEngine) )
         {
-            return folder->FullName;
+            return folder;
         }
-        return "";
+        return ret;
     }
     
     void MetaMorpheusTask::WriteIndexEngineParams(IndexingEngine *indexEngine, const std::string &fileName)
     {
-//C# TO C++ CONVERTER NOTE: The following 'using' block is replaced by its C++ equivalent:
-//ORIGINAL LINE: using (StreamWriter output = new StreamWriter(fileName))
-        {
-            StreamWriter output = StreamWriter(fileName);
-            output.Write(indexEngine);
-        }
+        std::ofstream output(fileName);
+        output << indexEngine ;
     }
     
     std::string MetaMorpheusTask::GenerateOutputFolderForIndices(std::vector<DbForTask*> &dbFilenameList)
     {
-        auto pathToIndexes = FileSystem::combine(FileSystem::getDirectoryName(dbFilenameList.front().FilePath), IndexFolderName);
-        if (!FileSystem::fileExists(pathToIndexes))
+        std::string pathToIndexes = dbFilenameList.front()->getFilePath() +  IndexFolderName;
+        if (!std::experimental::filesystem::exists(pathToIndexes))
         {
-            FileSystem::createDirectory(pathToIndexes);
+            std::experimental::filesystem::create_directory(pathToIndexes);
         }
-        auto folder = FileSystem::combine(pathToIndexes, DateTime::Now.ToString("yyyy-MM-dd-HH-mm-ss", CultureInfo::InvariantCulture));
-        FileSystem::createDirectory(folder);
+        char dates[100];
+        time_t curr_time;
+        tm *curr_tm;
+
+        time(&curr_time);
+        curr_tm = localtime(&curr_time);
+        strftime(dates, 100, "%Y-%m-%d-%H-%M-%S", curr_tm);
+        std::string date_string(dates);
+        std::string folder = pathToIndexes + date_string;
+        std::experimental::filesystem::create_directory(folder);
         return folder;
     }
     
-    void MetaMorpheusTask::GenerateIndexes(IndexingEngine *indexEngine, std::vector<DbForTask*> &dbFilenameList,
+    void MetaMorpheusTask::GenerateIndexes(IndexingEngine *indexEngine,
+                                           std::vector<DbForTask*> &dbFilenameList,
                                            std::vector<PeptideWithSetModifications*> &peptideIndex,
                                            std::vector<std::vector<int>> &fragmentIndex,
                                            std::vector<std::vector<int>> &precursorIndex,
@@ -847,96 +937,85 @@ namespace TaskLayer
                                            const std::string &taskId)
     {
         std::string pathToFolderWithIndices = GetExistingFolderWithIndices(indexEngine, dbFilenameList);
+        std::vector<std::string> svec1 = {taskId};
+            
         if (pathToFolderWithIndices == "")
         {
             auto output_folderForIndices = GenerateOutputFolderForIndices(dbFilenameList);
-            Status("Writing params...", std::vector<std::string> {taskId});
-            auto paramsFile = FileSystem::combine(output_folderForIndices, "indexEngine.params");
+            Status("Writing params...", svec1);
+
+            std::string paramsFile = output_folderForIndices + "/indexEngine.params";
             WriteIndexEngineParams(indexEngine, paramsFile);
-            FinishedWritingFile(paramsFile, std::vector<std::string> {taskId});
+            FinishedWritingFile(paramsFile, svec1 );
             
-            Status("Running Index Engine...", std::vector<std::string> {taskId});
+            Status("Running Index Engine...", svec1);
             auto indexResults = static_cast<IndexingResults*>(indexEngine->Run());
             peptideIndex = indexResults->getPeptideIndex();
             fragmentIndex = indexResults->getFragmentIndex();
             precursorIndex = indexResults->getPrecursorIndex();
             
-            Status("Writing peptide index...", std::vector<std::string> {taskId});
-            auto peptideIndexFile = FileSystem::combine(output_folderForIndices, "peptideIndex.ind");
+            Status("Writing peptide index...", svec1);
+            std::string peptideIndexFile = output_folderForIndices + "/peptideIndex.ind";
             WritePeptideIndex(peptideIndex, peptideIndexFile);
-            FinishedWritingFile(peptideIndexFile, std::vector<std::string> {taskId});
+            FinishedWritingFile(peptideIndexFile, svec1);
             
-            Status("Writing fragment index...", std::vector<std::string> {taskId});
-            auto fragmentIndexFile = FileSystem::combine(output_folderForIndices, "fragmentIndex.ind");
+            Status("Writing fragment index...", svec1);
+            std::string fragmentIndexFile = output_folderForIndices + "/fragmentIndex.ind";
             WriteFragmentIndexNetSerializer(fragmentIndex, fragmentIndexFile);
-            FinishedWritingFile(fragmentIndexFile, std::vector<std::string> {taskId});
+            FinishedWritingFile(fragmentIndexFile, svec1 );
             
             if (indexEngine->GeneratePrecursorIndex)
             {
-                Status("Writing precursor index...", std::vector<std::string> {taskId});
-                auto precursorIndexFile = FileSystem::combine(output_folderForIndices, "precursorIndex.ind");
+                Status("Writing precursor index...", svec1 );
+                std::string precursorIndexFile = output_folderForIndices + "/precursorIndex.ind";
                 WriteFragmentIndexNetSerializer(precursorIndex, precursorIndexFile);
-                FinishedWritingFile(precursorIndexFile, std::vector<std::string> {taskId});
+                FinishedWritingFile(precursorIndexFile, svec1 );
             }
         }
         else
         {
-            Status("Reading peptide index...", std::vector<std::string> {taskId});
+            Status("Reading peptide index...", svec1 );
             auto messageTypes = GetSubclassesAndItself(std::vector<PeptideWithSetModifications*>::typeid);
             auto ser = new NetSerializer::Serializer(messageTypes);
-//C# TO C++ CONVERTER NOTE: The following 'using' block is replaced by its C++ equivalent:
-//ORIGINAL LINE: using (var file = File.OpenRead(Path.Combine(pathToFolderWithIndices, "peptideIndex.ind")))
-            {
-                auto file = File::OpenRead(FileSystem::combine(pathToFolderWithIndices, "peptideIndex.ind"));
-                peptideIndex = static_cast<std::vector<PeptideWithSetModifications*>>(ser->Deserialize(file));
-            }
+            auto file = File::OpenRead(pathToFolderWithIndices + "/peptideIndex.ind");
+            peptideIndex = static_cast<std::vector<PeptideWithSetModifications*>>(ser->Deserialize(file));
             
             // populate dictionaries of known proteins for deserialization
             std::unordered_map<std::string, Protein*> proteinDictionary;
             
             for (auto protein : allKnownProteins)
             {
-                if (proteinDictionary.find(protein->Accession) == proteinDictionary.end())
+                if (proteinDictionary.find(protein->getAccession()) == proteinDictionary.end())
                 {
-                    proteinDictionary.emplace(protein->Accession, protein);
+                    proteinDictionary.emplace(protein->getAccession(), protein);
                 }
-                else if (proteinDictionary[protein->Accession]->BaseSequence != protein->BaseSequence)
+                else if (proteinDictionary[protein->getAccession()]->getBaseSequence() != protein->getBaseSequence())
                 {
-                    delete ser;
-                    throw MetaMorpheusException(StringHelper::formatSimple("The protein database contained multiple proteins with accession {0} ! This is not allowed for index-based searches (modern, non-specific, crosslink searches)", protein->Accession));
+                    throw MetaMorpheusException(StringHelper::formatSimple("The protein database contained multiple proteins with accession {0} ! This is not allowed for index-based searches (modern, non-specific, crosslink searches)", protein->getAccession()));
                 }
             }
             
             // get non-serialized information for the peptides (proteins, mod info)
             for (auto peptide : peptideIndex)
             {
-                peptide->SetNonSerializedPeptideInfo(GlobalVariables::getAllModsKnownDictionary(), proteinDictionary);
+                auto tmp = GlobalVariables::getAllModsKnownDictionary();
+                peptide->SetNonSerializedPeptideInfo( tmp, proteinDictionary);
             }
             
-            Status("Reading fragment index...", std::vector<std::string> {taskId});
+            Status("Reading fragment index...", svec1 );
             messageTypes = GetSubclassesAndItself(std::vector<std::vector<int>>::typeid);
             ser = new NetSerializer::Serializer(messageTypes);
-//C# TO C++ CONVERTER NOTE: The following 'using' block is replaced by its C++ equivalent:
-//ORIGINAL LINE: using (var file = File.OpenRead(Path.Combine(pathToFolderWithIndices, "fragmentIndex.ind")))
-            {
-                auto file = File::OpenRead(FileSystem::combine(pathToFolderWithIndices, "fragmentIndex.ind"));
-                fragmentIndex = static_cast<std::vector<std::vector<int>>>(ser->Deserialize(file));
-            }
+            auto file = File::OpenRead(pathToFolderWithIndices + "/fragmentIndex.ind");
+            fragmentIndex = static_cast<std::vector<std::vector<int>>>(ser->Deserialize(file));
             
             if (indexEngine->GeneratePrecursorIndex)
             {
-                Status("Reading precursor index...", std::vector<std::string> {taskId});
+                Status("Reading precursor index...", svec1 );
                 messageTypes = GetSubclassesAndItself(std::vector<std::vector<int>>::typeid);
                 ser = new NetSerializer::Serializer(messageTypes);
-//C# TO C++ CONVERTER NOTE: The following 'using' block is replaced by its C++ equivalent:
-//ORIGINAL LINE: using (var file = File.OpenRead(Path.Combine(pathToFolderWithIndices, "precursorIndex.ind")))
-                {
-                    auto file = File::OpenRead(FileSystem::combine(pathToFolderWithIndices, "precursorIndex.ind"));
-                    precursorIndex = static_cast<std::vector<std::vector<int>>>(ser->Deserialize(file));
-                }
+                auto file = File::OpenRead(pathToFolderWithIndices + "/precursorIndex.ind");
+                precursorIndex = static_cast<std::vector<std::vector<int>>>(ser->Deserialize(file));
             }
-            
-            delete ser;
         }
     }
 }
