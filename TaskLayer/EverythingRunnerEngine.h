@@ -32,16 +32,6 @@ namespace TaskLayer
                                std::vector<DbForTask*> &startingXmlDbFilenameList,
                                const std::string &outputFolder);
         
-#ifdef ORIG
-        static TangibleEvent<EventHandler<StringEventArgs>> *FinishedWritingAllResultsFileHandler = new TangibleEvent<EventHandler<StringEventArgs>>();
-        static TangibleEvent<EventHandler> *StartingAllTasksEngineHandler = new TangibleEvent<EventHandler>();
-        static TangibleEvent<EventHandler<StringEventArgs>> *FinishedAllTasksEngineHandler = new TangibleEvent<EventHandler<StringEventArgs>>();
-        static TangibleEvent<EventHandler<XmlForTaskListEventArgs>> *NewDbsHandler = new TangibleEvent<EventHandler<XmlForTaskListEventArgs>>();
-        static TangibleEvent<EventHandler<StringListEventArgs>> *NewSpectrasHandler = new TangibleEvent<EventHandler<StringListEventArgs>>();
-        static TangibleEvent<EventHandler<StringListEventArgs>> *NewFileSpecificTomlHandler = new TangibleEvent<EventHandler<StringListEventArgs>>();
-        static TangibleEvent<EventHandler<StringEventArgs>> *WarnHandler = new TangibleEvent<EventHandler<StringEventArgs>>();
-        static TangibleEvent<EventHandler<StringEventArgs>> *FinishedWritingAllResultsFileHandler = new TangibleEvent<EventHandler<StringEventArgs>>();
-#endif
         static EventHandler<StringEventArgs> *StartingAllTasksEngineHandler;
         static EventHandler<StringEventArgs> *FinishedAllTasksEngineHandler;
         static EventHandler<XmlForTaskListEventArgs> *NewDbsHandler;

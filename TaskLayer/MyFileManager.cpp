@@ -132,7 +132,7 @@ const std::string MyFileManager::DesiredXRawFileVersion = "3.0.29.0";
         std::vector<std::string> tmpvec;
         StringEventArgs tempVar(v, tmpvec);
         if ( WarnHandler != nullptr ) {
-            WarnHandler->Invoke(this, &tempVar);
+            WarnHandler->Invoke(tempVar);
         }
     }
 }

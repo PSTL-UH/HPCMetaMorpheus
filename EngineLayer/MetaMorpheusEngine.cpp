@@ -25,7 +25,7 @@ namespace EngineLayer
     };
 
 
-    EventHandler<SingleEngineEventArgs> *StartingSingleEngineHander = new EventHandler<SingleEngineEventArgs>();
+    EventHandler<SingleEngineEventArgs> *StartingSingleEngineHandler = new EventHandler<SingleEngineEventArgs>();
 
     EventHandler<SingleEngineFinishedEventArgs> *FinishedSingleEngineHandler = new EventHandler<SingleEngineFinishedEventArgs>();
 
@@ -159,7 +159,7 @@ namespace EngineLayer
         StringEventArgs tempVar(v, nestedIds);
         //WarnHandler +++ nullptr ? nullptrs : WarnHandler->Invoke(this, &tempVar);
         if ( WarnHandler != nullptr) {
-            WarnHandler->Invoke(this, &tempVar);
+            WarnHandler->Invoke(tempVar);
         }
     }
 
@@ -167,22 +167,22 @@ namespace EngineLayer
     {
         StringEventArgs tempVar(v, nestedIds);
         if ( OutLabelStatusHandler != nullptr ) {
-            OutLabelStatusHandler->Invoke(this, &tempVar);
+            OutLabelStatusHandler->Invoke(tempVar);
         }
     }
     
     void MetaMorpheusEngine::ReportProgress(ProgressEventArgs *v)
     {
         if ( OutProgressHandler != nullptr ) {
-            OutProgressHandler->Invoke(this, v);
+            OutProgressHandler->Invoke(v);
         }
     }
     
     void MetaMorpheusEngine::StartingSingleEngine()
     {
         SingleEngineEventArgs tempVar(this);
-        if ( StartingSingleEngineHander != nullptr ) {
-            StartingSingleEngineHander->Invoke(this, &tempVar);
+        if ( StartingSingleEngineHandler != nullptr ) {
+            StartingSingleEngineHandler->Invoke(tempVar);
         }
     }
     
@@ -190,7 +190,7 @@ namespace EngineLayer
     {
         SingleEngineFinishedEventArgs tempVar(myResults);
         if ( FinishedSingleEngineHandler != nullptr ) {
-            FinishedSingleEngineHandler->Invoke(this, &tempVar);
+            FinishedSingleEngineHandler->Invoke(tempVar);
         }
     }
 }

@@ -1,33 +1,34 @@
 ﻿#include "Program.h"
 #include "../EngineLayer/GlobalVariables.h"
 #include "../EngineLayer/MetaMorpheusEngine.h"
+#include "../EngineLayer/EventArgs/SingleFileEventArgs.h"
 #include "../EngineLayer/EventArgs/StringEventArgs.h"
 #include "../EngineLayer/EventArgs/ProgressEventArgs.h"
 #include "../EngineLayer/EventArgs/SingleEngineEventArgs.h"
 #include "../EngineLayer/EventArgs/SingleEngineFinishedEventArgs.h"
 #include "../TaskLayer/MetaMorpheusTask.h"
 #include "../TaskLayer/EventArgs/SingleTaskEventArgs.h"
-#include "../EngineLayer/EventArgs/SingleFileEventArgs.h"
 #include "../TaskLayer/SearchTask/SearchTask.h"
 #include "../TaskLayer/CalibrationTask/CalibrationTask.h"
-#include "../TaskLayer/GPTMDTask/GPTMDTask.h"
+//#include "../TaskLayer/GPTMDTask/GPTMDTask.h"
 #include "../TaskLayer/XLSearchTask/TaskLayer.XLSearchTask.h"
 #include "../TaskLayer/DbForTask.h"
 #include "../TaskLayer/EverythingRunnerEngine.h"
 
 #include <getopt.h>
+#include <experimental/filesystem>
 
 using namespace EngineLayer;
-//using namespace Fclp; Has been replaced with getopt_long
-//using namespace Nett; 
-//using namespace Proteomics;
 using namespace TaskLayer;
+
+#include "Proteomics/Proteomics.h"
+using namespace Proteomics;
 
 
 int main( int argc, char *argv[] )
 {
 
-    Program::Main ( argc, argv);
+    MetaMorpheusCommandLine::Program::Main ( argc, argv);
     return 0;
 }
 
@@ -37,7 +38,7 @@ namespace MetaMorpheusCommandLine
 
     static void print_usage ( void )
     {
-        std::wcout << "Usage: MetaMorpheusC++ -t <Task> -m <MetaTask> -o <OutputFolder> "
+        std::cout << "Usage: MetaMorpheusC++ -t <Task> -m <MetaTask> -o <OutputFolder> "
             "-s <Spectra> -d <Databases>" << std::endl;
         
         return;
@@ -50,34 +51,34 @@ namespace MetaMorpheusCommandLine
                                std::vector<std::string> dbases )
         
     {
-        std::wcout << "Number of tasks: " << taskname.size() << std::endl;
-        for ( int i=0; i< taskname.size(); i ++ ) {
-            std::wcout << "  Taskname " << i << " : " << taskname.at(i).c_str()
+        std::cout << "Number of tasks: " << taskname.size() << std::endl;
+        for ( int i=0; i< (int)taskname.size(); i ++ ) {
+            std::cout << "  Taskname " << i << " : " << taskname.at(i).c_str()
                        << std::endl;
         }
         
-        std::wcout << "Number of Metatasks: " << metataskname.size() << std::endl;
-        for ( int i=0; i< metataskname.size(); i ++ ) {
-            std::wcout << "  Metataskname " << i << " : " << taskname.at(i).c_str()
+        std::cout << "Number of Metatasks: " << metataskname.size() << std::endl;
+        for ( int i=0; i< (int)metataskname.size(); i ++ ) {
+            std::cout << "  Metataskname " << i << " : " << taskname.at(i).c_str()
                        << std::endl;
         }
         
         if ( outputfolder.size() == 0 ) {
-            std::wcout << "Outputfolder: Not set " << std::endl;    
+            std::cout << "Outputfolder: Not set " << std::endl;    
         }
         else {
-            std::wcout << "Outputfolder: " << outputfolder.at(0).c_str() << std::endl;    
+            std::cout << "Outputfolder: " << outputfolder.at(0).c_str() << std::endl;    
         }
         
         if ( spectra.size() == 0 ) {
-            std::wcout << "Spectra: Not set" << std::endl;    
+            std::cout << "Spectra: Not set" << std::endl;    
         }
         else {
-            std::wcout << "Spectra: " << spectra.at(0).c_str() << std::endl;    
+            std::cout << "Spectra: " << spectra.at(0).c_str() << std::endl;    
         }
-        std::wcout << "Number of Databases: " << dbases.size() << std::endl;
-        for ( int i=0; i< dbases.size(); i ++ ) {
-            std::wcout << "  Databasename " << i << " : " << dbases.at(i).c_str()
+        std::cout << "Number of Databases: " << dbases.size() << std::endl;
+        for ( int i=0; i< (int)dbases.size(); i ++ ) {
+            std::cout << "  Databasename " << i << " : " << dbases.at(i).c_str()
                        << std::endl;
         }
         
@@ -86,20 +87,22 @@ namespace MetaMorpheusCommandLine
     
     
     bool Program::InProgress = false;
-    System::CodeDom::Compiler::IndentedTextWriter *Program::MyWriter = new System::CodeDom::Compiler::IndentedTextWriter(Console::Out, L"\t");
 
     void Program::Main( int argc, char *argv[] )
     {
-        std::wcout << L"Welcome to MetaMorpheus" << std::endl;
-        std::wcout << GlobalVariables::getMetaMorpheusVersion() << std::endl;
-        
+        std::cout << "Welcome to MetaMorpheus" << std::endl;
+        std::cout << GlobalVariables::getMetaMorpheusVersion() << std::endl;
+
+        //IndentedTextWriter *Program::MyWriter = new IndentedTextWriter(Console::Out, "\t");
+        MyWriter = new IndentedTextWriter();
+
         int opt=0;
         static struct option long_options[] = {
             {"tasks", required_argument, 0, 't'},
-            {'outputFolder', required_argument, 0, 'o'},
-            {'meta-task', required_argument, 0, 'm'},
-            {'spectra', required_argument, 0, 's'},
-            {'databases', required_argument, 0, 'd'},
+            {"outputFolder", required_argument, 0, 'o'},
+            {"meta-task", required_argument, 0, 'm'},
+            {"spectra", required_argument, 0, 's'},
+            {"databases", required_argument, 0, 'd'},
             {0, 0, 0, 0}
         };
         
@@ -137,94 +140,116 @@ namespace MetaMorpheusCommandLine
 
         if (metataskname.size() != 0 || taskname.size() != 0) {
             if (!result->HasErrors)  {
-                MetaMorpheusEngine::WarnHandler->addListener(L"WarnHandler", [&] (std::any sender, StringEventArgs* e) {WarnHandler(sender, e);});
-                MetaMorpheusEngine::OutProgressHandler->addListener(L"MyEngine_outProgressHandler", [&] (std::any sender, ProgressEventArgs* e) {MyEngine_outProgressHandler(sender, e);});
-                MetaMorpheusEngine::StartingSingleEngineHander->addListener(L"MyEngine_startingSingleEngineHander", [&] (std::any sender, SingleEngineEventArgs* e) {MyEngine_startingSingleEngineHander(sender, e);});
-                MetaMorpheusEngine::FinishedSingleEngineHandler->addListener(L"MyEngine_finishedSingleEngineHandler", [&] (std::any sender, SingleEngineFinishedEventArgs* e) {MyEngine_finishedSingleEngineHandler(sender, e);});
+                MetaMorpheusEngine::WarnHandler->addListener("WarnHandler", WarnHandler );
+                MetaMorpheusEngine::OutProgressHandler->addListener("MyEngine_outProgressHandler",
+                                                                    MyEngine_outProgressHandler );
+                MetaMorpheusEngine::StartingSingleEngineHandler->addListener("MyEngine_startingSingleEngineHandler",
+                                                                            MyEngine_startingSingleEngineHandler);
+                MetaMorpheusEngine::FinishedSingleEngineHandler->addListener("MyEngine_finishedSingleEngineHandler",
+                                                                             MyEngine_finishedSingleEngineHandler);
                 
-                MetaMorpheusTask::WarnHandler->addListener(L"WarnHandler", [&] (std::any sender, StringEventArgs* e) {WarnHandler(sender, e);});
-                MetaMorpheusTask::LogHandler->addListener(L"LogHandler", [&] (std::any sender, StringEventArgs* e) {LogHandler(sender, e);});
-                MetaMorpheusTask::StartingSingleTaskHander->addListener(L"MyTaskEngine_startingSingleTaskHander", [&] (std::any sender, SingleTaskEventArgs* e) {MyTaskEngine_startingSingleTaskHander(sender, e);});
-                MetaMorpheusTask::FinishedSingleTaskHandler->addListener(L"MyTaskEngine_finishedSingleTaskHandler", [&] (std::any sender, SingleTaskEventArgs* e) {MyTaskEngine_finishedSingleTaskHandler(sender, e);});
-                MetaMorpheusTask::FinishedWritingFileHandler->addListener(L"MyTaskEngine_finishedWritingFileHandler", [&] (std::any sender, SingleFileEventArgs* e) {MyTaskEngine_finishedWritingFileHandler(sender, e);});
-                
-                for (auto db =begin(dbases); db != end(dbases); ++db ) {
-                    if (Path::GetExtension(*db) != L".fasta")   {
+                MetaMorpheusTask::LogHandler->addListener("LogHandler", LogHandler);
+                MetaMorpheusTask::StartingSingleTaskHandler->addListener("MyTaskEngine_startingSingleTaskHandler", 
+                                                                        MyTaskEngine_startingSingleTaskHandler);
+                MetaMorpheusTask::FinishedSingleTaskHandler->addListener("MyTaskEngine_finishedSingleTaskHandler", 
+                                                                         MyTaskEngine_finishedSingleTaskHandler);
+                MetaMorpheusTask::FinishedWritingFileHandler->addListener("MyTaskEngine_finishedWritingFileHandler",
+                                                                          MyTaskEngine_finishedWritingFileHandler);
+                for (auto db =dbases.begin(); db != dbases.end(); ++db ) {
+                    if (Path::GetExtension(*db) != ".fasta")   {
                         GlobalVariables::AddMods(UsefulProteomicsDatabases::ProteinDbLoader::GetPtmListFromProteinXml(*db).OfType<Modification*>(), true);
 
                         // print any error messages reading the mods to the console
                         for (auto error : GlobalVariables::ErrorsReadingMods) {
-                            std::wcout << error << std::endl;
+                            std::cout << error << std::endl;
                         }
                         GlobalVariables::ErrorsReadingMods.clear();
                     }
                 }
                 
-                std::vector<(std::wstring, MetaMorpheusTask)*> taskList;
+                std::vector<std::tuple<std::string, MetaMorpheusTask*>> taskList;
 
-                for (auto i= begin(taskname); i != end (taskname) ; ++i) {
-                    std::vector<string> filePath = *i;
+                for (auto i= taskname.begin(); i != taskname.end() ; ++i) {
+                    std::vector<std::string> filePath = *i;
                     auto uhum = Toml::ReadFile(filePath, MetaMorpheusTask::tomlConfig);
 
-                    if (uhum->Get<std::wstring>(L"TaskType") == L"Search") {
+                    if (uhum->Get<std::string>("TaskType") == "Search") {
                         auto ye1 = Toml::ReadFile<SearchTask*>(filePath, MetaMorpheusTask::tomlConfig);
-                        taskList.push_back((L"Task" + std::to_wstring(i + 1) + L"SearchTask", ye1));
+                        taskList.push_back(std::make_tuple("Task" + std::to_string(i + 1) + "SearchTask", ye1));
                     }
-                    else if (uhum->Get<std::wstring>(L"TaskType") == L"Calibrate") {
+                    else if (uhum->Get<std::string>("TaskType") == "Calibrate") {
                         auto ye2 = Toml::ReadFile<CalibrationTask*>(filePath, MetaMorpheusTask::tomlConfig);
-                        taskList.push_back((L"Task" + std::to_wstring(i + 1) + L"CalibrationTask", ye2));
+                        taskList.push_back(std::make_tuple("Task" + std::to_string(i + 1) + "CalibrationTask", ye2));
                     }
-                    else if (uhum->Get<std::wstring>(L"TaskType") == L"Gptmd")  {
+                    else if (uhum->Get<std::string>("TaskType") == "Gptmd")  {
                         auto ye3 = Toml::ReadFile<GptmdTask*>(filePath, MetaMorpheusTask::tomlConfig);
-                        taskList.push_back((L"Task" + std::to_wstring(i + 1) + L"GptmdTask", ye3));                        
+                        taskList.push_back(std::make_tuple("Task" + std::to_string(i + 1) + "GptmdTask", ye3));                        
                     }
-                    else if (uhum->Get<std::wstring>(L"TaskType") == L"XLSearch")  {
+                    else if (uhum->Get<std::string>("TaskType") == "XLSearch")  {
                         auto ye4 = Toml::ReadFile<XLSearchTask*>(filePath, MetaMorpheusTask::tomlConfig);
-                        taskList.push_back((L"Task" + std::to_wstring(i + 1) + L"XLSearchTask", ye4));
+                        taskList.push_back(std::make_tuple("Task" + std::to_string(i + 1) + "XLSearchTask", ye4));
                     }
                     else {
-                        std::wcout << uhum->Get<std::wstring>(L"TaskType") << L" is not a known task type! Skipping." << std::endl;
+                        std::cout << uhum->Get<std::string>("TaskType") << " is not a known task type! Skipping." << std::endl;
                     }
                 }
 
-                for (auto i = begin(metataskname); i != end(metataskname); ++i) {
+                for (auto i = metataskname.begin(); i != metataskname.end(); ++i) {
                     auto filePath = *i;
                     auto uhum = Toml::ReadFile(filePath, MetaMorpheusTask::tomlConfig);
 
-                    if (uhum->Get<std::wstring>(L"TaskType") == L"Search") {
-                        std::wcout << L"Search tasks are individual tasks. Please use -t for task instead of -m. Skipping." << std::endl;
+                    if (uhum->Get<std::string>("TaskType") == "Search") {
+                        std::cout << "Search tasks are individual tasks. Please use -t for task instead of -m. Skipping." <<
+                            std::endl;
                     }
-                    else if (uhum->Get<std::wstring>(L"TaskType") == L"Calibrate") {
-                        std::wcout << L"Calibrate tasks are individual tasks. Please use -t for task instead of -m. Skipping." << std::endl;
+                    else if (uhum->Get<std::string>("TaskType") == "Calibrate") {
+                        std::cout << "Calibrate tasks are individual tasks. Please use -t for task instead of -m. Skipping." <<
+                            std::endl;
                     }
-                    else if (uhum->Get<std::wstring>(L"TaskType") == L"Gptmd")  {
-                        std::wcout << L"Gptmd tasks are individual tasks. Please use -t for task instead of -m. Skipping." << std::endl;
+                    else if (uhum->Get<std::string>("TaskType") == "Gptmd")  {
+                        std::cout << "Gptmd tasks are individual tasks. Please use -t for task instead of -m. Skipping." <<
+                            std::endl;
                     }
-                    else if (uhum->Get<std::wstring>(L"TaskType") == L"XLSearch")  {
-                        std::wcout << L"XLSearch tasks are individual tasks. Please use -t for task instead of -m. Skipping." << std::endl;
+                    else if (uhum->Get<std::string>("TaskType") == "XLSearch")  {
+                        std::cout << "XLSearch tasks are individual tasks. Please use -t for task instead of -m. Skipping." <<
+                            std::endl;
                     }
                     else {
-                        std::wcout << uhum->Get<std::wstring>(L"TaskType") << L" is not a known task type! Skipping." << std::endl;
+                        std::cout << uhum->Get<std::string>("TaskType") << " is not a known task type! Skipping." <<
+                            std::endl;
                     }
                 }
 
-                std::vector<std::wstring> startingRawFilenameList = p->Object.Spectra->Select([&] (std::any b)
-                                                                                              {
-                                                                                                  FileSystem::getFullPath(b);
-                                                                                              }).ToList();
-                std::vector<DbForTask*> startingXmlDbFilenameList = p->Object.Databases->Select([&] (std::any b)
-                                                                                                {
-                                                                                                    new DbForTask(FileSystem::getFullPath(b), IsContaminant(b));
-                                                                                                }).ToList();
+#ifdef ORIG
+                std::vector<std::string> startingRawFilenameList = p->Object.Spectra->Select([&] (std::any b)  {
+                        FileSystem::getFullPath(b);
+                    }).ToList();
+#endif
+                std::vector<std::string> startingRawFilenameList;
+                for ( auto b: p->Object().Spectra() ) {
+                    startingRawFilenameList.push_back(std::experimental::filesystem::absolute(b));
+                }
 
-                std::wstring outputFolder = p->Object.OutputFolder;
-                if (outputFolder == L"")
+#ifdef ORIG
+                std::vector<DbForTask*> startingXmlDbFilenameList = p->Object.Databases->Select([&] (std::any b) {
+                        new DbForTask(FileSystem::getFullPath(b), IsContaminant(b));
+                    }).ToList();
+#endif
+                std::vector<DbForTask*> startingXmlDbFilenameList;
+                for ( auto b: p->Object().Databases()) {
+                    auto newdb = new DbForTask(std::experimental::filesystem::absolute(b), IsContaminant(b));
+                    startingXmlDbFilenameList.push_back(newdb);       
+                }
+
+                std::string outputFolder = p->Object.OutputFolder;
+                if (outputFolder == "")
                 {
                     auto pathOfFirstSpectraFile = FileSystem::getDirectoryName(startingRawFilenameList.front());
-                    outputFolder = FileSystem::combine(pathOfFirstSpectraFile, LR"($DATETIME)");
+                    outputFolder = pathOfFirstSpectraFile+ "/($DATETIME)";
                 }
                 
-                EverythingRunnerEngine *a = new EverythingRunnerEngine(taskList, startingRawFilenameList, startingXmlDbFilenameList, outputFolder);
+                EverythingRunnerEngine *a = new EverythingRunnerEngine(taskList, startingRawFilenameList,
+                                                                       startingXmlDbFilenameList, outputFolder);
                 
                 try
                 {
@@ -232,68 +257,66 @@ namespace MetaMorpheusCommandLine
                 }
                 catch (const std::runtime_error &e)
                 {
-                    while (e.InnerException != nullptr)
-                    {
-                        e = e.InnerException;
-                    }
-                    auto message = L"Run failed, Exception: " + e.what();
-                    std::wcout << message << std::endl;
+                    auto message = "Run failed, Exception: " + e.what();
+                    std::cout << message << std::endl;
                 }
                 
                 delete a;
             }
             else
             {
-                std::wcout << L"Error Text:" << result->ErrorText << std::endl;
+                std::cout << "Error Text:" << result->ErrorText << std::endl;
             }
         }
         else
         {
-            std::wcout << L"Error Text: No toml file was specified. Use -t for tasks or -m for meta-tasks." << std::endl;
+            std::cout << "Error Text: No toml file was specified. Use -t for tasks or -m for meta-tasks." <<
+                std::endl;
         }
         
     }
 
-    void Program::WriteMultiLineIndented(const std::wstring &toWrite)
+    void Program::WriteMultiLineIndented(const std::string &toWrite)
     {
-        std::vector<std::wstring> tokens = Regex::Split(toWrite, LR"(\r?\n|\r)");
+        std::vector<std::string> tokens = Regex::Split(toWrite, R"(\r?\n|\r)");
         for (auto str : tokens)
         {
             MyWriter->WriteLine(str);
         }
     }
     
-    bool Program::IsContaminant(const std::wstring &b)
+    bool Program::IsContaminant(const std::string &b)
     {
-        if (StringHelper::toUpper(b).find(StringHelper::toUpper(L"contaminant")) != std::wstring::npos || StringHelper::toUpper(b).find(L"CRAP") != std::wstring::npos)
+        if (StringHelper::toUpper(b).find(StringHelper::toUpper("contaminant")) != std::string::npos ||
+            StringHelper::toUpper(b).find("CRAP") != std::string::npos)
         {
             return true;
         }
         return false;
     }
     
-    void Program::MyTaskEngine_startingSingleTaskHander(std::any sender, SingleTaskEventArgs *e)
+    void Program::MyTaskEngine_startingSingleTaskHandler( SingleTaskEventArgs e)
     {
         if (InProgress)
         {
             MyWriter->WriteLine();
         }
         InProgress = false;
-        WriteMultiLineIndented(L"Starting task: " + e->getDisplayName());
+        WriteMultiLineIndented("Starting task: " + e.getDisplayName());
         MyWriter->Indent = MyWriter->Indent + 1;
     }
     
-    void Program::MyTaskEngine_finishedWritingFileHandler(std::any sender, SingleFileEventArgs *e)
+    void Program::MyTaskEngine_finishedWritingFileHandler( SingleFileEventArgs e)
     {
         if (InProgress)
         {
             MyWriter->WriteLine();
         }
         InProgress = false;
-        WriteMultiLineIndented(L"Finished writing file: " + e->getWrittenFile());
+        WriteMultiLineIndented("Finished writing file: " + e.getWrittenFile());
     }
     
-    void Program::MyTaskEngine_finishedSingleTaskHandler(std::any sender, SingleTaskEventArgs *e)
+    void Program::MyTaskEngine_finishedSingleTaskHandler( SingleTaskEventArgs e)
     {
         if (InProgress)
         {
@@ -301,104 +324,106 @@ namespace MetaMorpheusCommandLine
         }
         InProgress = false;
         MyWriter->Indent = MyWriter->Indent - 1;
-        WriteMultiLineIndented(L"Finished task: " + e->getDisplayName());
+        WriteMultiLineIndented("Finished task: " + e.getDisplayName());
     }
     
-    void Program::MyEngine_startingSingleEngineHander(std::any sender, SingleEngineEventArgs *e)
+    void Program::MyEngine_startingSingleEngineHandler( SingleEngineEventArgs e)
     {
         if (InProgress)
         {
             MyWriter->WriteLine();
         }
         InProgress = false;
-        WriteMultiLineIndented(L"Starting engine: " + e->getMyEngine()->GetType()->Name + L" " + e->getMyEngine()->GetId());
+        WriteMultiLineIndented("Starting engine: " + e.getMyEngine()->GetType()->Name + " " +
+                               e.getMyEngine()->GetId());
         MyWriter->Indent = MyWriter->Indent + 1;
     }
     
-    void Program::MyEngine_finishedSingleEngineHandler(std::any sender, SingleEngineFinishedEventArgs *e)
+    void Program::MyEngine_finishedSingleEngineHandler( SingleEngineFinishedEventArgs e)
     {
         if (InProgress)
         {
             MyWriter->WriteLine();
         }
         InProgress = false;
-        WriteMultiLineIndented(L"Engine results: " + e);
+        WriteMultiLineIndented("Engine results: " + e);
         MyWriter->Indent = MyWriter->Indent - 1;
-        WriteMultiLineIndented(L"Finished engine: " + e->MyResults->getMyEngine()->GetType()->Name + L" " + e->MyResults->getMyEngine()->GetId());
+        WriteMultiLineIndented("Finished engine: " + e.MyResults->getMyEngine()->GetType()->Name + " " +
+                               e.MyResults->getMyEngine()->GetId());
     }
     
-    void Program::MyEngine_outProgressHandler(std::any sender, ProgressEventArgs *e)
+    void Program::MyEngine_outProgressHandler( ProgressEventArgs e)
     {
-        MyWriter->Write(std::to_wstring(e->NewProgress) + L" ");
+        MyWriter->Write(std::to_string(e.NewProgress) + " ");
         InProgress = true;
     }
-    
-    void Program::WarnHandler(std::any sender, StringEventArgs *e)
+
+    void Program::WarnHandler(StringEventArgs e)
     {
         if (InProgress)
         {
             MyWriter->WriteLine();
         }
         InProgress = false;
-        WriteMultiLineIndented(L"WARN: " + e->getS());
+        WriteMultiLineIndented("WARN: " + e.getS());
     }
     
-    void Program::LogHandler(std::any sender, StringEventArgs *e)
+    void Program::LogHandler( StringEventArgs e)
     {
         if (InProgress)
         {
             MyWriter->WriteLine();
         }
         InProgress = false;
-        WriteMultiLineIndented(L"Log: " + e->getS());
+        WriteMultiLineIndented("Log: " + e.getS());
     }
     
-    std::vector<std::wstring> Program::ApplicationArguments::getTasks() const
+    std::vector<std::string> Program::ApplicationArguments::getTasks() const
     {
         return privateTasks;
     }
     
-    void Program::ApplicationArguments::setTasks(const std::vector<std::wstring> &value)
+    void Program::ApplicationArguments::setTasks(const std::vector<std::string> &value)
     {
         privateTasks = value;
     }
     
-    std::vector<std::wstring> Program::ApplicationArguments::getDatabases() const
+    std::vector<std::string> Program::ApplicationArguments::getDatabases() const
     {
         return privateDatabases;
     }
     
-    void Program::ApplicationArguments::setDatabases(const std::vector<std::wstring> &value)
+    void Program::ApplicationArguments::setDatabases(const std::vector<std::string> &value)
     {
         privateDatabases = value;
     }
     
-    std::vector<std::wstring> Program::ApplicationArguments::getSpectra() const
+    std::vector<std::string> Program::ApplicationArguments::getSpectra() const
     {
         return privateSpectra;
     }
     
-    void Program::ApplicationArguments::setSpectra(const std::vector<std::wstring> &value)
+    void Program::ApplicationArguments::setSpectra(const std::vector<std::string> &value)
     {
         privateSpectra = value;
     }
     
-    std::vector<std::wstring> Program::ApplicationArguments::getMetaTasks() const
+    std::vector<std::string> Program::ApplicationArguments::getMetaTasks() const
     {
         return privateMetaTasks;
     }
     
-    void Program::ApplicationArguments::setMetaTasks(const std::vector<std::wstring> &value)
+    void Program::ApplicationArguments::setMetaTasks(const std::vector<std::string> &value)
     {
         privateMetaTasks = value;
     }
     
-    std::wstring Program::ApplicationArguments::getOutputFolder() const
+    std::string Program::ApplicationArguments::getOutputFolder() const
     {
         return privateOutputFolder;
     }
     
-    void Program::ApplicationArguments::setOutputFolder(const std::wstring &value)
+    void Program::ApplicationArguments::setOutputFolder(const std::string &value)
     {
         privateOutputFolder = value;
     }

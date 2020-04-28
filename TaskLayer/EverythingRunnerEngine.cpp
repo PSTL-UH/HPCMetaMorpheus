@@ -188,7 +188,7 @@ namespace TaskLayer
         std::vector<std::string> tmpvec;
         StringEventArgs tempVar(resultsFileName, tmpvec);
         if ( FinishedWritingAllResultsFileHandler != nullptr ) {
-            FinishedWritingAllResultsFileHandler->Invoke(this, &tempVar);
+            FinishedWritingAllResultsFileHandler->Invoke(tempVar);
         }
         FinishedAllTasks(OutputFolder);
         
@@ -200,14 +200,16 @@ namespace TaskLayer
         std::vector<std::string> tmpvec;
         StringEventArgs tempVar(v, tmpvec);
         if ( WarnHandler != nullptr ) {
-            WarnHandler->Invoke(this, &tempVar);
+            WarnHandler->Invoke(tempVar);
         }
     }
     
     void EverythingRunnerEngine::StartingAllTasks()
     {
+        std::vector<std::string> tmpvec;
+        StringEventArgs tempVar(v, tmpvec);
         if ( StartingAllTasksEngineHandler != nullptr ) {
-            StartingAllTasksEngineHandler->Invoke(this, nullptr);
+            StartingAllTasksEngineHandler->Invoke(tmpvec);
         }
     }
     
@@ -216,7 +218,7 @@ namespace TaskLayer
         std::vector<std::string> tmpvec;
         StringEventArgs tempVar(rootOutputDir, tmpvec);
         if ( FinishedAllTasksEngineHandler != nullptr ) {
-            FinishedAllTasksEngineHandler->Invoke(this, &tempVar);
+            FinishedAllTasksEngineHandler->Invoke(tempVar);
         }
     }
     
@@ -224,7 +226,7 @@ namespace TaskLayer
     {
         StringListEventArgs tempVar(newSpectra);
         if ( NewSpectrasHandler != nullptr ) {
-            NewSpectrasHandler->Invoke(this, &tempVar);
+            NewSpectrasHandler->Invoke(tempVar);
         }
     }
     
@@ -232,7 +234,7 @@ namespace TaskLayer
     {
         StringListEventArgs tempVar(newFileSpecificTomls);
         if ( NewFileSpecificTomlHandler != nullptr ) {
-            NewFileSpecificTomlHandler->Invoke(this, &tempVar);
+            NewFileSpecificTomlHandler->Invoke(tempVar);
         }
     }
     
@@ -240,7 +242,7 @@ namespace TaskLayer
     {
         XmlForTaskListEventArgs tempVar(newDatabases);
         if ( NewDbsHandler != nullptr ) {
-            NewDbsHandler->Invoke(this, &tempVar);
+            NewDbsHandler->Invoke(tempVar);
         }
     }
 }

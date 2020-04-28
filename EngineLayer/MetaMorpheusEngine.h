@@ -56,7 +56,7 @@ namespace EngineLayer
 	public:
 		static std::unordered_map<DissociationType, double> complementaryIonConversionDictionary;
 
-		static EventHandler<SingleEngineEventArgs> *StartingSingleEngineHander;
+		static EventHandler<SingleEngineEventArgs> *StartingSingleEngineHandler;
 
 		static EventHandler<SingleEngineFinishedEventArgs> *FinishedSingleEngineHandler;
 

@@ -12,16 +12,14 @@
 #include <vector>
 #include <functional>
 
-#include "EventArgs.h"
-
 template<typename T>
 class EventHandler
 {
 private:
-    std::unordered_map<std::string, T> namedListeners;
+    std::unordered_map<std::string, std::function<void(T)>> namedListeners;
 
 public:
-    void addListener(const std::string &methodName, T namedEventHandlerMethod)
+    void addListener(const std::string &methodName, std::function<void(T)> namedEventHandlerMethod)
     {
         if (namedListeners.find(methodName) == namedListeners.end())
             namedListeners[methodName] = namedEventHandlerMethod;
@@ -33,25 +31,9 @@ public:
             namedListeners.erase(methodName);
     }
     
-private:
-    std::vector<T> anonymousListeners;
-public:
-    void addListener(T unnamedEventHandlerMethod)
-    {
-        anonymousListeners.push_back(unnamedEventHandlerMethod);
-    }
-    
-    std::vector<T> listeners()
-    {
-        std::vector<T> allListeners;
-        for (auto listener : namedListeners)
-        {
-            allListeners.push_back(listener.second);
+    void Invoke (T args) {
+        for ( auto p= namedListeners.begin(); p!= namedListeners.end(); p++ ) {
+            p->second(args);
         }
-        allListeners.insert(allListeners.end(), anonymousListeners.begin(), anonymousListeners.end());
-        return allListeners;
     }
-
-public:
-    void Invoke (void *vent, EventArgs *args);
 };
