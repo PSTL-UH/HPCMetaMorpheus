@@ -92,7 +92,10 @@ namespace TaskLayer
                                     }); 
         });
 #endif
-    
+
+    // toml::Table MetaMorpheusTask::tomlConfig;
+    toml::Value MetaMorpheusTask::tomlConfig;
+
     MetaMorpheusTask::MetaMorpheusTask(MyTask taskType)
     {
         this->setTaskType(taskType);
@@ -350,12 +353,11 @@ namespace TaskLayer
         Toml::WriteFile(this, tomlFileName, tomlConfig);
         FinishedWritingFile(tomlFileName, std::vector<std::string> {displayName});
 #endif
-        //Dr. Gabriel, maybe we can save tomlConfig as a tomlTable rather than the TomlSettings type used above?
-        //This might simplify using it here.
+
         std::experimental::filesystem::path output_directory = output_folder;
         std::string output_path = output_directory.parent_path().string() + "Task Settings" + displayName + "config.toml";
         Toml trw;
-        trw.tomlWriteNewFile(tomlFileName, tomlConfig);
+        trw.tomlWriteNewFile(output_path, tomlConfig);
 
         
         MetaMorpheusEngine::FinishedSingleEngineHandler->addListener("SingleEngineHandlerInTask", [&] (SingleEngineFinishedEventArgs* e) {
@@ -385,12 +387,12 @@ namespace TaskLayer
 #endif
                     toml::Value toml_value = trw.tomlReadFile(fileSpecificTomlPath);
                     
-                    //What is the header or key we are looking for here in the toml file?
-                    //In a couple of config files I was looking at it was "CommonParameters", I'm not 
-                    //entirely sure that's correct here though.
-                    toml::Value* fileParameters = trw.getValue(toml_value, tomlConfig);
-                    toml::Table fileSpecificSettings = fileParameters->as<toml::Table>();
-                    
+                    //original
+                    // toml::Value* fileParameters = trw.getValue(toml_value, tomlConfig);
+
+                    //need string of header we are looking for in toml file.  is it "CommonParameters"?
+                    toml::Value* fileParameters = trw.getValue(toml_value, "CommonParameters");
+                    toml::Table fileSpecificSettings = fileParameters->as<toml::Table>();              
                     
                     try
                     {

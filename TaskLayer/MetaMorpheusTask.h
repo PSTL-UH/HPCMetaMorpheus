@@ -64,6 +64,8 @@ namespace TaskLayer
             
 	public:
             //static TomlSettings *const tomlConfig;
+            // static toml::Table tomlConfig;
+            static toml::Value tomlConfig;
             
 	protected:
             StringBuilder *const ProseCreatedWhileRunning = new StringBuilder();

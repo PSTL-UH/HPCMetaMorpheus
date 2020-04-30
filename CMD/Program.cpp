@@ -171,8 +171,17 @@ namespace MetaMorpheusCommandLine
 
                 for (auto i= taskname.begin(); i != taskname.end() ; ++i) {
                     std::vector<std::string> filePath = *i;
-                    auto uhum = Toml::ReadFile(filePath, MetaMorpheusTask::tomlConfig);
 
+                    // auto uhum = Toml::ReadFile(filePath, MetaMorpheusTask::tomlConfig);
+
+                    //read toml file
+                    Toml trw;
+                    toml::Value uhum = trw.tomlReadFile(filePath);
+
+                    //set MetaMorpheusTask::tomlConfig?
+                    MetaMorpheusTask::tomlConfig.push(uhum);
+
+#ifdef ORIG
                     if (uhum->Get<std::string>("TaskType") == "Search") {
                         auto ye1 = Toml::ReadFile<SearchTask*>(filePath, MetaMorpheusTask::tomlConfig);
                         taskList.push_back(std::make_tuple("Task" + std::to_string(i + 1) + "SearchTask", ye1));
@@ -192,12 +201,40 @@ namespace MetaMorpheusCommandLine
                     else {
                         std::cout << uhum->Get<std::string>("TaskType") << " is not a known task type! Skipping." << std::endl;
                     }
+#endif
+
+                    if (uhum.find("TaskType")->as<std::string>() == "Search") {
+                        auto ye1 = trw.tomlReadFile(filePath);
+                        taskList.push_back(std::make_tuple("Task" + std::to_string(i + 1) + "SearchTask", ye1));
+                    }
+                    else if (uhum.find("TaskType")->as<std::string>() == "Calibrate") {
+                        auto ye2 = trw.tomlReadFile(filePath);
+                        taskList.push_back(std::make_tuple("Task" + std::to_string(i + 1) + "CalibrationTask", ye2));
+                    }
+                    else if (uhum.find("TaskType")->as<std::string>() == "Gptmd")  {
+                        auto ye3 = trw.tomlReadFile(filePath);
+                        taskList.push_back(std::make_tuple("Task" + std::to_string(i + 1) + "GptmdTask", ye3));                        
+                    }
+                    else if (uhum.find("TaskType")->as<std::string>() == "XLSearch")  {
+                        auto ye4 = trw.tomlReadFile(filePath);
+                        taskList.push_back(std::make_tuple("Task" + std::to_string(i + 1) + "XLSearchTask", ye4));
+                    }
+                    else {
+                        std::cout << uhum.find("TaskType")->as<std::string>() << " is not a known task type! Skipping." << std::endl;
+                    }
+
                 }
 
                 for (auto i = metataskname.begin(); i != metataskname.end(); ++i) {
                     auto filePath = *i;
-                    auto uhum = Toml::ReadFile(filePath, MetaMorpheusTask::tomlConfig);
+                    // auto uhum = Toml::ReadFile(filePath, MetaMorpheusTask::tomlConfig);
 
+                    //read toml file
+                    Toml trw;
+                    toml::Value uhum = trw.tomlReadFile(filePath);
+
+                    //set MetaMorpheusTask::tomlConfig?
+#ifdef ORIG
                     if (uhum->Get<std::string>("TaskType") == "Search") {
                         std::cout << "Search tasks are individual tasks. Please use -t for task instead of -m. Skipping." <<
                             std::endl;
@@ -216,6 +253,28 @@ namespace MetaMorpheusCommandLine
                     }
                     else {
                         std::cout << uhum->Get<std::string>("TaskType") << " is not a known task type! Skipping." <<
+                            std::endl;
+                    }
+#endif
+
+                    if (uhum.find("TaskType")->as<std::string>() == "Search") {
+                        std::cout << "Search tasks are individual tasks. Please use -t for task instead of -m. Skipping." <<
+                            std::endl;
+                    }
+                    else if (uhum.find("TaskType")->as<std::string>() == "Calibrate") {
+                        std::cout << "Calibrate tasks are individual tasks. Please use -t for task instead of -m. Skipping." <<
+                            std::endl;
+                    }
+                    else if (uhum.find("TaskType")->as<std::string>() == "Gptmd")  {
+                        std::cout << "Gptmd tasks are individual tasks. Please use -t for task instead of -m. Skipping." <<
+                            std::endl;                     
+                    }
+                    else if (uhum.find("TaskType")->as<std::string>() == "XLSearch")  {
+                        std::cout << "XLSearch tasks are individual tasks. Please use -t for task instead of -m. Skipping." <<
+                            std::endl;
+                    }
+                    else {
+                        std::cout << uhum.find("TaskType")->as<std::string>() << " is not a known task type! Skipping." <<
                             std::endl;
                     }
                 }
