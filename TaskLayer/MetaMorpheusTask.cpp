@@ -27,6 +27,7 @@
 #include <algorithm>
 #include <iostream>
 #include <fstream>
+#include <typeinfo>
 
 using namespace Chemistry;
 using namespace EngineLayer;
@@ -834,7 +835,8 @@ namespace TaskLayer
     void MetaMorpheusTask::WritePeptideIndex(std::vector<PeptideWithSetModifications*> &peptideIndex,
                                              const std::string &peptideIndexFile)
     {
-        auto messageTypes = GetSubclassesAndItself(std::vector<PeptideWithSetModifications*>::typeid);
+        //auto messageTypes = GetSubclassesAndItself(std::vector<PeptideWithSetModifications*>::typeid);
+        auto messageTypes = GetSubclassesAndItself(typeid(std::vector<PeptideWithSetModifications*>));
         auto ser = new NetSerializer::Serializer(messageTypes);
         
         auto file = File::Create(peptideIndexFile);

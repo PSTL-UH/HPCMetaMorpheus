@@ -88,7 +88,7 @@ namespace TaskLayer
 #ifdef ORIG
             static EventHandler<SingleTaskEventArgs> *FinishedSingleTaskHandler = new EventHandler<SingleTaskEventArgs>();
             static EventHandler<SingleFileEventArgs> *FinishedWritingFileHandler = new EventHandler<SingleFileEventArgs>();
-            static EventHandler<SingleTaskEventArgs> *StartingSingleTaskHander = new EventHandler<SingleTaskEventArgs>();
+            static EventHandler<SingleTaskEventArgs> *StartingSingleTaskHandler = new EventHandler<SingleTaskEventArgs>();
             static EventHandler<StringEventArgs> *StartingDataFileHandler = new EventHandler<StringEventArgs>();
             static EventHandler<StringEventArgs> *FinishedDataFileHandler = new EventHandler<StringEventArgs>();
             static EventHandler<StringEventArgs> *OutLabelStatusHandler = new TangibleEvent<EventHandler<StringEventArgs>();
@@ -99,7 +99,7 @@ namespace TaskLayer
 #endif
             static EventHandler<SingleTaskEventArgs> *FinishedSingleTaskHandler;
             static EventHandler<SingleFileEventArgs> *FinishedWritingFileHandler;
-            static EventHandler<SingleTaskEventArgs> *StartingSingleTaskHander;
+            static EventHandler<SingleTaskEventArgs> *StartingSingleTaskHandler;
             static EventHandler<StringEventArgs> *StartingDataFileHandler;
             static EventHandler<StringEventArgs> *FinishedDataFileHandler;
             static EventHandler<StringEventArgs> *OutLabelStatusHandler;
