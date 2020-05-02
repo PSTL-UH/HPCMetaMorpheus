@@ -248,9 +248,9 @@ namespace TaskLayer
             
             for (auto precursor : precursors)
             {
-                Ms2ScanWithSpecificMass tempVar2(ms2scan, precursor.first, precursor.second, fullFilePath,
-                                                 commonParameters, neutralExperimentalFragments);
-                scansWithPrecursors[i].push_back(&tempVar2);
+                auto  tempVar2 = new Ms2ScanWithSpecificMass(ms2scan, precursor.first, precursor.second, fullFilePath,
+                                                             commonParameters, neutralExperimentalFragments);
+                scansWithPrecursors[i].push_back(tempVar2);
             }
         } 
     
@@ -361,8 +361,7 @@ namespace TaskLayer
         trw.tomlWriteNewFile(output_path, tomlConfig);
 
         
-        MetaMorpheusEngine::FinishedSingleEngineHandler->addListener("SingleEngineHandlerInTask", [&] (SingleEngineFinishedEventArgs* e) {
-                SingleEngineHandlerInTask( e);});
+        MetaMorpheusEngine::FinishedSingleEngineHandler->addListener("SingleEngineHandlerInTask", SingleEngineHandlerInTask);
         try
         {
             clock_t begin = clock();

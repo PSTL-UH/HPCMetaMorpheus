@@ -212,12 +212,12 @@ namespace EngineLayer
                 double exptPeakIntensity = matchedIon->Intensity;
                 double injTime = ms2DataScan->getInjectionTime().has_value() ? ms2DataScan->getInjectionTime().value() : NAN;
                 
-                LabeledDataPoint tempVar(exptPeakMz, ms2DataScan->getOneBasedScanNumber(),
-                                         std::log(ms2DataScan->getTotalIonCurrent()), std::log(injTime),
-                                         std::log(exptPeakIntensity),
-                                         Chemistry::ClassExtensions::ToMz(matchedIon->NeutralTheoreticalProduct->NeutralMass, matchedIon->Charge),
-                                         identification);
-                result.push_back(&tempVar);
+                auto tempVar = new LabeledDataPoint (exptPeakMz, ms2DataScan->getOneBasedScanNumber(),
+                                                     std::log(ms2DataScan->getTotalIonCurrent()), std::log(injTime),
+                                                     std::log(exptPeakIntensity),
+                                                     Chemistry::ClassExtensions::ToMz(matchedIon->NeutralTheoreticalProduct->NeutralMass, matchedIon->Charge),
+                                                     identification);
+                result.push_back(tempVar);
             }
             return result;
         }

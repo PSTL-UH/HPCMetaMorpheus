@@ -84,12 +84,12 @@ namespace EngineLayer
             // is the mass error acceptable?
             if (commonParameters->getProductMassTolerance()->Within(closestExperimentalMass->monoisotopicMass, product->NeutralMass) && closestExperimentalMass->charge <= scan->getPrecursorCharge())
             {
-                MatchedFragmentIon tempVar(product,
-                                           Chemistry::ClassExtensions::ToMz(closestExperimentalMass->monoisotopicMass,
-                                                                            closestExperimentalMass->charge),
-                                           std::get<1>(closestExperimentalMass->peaks.front()), //intensity
-                                           closestExperimentalMass->charge);
-                matchedFragmentIons.push_back(&tempVar);
+                auto tempVar = new MatchedFragmentIon(product,
+                                                      Chemistry::ClassExtensions::ToMz(closestExperimentalMass->monoisotopicMass,
+                                                                                       closestExperimentalMass->charge),
+                                                      std::get<1>(closestExperimentalMass->peaks.front()), //intensity
+                                                      closestExperimentalMass->charge);
+                matchedFragmentIons.push_back(tempVar);
             }
         }
         if (commonParameters->getAddCompIons())

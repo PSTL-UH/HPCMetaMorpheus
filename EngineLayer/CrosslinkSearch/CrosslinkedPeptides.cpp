@@ -65,18 +65,17 @@ namespace EngineLayer
                     // add signature ions
                     if (crosslinker->getCleavable())
                     {
-                        Product tempVar(ProductType::M, new NeutralTerminusFragment(FragmentationTerminus::None,
-                                                                                    peptide->getMonoisotopicMass() + massToLocalize,
-                                                                                    peptide->getLength(),
-                                                                                    peptide->getLength()), 0);
-                        theoreticalProducts.push_back(&tempVar);
+                        auto tempVar = new Product(ProductType::M,
+                                                   new NeutralTerminusFragment(FragmentationTerminus::None,
+                                                                               peptide->getMonoisotopicMass() + massToLocalize,
+                                                                               peptide->getLength(),
+                                                                               peptide->getLength()), 0);
+                        theoreticalProducts.push_back(tempVar);
                     }
                     
                     delete testPeptide;
                 }
                 
-                //C# TO C++ CONVERTER TODO TASK: C++ does not have an equivalent to the C# 'yield' keyword:
-                //yield return std::tuple<int, std::vector<Product*>>(crosslinkerPosition, theoreticalProducts);
                 retvec->push_back(std::make_tuple<int, std::vector<Product*>>((int)crosslinkerPosition,
                                                                               (std::vector<Product*>)theoreticalProducts));
             }

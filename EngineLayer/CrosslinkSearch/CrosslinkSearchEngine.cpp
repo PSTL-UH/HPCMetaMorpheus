@@ -140,8 +140,8 @@ namespace EngineLayer
                         PeptideWithSetModifications *peptide = PeptideIndex[id];
                         
                         int notch = massDiffAcceptor->Accepts(scan->getPrecursorMass(), peptide->getMonoisotopicMass());
-                        BestPeptideScoreNotch tempVar3(peptide, scoringTable[id], notch);
-                        bestPeptideScoreNotchList.push_back(&tempVar3);
+                        auto tempVar3 = new BestPeptideScoreNotch (peptide, scoringTable[id], notch);
+                        bestPeptideScoreNotchList.push_back(tempVar3);
                     }
                     
                     // combine individual peptide hits with crosslinker mass to find best crosslink PSM hit

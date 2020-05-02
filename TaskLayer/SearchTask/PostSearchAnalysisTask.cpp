@@ -286,6 +286,7 @@ namespace TaskLayer
                                                                      std::make_optional(combinedParams->getMinRatio()),
                                                                      combinedParams->getTrimMs1Peaks(),
                                                                      combinedParams->getTrimMsMsPeaks(), combinedParams);
+
                 std::vector<std::string> svec2 = {getParameters()->getSearchTaskId(), "Individual Spectra Files", origDataFile};
 #ifdef ORIG
                 LocalizationEngine tempVar(getParameters()->getAllPsms().Where([&] (std::any b) {
@@ -354,8 +355,10 @@ namespace TaskLayer
                     int techrep = std::stoi(split[4]);
                     
                     // experimental design info passed in here for each spectra file
-                    SpectraFileInfo tempVar(fullFilePathWithExtension: file, condition: condition, biorep: biorep - 1, fraction: fraction - 1, techrep: techrep - 1);
-                    spectraFileInfo.push_back(&tempVar);
+                    auto tempVar = new SpectraFileInfo(fullFilePathWithExtension: file,
+                                                       condition: condition, biorep: biorep - 1,
+                                                       fraction: fraction - 1, techrep: techrep - 1);
+                    spectraFileInfo.push_back(tempVar);
                     
                     getParameters()->getMyFileManager()->DoneWithFile(file);
                 }
@@ -370,8 +373,10 @@ namespace TaskLayer
             for (auto file : getParameters()->getCurrentRawFileList())
             {
                 // experimental design info passed in here for each spectra file
-                SpectraFileInfo tempVar2(fullFilePathWithExtension: file, condition: "", biorep: 0, fraction: 0, techrep: 0);
-                spectraFileInfo.push_back(&tempVar2);
+                auto tempVar2 = new SpectraFileInfo(fullFilePathWithExtension: file,
+                                                    condition: "", biorep: 0,
+                                                    fraction: 0, techrep: 0);
+                spectraFileInfo.push_back(tempVar2);
                 getParameters()->getMyFileManager()->DoneWithFile(file);
             }
         }
@@ -500,8 +505,13 @@ namespace TaskLayer
             
             for (auto psm : spectraFile)
             {
-                Identification tempVar4(rawfileinfo, psm->BaseSequence, psm->FullSequence, psm->PeptideMonisotopicMass->Value, psm->ScanRetentionTime, psm->ScanPrecursorCharge, psmToProteinGroups[psm]);
-                flashLFQIdentifications.push_back(&tempVar4);
+                auto tempVar4 = new Identification (rawfileinfo, psm->BaseSequence,
+                                                    psm->FullSequence,
+                                                    psm->PeptideMonisotopicMass->Value,
+                                                    psm->ScanRetentionTime,
+                                                    psm->ScanPrecursorCharge,
+                                                    psmToProteinGroups[psm]);
+                flashLFQIdentifications.push_back(tempVar4);
             }
         }
         
