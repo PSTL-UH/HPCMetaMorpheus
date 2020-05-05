@@ -19,6 +19,11 @@
 #include "Chemistry/ClassExtensions.h"
 #include "UsefulProteomicsDatabases/UsefulProteomicsDatabases.h"
 
+//For XML serialization / deserialization
+#include "include/cereal/types/memory.hpp"
+#include "include/cereal/archives/xml.hpp"
+#include <include/cereal/types/vector.hpp>
+
 #include <ctime>
 #include <experimental/filesystem>
 #include <exception>
@@ -836,20 +841,75 @@ namespace TaskLayer
     {
         //auto messageTypes = GetSubclassesAndItself(std::vector<PeptideWithSetModifications*>::typeid);
         auto messageTypes = GetSubclassesAndItself(typeid(std::vector<PeptideWithSetModifications*>));
-        auto ser = new NetSerializer::Serializer(messageTypes);
-        
-        auto file = File::Create(peptideIndexFile);
-        ser->Serialize(file, peptideIndex);
+
+        //original
+        // auto ser = new NetSerializer::Serializer(messageTypes);        
+        // auto file = File::Create(peptideIndexFile);
+        // ser->Serialize(file, peptideIndex);
+
+        std::ofstream os(peptideIndexFile);
+        cereal::XMLOutputArchive archive( os );
+
+        //Cereal only works with smart pointers, so all raw pointers in
+        //std::vector<PeptideWithSetModifications*> peptideIndex
+        //must be converted to unique pointers with std::make_unique.  This requires traversing the
+        //vector and performing the
+        //transformation for each entry.
+        std::vector<std::unique_ptr<PeptideWithSetModifications>> unique_vector;
+
+        for (int i=0; i < (int)peptideIndex.size(); i++){
+
+            //create unique pointer from raw pointer
+            auto p = std::make_unique<PeptideWithSetModifications>(*peptideIndex[i]);
+                
+            //push unique pointer into vector of unique pointers
+            unique_vector.push_back(std::move(p));
+        }
+
+        //finally serialize the vector of unique pointers to an XML file
+        //this will write the info contained in peptideIndex to the XML file 
+        //specified in the peptideIndexFile variable.
+        archive(unique_vector);
+        //----------------------------------------------------------------
     }
     
     void MetaMorpheusTask::WriteFragmentIndexNetSerializer(std::vector<std::vector<int>> &fragmentIndex,
                                                            const std::string &fragmentIndexFile)
     {
         auto messageTypes = GetSubclassesAndItself(std::vector<std::vector<int>>::typeid);
-        auto ser = new NetSerializer::Serializer(messageTypes);
         
-        auto file = File::Create(fragmentIndexFile);
-        ser->Serialize(file, fragmentIndex);
+        //original
+        // auto ser = new NetSerializer::Serializer(messageTypes);        
+        // auto file = File::Create(fragmentIndexFile);
+        // ser->Serialize(file, fragmentIndex);
+
+        std::ofstream os(fragmentIndexFile);
+        cereal::XMLOutputArchive archive( os );
+
+        //Cereal only works with smart pointers, so all raw pointers in
+        //std::vector<std::vector<int>> fragmentIndex
+        //must be converted to unique pointers with std::make_unique.  This requires traversing the
+        //vector and performing the
+        //transformation for each entry.
+        std::vector<std::vector<std::unique_ptr<int>>> unique_vector;
+
+        for (int i=0; i < (int)fragmentIndex.size(); i++){
+            std::vector<std::unique_ptr<int>> unique_vec_row;
+            for (int j=0; j < (int)fragmentIndex[i].size(); j++){
+                //create unique pointer from raw pointer
+                auto p = std::make_unique<int>(fragmentIndex[i][j]);
+                    
+                //push unique pointer into vector of unique pointers
+                unique_vec_row.push_back(std::move(p));
+            }
+            unique_vector.push_back(std::move(unique_vec_row));
+        }
+
+        //finally serialize the vector of vectors of unique pointers to an XML file
+        //this will write the info contained in fragmentIndex to the XML file 
+        //specified in the indexPath variable.
+        archive(fragmentIndex);
+        //----------------------------------------------------------------
     }
     
     std::string MetaMorpheusTask::GetExistingFolderWithIndices(IndexingEngine *indexEngine,
@@ -979,9 +1039,44 @@ namespace TaskLayer
         {
             Status("Reading peptide index...", svec1 );
             auto messageTypes = GetSubclassesAndItself(std::vector<PeptideWithSetModifications*>::typeid);
-            auto ser = new NetSerializer::Serializer(messageTypes);
-            auto file = File::OpenRead(pathToFolderWithIndices + "/peptideIndex.ind");
-            peptideIndex = static_cast<std::vector<PeptideWithSetModifications*>>(ser->Deserialize(file));
+
+
+            // auto ser = new NetSerializer::Serializer(messageTypes);
+            // auto file = File::OpenRead(pathToFolderWithIndices + "/peptideIndex.ind");
+            // peptideIndex = static_cast<std::vector<PeptideWithSetModifications*>>(ser->Deserialize(file));
+
+            std::string file = pathToFolderWithIndices + "/peptideIndex.ind";
+
+            //------------------------------------------------------
+            //DESERIALIZE FILE INDEXFILE TO OBJECT
+
+            //open ifstream for indexPath
+            std::ifstream is(file.c_str());
+            cereal::XMLInputArchive archive_read(is);
+
+            //Cereal only has functionality for smart pointers.  Must deserialize data from file to vector
+            //of vecotrs of unique pointers
+            std::vector<std::unique_ptr<PeptideWithSetModifications>> unique_vec;
+
+            //deserialize xml file to unique_vec structure
+            archive_read(unique_vec);
+
+            //now must convert unique pointers to raw pointers.  This requires traversing the structure
+            std::vector<PeptideWithSetModifications*> raw_vec;
+
+            for (int i=0; i < (int)unique_vec.size(); i++){
+
+                std::unordered_map<std::string, Modification*> allModsOneIsNterminus;
+                PeptideWithSetModifications* p = new PeptideWithSetModifications(unique_vec[i]->getFullSequence(), allModsOneIsNterminus);
+                raw_vec.push_back(p);
+            }
+
+            //set peptideIndex to equal the vector of vectors of raw pointers.
+            peptideIndex = raw_vec;
+            //------------------------------------------------------
+            is.close();
+
+
             
             // populate dictionaries of known proteins for deserialization
             std::unordered_map<std::string, Protein*> proteinDictionary;
@@ -1007,17 +1102,91 @@ namespace TaskLayer
             
             Status("Reading fragment index...", svec1 );
             messageTypes = GetSubclassesAndItself(std::vector<std::vector<int>>::typeid);
-            ser = new NetSerializer::Serializer(messageTypes);
-            auto file = File::OpenRead(pathToFolderWithIndices + "/fragmentIndex.ind");
-            fragmentIndex = static_cast<std::vector<std::vector<int>>>(ser->Deserialize(file));
+
+            // ser = new NetSerializer::Serializer(messageTypes);
+            // auto file = File::OpenRead(pathToFolderWithIndices + "/fragmentIndex.ind");
+            // fragmentIndex = static_cast<std::vector<std::vector<int>>>(ser->Deserialize(file));
+
+
+            file = pathToFolderWithIndices + "/fragmentIndex.ind";
+            //------------------------------------------------------
+            //DESERIALIZE FILE INDEXFILE TO OBJECT
+
+            //open ifstream for indexPath
+            std::ifstream is2(file.c_str());
+            cereal::XMLInputArchive archive_read_2(is2);
+
+            //Cereal only has functionality for smart pointers.  Must deserialize data from file to vector
+            //of vecotrs of unique pointers
+            std::vector<std::vector<std::unique_ptr<int>>> unique_vector;
+
+            //deserialize xml file to unique_vec structure
+            archive_read_2(unique_vector);
+
+            //now must convert unique pointers to raw pointers.  This requires traversing the structure
+            std::vector<std::vector<int>> raw_vector;
+
+            for (int i=0; i < (int)unique_vector.size(); i++){
+                std::vector<int> raw_vec_row;
+                
+                for (int j=0;j< (int)unique_vector[i].size();j++){
+                    int* p = unique_vector[i][j].get();
+                    raw_vec_row.push_back(*p);
+                }
+
+                raw_vector.push_back(raw_vec_row);
+            }
+
+            //set _indexedpeaks to equal the vector of vectors of raw pointers.
+            fragmentIndex = raw_vector;
+            // return raw_vec;
+            //------------------------------------------------------
+            is2.close();            
             
             if (indexEngine->GeneratePrecursorIndex)
             {
                 Status("Reading precursor index...", svec1 );
                 messageTypes = GetSubclassesAndItself(std::vector<std::vector<int>>::typeid);
-                ser = new NetSerializer::Serializer(messageTypes);
-                auto file = File::OpenRead(pathToFolderWithIndices + "/precursorIndex.ind");
-                precursorIndex = static_cast<std::vector<std::vector<int>>>(ser->Deserialize(file));
+
+
+                // ser = new NetSerializer::Serializer(messageTypes);
+                // auto file = File::OpenRead(pathToFolderWithIndices + "/precursorIndex.ind");
+                // precursorIndex = static_cast<std::vector<std::vector<int>>>(ser->Deserialize(file));
+
+                file = pathToFolderWithIndices + "/precursorIndex.ind";
+                //------------------------------------------------------
+                //DESERIALIZE FILE INDEXFILE TO OBJECT
+
+                //open ifstream for indexPath
+                std::ifstream is3(file.c_str());
+                cereal::XMLInputArchive archive_read_3(is3);
+
+                //Cereal only has functionality for smart pointers.  Must deserialize data from file to vector
+                //of vecotrs of unique pointers
+                std::vector<std::vector<std::unique_ptr<int>>> unique_vector2;
+
+                //deserialize xml file to unique_vec structure
+                archive_read_3(unique_vector2);
+
+                //now must convert unique pointers to raw pointers.  This requires traversing the structure
+                std::vector<std::vector<int>> raw_vector2;
+
+                for (int i=0; i < (int)unique_vector2.size(); i++){
+                    std::vector<int> raw_vector_row;
+                    
+                    for (int j=0;j< (int)unique_vector2[i].size();j++){
+                        int* p = unique_vector2[i][j].get();
+                        raw_vector_row.push_back(*p);
+                    }
+
+                    raw_vector2.push_back(raw_vector_row);
+                }
+
+                //set _indexedpeaks to equal the vector of vectors of raw pointers.
+                precursorIndex = raw_vector2;
+                // return raw_vec;
+                //------------------------------------------------------
+                is3.close(); 
             }
         }
     }
