@@ -17,7 +17,15 @@ namespace EngineLayer
     namespace Indexing
     {
         
-        IndexingEngine::IndexingEngine(std::vector<Protein*> &proteinList, std::vector<Modification*> &variableModifications, std::vector<Modification*> &fixedModifications, int currentPartition, DecoyType *decoyType, CommonParameters *commonParams, double maxFragmentSize, bool generatePrecursorIndex, std::vector<FileInfo*> &proteinDatabases, std::vector<std::string> &nestedIds) : MetaMorpheusEngine(commonParams, nestedIds), ProteinList(proteinList), FixedModifications(fixedModifications), VariableModifications(variableModifications), CurrentPartition(currentPartition + 1), decoyType(decoyType), MaxFragmentSize(maxFragmentSize), GeneratePrecursorIndex(generatePrecursorIndex), ProteinDatabases(proteinDatabases)
+        IndexingEngine::IndexingEngine(std::vector<Protein*> &proteinList, std::vector<Modification*> &variableModifications,
+                                       std::vector<Modification*> &fixedModifications, int currentPartition, DecoyType decoyType,
+                                       CommonParameters *commonParams, double maxFragmentSize,
+                                       bool generatePrecursorIndex, std::vector<std::string> &proteinDatabases,
+                                       std::vector<std::string> &nestedIds) :
+            MetaMorpheusEngine(commonParams, nestedIds), ProteinList(proteinList), FixedModifications(fixedModifications),
+            VariableModifications(variableModifications), CurrentPartition(currentPartition + 1),
+            decoyType(decoyType), MaxFragmentSize(maxFragmentSize),
+            GeneratePrecursorIndex(generatePrecursorIndex), ProteinDatabases(proteinDatabases)
         {
         }
 
@@ -33,17 +41,21 @@ namespace EngineLayer
                             }
                             )));
 #endif
-            std::sort(ProteinDatabases.begin(), ProteinDatabases.end(), [&] (FileInfo *l, FileInfo *r) {
-                    return l->Name < r->Name; });
+            std::sort(ProteinDatabases.begin(), ProteinDatabases.end() );
+
+#ifdef NOT_NOW
+            // not sorting for now by creation time
             std::vector<std::string> vs={"Databases: "};
             for ( auto p : ProteinDatabases ) {
                 vs.push_back((p->Name + ":" + std::to_string(p->CreationTime)));
             }
             sb->appendLine(StringHelper::join(vs, ','));
+#endif
+            sb->appendLine(StringHelper::join(ProteinDatabases, ','));
             
             sb->appendLine("Partitions: " + std::to_string(CurrentPartition) + "/" + std::to_string(commonParameters->getTotalPartitions()));
             sb->appendLine("Precursor Index: " + StringHelper::toString(GeneratePrecursorIndex));
-            sb->appendLine("Search Decoys: " + std::to_string(static_cast<int>(*decoyType)));
+            sb->appendLine("Search Decoys: " + std::to_string(static_cast<int>(decoyType)));
             sb->appendLine("Number of proteins: " + std::to_string(ProteinList.size()));
             sb->appendLine("Number of fixed mods: " + std::to_string(FixedModifications.size()));
             sb->appendLine("Number of variable mods: " + std::to_string(VariableModifications.size()));

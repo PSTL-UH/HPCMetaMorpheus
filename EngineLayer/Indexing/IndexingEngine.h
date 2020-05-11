@@ -8,13 +8,8 @@
 #include "exceptionhelper.h"
 #include "stringhelper.h"
 #include "stringbuilder.h"
-#include "fileinfo.h"
 
-//C# TO C++ CONVERTER NOTE: Forward class declarations:
-//namespace EngineLayer { class CommonParameters; }
 #include "../CommonParameters.h"
-
-//namespace EngineLayer { class MetaMorpheusEngineResults; }
 #include "../MetaMorpheusEngineResults.h"
 
 #include "Proteomics/Proteomics.h"
@@ -37,19 +32,22 @@ namespace EngineLayer
             const std::vector<Modification*> FixedModifications;
             const std::vector<Modification*> VariableModifications;
             const int CurrentPartition;
-            DecoyType *const decoyType;
+            DecoyType const decoyType;
             const double MaxFragmentSize;
 
         public:
             const bool GeneratePrecursorIndex;
-            std::vector<FileInfo*> ProteinDatabases;
+            std::vector<std::string> ProteinDatabases;
             
             virtual ~IndexingEngine()
             {
-                delete decoyType;
             }
             
-            IndexingEngine(std::vector<Protein*> &proteinList, std::vector<Modification*> &variableModifications, std::vector<Modification*> &fixedModifications, int currentPartition, DecoyType *decoyType, CommonParameters *commonParams, double maxFragmentSize, bool generatePrecursorIndex, std::vector<FileInfo*> &proteinDatabases, std::vector<std::string> &nestedIds);
+            IndexingEngine(std::vector<Protein*> &proteinList, std::vector<Modification*> &variableModifications,
+                           std::vector<Modification*> &fixedModifications, int currentPartition,
+                           DecoyType decoyType, CommonParameters *commonParams, double maxFragmentSize,
+                           bool generatePrecursorIndex, std::vector<std::string> &proteinDatabases,
+                           std::vector<std::string> &nestedIds);
             
             std::string ToString();
             

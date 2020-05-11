@@ -4,12 +4,11 @@
 #include <vector>
 #include "stringbuilder.h"
 
-//C# TO C++ CONVERTER NOTE: Forward class declarations:
-//namespace TaskLayer { class DbForTask; }
 #include "DbForTask.h"
 
+// need to use forward declaration instead of including MetaMorpheusTask.h due to circular dependence
 namespace TaskLayer { class MetaMorpheusTask; }
-//#include "MetaMorpheusTask.h"
+
 
 
 namespace TaskLayer

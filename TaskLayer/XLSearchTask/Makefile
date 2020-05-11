@@ -8,10 +8,10 @@
 #
 include ../../Makefile.defs
 
-HEADER =  TaskLayer.XLSearchTask.h  \
+HEADER =  XLSearchTask.h  \
 	  XLSearchParameters.h
 
-OBJ = 	 TaskLayer.XLSearchTask.o  \
+OBJ = 	 XLSearchTask.o  \
 	 XLSearchParameters.o
 
 
