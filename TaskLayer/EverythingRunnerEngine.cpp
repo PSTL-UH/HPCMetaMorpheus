@@ -207,9 +207,10 @@ namespace TaskLayer
     void EverythingRunnerEngine::StartingAllTasks()
     {
         std::vector<std::string> tmpvec;
+        std::string v;
         StringEventArgs tempVar(v, tmpvec);
         if ( StartingAllTasksEngineHandler != nullptr ) {
-            StartingAllTasksEngineHandler->Invoke(tmpvec);
+            StartingAllTasksEngineHandler->Invoke(tempVar);
         }
     }
     

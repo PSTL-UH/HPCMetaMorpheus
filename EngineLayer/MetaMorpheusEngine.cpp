@@ -174,7 +174,7 @@ namespace EngineLayer
     void MetaMorpheusEngine::ReportProgress(ProgressEventArgs *v)
     {
         if ( OutProgressHandler != nullptr ) {
-            OutProgressHandler->Invoke(v);
+            OutProgressHandler->Invoke(*v);
         }
     }
     

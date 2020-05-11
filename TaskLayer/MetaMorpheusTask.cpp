@@ -366,7 +366,8 @@ namespace TaskLayer
         trw.tomlWriteNewFile(output_path, tomlConfig);
 
         
-        MetaMorpheusEngine::FinishedSingleEngineHandler->addListener("SingleEngineHandlerInTask", SingleEngineHandlerInTask);
+        MetaMorpheusEngine::FinishedSingleEngineHandler->addListener("SingleEngineHandlerInTask",
+                                                                     SingleEngineHandlerInTask);
         try
         {
             clock_t begin = clock();
@@ -732,28 +733,28 @@ namespace TaskLayer
     void MetaMorpheusTask::ReportProgress(ProgressEventArgs *v)
     {
         if ( OutProgressHandler != nullptr )
-            OutProgressHandler->Invoke(this, v);
+            OutProgressHandler->Invoke(*v);
     }
     
     void MetaMorpheusTask::FinishedWritingFile(const std::string &path, std::vector<std::string> &nestedIDs)
     {
         SingleFileEventArgs tempVar(path, nestedIDs);
         if ( FinishedWritingFileHandler != nullptr )
-            FinishedWritingFileHandler->Invoke(this, &tempVar);
+            FinishedWritingFileHandler->Invoke(tempVar);
     }
     
     void MetaMorpheusTask::StartingDataFile(const std::string &v, std::vector<std::string> &nestedIDs)
     {
         StringEventArgs tempVar(v, nestedIDs);
         if ( StartingDataFileHandler != nullptr )
-            StartingDataFileHandler->Invoke(this, &tempVar);
+            StartingDataFileHandler->Invoke(tempVar);
     }
     
     void MetaMorpheusTask::FinishedDataFile(const std::string &v, std::vector<std::string> &nestedIDs)
     {
         StringEventArgs tempVar(v, nestedIDs);
         if ( FinishedDataFileHandler != nullptr )
-            FinishedDataFileHandler->Invoke(this, &tempVar);
+            FinishedDataFileHandler->Invoke(tempVar);
     }
     
     void MetaMorpheusTask::Status(const std::string &v, const std::string &id)
@@ -761,35 +762,35 @@ namespace TaskLayer
         std::vector<std::string> s = {id};
         StringEventArgs tempVar(v, s);
         if ( OutLabelStatusHandler != nullptr )
-            OutLabelStatusHandler->Invoke(this, &tempVar);
+            OutLabelStatusHandler->Invoke(tempVar);
     }
     
     void MetaMorpheusTask::Status(const std::string &v, std::vector<std::string> &nestedIds)
     {
         StringEventArgs tempVar(v, nestedIds);
         if ( OutLabelStatusHandler != nullptr )
-            OutLabelStatusHandler->Invoke(this, &tempVar);
+            OutLabelStatusHandler->Invoke(tempVar);
     }
     
     void MetaMorpheusTask::Warn(const std::string &v)
     {
         StringEventArgs tempVar(v, std::vector<std::string>() );
         if ( WarnHandler != nullptr )
-            WarnHandler->Invoke(nullptr, &tempVar);
+            WarnHandler->Invoke(tempVar);
     }
     
     void MetaMorpheusTask::Log(const std::string &v, std::vector<std::string> &nestedIds)
     {
         StringEventArgs tempVar(v, nestedIds);
         if ( LogHandler != nullptr )
-            LogHandler->Invoke(this, &tempVar);
+            LogHandler->Invoke(tempVar);
     }
     
     void MetaMorpheusTask::NewCollection(const std::string &displayName, std::vector<std::string> &nestedIds)
     {
         StringEventArgs tempVar(displayName, nestedIds);
         if ( NewCollectionHandler != nullptr )
-            NewCollectionHandler->Invoke(this, &tempVar);
+            NewCollectionHandler->Invoke(tempVar);
     }
     
     std::vector<std::string> MetaMorpheusTask::GetModsTypesFromString(const std::string &value)
@@ -799,37 +800,39 @@ namespace TaskLayer
     }
     
     //void MetaMorpheusTask::SingleEngineHandlerInTask(std::any sender, SingleEngineFinishedEventArgs *e)
-    void MetaMorpheusTask::SingleEngineHandlerInTask(SingleEngineFinishedEventArgs *e)
+    void MetaMorpheusTask::SingleEngineHandlerInTask(SingleEngineFinishedEventArgs e)
     {
-        myTaskResults->AddResultText(e->ToString());
+        myTaskResults->AddResultText(e.ToString());
     }
     
     void MetaMorpheusTask::FinishedSingleTask(const std::string &displayName)
     {
         SingleTaskEventArgs tempVar(displayName);
         if ( FinishedSingleTaskHandler != nullptr )
-            FinishedSingleTaskHandler->Invoke(this, &tempVar);
+            FinishedSingleTaskHandler->Invoke(tempVar);
     }
     
     void MetaMorpheusTask::StartingSingleTask(const std::string &displayName)
     {
         SingleTaskEventArgs tempVar(displayName);
-        if ( StartingSingleTaskHander != nullptr )
-            StartingSingleTaskHander->Invoke(this, &tempVar);
+        if ( StartingSingleTaskHandler != nullptr )
+            StartingSingleTaskHandler->Invoke(tempVar);
     }
-    
+
+#ifdef NOT_NOW
     std::vector<std::type_info> MetaMorpheusTask::GetSubclassesAndItself(std::type_info type)
     {
-        //C# TO C++ CONVERTER TODO TASK: C++ does not have an equivalent to the C# 'yield' keyword:
-        //yield return type;
         std::vector<type> tmp;
         return tmp;
     }
+#endif
     
     bool MetaMorpheusTask::SameSettings(const std::string &pathToOldParamsFile, IndexingEngine *indexEngine)
     {
         std::ifstream reader(pathToOldParamsFile);
-        if (reader.ReadToEnd() == indexEngine->ToString())
+        std::string content ( (std::istreambuf_iterator<char>(reader) ),
+                              (std::istreambuf_iterator<char>() ) );
+        if ( content == indexEngine->ToString())
         {
             return true;
         }
@@ -840,7 +843,7 @@ namespace TaskLayer
                                              const std::string &peptideIndexFile)
     {
         //auto messageTypes = GetSubclassesAndItself(std::vector<PeptideWithSetModifications*>::typeid);
-        auto messageTypes = GetSubclassesAndItself(typeid(std::vector<PeptideWithSetModifications*>));
+        //auto messageTypes = GetSubclassesAndItself(typeid(std::vector<PeptideWithSetModifications*>));
 
         //original
         // auto ser = new NetSerializer::Serializer(messageTypes);        
@@ -869,14 +872,18 @@ namespace TaskLayer
         //finally serialize the vector of unique pointers to an XML file
         //this will write the info contained in peptideIndex to the XML file 
         //specified in the peptideIndexFile variable.
+#ifdef DO_A_BIT_LATER
         archive(unique_vector);
+#else
+#pragma message("Warning: a CEREAL statement in Line 876 in MetaMorpheusTask.cpp still needs fixing.")
+#endif
         //----------------------------------------------------------------
     }
     
     void MetaMorpheusTask::WriteFragmentIndexNetSerializer(std::vector<std::vector<int>> &fragmentIndex,
                                                            const std::string &fragmentIndexFile)
     {
-        auto messageTypes = GetSubclassesAndItself(std::vector<std::vector<int>>::typeid);
+        //auto messageTypes = GetSubclassesAndItself(std::vector<std::vector<int>>::typeid);
         
         //original
         // auto ser = new NetSerializer::Serializer(messageTypes);        
@@ -917,7 +924,8 @@ namespace TaskLayer
     {
         for (auto database : dbFilenameList)
         {
-            std::string baseDir = std::experimental::filesystem::current_path().string();
+            std::experimental::filesystem::path dp = database->getFilePath();
+            std::string baseDir = dp.parent_path();
             std::string indexDirectory = baseDir + "/" + IndexFolderName;
             
             if (! std::experimental::filesystem::exists(indexDirectory) )
@@ -928,7 +936,7 @@ namespace TaskLayer
             // all directories in the same directory as the protein database
             std::vector<std::string> directories;
             for ( auto p : std::experimental::filesystem::recursive_directory_iterator( indexDirectory) ){
-                if (p.is_directory() ) {
+                if ( std::experimental::filesystem::is_directory(p) ) {
                     directories.push_back(p.path().string() );
                 }
             }
@@ -1038,7 +1046,7 @@ namespace TaskLayer
         else
         {
             Status("Reading peptide index...", svec1 );
-            auto messageTypes = GetSubclassesAndItself(std::vector<PeptideWithSetModifications*>::typeid);
+            //auto messageTypes = GetSubclassesAndItself(std::vector<PeptideWithSetModifications*>::typeid);
 
 
             // auto ser = new NetSerializer::Serializer(messageTypes);
@@ -1101,7 +1109,7 @@ namespace TaskLayer
             }
             
             Status("Reading fragment index...", svec1 );
-            messageTypes = GetSubclassesAndItself(std::vector<std::vector<int>>::typeid);
+            //messageTypes = GetSubclassesAndItself(std::vector<std::vector<int>>::typeid);
 
             // ser = new NetSerializer::Serializer(messageTypes);
             // auto file = File::OpenRead(pathToFolderWithIndices + "/fragmentIndex.ind");
@@ -1146,7 +1154,7 @@ namespace TaskLayer
             if (indexEngine->GeneratePrecursorIndex)
             {
                 Status("Reading precursor index...", svec1 );
-                messageTypes = GetSubclassesAndItself(std::vector<std::vector<int>>::typeid);
+                //messageTypes = GetSubclassesAndItself(std::vector<std::vector<int>>::typeid);
 
 
                 // ser = new NetSerializer::Serializer(messageTypes);

@@ -69,7 +69,7 @@ namespace TaskLayer
             
 	protected:
             StringBuilder *const ProseCreatedWhileRunning = new StringBuilder();
-            MyTaskResults *myTaskResults;
+            static MyTaskResults *myTaskResults;
             
 	public:
             virtual ~MetaMorpheusTask()
@@ -180,14 +180,15 @@ namespace TaskLayer
             static std::pair<std::string, std::string> GetModsFromString (std::string value);
             
             //void SingleEngineHandlerInTask(std::any sender, SingleEngineFinishedEventArgs *e);
-            void SingleEngineHandlerInTask(SingleEngineFinishedEventArgs *e);
+            static void SingleEngineHandlerInTask(SingleEngineFinishedEventArgs e);
             
-            void FinishedSingleTask(const std::string &displayName);
+            static void FinishedSingleTask(const std::string &displayName);
             
-            void StartingSingleTask(const std::string &displayName);
+            static void StartingSingleTask(const std::string &displayName);
             
+#ifdef NOT_NOW
             static std::vector<std::type_info> GetSubclassesAndItself(std::type_info type);
-            
+#endif
             static bool SameSettings(const std::string &pathToOldParamsFile, IndexingEngine *indexEngine);
             
             static void WritePeptideIndex(std::vector<PeptideWithSetModifications*> &peptideIndex,
