@@ -4,11 +4,14 @@
 #include "../TaskLayer/DbForTask.h"
 #include "../TaskLayer/EverythingRunnerEngine.h"
 #include "../TaskLayer/CalibrationTask/CalibrationTask.h"
-#include "../TaskLayer/GPTMDTask/GPTMDTask.h"
+//#include "../TaskLayer/GPTMDTask/GPTMDTask.h"
 #include "../TaskLayer/XLSearchTask/TaskLayer.XLSearchTask.h"
 #include "../TaskLayer/FileSpecificParameters.h"
 #include "../EngineLayer/CommonParameters.h"
 
+#include <experimental/filesystem>
+#include <fstream>
+#include <iostream>
 #include "Assert.h"
 
 using namespace EngineLayer;
@@ -27,9 +30,11 @@ int main ( int argc, char **argv )
 
     std::cout << ++i << ". TestToml::TestTomlFunction" << std::endl;
     Test::TestToml::TestTomlFunction();
-    
+
+#ifdef LATER
     std::cout << ++i << ". TestToml::TestTomlForSpecficFiles" << std::endl;
     Test::TestToml::TestTomlForSpecficFiles();
+#endif
     
     return 0;
 }
@@ -37,114 +42,222 @@ int main ( int argc, char **argv )
 namespace Test
 {
 
-	void TestToml::TestTomlFunction()
-	{
-		SearchTask *searchTask = new SearchTask();
-		CommonParameters tempVar(, , , = true, = 3, = 12, = true, = false, = 1, = 5, = 200, = 0.01, = false, = true, = false, = false, new PpmTolerance(666), , , , , {("e", "f"), ("g", "h")}, new std::vector<(std::string, std::string)*> {("a", "b"), ("c", "d")});
-		searchTask->setCommonParameters(&tempVar);
-		Toml::WriteFile(searchTask, "SearchTask.toml", MetaMorpheusTask::tomlConfig);
-		auto searchTaskLoaded = Toml::ReadFile<SearchTask*>("SearchTask.toml", MetaMorpheusTask::tomlConfig);
+    void TestToml::TestTomlFunction()
+    {
+        std::string testdir=std::experimental::filesystem::current_path().string();        
+        
+        SearchTask *searchTask = new SearchTask();
+        std::vector<std::tuple<std::string, std::string>> v1 = {std::make_tuple("e", "f"), std::make_tuple("g", "h")};
+        std::vector<std::tuple<std::string, std::string>> v2 = {std::make_tuple("a", "b"), std::make_tuple("c", "d")};
+        CommonParameters tempVar ("", DissociationType::HCD, true, true, 3, 12, true, false, 1, 5, 200, 0.01,
+                                  false, true, false, false, new PpmTolerance(666), nullptr, nullptr, -1, nullptr,
+                                  &v1, &v2);
+        searchTask->setCommonParameters(&tempVar);
+        
+        Toml::WriteFile(searchTask, "SearchTask.toml", MetaMorpheusTask::tomlConfig);
 
-		Assert::AreEqual(searchTask->getCommonParameters()->getDeconvolutionMassTolerance()->ToString(), searchTaskLoaded->CommonParameters.DeconvolutionMassTolerance.ToString());
-		Assert::AreEqual(searchTask->getCommonParameters()->getProductMassTolerance()->ToString(), searchTaskLoaded->CommonParameters.ProductMassTolerance.ToString());
-		Assert::AreEqual(searchTask->getCommonParameters()->getPrecursorMassTolerance()->ToString(), searchTaskLoaded->CommonParameters.PrecursorMassTolerance.ToString());
+        SearchTask* searchTaskLoaded = Toml::ReadFile<SearchTask*>("SearchTask.toml", MetaMorpheusTask::tomlConfig);
+        //Toml trw;
+        //toml::Value uhum = trw.tomlReadFile("SearchTask.toml");
+        //MetaMorpheusTask::tomlConfig.push(uhum);
+        //SearchTask* searchTaskLoaded = trw.tomlReadFile("SearchTask.toml")
+        
+        Assert::AreEqual(searchTask->getCommonParameters()->getDeconvolutionMassTolerance(),
+                         searchTaskLoaded->getCommonParameters()->getDeconvolutionMassTolerance());
+        Assert::AreEqual(searchTask->getCommonParameters()->getProductMassTolerance(),
+                         searchTaskLoaded->getCommonParameters()->getProductMassTolerance());
+        Assert::AreEqual(searchTask->getCommonParameters()->getPrecursorMassTolerance(),
+                         searchTaskLoaded->getCommonParameters()->getPrecursorMassTolerance());
+        
+        Assert::AreEqual(searchTask->getCommonParameters()->getListOfModsFixed()->size(),
+                         searchTaskLoaded->getCommonParameters()->getListOfModsFixed()->size());
+        Assert::AreEqual(std::get<0>(searchTask->getCommonParameters()->getListOfModsFixed()->front()),
+                         std::get<0>(searchTaskLoaded->getCommonParameters()->getListOfModsFixed()->front()));
+        Assert::AreEqual(std::get<1>(searchTask->getCommonParameters()->getListOfModsFixed()->front()),
+                         std::get<1>(searchTaskLoaded->getCommonParameters()->getListOfModsFixed()->front()));
+        
+        Assert::AreEqual(searchTask->getCommonParameters()->getListOfModsVariable()->size(),
+                         searchTaskLoaded->getCommonParameters()->getListOfModsVariable()->size());
+#ifdef LATER        
+        Assert::AreEqual(searchTask->getSearchParameters()->getMassDiffAcceptorType(),
+                         searchTaskLoaded->getSearchParameters()->getMassDiffAcceptorType());
+#endif
+        Assert::AreEqual(searchTask->getSearchParameters()->getCustomMdac(),
+                         searchTaskLoaded->getSearchParameters()->getCustomMdac());
+        
+        std::string outputFolder = testdir + "/TestConsistency";
+        std::string myFile = testdir + "/TestData/PrunedDbSpectra.mzml";
+        std::string myDatabase = testdir + "/TestData/DbForPrunedDb.fasta";
 
-		Assert::AreEqual(searchTask->getCommonParameters()->ListOfModsFixed->Count(), searchTaskLoaded->CommonParameters.ListOfModsFixed->Count());
-		Assert::AreEqual(searchTask->getCommonParameters()->ListOfModsFixed.First().Item1, searchTaskLoaded->CommonParameters.ListOfModsFixed.First().Item1);
-		Assert::AreEqual(searchTask->getCommonParameters()->ListOfModsFixed.First().Item2, searchTaskLoaded->CommonParameters.ListOfModsFixed.First().Item2);
+        std::vector<std::tuple<std::string, MetaMorpheusTask*> > tv1 = {std::make_tuple("Search", searchTask)};
+        std::vector<std::string> tv2 = {myFile};
+        std::vector<DbForTask*> tv3 = {new DbForTask(myDatabase, false)};
+        auto engine = new EverythingRunnerEngine(tv1, tv2, tv3, outputFolder);
+        engine->Run();
 
-		Assert::AreEqual(searchTask->getCommonParameters()->ListOfModsVariable->Count(), searchTaskLoaded->CommonParameters.ListOfModsVariable->Count());
+        std::vector<std::tuple<std::string, MetaMorpheusTask*>> tv4 = {std::make_tuple("SearchTOML", searchTaskLoaded)};
+        auto engineToml = new EverythingRunnerEngine(tv4, tv2, tv3, outputFolder);
+        engineToml->Run();
+        
+        //auto results = File::ReadAllLines(outputFolder + "/Search/AllPSMs.psmtsv");
+        std::vector<std::string> results;
+        std::ifstream if1(outputFolder + "/Search/AllPSMs.psmtsv");
+        if ( if1.is_open() ) {
+            std::string line;
+            while ( getline(if1, line ) ){
+                results.push_back(line);
+            }
+        }
+        if1.close();
+        
+        //auto resultsToml = File::ReadAllLines(outputFolder + "/SearchTOML/AllPSMs.psmtsv");
+        std::vector<std::string> resultsToml;
+        std::ifstream if2(outputFolder + "/SearchTOML/AllPSMs.psmtsv");
+        if ( if2.is_open() ) {
+            std::string line;
+            while ( getline(if2, line ) ){
+                resultsToml.push_back(line);
+            }
+        }
+        if2.close();
+        
+        Assert::SequenceEqual(results, resultsToml);
 
-		Assert::AreEqual(searchTask->getSearchParameters()->getMassDiffAcceptorType(), searchTaskLoaded->SearchParameters.MassDiffAcceptorType);
-		Assert::AreEqual(searchTask->getSearchParameters()->getCustomMdac(), searchTaskLoaded->SearchParameters.CustomMdac);
+        CalibrationTask *calibrationTask = new CalibrationTask();
+        Toml::WriteFile(calibrationTask, "CalibrationTask.toml", MetaMorpheusTask::tomlConfig);
+        auto calibrationTaskLoaded = Toml::ReadFile<CalibrationTask*>("CalibrationTask.toml", MetaMorpheusTask::tomlConfig);
 
-		std::string outputFolder = FileSystem::combine(TestContext::CurrentContext->TestDirectory, LR"(TestConsistency)");
-		std::string myFile = FileSystem::combine(TestContext::CurrentContext->TestDirectory, LR"(TestData\PrunedDbSpectra.mzml)");
-		std::string myDatabase = FileSystem::combine(TestContext::CurrentContext->TestDirectory, LR"(TestData\DbForPrunedDb.fasta)");
+#ifdef LATER
+        // GptmdTask will be done later
+        GptmdTask *gptmdTask = new GptmdTask();
+        Toml::WriteFile(gptmdTask, "GptmdTask.toml", MetaMorpheusTask::tomlConfig);
+        GptmdTask* gptmdTaskLoaded = Toml::ReadFile<GptmdTask*>("GptmdTask.toml", MetaMorpheusTask::tomlConfig);
 
-		auto engine = new EverythingRunnerEngine(std::vector<(std::string, MetaMorpheusTask)*> {("Search", searchTask)}, std::vector<std::string> {myFile}, std::vector<DbForTask*> {new DbForTask(myDatabase, false)}, outputFolder);
-		engine->Run();
-		auto engineToml = new EverythingRunnerEngine(std::vector<(std::string, MetaMorpheusTask)*> {("SearchTOML", searchTaskLoaded)}, std::vector<std::string> {myFile}, std::vector<DbForTask*> {new DbForTask(myDatabase, false)}, outputFolder);
-		engineToml->Run();
+        std::vector<std::tuple<std::string, MetaMorpheusTask*>> tv5 = {std::make_tuple("GPTMD", gptmdTask)};
+        std::vector<std::string> tv6 = {myFile};
+        std::vector<DbForTask*> tv7 = {new DbForTask(myDatabase, false)};
+        auto gptmdEngine = new EverythingRunnerEngine(tv5, tv6, tv7, outputFolder);
+        gptmdEngine->Run();
 
-		auto results = File::ReadAllLines(FileSystem::combine(outputFolder, LR"(Search\AllPSMs.psmtsv)"));
-		auto resultsToml = File::ReadAllLines(FileSystem::combine(outputFolder, LR"(SearchTOML\AllPSMs.psmtsv)"));
-		Assert::That(results.SequenceEqual(resultsToml));
+        std::vector<std::tuple<std::string, MetaMorpheusTask*>> tv8 = {make_tuple("GPTMDTOML", gptmdTaskLoaded)};
+        auto gptmdEngineToml = new EverythingRunnerEngine(tv8, tv6, tv7, outputFolder);
+        gptmdEngineToml->Run();
+        
+        //auto gptmdResults = File::ReadAllLines(outputFolder + "/GPTMD/GPTMD_Candidates.psmtsv");
+        std::vector<std::string> gptmdResults;
+        std::ifstream if3(outputFolder + "/GPTMD/GPTMD_Candidates.psmtsv");
+        if ( if3.is_open() ) {
+            std::string line;
+            while ( getline(if3, line ) ){
+                gptmdResults.push_back(line);
+            }
+        }
+        if3.close();
 
-		CalibrationTask *calibrationTask = new CalibrationTask();
-		Toml::WriteFile(calibrationTask, "CalibrationTask.toml", MetaMorpheusTask::tomlConfig);
-		auto calibrationTaskLoaded = Toml::ReadFile<CalibrationTask*>("CalibrationTask.toml", MetaMorpheusTask::tomlConfig);
+        //auto gptmdResultsToml = File::ReadAllLines(outputFolder + "/GPTMDTOML/GPTMD_Candidates.psmtsv");
+        std::vector<std::string> gptmdResultsToml;
+        std::ifstream if4(outputFolder + "/GPTMDTOML/GPTMD_Candidates.psmtsv");
+        if ( if4.is_open() ) {
+            std::string line;
+            while ( getline(if4, line ) ){
+                gptmdResultsToml.push_back(line);
+            }
+        }
+        if4.close();
+        
+        Assert::SequenceEqual(gptmdResults, gptmdResultsToml);
+        
+        XLSearchTask *xLSearchTask = new XLSearchTask();
+        Toml::WriteFile(xLSearchTask, "XLSearchTask.toml", MetaMorpheusTask::tomlConfig);
+        XLSearchTask* xLSearchTaskLoaded = Toml::ReadFile<XLSearchTask*>("XLSearchTask.toml", MetaMorpheusTask::tomlConfig);
+        
+        std::string myFileXl = testdir + "/XlTestData/BSA_DSSO_ETchD6010.mgf";
+        std::string myDatabaseXl = testdir + "/XlTestData/BSA.fasta";
 
-		GptmdTask *gptmdTask = new GptmdTask();
-		Toml::WriteFile(gptmdTask, "GptmdTask.toml", MetaMorpheusTask::tomlConfig);
-		auto gptmdTaskLoaded = Toml::ReadFile<GptmdTask*>("GptmdTask.toml", MetaMorpheusTask::tomlConfig);
+        std::vector<std::tuple<std::string, MetaMorpheusTask*>> tv9 = {std::make_tuple("XLSearch", xLSearchTask)};
+        std::vector<std::string> tv10 = {myFileXl};
+        std::vector<DbForTask*> tv11 = {new DbForTask(myDatabaseXl, false)};
+        auto xlEngine = new EverythingRunnerEngine( tv9, tv10, tv11, outputFolder);
+        xlEngine->Run();
 
-		auto gptmdEngine = new EverythingRunnerEngine(std::vector<(std::string, MetaMorpheusTask)*> {("GPTMD", gptmdTask)}, std::vector<std::string> {myFile}, std::vector<DbForTask*> {new DbForTask(myDatabase, false)}, outputFolder);
-		gptmdEngine->Run();
-		auto gptmdEngineToml = new EverythingRunnerEngine(std::vector<(std::string, MetaMorpheusTask)*> {("GPTMDTOML", gptmdTaskLoaded)}, std::vector<std::string> {myFile}, std::vector<DbForTask*> {new DbForTask(myDatabase, false)}, outputFolder);
-		gptmdEngineToml->Run();
+        std::vector<std::tuple<std::string, MetaMorpheusTask*>> tv12 = {std::make_tuple("XLSearchTOML", xLSearchTaskLoaded)};
+        auto xlEngineToml = new EverythingRunnerEngine( tv12, tv10, tv11, outputFolder);
+        xlEngineToml->Run();
+        
+        //auto xlResults = File::ReadAllLines(outputFolder + "/XLSearch/XL_Intralinks.tsv");
+        std::vector<std::string> xlResults;
+        std::ifstream if5(outputFolder + "/XLSearch/XL_Intralinks.tsv");
+        if ( if5.is_open() ) {
+            std::string line;
+            while ( getline(if5, line ) ){
+                xlResults.push_back(line);
+            }
+        }
+        if5.close();
 
-		auto gptmdResults = File::ReadAllLines(FileSystem::combine(outputFolder, LR"(GPTMD\GPTMD_Candidates.psmtsv)"));
-		auto gptmdResultsToml = File::ReadAllLines(FileSystem::combine(outputFolder, LR"(GPTMDTOML\GPTMD_Candidates.psmtsv)"));
+        //auto xlResultsToml = File::ReadAllLines(outputFolder + "/XLSearchTOML/XL_Intralinks.tsv");
+        std::vector<std::string> xlResultsToml;
+        std::ifstream if6(outputFolder + "/XLSearchTOML/XL_Intralinks.tsv");
+        if ( if6.is_open() ) {
+            std::string line;
+            while ( getline(if6, line ) ){
+                xlResultsToml.push_back(line);
+            }
+        }
+        if6.close();
+        
+        Assert::SequenceEqual(xlResults, xlResultsToml);
+#endif
 
-		Assert::That(gptmdResults.SequenceEqual(gptmdResultsToml));
+        std::experimental::filesystem::remove_all(outputFolder);
+        std::experimental::filesystem::remove(testdir + "/GptmdTask.toml");
+        std::experimental::filesystem::remove(testdir + "/XLSearchTask.toml");
+        std::experimental::filesystem::remove(testdir + "/SearchTask.toml");
+        std::experimental::filesystem::remove(testdir + "/CalibrationTask.toml");
+        
+#ifdef LATER
+        delete xlEngineToml;
+        delete xlEngine;
+        delete xLSearchTask;
+        delete gptmdEngineToml;
+        delete gptmdEngine;
+        delete gptmdTask;
+#endif
+        delete calibrationTask;
+        delete engineToml;
+        delete engine;
+        delete searchTask;
+    }
 
-		XLSearchTask *xLSearchTask = new XLSearchTask();
-		Toml::WriteFile(xLSearchTask, "XLSearchTask.toml", MetaMorpheusTask::tomlConfig);
-		auto xLSearchTaskLoaded = Toml::ReadFile<XLSearchTask*>("XLSearchTask.toml", MetaMorpheusTask::tomlConfig);
+#ifdef LATER
+    void TestToml::TestTomlForSpecficFiles()
+    {
 
-		std::string myFileXl = FileSystem::combine(TestContext::CurrentContext->TestDirectory, LR"(XlTestData\BSA_DSSO_ETchD6010.mgf)");
-		std::string myDatabaseXl = FileSystem::combine(TestContext::CurrentContext->TestDirectory, LR"(XlTestData\BSA.fasta)");
+        std::string testdir=std::experimental::filesystem::current_path().string();
+        
+        auto fileSpecificToml = Toml::ReadFile(testdir+ "/testFileSpecfic.toml", MetaMorpheusTask::tomlConfig);
+        auto tomlSettingsList = fileSpecificToml->ToDictionary([&] (std::any p)
+                                                               {
+                                                                   p::Key;
+                                                               });
+        std::string s1 = "Asp-N";
+        Assert::AreEqual(tomlSettingsList["Protease"].Value->Get<std::string>(), s1);
+        Assert::IsFalse(tomlSettingsList.find("maxMissedCleavages") != tomlSettingsList.end());
+        Assert::IsFalse(tomlSettingsList.find("InitiatorMethionineBehavior") != tomlSettingsList.end());
+        
+        FileSpecificParameters *f = new FileSpecificParameters(fileSpecificToml);
+        
+        Assert::AreEqual(s1, f->getProtease()->getName());
+        Assert::IsFalse(f->getMaxMissedCleavages().has_value());
+        
+        CommonParameters *tempVar = new CommonParameters();
+        CommonParameters *c = MetaMorpheusTask::SetAllFileSpecificCommonParams(tempVar, f);
+        
+        Assert::AreEqual(s1, c->getDigestionParams()->getProtease()->getName());
+        Assert::AreEqual(2, c->getDigestionParams()->getMaxMissedCleavages());
+        
+        delete f;
+    }
+#endif
 
-		auto xlEngine = new EverythingRunnerEngine(std::vector<(std::string, MetaMorpheusTask)*> {("XLSearch", xLSearchTask)}, std::vector<std::string> {myFileXl}, std::vector<DbForTask*> {new DbForTask(myDatabaseXl, false)}, outputFolder);
-		xlEngine->Run();
-		auto xlEngineToml = new EverythingRunnerEngine(std::vector<(std::string, MetaMorpheusTask)*> {("XLSearchTOML", xLSearchTaskLoaded)}, std::vector<std::string> {myFileXl}, std::vector<DbForTask*> {new DbForTask(myDatabaseXl, false)}, outputFolder);
-		xlEngineToml->Run();
-
-		auto xlResults = File::ReadAllLines(FileSystem::combine(outputFolder, LR"(XLSearch\XL_Intralinks.tsv)"));
-		auto xlResultsToml = File::ReadAllLines(FileSystem::combine(outputFolder, LR"(XLSearchTOML\XL_Intralinks.tsv)"));
-
-		Assert::That(xlResults.SequenceEqual(xlResultsToml));
-		Directory::Delete(outputFolder, true);
-		File::Delete(FileSystem::combine(TestContext::CurrentContext->TestDirectory, LR"(GptmdTask.toml)"));
-		File::Delete(FileSystem::combine(TestContext::CurrentContext->TestDirectory, LR"(XLSearchTask.toml)"));
-		File::Delete(FileSystem::combine(TestContext::CurrentContext->TestDirectory, LR"(SearchTask.toml)"));
-		File::Delete(FileSystem::combine(TestContext::CurrentContext->TestDirectory, LR"(CalibrationTask.toml)"));
-
-		delete xlEngineToml;
-		delete xlEngine;
-                delete xLSearchTask;
-		delete gptmdEngineToml;
-		delete gptmdEngine;
-                delete gptmdTask;
-                delete calibrationTask;
-		delete engineToml;
-		delete engine;
-                delete searchTask;
-	}
-
-	void TestToml::TestTomlForSpecficFiles()
-	{
-		auto fileSpecificToml = Toml::ReadFile(FileSystem::combine(TestContext::CurrentContext->TestDirectory, "testFileSpecfic.toml"), MetaMorpheusTask::tomlConfig);
-		auto tomlSettingsList = fileSpecificToml->ToDictionary([&] (std::any p)
-		{
-			p::Key;
-		});
-		Assert::AreEqual(tomlSettingsList["Protease"].Value->Get<std::string>(), "Asp-N");
-		Assert::IsFalse(tomlSettingsList.find("maxMissedCleavages") != tomlSettingsList.end());
-		Assert::IsFalse(tomlSettingsList.find("InitiatorMethionineBehavior") != tomlSettingsList.end());
-
-		FileSpecificParameters *f = new FileSpecificParameters(fileSpecificToml);
-
-		Assert::AreEqual("Asp-N", f->getProtease()->Name);
-		Assert::IsNull(f->getMaxMissedCleavages());
-
-		CommonParameters tempVar();
-		CommonParameters *c = MetaMorpheusTask::SetAllFileSpecificCommonParams(&tempVar, f);
-
-		Assert::AreEqual("Asp-N", c->getDigestionParams()->Protease->Name);
-		Assert::AreEqual(2, c->getDigestionParams()->MaxMissedCleavages);
-
-                delete f;
-	}
 }
