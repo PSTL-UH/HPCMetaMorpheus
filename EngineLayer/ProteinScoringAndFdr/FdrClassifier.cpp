@@ -7,21 +7,21 @@ namespace EngineLayer
 
 	FdrCategory FdrClassifier::GetCleavageSpecificityCategory(CleavageSpecificity *cleavageSpecificity)
 	{
-		if (cleavageSpecificity == CleavageSpecificity::Full)
+		if (*cleavageSpecificity == CleavageSpecificity::Full)
 		{
 			return FdrCategory::FullySpecific;
 		}
-		else if (cleavageSpecificity == CleavageSpecificity::Semi)
+		else if (*cleavageSpecificity == CleavageSpecificity::Semi)
 		{
 			return FdrCategory::SemiSpecific;
 		}
-		else if (cleavageSpecificity == CleavageSpecificity::None)
+		else if (*cleavageSpecificity == CleavageSpecificity::None)
 		{
 			return FdrCategory::NonSpecific;
 		}
 		else
 		{
-			throw NotImplementedException("Cleavage specificity '" + cleavageSpecificity + "' has not been immplemented for local FDR calculations.");
+                    throw NotImplementedException("Cleavage specificity has not been immplemented for local FDR calculations.");
 		}
 	}
 }
