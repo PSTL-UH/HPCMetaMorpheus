@@ -5,9 +5,8 @@
 #include <vector>
 #include "stringbuilder.h"
 
-//C# TO C++ CONVERTER NOTE: Forward class declarations:
-namespace EngineLayer { class ProteinGroup; }
-namespace EngineLayer { class ProteinScoringAndFdrEngine; }
+#include "../ProteinParsimony/ProteinGroup.h"
+#include "ProteinScoringAndFdrEngine.h"
 
 
 namespace EngineLayer

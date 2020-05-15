@@ -10,8 +10,6 @@
 #include "stringhelper.h"
 #include "stringbuilder.h"
 
-//C# TO C++ CONVERTER NOTE: Forward class declarations:
-//namespace EngineLayer { class IScan; }
 #include "IScan.h"
 
 #include "Chemistry/Chemistry.h"
@@ -157,7 +155,6 @@ namespace EngineLayer
         static std::string GetTabSeparatedHeader();
                 
         std::string ToString();
-        //std::string ToString(IReadOnlyDictionary<std::string, int> *ModstoWritePruned);
         std::string ToString(std::unordered_map<std::string, int> *ModstoWritePruned);
         
 
@@ -181,14 +178,12 @@ namespace EngineLayer
         /// This method is used by protein parsimony to remove PeptideWithSetModifications objects
         /// that have non-parsimonious protein associations
         /// </summary>
-        //C# TO C++ CONVERTER TODO TASK: The following line could not be converted:
         void TrimProteinMatches(std::vector<Protein*> parsimoniousProteins);
     
         /// <summary>
         /// This method is used by protein parsimony to add PeptideWithSetModifications objects for
         /// modification-agnostic parsimony
         /// </summary>
-        //C# TO C++ CONVERTER TODO TASK: The following line could not be converted:
         void AddProteinMatch(std::tuple<int, PeptideWithSetModifications*> peptideWithNotch);
     
     private:
@@ -201,42 +196,22 @@ namespace EngineLayer
         /// Notches 1,0,1,0 returns as 1|0|1|0
         /// </summary>
 
-        //C# TO C++ CONVERTER TODO TASK: Methods returning tuples are not converted by C# to C++ Converter:
-        //static(string ResolvedString, ChemicalFormula ResolvedValue) Resolve(IEnumerable<IEnumerable<Modification>> enumerable);
-        // static std::tuple<std::string, ChemicalFormula*> Resolve(std::vector<std::vector<Modification *>> enumerable);
         static std::tuple<std::string, ChemicalFormula*> Resolve(std::vector<Modification *> enumerable);
         
-        //C# TO C++ CONVERTER TODO TASK: Methods returning tuples are not converted by C# to C++ Converter:
-        //static(string ResolvedString, Dictionary<string, int> ResolvedValue) Resolve(IEnumerable<Dictionary<int, Modification>> enumerable);
         static std::tuple<std::string, std::unordered_map<std::string, int>> Resolve(std::vector<std::unordered_map<int, Modification*>> enumerable);
 
-        //C# TO C++ CONVERTER TODO TASK: Methods returning tuples are not converted by C# to C++ Converter:
-        //static(string ResolvedString, Nullable<double> ResolvedValue) ResolveF2(IEnumerable<double> enumerable);
         static std::tuple<std::string, std::optional<double>> ResolveF2(std::vector<double> enumerable);
 
-        //C# TO C++ CONVERTER TODO TASK: Methods returning tuples are not converted by C# to C++ Converter:
-        //static(string ResolvedString, Nullable<double> ResolvedValue) Resolve(IEnumerable<double> enumerable);
         static std::tuple<std::string, std::optional<double>> Resolve(std::vector<double> enumerable);
 
-        //C# TO C++ CONVERTER TODO TASK: Methods returning tuples are not converted by C# to C++ Converter:
-        //static(string ResolvedString, Nullable<int> ResolvedValue) Resolve(IEnumerable<int> enumerable);
         static std::tuple<std::string, std::optional<int>>  Resolve(std::vector<int> enumerable);
         
-        //C# TO C++ CONVERTER TODO TASK: Methods returning tuples are not converted by C# to C++ Converter:
-        //static(string ResolvedString, string ResolvedValue) Resolve(IEnumerable<string> enumerable);
         static std::tuple<std::string, std::string> Resolve(std::vector<std::string> enumerable);
 
-        //C# TO C++ CONVERTER TODO TASK: Methods returning tuples are not converted by C# to C++ Converter:
-        //static(string ResolvedString, string ResolvedValue) Resolve(IEnumerable<string> enumerable, string ambiguousIfNull);
         static std::tuple<std::string, std::string> Resolve(std::vector<std::string> enumerable, std::string ambiguousIfNull);
 
-        //C# TO C++ CONVERTER TODO TASK: The following line could not be converted:
-        //static void AddBasicMatchData(Dictionary<string, string> s, PeptideSpectralMatch psm);
         static void AddBasicMatchData(std::unordered_map<std::string, std::string> &s, PeptideSpectralMatch *psm);
 
-        //C# TO C++ CONVERTER TODO TASK: The following line could not be converted:
-        //static void AddPeptideSequenceData(Dictionary<string, string> s, PeptideSpectralMatch psm,
-        //                                   IReadOnlyDictionary<string, int> ModsToWritePruned);
         static void AddPeptideSequenceData(std::unordered_map<std::string, std::string> s,
                                            PeptideSpectralMatch *psm,
                                            std::unordered_map<std::string, int> *ModsToWritePruned);
@@ -247,7 +222,6 @@ namespace EngineLayer
         /// <param name="pep"></param>
         /// <param name="site"></param>
         /// <returns></returns>
-        //C# TO C++ CONVERTER TODO TASK: The following line could not be converted:
         static bool Includes(PeptideWithSetModifications *pep, SpliceSite *site);
             
         /// <summary>
@@ -256,7 +230,6 @@ namespace EngineLayer
         /// <param name="pep"></param>
         /// <param name="appliedVariation"></param>
         /// <returns></returns>
-        //C# TO C++ CONVERTER TODO TASK: The following line could not be converted:
         static bool IntersectsWithVariation(PeptideWithSetModifications *pep, SequenceVariation *appliedVariation,
                                             bool checkUnique);
 
@@ -266,19 +239,13 @@ namespace EngineLayer
         /// <param name="p"></param>
         /// <param name="d"></param>
         /// <returns></returns>
-        //C# TO C++ CONVERTER TODO TASK: The following line could not be converted:
         static std::string SequenceVariantString(PeptideWithSetModifications *p, SequenceVariation *applied);
 
 
-        //C# TO C++ CONVERTER TODO TASK: Local functions are not converted by C# to C++ Converter:
-        //static void AddMatchScoreData(Dictionary<string, string> s, PeptideSpectralMatch peptide)
         static void AddMatchScoreData(std::unordered_map<std::string, std::string> s, PeptideSpectralMatch *peptide);
 
     public:
-        //C# TO C++ CONVERTER TODO TASK: The following line could not be converted:
-        //static void AddMatchedIonsData(Dictionary<string, string> s, PeptideSpectralMatch psm);
         static void AddMatchedIonsData(std::unordered_map<std::string, std::string> &s, PeptideSpectralMatch *psm);
-
         
     };
 }
