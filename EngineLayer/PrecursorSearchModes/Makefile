@@ -19,15 +19,13 @@ HEADER =  AllowedIntervalWithNotch.h                 \
 
 
 OBJ = 	  AllowedIntervalWithNotch.o                 \
-	  MassDiffAcceptor.o                         
-
-#         IntervalMassDiffAcceptor.o                 \
-#	  SingleAbsoluteAroundZeroMassDiffAcceptor.o \
-#	  DotMassDiffAcceptor.o                      \
-#	  LowTheoreticalDiffAcceptor.o               \
-#	  OpenMassDiffAcceptor.o                     \
-#	  SinglePpmAroundZeroMassDiffAcceptor.o
-
+	  MassDiffAcceptor.o                         \
+	  DotMassDiffAcceptor.o                      \
+	  IntervalMassDiffAcceptor.o                 \
+	  SingleAbsoluteAroundZeroMassDiffAcceptor.o \
+	  LowTheoreticalDiffAcceptor.o               \
+	  OpenMassDiffAcceptor.o                     \
+	  SinglePpmAroundZeroMassDiffAcceptor.o
 
 
 .SUFFIXES: .o.cpp

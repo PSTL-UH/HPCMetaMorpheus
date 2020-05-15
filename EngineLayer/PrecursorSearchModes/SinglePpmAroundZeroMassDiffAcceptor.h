@@ -5,28 +5,27 @@
 #include <vector>
 #include <cmath>
 
-//C# TO C++ CONVERTER NOTE: Forward class declarations:
-namespace EngineLayer { class AllowedIntervalWithNotch; }
+#include "AllowedIntervalWithNotch.h"
 
 using namespace MzLibUtil;
 
 namespace EngineLayer
 {
-	class SinglePpmAroundZeroSearchMode : public MassDiffAcceptor
-	{
-	private:
-		const double PpmTolerance;
-
-	public:
-		SinglePpmAroundZeroSearchMode(double ppmTolerance);
-
-		int Accepts(double scanPrecursorMass, double peptideMass) override;
-
-		std::vector<AllowedIntervalWithNotch*> GetAllowedPrecursorMassIntervalsFromTheoreticalMass(double peptideMonoisotopicMass) override;
-		std::vector<AllowedIntervalWithNotch*> GetAllowedPrecursorMassIntervalsFromObservedMass(double peptideMonoisotopicMass) override;
-
-		std::string ToProseString() override;
-
-		std::string ToString();
-	};
+    class SinglePpmAroundZeroSearchMode : public MassDiffAcceptor
+    {
+    private:
+        const double PpmTolerance;
+        
+    public:
+        SinglePpmAroundZeroSearchMode(double ppmTolerance);
+        
+        int Accepts(double scanPrecursorMass, double peptideMass) override;
+        
+        std::vector<AllowedIntervalWithNotch*> GetAllowedPrecursorMassIntervalsFromTheoreticalMass(double peptideMonoisotopicMass) override;
+        std::vector<AllowedIntervalWithNotch*> GetAllowedPrecursorMassIntervalsFromObservedMass(double peptideMonoisotopicMass) override;
+        
+        std::string ToProseString() override;
+        
+        std::string ToString();
+    };
 }

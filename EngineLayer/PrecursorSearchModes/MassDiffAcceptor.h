@@ -3,8 +3,6 @@
 #include <string>
 #include <vector>
 
-//C# TO C++ CONVERTER NOTE: Forward class declarations:
-//namespace EngineLayer { class AllowedIntervalWithNotch; }
 #include "AllowedIntervalWithNotch.h"
 
 namespace EngineLayer

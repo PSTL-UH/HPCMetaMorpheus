@@ -4,8 +4,8 @@
 #include <string>
 #include <vector>
 
-//C# TO C++ CONVERTER NOTE: Forward class declarations:
-namespace EngineLayer { class AllowedIntervalWithNotch; }
+#include "MzLibUtil.h"
+#include "AllowedIntervalWithNotch.h"
 
 using namespace MzLibUtil;
 
@@ -14,13 +14,13 @@ namespace EngineLayer
 	class DotMassDiffAcceptor : public MassDiffAcceptor
 	{
 	private:
-		std::vector<double> const AcceptableSortedMassShifts;
-		Tolerance *const Tolerance;
+		std::vector<double> AcceptableSortedMassShifts;
+		Tolerance * const tolerance;
 
 	public:
 		virtual ~DotMassDiffAcceptor()
 		{
-			delete Tolerance;
+			delete tolerance;
 		}
 
 		DotMassDiffAcceptor(const std::string &FileNameAddition, std::vector<double> &acceptableMassShifts, Tolerance *tol);
