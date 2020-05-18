@@ -11,6 +11,13 @@
 #include "../../EngineLayer/PeptideSpectralMatch.h"
 #include "../../EngineLayer/CrosslinkSearch/PsmCrossType.h"
 
+#include "MassSpectrometry/Enums/DissociationType.h"
+
+#include "pepXML/pepXML_v120.h"
+#include "stringhelper.h"
+#include "time.h"
+
+
 using namespace EngineLayer;
 using namespace EngineLayer::CrosslinkSearch;
 using namespace EngineLayer::Indexing;
@@ -206,12 +213,21 @@ namespace TaskLayer
             for (int currentPartition = 0; currentPartition < getCommonParameters()->getTotalPartitions(); currentPartition++)
             {
                 std::vector<PeptideWithSetModifications*> peptideIndex;
+#ifdef ORIG
                 std::vector<Protein*> proteinListSubset = proteinList.GetRange(currentPartition * proteinList.size() /
                                                                                combinedParams->getTotalPartitions(),
                                                                                ((currentPartition + 1) * proteinList.size() /
                                                                                 combinedParams->getTotalPartitions()) -
                                                                                (currentPartition * proteinList.size() /
                                                                                 combinedParams->getTotalPartitions()));
+#endif
+                int start = currentPartition * proteinList.size() / combinedParams->getTotalPartitions();
+                int count = ((currentPartition + 1) * proteinList.size() / combinedParams->getTotalPartitions()) -
+                    (currentPartition * proteinList.size() /combinedParams->getTotalPartitions());
+                std::vector<Protein*> proteinListSubset;
+                for ( auto p=0; p<count; p++ ) {
+                    proteinListSubset.push_back(proteinList[start+p]);
+                }
                 
                 std::vector<std::string> vs = {taskId};
                 Status("Getting fragment dictionary...", vs);
@@ -755,8 +771,9 @@ namespace TaskLayer
             return;
         }
         
-        StreamWriter output = StreamWriter(filePath);
-        std::string header = "";
+        //StreamWriter output = StreamWriter(filePath);
+        std::ofstream output (filePath);
+        std::string header;
         switch (writeType)
         {
             case 1:
@@ -768,24 +785,29 @@ namespace TaskLayer
             default:
                 break;
         }
-        output.WriteLine(header);
+        output << header << std::endl;
         for (auto heh : items)
         {
-            output.WriteLine(heh->ToString());
+            output << heh->ToString() << std::endl;
         }
     }
     
-    void XLSearchTask::WriteCrosslinkToTxtForPercolator(std::vector<CrosslinkSpectralMatch*> &items, const std::string &outputFolder, const std::string &fileName, Crosslinker *crosslinker, std::vector<std::string> &nestedIds)
+    void XLSearchTask::WriteCrosslinkToTxtForPercolator(std::vector<CrosslinkSpectralMatch*> &items, const std::string &outputFolder,
+                                                        const std::string &fileName, Crosslinker *crosslinker,
+                                                        std::vector<std::string> &nestedIds)
     {
         if (items.empty())
         {
             return;
         }
-        auto writtenFile = FileSystem::combine(outputFolder, fileName + ".txt");
+        std::string writtenFile = outputFolder + "/" + fileName + ".txt";
 
         {
-            StreamWriter output = StreamWriter(writtenFile);
-            output.WriteLine(std::string("SpecId\tLabel\tScannr\tScore\tdScore\tNormRank\tCharge\tMass\tPPM\tLenShort\tLenLong\tLenSum") + "\tPeptide\tProtein");
+            std::ofstream output(writtenFile);
+            std::string s = "SpecId\tLabel\tScannr\tScore\tdScore\tNormRank\tCharge\tMass\tPPM\tLenShort\tLenLong\tLenSum";
+            std::string s2 = "\tPeptide\tProtein";
+            output << s << s2 << std::endl;
+            
             for (auto item : items)
             {
                 if (item->getBaseSequence() != "" && item->getBetaPeptide()->getBaseSequence() != "" && item->getProteinAccession() != "" && item->getBetaPeptide()->getProteinAccession() != "")
@@ -798,52 +820,72 @@ namespace TaskLayer
                         label = -1;
                     }
                     
-                    output.WriteLine(x + "-" + item->getScanNumber().ToString() + "-" +
-                                     item->getScanRetentionTime().ToString() + "\t" +
-                                     label.ToString() + "\t" +
-                                     item->getScanNumber().ToString() + "\t" +
-                                     item->getXLTotalScore().ToString() + "\t" +
-                                     item->getDeltaScore().ToString() + "\t" +
-                                     (item->getXlRank()[0] + item->getXlRank()[1]).ToString() + "\t" +
-                                     item->getScanPrecursorCharge().ToString() + "\t" +
-                                     item->getScanPrecursorMass().ToString() + "\t" +
-                                     ((item->getPeptideMonisotopicMass().HasValue &&
-                                       item->getBetaPeptide()->getPeptideMonisotopicMass().HasValue) ?
-                                      ((item->getScanPrecursorMass() - item->getBetaPeptide()->getPeptideMonisotopicMass().Value -
-                                        item->getPeptideMonisotopicMass().Value - crosslinker->getTotalMass()) /
-                                       item->getScanPrecursorMass() * 1E6).ToString() : "---") + "\t" +
-                                     item->getBetaPeptide()->getBaseSequence().length().ToString() + "\t"
-                                     + item->getBaseSequence().length().ToString() + "\t" +
-                                     (item->getBetaPeptide()->getBaseSequence().length() +
-                                      item->getBaseSequence().length()).ToString() + "\t" + "-." +
-                                     item->getBaseSequence() + item->getLinkPositions().front().ToString() + "--" +
-                                     item->getBetaPeptide()->getBaseSequence() +
-                                     item->getBetaPeptide()->getLinkPositions().front().ToString() + ".-" + "\t" +
-                                     item->BestMatchingPeptides.First().Peptide.Protein.Accession.ToString() + "(" +
-                                     item->getXlProteinPos().ToString() + ")" + "\t" +
-                                     item->getBetaPeptide()->BestMatchingPeptides.First().Peptide.Protein.Accession.ToString() +
-                                     "(" + item->getBetaPeptide()->getXlProteinPos().ToString() + ")");
+                    output << x + "-" + std::to_string(item->getScanNumber()) + "-" +
+                        std::to_string(item->getScanRetentionTime()) + "\t" +
+                        std::to_string(label) + "\t" +
+                        std::to_string(item->getScanNumber()) + "\t" +
+                        std::to_string(item->getXLTotalScore()) + "\t" +
+                        std::to_string(item->getDeltaScore()) + "\t" +
+                        std::to_string(item->getXlRank()[0] + item->getXlRank()[1])+ "\t" +
+                        std::to_string(item->getScanPrecursorCharge()) + "\t" +
+                        std::to_string(item->getScanPrecursorMass()) + "\t" +
+                        ((item->getPeptideMonisotopicMass().has_value() &&
+                          item->getBetaPeptide()->getPeptideMonisotopicMass().has_value() ) ?
+                         std::to_string((item->getScanPrecursorMass() - item->getBetaPeptide()->getPeptideMonisotopicMass().value() -
+                           item->getPeptideMonisotopicMass().value() - crosslinker->getTotalMass()) /
+                                        item->getScanPrecursorMass() * 1E6) : "---") + "\t" +
+                        std::to_string(item->getBetaPeptide()->getBaseSequence().length()) + "\t"
+                        + std::to_string(item->getBaseSequence().length()) + "\t" +
+                        std::to_string(item->getBetaPeptide()->getBaseSequence().length() +
+                                       item->getBaseSequence().length()) + "\t" + "-." +
+                        item->getBaseSequence() + std::to_string(item->getLinkPositions().front()) + "--" +
+                        item->getBetaPeptide()->getBaseSequence() +
+                        std::to_string(item->getBetaPeptide()->getLinkPositions().front()) + ".-" + "\t" +
+                        std::get<1>(item->getBestMatchingPeptides().front())->getProtein()->getAccession() + "(" +
+                        std::to_string(item->getXlProteinPos()) + ")" + "\t" +
+                        std::get<1>(item->getBetaPeptide()->getBestMatchingPeptides().front())->getProtein()->getAccession() +
+                        "(" + std::to_string(item->getBetaPeptide()->getXlProteinPos()) + ")" << std::endl;
                 }
             }
         }
         FinishedWritingFile(writtenFile, nestedIds);
     }
 
-    void XLSearchTask::WritePepXML_xl(std::vector<CrosslinkSpectralMatch*> &items, std::vector<Protein*> &proteinList, const std::string &databasePath, std::vector<Modification*> &variableModifications, std::vector<Modification*> &fixedModifications, std::vector<std::string> &localizeableModificationTypes, const std::string &outputFolder, const std::string &fileName, std::vector<std::string> &nestedIds)
+    void XLSearchTask::WritePepXML_xl(std::vector<CrosslinkSpectralMatch*> &items,
+                                      std::vector<Protein*> &proteinList,
+                                      const std::string &databasePath,
+                                      std::vector<Modification*> &variableModifications,
+                                      std::vector<Modification*> &fixedModifications,
+                                      std::vector<std::string> &localizeableModificationTypes,
+                                      const std::string &outputFolder,
+                                      const std::string &fileName,
+                                      std::vector<std::string> &nestedIds)
     {
-        if (!items.Any())
+        if (items.empty())
         {
             return;
         }
         
-        XmlSerializer *_indexedSerializer = new XmlSerializer(pepXML::Generated::msms_pipeline_analysis::typeid);
-        auto _pepxml = new pepXML::Generated::msms_pipeline_analysis();
+        //XmlSerializer *_indexedSerializer = new XmlSerializer(pepXML::Generated::msms_pipeline_analysis::typeid);
+        //auto _pepxml = new pepXML::Generated::msms_pipeline_analysis();
+        auto _pepxml = new pepXML::msms_pipeline_analysis();
         
-        _pepxml->date = DateTime::Now;
-        _pepxml->summary_xml = items[0]->getFullFilePath() + ".pep.XM";
+        //_pepxml->date = DateTime::Now;
+        //_pepxml->summary_xml = items[0]->getFullFilePath() + ".pep.XM";
+        time_t timer;
+        time(&timer);
+        struct tm *tmi = localtime(&timer);
+
+        short zone_hours=0;
+        short zone_minutes=0;
+
+        ::xml_schema::date_time *dt = new ::xml_schema::date_time(tmi->tm_year, tmi->tm_mon, tmi->tm_mday, tmi->tm_hour,
+                                                                  tmi->tm_min, (double)tmi->tm_sec, zone_hours, zone_minutes);
+        _pepxml->date() = *dt;
+        _pepxml->summary_xml() = items[0]->getFullFilePath() + ".pep.XML";
         
-        std::string proteaseC = "";
-        std::string proteaseNC = "";
+        
+#ifdef ORIG
         for (auto x : getCommonParameters()->getDigestionParams()->Protease.DigestionMotifs->Select([&] (std::any m) {
                     m::InducingCleavage;
                 }))
@@ -856,170 +898,217 @@ namespace TaskLayer
         {
             proteaseNC += x;
         }
+#endif
+        std::string proteaseC;
+        std::string proteaseNC;
+        for ( auto m : getCommonParameters()->getDigestionParams()->getProtease()->getDigestionMotifs() ) {
+            proteaseC += m->InducingCleavage;
+        }
+        for ( auto m : getCommonParameters()->getDigestionParams()->getProtease()->getDigestionMotifs() ) {
+            proteaseNC += m->PreventingCleavage;
+        }
 
-        Crosslinker tempVar();
-        Crosslinker *crosslinker = (&tempVar)->SelectCrosslinker(getXlSearchParameters()->getCrosslinkerType());
+        auto  tempVar = new Crosslinker();
+        Crosslinker *crosslinker = tempVar->SelectCrosslinker(getXlSearchParameters()->getCrosslinkerType());
         if (getXlSearchParameters()->getCrosslinkerType() == CrosslinkerType::UserDefined)
         {
             crosslinker = GenerateUserDefinedCrosslinker(getXlSearchParameters());
         }
         
-        std::string fileNameNoExtension = Path::GetFileNameWithoutExtension(items[0]->getFullFilePath());
-        std::string filePathNoExtension = Path::ChangeExtension(items[0]->getFullFilePath(), "");
+        //std::string fileNameNoExtension = Path::GetFileNameWithoutExtension(items[0]->getFullFilePath());
+        std::string temps = items[0]->getFullFilePath();
+        std::string fileNameNoExtension = temps.substr(0, temps.find_last_of("."));
+        std::string filePathNoExtension = temps.substr(0, temps.find_last_of("/"));
 
-        std::string modSites = crosslinker->getCrosslinkerModSites().ToCharArray().Concat(crosslinker->getCrosslinkerModSites2().ToCharArray())->Distinct().ToString();
+        //std::string modSites = crosslinker->getCrosslinkerModSites().ToCharArray().Concat(crosslinker->getCrosslinkerModSites2().ToCharArray())->Distinct().ToString();
+        std::string s1 = crosslinker->getCrosslinkerModSites();
+        std::string s2 = crosslinker->getCrosslinkerModSites2();
+        std::vector<char> vs1 (s1.begin(), s1.end() );
+        std::vector<char> vs2 (s2.begin(), s2.end() );
 
-        auto para = std::vector<pepXML::Generated::nameValueType*>();
+        std::vector<char> modChars = vs1;
+        modChars.insert(modChars.end(), vs2.begin(), vs2.end() );
+        std::sort ( modChars.begin(), modChars.end() );
+        auto last = std::unique(modChars.begin(), modChars.end() );
+        modChars.erase(last, modChars.end() );
+        std::string modSites(modChars.begin(), modChars.end());
+        
+        //auto para = std::vector<pepXML::nameValueType*>();
+        auto para = new pepXML::search_summary::parameter_sequence();
         {
-            pepXML::Generated::nameValueType *tempVar2 = new pepXML::Generated::nameValueType();
-            tempVar2->name = "threads";
-            tempVar2->value = std::to_string(getCommonParameters()->getMaxThreadsToUsePerFile());
-            para.push_back(tempVar2);
-            pepXML::Generated::nameValueType *tempVar3 = new pepXML::Generated::nameValueType();
-            tempVar3->name = "database";
-            tempVar3->value = databasePath;
-            para.push_back(tempVar3);
-            pepXML::Generated::nameValueType *tempVar4 = new pepXML::Generated::nameValueType();
-            tempVar4->name = "MS_data_file";
-            tempVar4->value = items[0]->getFullFilePath();
-            para.push_back(tempVar4);
-            pepXML::Generated::nameValueType *tempVar5 = new pepXML::Generated::nameValueType();
-            tempVar5->name = "Cross-link precursor Mass Tolerance";
+            pepXML::nameValueType *tempVar2 = new pepXML::nameValueType();
+            tempVar2->name() = "threads";
+            tempVar2->value() = std::to_string(getCommonParameters()->getMaxThreadsToUsePerFile());
+            para->push_back(*tempVar2);
 
-            tempVar5->value = getCommonParameters()->getPrecursorMassTolerance()->ToString();
-            para.push_back(tempVar5);
-            pepXML::Generated::nameValueType *tempVar6 = new pepXML::Generated::nameValueType();
-            tempVar6->name = "Cross-linker type";
-            tempVar6->value = crosslinker->getCrosslinkerName();
-            para.push_back(tempVar6);
-            pepXML::Generated::nameValueType *tempVar7 = new pepXML::Generated::nameValueType();
-            tempVar7->name = "Cross-linker mass";
-            tempVar7->value = std::to_string(crosslinker->getTotalMass());
-            para.push_back(tempVar7);
-            pepXML::Generated::nameValueType *tempVar8 = new pepXML::Generated::nameValueType();
-            tempVar8->name = "Cross-linker cleavable";
-            tempVar8->value = StringHelper::toString(crosslinker->getCleavable());
-            para.push_back(tempVar8);
-            pepXML::Generated::nameValueType *tempVar9 = new pepXML::Generated::nameValueType();
-            tempVar9->name = "Cross-linker cleavable long mass";
-            tempVar9->value = std::to_string(crosslinker->getCleaveMassLong());
-            para.push_back(tempVar9);
-            pepXML::Generated::nameValueType *tempVar10 = new pepXML::Generated::nameValueType();
-            tempVar10->name = "Cross-linker cleavable short mass";
-            tempVar10->value = std::to_string(crosslinker->getCleaveMassShort());
-            para.push_back(tempVar10);
-            pepXML::Generated::nameValueType *tempVar11 = new pepXML::Generated::nameValueType();
-            tempVar11->name = "Cross-linker xl site";
-            tempVar11->value = modSites;
-            para.push_back(tempVar11);
+            pepXML::nameValueType *tempVar3 = new pepXML::nameValueType();
+            tempVar3->name() = "database";
+            tempVar3->value() = databasePath;
+            para->push_back(*tempVar3);
+
+            pepXML::nameValueType *tempVar4 = new pepXML::nameValueType();
+            tempVar4->name() = "MS_data_file";
+            tempVar4->value() = items[0]->getFullFilePath();
+            para->push_back(*tempVar4);
+
+            pepXML::nameValueType *tempVar5 = new pepXML::nameValueType();
+            tempVar5->name() = "Cross-link precursor Mass Tolerance";
+            tempVar5->value() = std::to_string(getCommonParameters()->getPrecursorMassTolerance()->getValue());
+            para->push_back(*tempVar5);
+
+            pepXML::nameValueType *tempVar6 = new pepXML::nameValueType();
+            tempVar6->name() = "Cross-linker type";
+            tempVar6->value() = crosslinker->getCrosslinkerName();
+            para->push_back(*tempVar6);
+
+            pepXML::nameValueType *tempVar7 = new pepXML::nameValueType();
+            tempVar7->name() = "Cross-linker mass";
+            tempVar7->value() = std::to_string(crosslinker->getTotalMass());
+            para->push_back(*tempVar7);
+
+            pepXML::nameValueType *tempVar8 = new pepXML::nameValueType();
+            tempVar8->name() = "Cross-linker cleavable";
+            tempVar8->value() = StringHelper::toString(crosslinker->getCleavable());
+            para->push_back(*tempVar8);
+
+            pepXML::nameValueType *tempVar9 = new pepXML::nameValueType();
+            tempVar9->name() = "Cross-linker cleavable long mass";
+            tempVar9->value() = std::to_string(crosslinker->getCleaveMassLong());
+            para->push_back(*tempVar9);
+
+            pepXML::nameValueType *tempVar10 = new pepXML::nameValueType();
+            tempVar10->name() = "Cross-linker cleavable short mass";
+            tempVar10->value() = std::to_string(crosslinker->getCleaveMassShort());
+            para->push_back(*tempVar10);
+
+            pepXML::nameValueType *tempVar11 = new pepXML::nameValueType();
+            tempVar11->name() = "Cross-linker xl site";
+            tempVar11->value() = modSites;
+            para->push_back(*tempVar11);
             
-            pepXML::Generated::nameValueType *tempVar12 = new pepXML::Generated::nameValueType();
-            tempVar12->name = "Generate decoy proteins";
+            pepXML::nameValueType *tempVar12 = new pepXML::nameValueType();
+            tempVar12->name() = "Generate decoy proteins";
+            auto tempVar12a = getXlSearchParameters()->getDecoyType();
+            tempVar12->value() = DecoyTypeToString(tempVar12a);
+            para->push_back(*tempVar12);
 
-            tempVar12->value = getXlSearchParameters()->getDecoyType()->ToString();
-            para.push_back(tempVar12);
-            pepXML::Generated::nameValueType *tempVar13 = new pepXML::Generated::nameValueType();
-            tempVar13->name = "MaxMissed Cleavages";
-            
-            tempVar13->value = getCommonParameters()->getDigestionParams()->MaxMissedCleavages.ToString();
-            para.push_back(tempVar13);
-            pepXML::Generated::nameValueType *tempVar14 = new pepXML::Generated::nameValueType();
-            tempVar14->name = "Protease";
-            tempVar14->value = getCommonParameters()->getDigestionParams()->Protease->Name;
-            para.push_back(tempVar14);
-            pepXML::Generated::nameValueType *tempVar15 = new pepXML::Generated::nameValueType();
-            tempVar15->name = "Initiator Methionine";
+            pepXML::nameValueType *tempVar13 = new pepXML::nameValueType();
+            tempVar13->name() = "MaxMissed Cleavages";            
+            tempVar13->value() = std::to_string(getCommonParameters()->getDigestionParams()->getMaxMissedCleavages());
+            para->push_back(*tempVar13);
 
-            tempVar15->value = getCommonParameters()->getDigestionParams()->InitiatorMethionineBehavior.ToString();
-            para.push_back(tempVar15);
-            pepXML::Generated::nameValueType *tempVar16 = new pepXML::Generated::nameValueType();
-            tempVar16->name = "Max Modification Isoforms";
+            pepXML::nameValueType *tempVar14 = new pepXML::nameValueType();
+            tempVar14->name() = "Protease";
+            tempVar14->value() = getCommonParameters()->getDigestionParams()->getProtease()->getName();
+            para->push_back(*tempVar14);
 
-            tempVar16->value = getCommonParameters()->getDigestionParams()->MaxModificationIsoforms.ToString();
-            para.push_back(tempVar16);
-            pepXML::Generated::nameValueType *tempVar17 = new pepXML::Generated::nameValueType();
-            tempVar17->name = "Min Peptide Len";
+            pepXML::nameValueType *tempVar15 = new pepXML::nameValueType();
+            tempVar15->name() = "Initiator Methionine";
+            auto tmpVar15a = getCommonParameters()->getDigestionParams()->getInitiatorMethionineBehavior();
+            tempVar15->value() = InitiatorMethionineBehaviorToString(tmpVar15a);
+            para->push_back(*tempVar15);
 
-            tempVar17->value = getCommonParameters()->getDigestionParams()->MinPeptideLength.ToString();
-            para.push_back(tempVar17);
-            pepXML::Generated::nameValueType *tempVar18 = new pepXML::Generated::nameValueType();
-            tempVar18->name = "Max Peptide Len";
+            pepXML::nameValueType *tempVar16 = new pepXML::nameValueType();
+            tempVar16->name() = "Max Modification Isoforms";
+            tempVar16->value() = std::to_string(getCommonParameters()->getDigestionParams()->getMaxModificationIsoforms());
+            para->push_back(*tempVar16);
 
-            tempVar18->value = getCommonParameters()->getDigestionParams()->MaxPeptideLength.ToString();
-            para.push_back(tempVar18);
-            pepXML::Generated::nameValueType *tempVar19 = new pepXML::Generated::nameValueType();
-            tempVar19->name = "Product Mass Tolerance";
+            pepXML::nameValueType *tempVar17 = new pepXML::nameValueType();
+            tempVar17->name() = "Min Peptide Len";
+            tempVar17->value() = std::to_string(getCommonParameters()->getDigestionParams()->getMinPeptideLength());
+            para->push_back(*tempVar17);
 
-            tempVar19->value = getCommonParameters()->getProductMassTolerance()->ToString();
-            para.push_back(tempVar19);
-            pepXML::Generated::nameValueType *tempVar20 = new pepXML::Generated::nameValueType();
-            tempVar20->name = "Ions to search";
-            tempVar20->value = std::string::Join(", ", DissociationTypeCollection::ProductsFromDissociationType[getCommonParameters()->getDissociationType()]);
-            para.push_back(tempVar20);
+            pepXML::nameValueType *tempVar18 = new pepXML::nameValueType();
+            tempVar18->name() = "Max Peptide Len";
+            tempVar18->value() = std::to_string(getCommonParameters()->getDigestionParams()->getMaxPeptideLength());
+            para->push_back(*tempVar18);
+
+            pepXML::nameValueType *tempVar19 = new pepXML::nameValueType();
+            tempVar19->name() = "Product Mass Tolerance";
+            tempVar19->value() = std::to_string(getCommonParameters()->getProductMassTolerance()->getValue());
+            para->push_back(*tempVar19);
+
+            pepXML::nameValueType *tempVar20 = new pepXML::nameValueType();
+            tempVar20->name() = "Ions to search";
+            std::vector<ProductType> tempVar20a = DissociationTypeCollection::ProductsFromDissociationType[getCommonParameters()->getDissociationType()];
+            std::string tempVar20s="";
+            for ( auto p: tempVar20a ) {
+                tempVar20s += Proteomics::Fragmentation::ProductTypeToString(p) + ", ";
+            }
+            tempVar20->value() = tempVar20s;
+            para->push_back(*tempVar20);
             
             for (auto fixedMod : fixedModifications)
             {
-                pepXML::Generated::nameValueType *tempVar21 = new pepXML::Generated::nameValueType();
-                tempVar21->name = "Fixed Modifications: " + fixedMod->IdWithMotif;
-                tempVar21->value = fixedMod->MonoisotopicMass.ToString();
-                para.push_back(tempVar21);
+                pepXML::nameValueType *tempVar21 = new pepXML::nameValueType();
+                tempVar21->name() = "Fixed Modifications: " + fixedMod->getIdWithMotif();
+                tempVar21->value() = std::to_string(fixedMod->getMonoisotopicMass().value());
+                para->push_back(*tempVar21);
             }
             for (auto variableMod : variableModifications)
             {
-                pepXML::Generated::nameValueType *tempVar22 = new pepXML::Generated::nameValueType();
-                tempVar22->name = "Variable Modifications: " + variableMod->IdWithMotif;
-                tempVar22->value = variableMod->MonoisotopicMass.ToString();
-                para.push_back(tempVar22);
+                pepXML::nameValueType *tempVar22 = new pepXML::nameValueType();
+                tempVar22->name() = "Variable Modifications: " + variableMod->getIdWithMotif();
+                tempVar22->value() = std::to_string(variableMod->getMonoisotopicMass().value());
+                para->push_back(*tempVar22);
             }
             
-            pepXML::Generated::nameValueType *tempVar23 = new pepXML::Generated::nameValueType();
-            tempVar23->name = "Localize All Modifications";
-            tempVar23->value = "true";
-            para.push_back(tempVar23);
+            pepXML::nameValueType *tempVar23 = new pepXML::nameValueType();
+            tempVar23->name() = "Localize All Modifications";
+            tempVar23->value() = "true";
+            para->push_back(*tempVar23);
         }
         
-        pepXML::Generated::msms_pipeline_analysisMsms_run_summary *tempVar24 = new pepXML::Generated::msms_pipeline_analysisMsms_run_summary();
-        tempVar24->base_name = filePathNoExtension;
-        tempVar24->raw_data_type = "raw";
-        tempVar24->raw_data = ".mzM";
-        tempVar24->sample_enzyme = new pepXML::Generated::msms_pipeline_analysisMsms_run_summarySample_enzyme();
-        tempVar24->sample_enzyme->name = getCommonParameters()->getDigestionParams()->Protease->Name;
-        pepXML::Generated::msms_pipeline_analysisMsms_run_summarySample_enzymeSpecificity *tempVar25 = new pepXML::Generated::msms_pipeline_analysisMsms_run_summarySample_enzymeSpecificity();
-        tempVar25->cut = proteaseC;
-        tempVar25->no_cut = proteaseNC;
-        tempVar24->sample_enzyme->specificity = {tempVar25};
-        pepXML::Generated::msms_pipeline_analysisMsms_run_summarySearch_summary *tempVar26 = new pepXML::Generated::msms_pipeline_analysisMsms_run_summarySearch_summary();
-        tempVar26->base_name = filePathNoExtension;
-        tempVar26->search_engine_version = GlobalVariables::getMetaMorpheusVersion();
-        tempVar26->precursor_mass_type = pepXML::Generated::massType::monoisotopic;
-        tempVar26->fragment_mass_type = pepXML::Generated::massType::monoisotopic;
-        tempVar26->search_id = 1;
-        tempVar26->search_database = new pepXML::Generated::msms_pipeline_analysisMsms_run_summarySearch_summarySearch_database();
-        tempVar26->search_database->local_path = databasePath;
-        tempVar26->search_database->type = pepXML::Generated::msms_pipeline_analysisMsms_run_summarySearch_summarySearch_databaseType::AA;
-        tempVar26->enzymatic_search_constraint = new pepXML::Generated::msms_pipeline_analysisMsms_run_summarySearch_summaryEnzymatic_search_constraint();
-        tempVar26->enzymatic_search_constraint->enzyme = getCommonParameters()->getDigestionParams()->Protease->Name;
-//C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
-        tempVar26->enzymatic_search_constraint->max_num_internal_cleavages = getCommonParameters()->getDigestionParams()->MaxMissedCleavages.ToString();
-        tempVar26->parameter = para.ToArray();
-        tempVar24->search_summary = {tempVar26};
-        _pepxml->msms_run_summary = {tempVar24};
-        
-        _pepxml->msms_run_summary[0]->spectrum_query = std::vector<pepXML::Generated::msms_pipeline_analysisMsms_run_summarySpectrum_query*>(items.size());
-        
-        auto searchHits = std::vector<pepXML::Generated::msms_pipeline_analysisMsms_run_summarySpectrum_querySearch_resultSearch_hit*>();
-        for (int i = 0; i < items.size(); i++)
-        {
-            auto mods = std::vector<pepXML::Generated::modInfoDataTypeMod_aminoacid_mass*>();
-            auto alphaPeptide = items[i]->BestMatchingPeptides.First().Peptide;
-            
-            for (auto modification : alphaPeptide->AllModsOneIsNterminus)
-            {
-                auto mod = new pepXML::Generated::modInfoDataTypeMod_aminoacid_mass();
-                mod->mass = modification->Value->MonoisotopicMass->Value;
+        pepXML::msms_run_summary *tempVar24 = new pepXML::msms_run_summary();
+        tempVar24->base_name() = filePathNoExtension;
+        tempVar24->raw_data_type() = "raw";
+        tempVar24->raw_data() = ".mzM";
+        tempVar24->sample_enzyme() = *(new pepXML::sample_enzyme());
+        tempVar24->sample_enzyme()->name() = getCommonParameters()->getDigestionParams()->getProtease()->getName();
+        pepXML::specificity *tempVar25 = new pepXML::specificity();
+        tempVar25->cut() = proteaseC;
+        tempVar25->no_cut() = proteaseNC;
+        auto t25 = new pepXML::sample_enzyme::specificity_sequence();
+        t25->push_back(*tempVar25);
+        tempVar24->sample_enzyme()->specificity() = *t25;
 
-                mod->position = (modification->Key - 1).ToString();
-                mods.push_back(mod);
+        pepXML::search_summary *tempVar26 = new pepXML::search_summary();
+        tempVar26->base_name() = filePathNoExtension;
+        tempVar26->search_engine_version() = GlobalVariables::getMetaMorpheusVersion();
+        tempVar26->precursor_mass_type() = pepXML::massType::monoisotopic;
+        tempVar26->fragment_mass_type() = pepXML::massType::monoisotopic;
+        tempVar26->search_id() = 1;
+        tempVar26->search_database() = *(new pepXML::search_database());
+        tempVar26->search_database()->local_path() = databasePath;
+        tempVar26->search_database()->type() = pepXML::type::value::AA;
+        tempVar26->enzymatic_search_constraint() = *(new pepXML::enzymatic_search_constraint());
+        tempVar26->enzymatic_search_constraint()->enzyme() = getCommonParameters()->getDigestionParams()->getProtease()->getName();
+        tempVar26->enzymatic_search_constraint()->max_num_internal_cleavages() = getCommonParameters()->getDigestionParams()->getMaxMissedCleavages();
+        tempVar26->parameter() = *para;
+        auto t26 = new pepXML::msms_run_summary::search_summary_sequence();
+        t26->push_back(*tempVar26);
+        tempVar24->search_summary() = *t26;
+        auto tt26 = new pepXML::msms_pipeline_analysis::msms_run_summary_sequence();
+        tt26->push_back(*tempVar24);
+        _pepxml->msms_run_summary() = *tt26;
+
+        auto ttt26 = new pepXML::msms_run_summary::spectrum_query_sequence(items.size());
+        _pepxml->msms_run_summary()[0].spectrum_query() = *ttt26;
+        
+        auto searchHits = std::vector<pepXML::search_hit*>();
+        for (int i = 0; i < (int)items.size(); i++)
+        {
+            //auto mods = std::vector<pepXML::mod_aminoacid_mass*>();
+            auto mods = new pepXML::modInfoDataType::mod_aminoacid_mass_sequence();
+            PeptideWithSetModifications *alphaPeptide = std::get<1>(items[i]->getBestMatchingPeptides().front());
+            
+            for (auto modification : alphaPeptide->getAllModsOneIsNterminus() )
+            {
+                auto mod = new pepXML::mod_aminoacid_mass();
+                mod->mass() = std::get<1>(modification)->getMonoisotopicMass().value();
+
+                mod->position() = std::get<0>(modification) - 1;
+                mods->push_back(*mod);
                 
                 //C# TO C++ CONVERTER TODO TASK: A 'delete mod' statement was not added since mod was passed to a
                 //method or constructor. Handle memory management manually.
@@ -1027,30 +1116,30 @@ namespace TaskLayer
             
             if (items[i]->getCrossType() == PsmCrossType::Single)
             {
-                auto searchHit = new pepXML::Generated::msms_pipeline_analysisMsms_run_summarySpectrum_querySearch_resultSearch_hit();
-                searchHit->hit_rank = 1;
-                searchHit->peptide = alphaPeptide->BaseSequence;
+                auto searchHit = new pepXML::search_hit();
+                searchHit->hit_rank() = 1;
+                searchHit->peptide() = alphaPeptide->getBaseSequence();
 
-                searchHit->peptide_prev_aa = alphaPeptide->PreviousAminoAcid.ToString();
+                searchHit->peptide_prev_aa() = std::to_string(alphaPeptide->getPreviousAminoAcid());
 
-                searchHit->peptide_next_aa = alphaPeptide->NextAminoAcid.ToString();
-                searchHit->protein = alphaPeptide->Protein.Accession;
-                searchHit->num_tot_proteins = 1;
-                searchHit->calc_neutral_pep_mass = static_cast<float>(items[i]->getScanPrecursorMass());
-                searchHit->massdiff = std::to_string(items[i]->getScanPrecursorMass() - items[i]->getPeptideMonisotopicMass()->Value);
-                searchHit->xlink_typeSpecified = true;
-                searchHit->xlink_type = pepXML::Generated::msms_pipeline_analysisMsms_run_summarySpectrum_querySearch_resultSearch_hitXlink_type::na;
-                searchHit->modification_info = new pepXML::Generated::modInfoDataType();
-                searchHit->modification_info->mod_aminoacid_mass = mods.ToArray();
-                pepXML::Generated::nameValueType *tempVar27 = new pepXML::Generated::nameValueType();
-                tempVar27->name = "xlTotalScore";
+                searchHit->peptide_next_aa() = std::to_string(alphaPeptide->getNextAminoAcid());
+                searchHit->protein() = alphaPeptide->getProtein()->getAccession();
+                searchHit->num_tot_proteins() = 1;
+                searchHit->calc_neutral_pep_mass() = static_cast<float>(items[i]->getScanPrecursorMass());
+                searchHit->massdiff() = (items[i]->getScanPrecursorMass() - items[i]->getPeptideMonisotopicMass().value());
+                //searchHit->xlink_typeSpecified() = true;
+                searchHit->xlink_type1().set( pepXML::xlink_type::na);
+                searchHit->modification_info() = *new pepXML::modInfoDataType();
+                searchHit->modification_info()->mod_aminoacid_mass() = *mods;
 
-                tempVar27->value = items[i]->getXLTotalScore().ToString();
-                pepXML::Generated::nameValueType *tempVar28 = new pepXML::Generated::nameValueType();
-                tempVar28->name = "Qvalue";
+                pepXML::nameValueType *tempVar27 = new pepXML::nameValueType();
+                tempVar27->name() = "xlTotalScore";
+                tempVar27->value() = std::to_string(items[i]->getXLTotalScore());
 
-                tempVar28->value = items[i]->getFdrInfo().getQValue().ToString();
-                searchHit->search_score = {tempVar27, tempVar28};
+                pepXML::nameValueType *tempVar28 = new pepXML::nameValueType();
+                tempVar28->name() = "Qvalue";
+                tempVar28->value() = std::to_string(items[i]->getFdrInfo()->getQValue());
+                searchHit->search_score() = {tempVar27, tempVar28};
                 searchHits.push_back(searchHit);
                 
                 //C# TO C++ CONVERTER TODO TASK: A 'delete searchHit' statement was not added since
@@ -1076,35 +1165,35 @@ namespace TaskLayer
                         crosslinkerDeadEndMass = crosslinker->getDeadendMassH2O();
                         break;
                 }
-                auto mod = new pepXML::Generated::modInfoDataTypeMod_aminoacid_mass();
-                mod->mass = crosslinkerDeadEndMass;
+                auto mod = new pepXML::mod_aminoacid_mass();
+                mod->mass() = crosslinkerDeadEndMass;
 
-                mod->position = items[i]->getLinkPositions().front().ToString();
-                mods.push_back(mod);
-                auto searchHit = new pepXML::Generated::msms_pipeline_analysisMsms_run_summarySpectrum_querySearch_resultSearch_hit();
-                searchHit->hit_rank = 1;
-                searchHit->peptide = alphaPeptide->BaseSequence;
+                mod->position() = items[i]->getLinkPositions().front();
+                mods->push_back(*mod);
+                auto searchHit = new pepXML::search_hit();
+                searchHit->hit_rank() = 1;
+                searchHit->peptide() = alphaPeptide->getBaseSequence();
 
-                searchHit->peptide_prev_aa = alphaPeptide->PreviousAminoAcid.ToString();
+                searchHit->peptide_prev_aa() = std::to_string(alphaPeptide->getPreviousAminoAcid());
 
-                searchHit->peptide_next_aa = alphaPeptide->NextAminoAcid.ToString();
-                searchHit->protein = alphaPeptide->Protein.Accession;
-                searchHit->num_tot_proteins = 1;
-                searchHit->calc_neutral_pep_mass = static_cast<float>(items[i]->getScanPrecursorMass());
-                searchHit->massdiff = std::to_string(items[i]->getScanPrecursorMass() - items[i]->getPeptideMonisotopicMass()->Value - crosslinkerDeadEndMass);
-                searchHit->xlink_typeSpecified = true;
-                searchHit->xlink_type = pepXML::Generated::msms_pipeline_analysisMsms_run_summarySpectrum_querySearch_resultSearch_hitXlink_type::na;
-                searchHit->modification_info = new pepXML::Generated::modInfoDataType();
-                searchHit->modification_info->mod_aminoacid_mass = mods.ToArray();
-                pepXML::Generated::nameValueType *tempVar29 = new pepXML::Generated::nameValueType();
-                tempVar29->name = "xlTotalScore";
+                searchHit->peptide_next_aa() = std::to_string(alphaPeptide->getNextAminoAcid());
+                searchHit->protein() = alphaPeptide->getProtein()->getAccession();
+                searchHit->num_tot_proteins() = 1;
+                searchHit->calc_neutral_pep_mass() = static_cast<float>(items[i]->getScanPrecursorMass());
+                searchHit->massdiff() = (items[i]->getScanPrecursorMass() - items[i]->getPeptideMonisotopicMass().value() - crosslinkerDeadEndMass);
+                //searchHit->xlink_typeSpecified = true;
+                searchHit->xlink_type1().set(pepXML::xlink_type::na);
+                searchHit->modification_info() = *(new pepXML::modInfoDataType());
+                searchHit->modification_info()->mod_aminoacid_mass() = *mods;
 
-                tempVar29->value = items[i]->getXLTotalScore().ToString();
-                pepXML::Generated::nameValueType *tempVar30 = new pepXML::Generated::nameValueType();
-                tempVar30->name = "Qvalue";
+                pepXML::nameValueType *tempVar29 = new pepXML::nameValueType();
+                tempVar29->name() = "xlTotalScore";
+                tempVar29->value() = std::to_string(items[i]->getXLTotalScore());
                 
-                tempVar30->value = items[i]->getFdrInfo().getQValue().ToString();
-                searchHit->search_score = {tempVar29, tempVar30};
+                pepXML::nameValueType *tempVar30 = new pepXML::nameValueType();
+                tempVar30->name() = "Qvalue";                
+                tempVar30->value() = std::to_string(items[i]->getFdrInfo()->getQValue());
+                searchHit->search_score() = {tempVar29, tempVar30};
                 searchHits.push_back(searchHit);
 
                 //C# TO C++ CONVERTER TODO TASK: A 'delete searchHit' statement was not added since
@@ -1116,90 +1205,94 @@ namespace TaskLayer
                      items[i]->getCrossType() == PsmCrossType::Intra ||
                      items[i]->getCrossType() == PsmCrossType::Cross)
             {
-                auto betaPeptide = items[i]->getBetaPeptide().BestMatchingPeptides.First().Peptide;
-                auto modsBeta = std::vector<pepXML::Generated::modInfoDataTypeMod_aminoacid_mass*>();
+                auto betaPeptide = std::get<1>(items[i]->getBetaPeptide()->getBestMatchingPeptides().front());
+                auto modsBeta =  new pepXML::modInfoDataType::mod_aminoacid_mass_sequence();
                 
-                for (auto mod : betaPeptide->AllModsOneIsNterminus)
+                for (auto mod : betaPeptide->getAllModsOneIsNterminus())
                 {
-                    auto modBeta = new pepXML::Generated::modInfoDataTypeMod_aminoacid_mass();
-                    modBeta->mass = mod->Value->MonoisotopicMass->Value;
+                    auto modBeta = new pepXML::mod_aminoacid_mass();
+                    modBeta->mass() = std::get<1>(mod)->getMonoisotopicMass().value();
 
-                    modBeta->position = (mod->Key - 1).ToString();
-                    modsBeta.push_back(modBeta);
+                    modBeta->position() = std::get<0>(mod) - 1;
+                    modsBeta->push_back(*modBeta);
                     
                     //C# TO C++ CONVERTER TODO TASK: A 'delete modBeta' statement was not added since modBeta
                     //was passed to a method or constructor. Handle memory management manually.
                 }
                 
-                auto alpha = new pepXML::Generated::msms_pipeline_analysisMsms_run_summarySpectrum_querySearch_resultSearch_hitXlinkLinked_peptide();
-                alpha->peptide = alphaPeptide->BaseSequence;
+                auto alpha = new pepXML::linked_peptide();
+                alpha->peptide() = alphaPeptide->getBaseSequence();
                 
-                alpha->peptide_prev_aa = alphaPeptide->PreviousAminoAcid.ToString();
+                alpha->peptide_prev_aa() = std::to_string(alphaPeptide->getPreviousAminoAcid());
+                alpha->peptide_next_aa() = std::to_string(alphaPeptide->getNextAminoAcid());
+                alpha->protein() = alphaPeptide->getProtein()->getAccession();
+                alpha->num_tot_proteins() = 1;
+                alpha->calc_neutral_pep_mass() = static_cast<float>(items[i]->getPeptideMonisotopicMass().value());
+                alpha->complement_mass() = static_cast<float>(items[i]->getScanPrecursorMass() - alphaPeptide->getMonoisotopicMass());
+                alpha->designation() = "alpha";
+                alpha->modification_info() = *new pepXML::modInfoDataType();
+                alpha->modification_info()->mod_aminoacid_mass() = *mods;
 
-                alpha->peptide_next_aa = alphaPeptide->NextAminoAcid.ToString();
-                alpha->protein = alphaPeptide->Protein.Accession;
-                alpha->num_tot_proteins = 1;
-                alpha->calc_neutral_pep_mass = static_cast<float>(items[i]->getPeptideMonisotopicMass()->Value);
-                alpha->complement_mass = static_cast<float>(items[i]->getScanPrecursorMass() - alphaPeptide->MonoisotopicMass);
-                alpha->designation = "alpha";
-                alpha->modification_info = new pepXML::Generated::modInfoDataType();
-                alpha->modification_info->mod_aminoacid_mass = mods.ToArray();
-                pepXML::Generated::nameValueType *tempVar31 = new pepXML::Generated::nameValueType();
-                tempVar31->name = "xlscore";
+                pepXML::nameValueType *tempVar31 = new pepXML::nameValueType();
+                tempVar31->name() = "xlscore";
+                tempVar31->value() = std::to_string(items[i]->getXLTotalScore());
 
-                tempVar31->value = items[i]->getXLTotalScore().ToString();
-                pepXML::Generated::nameValueType *tempVar32 = new pepXML::Generated::nameValueType();
-                tempVar32->name = "link";
+                pepXML::nameValueType *tempVar32 = new pepXML::nameValueType();
+                tempVar32->name() = "link";
+                tempVar32->value() = std::to_string(items[i]->getLinkPositions().front());
+                alpha->xlink_score() = {tempVar31, tempVar32};
 
-                tempVar32->value = items[i]->getLinkPositions().front().ToString();
-                alpha->xlink_score = {tempVar31, tempVar32};
-                auto beta = new pepXML::Generated::msms_pipeline_analysisMsms_run_summarySpectrum_querySearch_resultSearch_hitXlinkLinked_peptide();
-                beta->peptide = betaPeptide->BaseSequence;
+                auto beta = new pepXML::linked_peptide();
+                beta->peptide() = betaPeptide->getBaseSequence();
 
-                beta->peptide_prev_aa = betaPeptide->PreviousAminoAcid.ToString();
+                beta->peptide_prev_aa() = std::to_string(betaPeptide->getPreviousAminoAcid());
+                beta->peptide_next_aa() = std::to_string(betaPeptide->getNextAminoAcid());
+                beta->protein() = betaPeptide->getProtein()->getAccession();
+                beta->num_tot_proteins() = 1;
+                beta->calc_neutral_pep_mass() = static_cast<float>(betaPeptide->getMonoisotopicMass());
+                beta->complement_mass() = static_cast<float>(items[i]->getScanPrecursorMass() - betaPeptide->getMonoisotopicMass());
+                beta->designation() = "beta";
+                beta->modification_info() = *(new pepXML::modInfoDataType());
+                beta->modification_info()->mod_aminoacid_mass() = *modsBeta;
 
-                beta->peptide_next_aa = betaPeptide->NextAminoAcid.ToString();
-                beta->protein = betaPeptide->Protein.Accession;
-                beta->num_tot_proteins = 1;
-                beta->calc_neutral_pep_mass = static_cast<float>(betaPeptide->MonoisotopicMass);
-                beta->complement_mass = static_cast<float>(items[i]->getScanPrecursorMass() - betaPeptide->MonoisotopicMass);
-                beta->designation = "beta";
-                beta->modification_info = new pepXML::Generated::modInfoDataType();
-                beta->modification_info->mod_aminoacid_mass = modsBeta.ToArray();
-                pepXML::Generated::nameValueType *tempVar33 = new pepXML::Generated::nameValueType();
-                tempVar33->name = "xlscore";
+                pepXML::nameValueType *tempVar33 = new pepXML::nameValueType();
+                tempVar33->name() = "xlscore";
+                tempVar33->value() = std::to_string(items[i]->getBetaPeptide()->getScore());
 
-                tempVar33->value = items[i]->getBetaPeptide().getScore().ToString();
-                pepXML::Generated::nameValueType *tempVar34 = new pepXML::Generated::nameValueType();
-                tempVar34->name = "link";
+                pepXML::nameValueType *tempVar34 = new pepXML::nameValueType();
+                tempVar34->name() = "link";
+                tempVar34->value() = std::to_string(items[i]->getBetaPeptide()->getLinkPositions().front());
+                beta->xlink_score() = {tempVar33, tempVar34};
 
-                tempVar34->value = items[i]->getBetaPeptide().getLinkPositions().front().ToString();
-                beta->xlink_score = {tempVar33, tempVar34};
-                auto cross = {alpha, beta};
-                auto searchHit = new pepXML::Generated::msms_pipeline_analysisMsms_run_summarySpectrum_querySearch_resultSearch_hit();
-                searchHit->hit_rank = 1;
-                searchHit->peptide = "-";
-                searchHit->peptide_prev_aa = "-";
-                searchHit->peptide_next_aa = "-";
-                searchHit->protein = "-";
-                searchHit->num_tot_proteins = 1;
-                searchHit->calc_neutral_pep_mass = static_cast<float>(items[i]->getScanPrecursorMass());
-                searchHit->massdiff = std::to_string(items[i]->getScanPrecursorMass() - betaPeptide->MonoisotopicMass - alphaPeptide->MonoisotopicMass - crosslinker->getTotalMass());
-                searchHit->xlink_typeSpecified = true;
-                searchHit->xlink_type = pepXML::Generated::msms_pipeline_analysisMsms_run_summarySpectrum_querySearch_resultSearch_hitXlink_type::xl;
-                searchHit->xlink = new pepXML::Generated::msms_pipeline_analysisMsms_run_summarySpectrum_querySearch_resultSearch_hitXlink();
-                searchHit->xlink->identifier = crosslinker->getCrosslinkerName();
-                searchHit->xlink->mass = static_cast<float>(crosslinker->getTotalMass());
-                searchHit->xlink->linked_peptide = cross;
-                pepXML::Generated::nameValueType *tempVar35 = new pepXML::Generated::nameValueType();
-                tempVar35->name = "xlTotalScore";
+                //auto cross = {alpha, beta};
+                auto cross = new pepXML::xlink::linked_peptide_sequence();
+                cross->push_back(*alpha);
+                cross->push_back(*beta);
 
-                tempVar35->value = items[i]->getXLTotalScore().ToString();
-                pepXML::Generated::nameValueType *tempVar36 = new pepXML::Generated::nameValueType();
-                tempVar36->name = "Qvalue";
+                auto searchHit = new pepXML::search_hit();
+                searchHit->hit_rank() = 1;
+                searchHit->peptide() = "-";
+                searchHit->peptide_prev_aa() = "-";
+                searchHit->peptide_next_aa() = "-";
+                searchHit->protein() = "-";
+                searchHit->num_tot_proteins() = 1;
+                searchHit->calc_neutral_pep_mass() = static_cast<float>(items[i]->getScanPrecursorMass());
+                searchHit->massdiff() = (items[i]->getScanPrecursorMass() - betaPeptide->getMonoisotopicMass() - alphaPeptide->getMonoisotopicMass() - crosslinker->getTotalMass());
+                //searchHit->xlink_typeSpecified = true;
+                searchHit->xlink_type1().set(pepXML::xlink_type::xl);
+                searchHit->xlink() = *new pepXML::xlink();
+                searchHit->xlink()->identifier() = crosslinker->getCrosslinkerName();
+                searchHit->xlink()->mass() = static_cast<float>(crosslinker->getTotalMass());
+                searchHit->xlink()->linked_peptide() = *cross;
 
-                tempVar36->value = items[i]->getFdrInfo().getQValue().ToString();
-                searchHit->search_score = {tempVar35, tempVar36};
+                pepXML::nameValueType *tempVar35 = new pepXML::nameValueType();
+                tempVar35->name() = "xlTotalScore";
+                tempVar35->value() = std::to_string(items[i]->getXLTotalScore());
+
+                pepXML::nameValueType *tempVar36 = new pepXML::nameValueType();
+                tempVar36->name() = "Qvalue";
+                tempVar36->value() = std::to_string(items[i]->getFdrInfo()->getQValue());
+                searchHit->search_score() = {tempVar35, tempVar36};
                 searchHits.push_back(searchHit);
                 
                 //C# TO C++ CONVERTER TODO TASK: A 'delete searchHit' statement was not added since
@@ -1209,45 +1302,48 @@ namespace TaskLayer
             }
             else if (items[i]->getCrossType() == PsmCrossType::Loop)
             {
-                auto thePeptide = new pepXML::Generated::msms_pipeline_analysisMsms_run_summarySpectrum_querySearch_resultSearch_hitXlinkLinked_peptide();
-                pepXML::Generated::nameValueType *tempVar37 = new pepXML::Generated::nameValueType();
-                tempVar37->name = "link";
+                auto thePeptide = new pepXML::linked_peptide();
+                pepXML::nameValueType *tempVar37 = new pepXML::nameValueType();
+                tempVar37->name() = "link";
 
-                tempVar37->value = items[i]->getLinkPositions().front().ToString();
-                pepXML::Generated::nameValueType *tempVar38 = new pepXML::Generated::nameValueType();
-                tempVar38->name = "link";
+                tempVar37->value() = std::to_string(items[i]->getLinkPositions().front());
+                pepXML::nameValueType *tempVar38 = new pepXML::nameValueType();
+                tempVar38->name() = "link";
 
-                tempVar38->value = items[i]->getLinkPositions()[1].ToString();
-                thePeptide->xlink_score = {tempVar37, tempVar38};
-                auto cross = {thePeptide};
-                auto searchHit = new pepXML::Generated::msms_pipeline_analysisMsms_run_summarySpectrum_querySearch_resultSearch_hit();
-                searchHit->hit_rank = 1;
-                searchHit->peptide = alphaPeptide->BaseSequence;
+                tempVar38->value() = std::to_string(items[i]->getLinkPositions()[1]);
+                thePeptide->xlink_score() = {tempVar37, tempVar38};
 
-                searchHit->peptide_prev_aa = alphaPeptide->PreviousAminoAcid.ToString();
+                //auto cross = {thePeptide};
+                auto cross = new pepXML::xlink::linked_peptide_sequence();
+                cross->push_back(*thePeptide);
+                
+                auto searchHit = new pepXML::search_hit();
+                searchHit->hit_rank() = 1;
+                searchHit->peptide() = alphaPeptide->getBaseSequence();
 
-                searchHit->peptide_next_aa = alphaPeptide->NextAminoAcid.ToString();
-                searchHit->protein = alphaPeptide->Protein.Accession;
-                searchHit->num_tot_proteins = 1;
-                searchHit->calc_neutral_pep_mass = static_cast<float>(items[i]->getScanPrecursorMass());
-                searchHit->massdiff = std::to_string(items[i]->getScanPrecursorMass() - alphaPeptide->MonoisotopicMass - crosslinker->getLoopMass());
-                searchHit->xlink_typeSpecified = true;
-                searchHit->xlink_type = pepXML::Generated::msms_pipeline_analysisMsms_run_summarySpectrum_querySearch_resultSearch_hitXlink_type::loop;
-                searchHit->modification_info = new pepXML::Generated::modInfoDataType();
-                searchHit->modification_info->mod_aminoacid_mass = mods.ToArray();
-                searchHit->xlink = new pepXML::Generated::msms_pipeline_analysisMsms_run_summarySpectrum_querySearch_resultSearch_hitXlink();
-                searchHit->xlink->identifier = crosslinker->getCrosslinkerName();
-                searchHit->xlink->mass = static_cast<float>(crosslinker->getTotalMass());
-                searchHit->xlink->linked_peptide = cross;
-                pepXML::Generated::nameValueType *tempVar39 = new pepXML::Generated::nameValueType();
-                tempVar39->name = "xlTotalScore";
+                searchHit->peptide_prev_aa() = std::to_string(alphaPeptide->getPreviousAminoAcid());
+                searchHit->peptide_next_aa() = std::to_string(alphaPeptide->getNextAminoAcid());
+                searchHit->protein() = alphaPeptide->getProtein()->getAccession();
+                searchHit->num_tot_proteins() = 1;
+                searchHit->calc_neutral_pep_mass() = static_cast<float>(items[i]->getScanPrecursorMass());
+                searchHit->massdiff() = (items[i]->getScanPrecursorMass() - alphaPeptide->getMonoisotopicMass() - crosslinker->getLoopMass());
+                //searchHit->xlink_typeSpecified = true;
+                searchHit->xlink_type1().set(pepXML::xlink_type::loop);
+                searchHit->modification_info() = *(new pepXML::modInfoDataType());
+                searchHit->modification_info()->mod_aminoacid_mass() = *mods;
+                searchHit->xlink() = *(new pepXML::xlink());
+                searchHit->xlink()->identifier() = crosslinker->getCrosslinkerName();
+                searchHit->xlink()->mass() = static_cast<float>(crosslinker->getTotalMass());
+                searchHit->xlink()->linked_peptide() = *cross;
 
-                tempVar39->value = items[i]->getXLTotalScore().ToString();
-                pepXML::Generated::nameValueType *tempVar40 = new pepXML::Generated::nameValueType();
-                tempVar40->name = "Qvalue";
+                pepXML::nameValueType *tempVar39 = new pepXML::nameValueType();
+                tempVar39->name() = "xlTotalScore";
+                tempVar39->value() = std::to_string(items[i]->getXLTotalScore());
 
-                tempVar40->value = items[i]->getFdrInfo().getQValue().ToString();
-                searchHit->search_score = {tempVar39, tempVar40};
+                pepXML::nameValueType *tempVar40 = new pepXML::nameValueType();
+                tempVar40->name() = "Qvalue";
+                tempVar40->value() = std::to_string(items[i]->getFdrInfo()->getQValue());
+                searchHit->search_score() = {tempVar39, tempVar40};
                 searchHits.push_back(searchHit);
                 
                 //C# TO C++ CONVERTER TODO TASK: A 'delete searchHit' statement was not added since
@@ -1256,33 +1352,59 @@ namespace TaskLayer
             }
         }
         
-        for (int i = 0; i < items.size(); i++)
+        for (int i = 0; i < (int)items.size(); i++)
         {
-            pepXML::Generated::msms_pipeline_analysisMsms_run_summarySpectrum_query *tempVar41 = new pepXML::Generated::msms_pipeline_analysisMsms_run_summarySpectrum_query();
+            auto tempVar41 = new pepXML::spectrum_query();
 
-            tempVar41->spectrum = fileNameNoExtension + "." + items[i]->getScanNumber().ToString();
-            tempVar41->start_scan = static_cast<unsigned int>(items[i]->getScanNumber());
-            tempVar41->end_scan = static_cast<unsigned int>(items[i]->getScanNumber());
-            tempVar41->precursor_neutral_mass = static_cast<float>(items[i]->getScanPrecursorMass());
+            tempVar41->spectrum() = fileNameNoExtension + "." + std::to_string(items[i]->getScanNumber());
+            tempVar41->start_scan() = static_cast<unsigned int>(items[i]->getScanNumber());
+            tempVar41->end_scan() = static_cast<unsigned int>(items[i]->getScanNumber());
+            tempVar41->precursor_neutral_mass() = static_cast<float>(items[i]->getScanPrecursorMass());
 
-            tempVar41->assumed_charge = items[i]->getScanPrecursorCharge().ToString();
-            tempVar41->index = static_cast<unsigned int>(i + 1);
-            tempVar41->retention_time_sec = static_cast<float>(items[i]->getScanRetentionTime() * 60);
-            pepXML::Generated::msms_pipeline_analysisMsms_run_summarySpectrum_querySearch_result *tempVar42 = new pepXML::Generated::msms_pipeline_analysisMsms_run_summarySpectrum_querySearch_result();
-            tempVar42->search_hit = {searchHits[i]};
-            tempVar41->search_result = {tempVar42};
-            _pepxml->msms_run_summary[0].spectrum_query[i] = tempVar41;
+            tempVar41->assumed_charge() = items[i]->getScanPrecursorCharge();
+            tempVar41->index() = static_cast<unsigned int>(i + 1);
+            tempVar41->retention_time_sec() = static_cast<float>(items[i]->getScanRetentionTime() * 60);
+
+            auto tempVar42 = new pepXML::search_result();
+            auto t42 = new pepXML::search_result::search_hit_sequence();
+            t42->push_back(*searchHits[i]);
+            tempVar42->search_hit() = *t42;
+
+            auto t41 = new pepXML::spectrum_query::search_result_sequence();
+            t41->push_back(*tempVar42);
+            tempVar41->search_result() = *t41;
+            _pepxml->msms_run_summary()[0].spectrum_query()[i] = *tempVar41;
         }
         
-        TextWriter *writer = new StreamWriter(FileSystem::combine(outputFolder, fileName + ".pep.XM"));
-        _indexedSerializer->Serialize(writer, _pepxml);
-        writer->Close();
-        FinishedWritingFile(FileSystem::combine(outputFolder, fileName + ".pep.XM"), nestedIds);
+        //TextWriter *writer = new StreamWriter(FileSystem::combine(outputFolder, fileName + ".pep.XM"));
+        //_indexedSerializer->Serialize(writer, _pepxml);
+        //writer->Close();
+        //delete _indexedSerializer;
+
+
+        // Serialize the object model to XML.
+        //
+        std::string outFileName = outputFolder + "/"+ fileName + ".pep.XM";
+            
+        xml_schema::namespace_infomap map;
+        map[""].name = "";
+        map[""].schema = "/home/gabriel/XLMS/mzlib-master/pepXML/pepXML_v120.xsd";
+
+        try{
+            std::ofstream ofs (outFileName);
+            pepXML::msms_pipeline_analysis_ (ofs, *_pepxml, map);
+            ofs.close();
+        }
+
+        catch (const xml_schema::exception& e)
+        {
+            std::cerr << e << std::endl;
+        }
+        FinishedWritingFile( outFileName, nestedIds);
         
         //C# TO C++ CONVERTER TODO TASK: A 'delete writer' statement was not added since writer was passed
         //to a method or constructor. Handle memory management manually.
         //C# TO C++ CONVERTER TODO TASK: A 'delete _pepxml' statement was not added since _pepxml was passed
         //to a method or constructor. Handle memory management manually.
-        delete _indexedSerializer;
     }
 }

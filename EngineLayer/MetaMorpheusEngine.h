@@ -5,16 +5,11 @@
 #include <vector>
 #include <cmath>
 
-//C# TO C++ CONVERTER NOTE: Forward class declarations:
-//namespace EngineLayer { class CommonParameters; }
 #include "CommonParameters.h"
-
-//namespace EngineLayer { class Ms2ScanWithSpecificMass; }
 #include "Ms2ScanWithSpecificMass.h"
 
 namespace EngineLayer { class MetaMorpheusEngineResults; }
 
-//namespace EngineLayer { class ProgressEventArgs; }
 #include "EventArgs/ProgressEventArgs.h"
 #include "EventArgs/SingleEngineEventArgs.h"
 #include "EventArgs/SingleEngineFinishedEventArgs.h"
