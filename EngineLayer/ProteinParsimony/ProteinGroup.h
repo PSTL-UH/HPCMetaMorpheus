@@ -21,6 +21,29 @@ using namespace Proteomics::ProteolyticDigestion;
 
 namespace EngineLayer
 {
+
+    typedef std::tuple<int, Modification*> PGroupTuple;
+
+    struct PGroupTuple_hash: public std::unary_function<PGroupTuple, std::size_t>{
+        std::size_t operator() (const PGroupTuple& k ) const
+        {
+            size_t h1= std::hash<int>{}(std::get<0>(k));
+            size_t h2= std::hash<int>{}((long)std::get<1>(k));
+            return h1 ^ (h2 << 1);
+        }
+    };
+
+    struct PGroupTuple_equal: public std::binary_function<PGroupTuple, PGroupTuple, bool>{
+        bool operator() (const PGroupTuple& lhs, const PGroupTuple& rhs) const
+        {
+            return std::get<0>(lhs) == std::get<0>(rhs) &&
+                std::get<1>(lhs) == std::get<1>(rhs);
+        }
+    };
+
+    typedef std::unordered_set<PGroupTuple, PGroupTuple_hash, PGroupTuple_equal> PGroupTuple_set;
+    
+
     class ProteinGroup
     {
     private:
