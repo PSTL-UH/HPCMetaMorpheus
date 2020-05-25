@@ -1,14 +1,19 @@
 ﻿#pragma once
 
-#include "../MetaMorpheusEngine.h"
 #include <string>
 #include <unordered_set>
 #include <vector>
 
+#include "../MetaMorpheusEngine.h"
+#include "../MetaMorpheusEngineResults.h"
 #include "../PeptideSpectralMatch.h"
 #include "../CommonParameters.h"
 
 #include "ParsimonySequence.h"
+#include "ProteinGroup.h"
+#include "ProteinParsimonyResults.h"
+
+using namespace EngineLayer;
 using namespace EngineLayer::ProteinParsimony;
 
 #include "Proteomics/Proteomics.h"
@@ -20,12 +25,13 @@ namespace EngineLayer
     class ProteinParsimonyEngine : public MetaMorpheusEngine
     {
         /// <summary>
-        /// All peptides meeting the prefiltering criteria for parsimony (e.g., peptides from non-ambiguous high-confidence PSMs)
+        /// All peptides meeting the prefiltering criteria for parsimony (e.g., peptides from non-ambiguous
+        //  high-confidence PSMs)
         /// </summary>
     private:
-        const std::unordered_set<PeptideWithSetModifications*> _fdrFilteredPeptides;
-        const std::vector<PeptideSpectralMatch*> _fdrFilteredPsms;
-        const std::vector<PeptideSpectralMatch*> _allPsms;
+        std::unordered_set<PeptideWithSetModifications*> _fdrFilteredPeptides;
+        std::vector<PeptideSpectralMatch*> _fdrFilteredPsms;
+        std::vector<PeptideSpectralMatch*> _allPsms;
         static constexpr double FdrCutoffForParsimony = 0.01;
         
         /// <summary>

@@ -4,8 +4,6 @@
 
 #include "stringbuilder.h"
 
-//C# TO C++ CONVERTER NOTE: Forward class declarations:
-//namespace EngineLayer { class MetaMorpheusEngine; }
 #include "MetaMorpheusEngine.h"
 
 namespace EngineLayer
