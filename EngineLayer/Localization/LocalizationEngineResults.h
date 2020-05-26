@@ -2,7 +2,6 @@
 
 #include "../MetaMorpheusEngineResults.h"
 
-//C# TO C++ CONVERTER NOTE: Forward class declarations:
 #include "../MetaMorpheusEngine.h"
 namespace EngineLayer { class MetaMorpheusEngine; }
 

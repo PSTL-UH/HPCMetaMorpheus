@@ -3,11 +3,11 @@
 
 namespace EngineLayer
 {
-	namespace Localization
-	{
-
-		LocalizationEngineResults::LocalizationEngineResults(MetaMorpheusEngine *s) : MetaMorpheusEngineResults(s)
-		{
-		}
-	}
+    namespace Localization
+    {
+        
+        LocalizationEngineResults::LocalizationEngineResults(MetaMorpheusEngine *s) : MetaMorpheusEngineResults(s)
+        {
+        }
+    }
 }
