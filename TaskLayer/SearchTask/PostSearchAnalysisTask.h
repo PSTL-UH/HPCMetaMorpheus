@@ -18,6 +18,7 @@
 #include "../MyTaskResults.h"
 #include "../DbForTask.h"
 #include "../FileSpecificParameters.h"
+#include "../MyFileManager.h"
 
 #include "../../EngineLayer/EngineLayer.h"
 using namespace EngineLayer;
@@ -32,7 +33,7 @@ using namespace EngineLayer::Localization;
 #include "../../EngineLayer/ModificationAnalysis/ModificationAnalysisResults.h"
 using namespace EngineLayer::ModificationAnalysis;
 
-#include "FlashLFQ/FlashLFQResults.h"
+#include "FlashLFQ/FlashLFQ.h"
 using namespace FlashLFQ;
 
 #include "MassSpectrometry/MassSpectrometry.h"
