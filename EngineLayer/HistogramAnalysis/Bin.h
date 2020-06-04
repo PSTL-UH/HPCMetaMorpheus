@@ -17,6 +17,29 @@ namespace EngineLayer
 {
     namespace HistogramAnalysis
     {
+        typedef std::tuple<double, double, double> BinTuple;
+
+        struct BinTuple_hash: public std::unary_function<BinTuple, std::size_t>{
+            std::size_t operator() (const BinTuple& k ) const
+            {
+                size_t h1= std::hash<double>{}(std::get<0>(k));
+                size_t h2= std::hash<double>{}(std::get<1>(k));
+                size_t h3= std::hash<double>{}(std::get<2>(k));
+                return h1 ^ (h2 << 1) ^ (h3 << 2);
+            }
+        };
+
+        struct BinTuple_equal: public std::binary_function<BinTuple, BinTuple, bool>{
+            bool operator() (const BinTuple& lhs, const BinTuple& rhs) const
+            {
+                return std::get<0>(lhs) == std::get<0>(rhs) &&
+                    std::get<1>(lhs) == std::get<1>(rhs)    &&
+                    std::get<2>(lhs) == std::get<2>(rhs);
+            }
+        };
+
+        typedef std::unordered_set<BinTuple, BinTuple_hash, BinTuple_equal> BinTuple_set;
+
         class Bin
         {
         private:
@@ -85,7 +108,8 @@ namespace EngineLayer
             
             void IdentifyResidues();
             
-            void IdentifyCombos(double v, std::unordered_set<std::tuple<double, double, double>> &ok);
+            //void IdentifyCombos(double v, std::unordered_set<std::tuple<double, double, double>> &ok);
+            void IdentifyCombos(double v, BinTuple_set &ok);
             
             double ComputeZ(double v);
             

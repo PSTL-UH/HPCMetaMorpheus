@@ -47,16 +47,16 @@ all:
 	cd PrecursorSearchModes; make ; cd ..
 	cd Calibration; make ; cd ..
 	cd ClassicSearch; make ; cd ..
+	cd HistogramAnalysis; make ; cd ..
+	cd Localization; make ; cd ..
+	cd ModificationAnalysis; make ; cd ..
+	cd NonSpecificEnzymeSearch; make ; cd ..
+	cd ProteinParsimony; make ; cd ..
+	cd ProteinScoringAndFdr; make ; cd ..
 
 
 #	cd Gptmd; make ; cd ..
-#	cd HistogramAnalysis; make ; cd ..
-#	cd Localization; make ; cd ..
 #	cd MetaDraw; make ; cd ..
-#	cd ModificationAnalysis; make ; cd ..
-#	cd NonSpecificEnzymeSearch; make ; cd ..
-#	cd ProteinParsimony; make ; cd ..
-#	cd ProteinScoringAndFdr; make ; cd ..
 
 
 $(MMORPHEUS_LIB): $(HEADER) $(OBJ) 
@@ -76,12 +76,12 @@ clean:
 	cd PrecursorSearchModes; make clean; cd ..
 	cd Calibration; make clean; cd ..
 	cd ClassicSearch; make clean; cd ..
+	cd HistogramAnalysis; make clean; cd ..
+	cd Localization; make clean; cd ..
+	cd ModificationAnalysis; make clean; cd ..
+	cd NonSpecificEnzymeSearch; make clean; cd ..
+	cd ProteinParsimony; make clean; cd ..
+	cd ProteinScoringAndFdr; make clean; cd ..
 
 #	cd Gptmd; make clean; cd ..
-#	cd HistogramAnalysis; make clean; cd ..
-#	cd Localization; make clean; cd ..
 #	cd MetaDraw; make clean; cd ..
-#	cd ModificationAnalysis; make clean; cd ..
-#	cd NonSpecificEnzymeSearch; make clean; cd ..
-#	cd ProteinParsimony; make clean; cd ..
-#	cd ProteinScoringAndFdr; make clean; cd ..
