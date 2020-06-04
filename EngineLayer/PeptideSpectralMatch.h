@@ -142,16 +142,17 @@ namespace EngineLayer
         // Edgar: removing this since it seems to be a duplicate of _bestMatchingPeptides;
 	//std::vector<std::tuple<int, PeptideWithSetModifications *>> BestMatchingPeptides;
 
-        /// <summary>
-        /// Used for Percolator output
-        /// </summary>
-        std::vector<double> getFeatures() const;
         
         static std::unordered_map<std::string, std::string> DataDictionary(
             PeptideSpectralMatch *psm, std::unordered_map<std::string, int> *ModsToWritePruned);
         
         
     public:
+        /// <summary>
+        /// Used for Percolator output
+        /// </summary>
+        std::vector<double> getFeatures() const;
+
         static std::string GetTabSeparatedHeader();
                 
         std::string ToString();

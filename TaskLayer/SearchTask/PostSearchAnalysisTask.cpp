@@ -21,9 +21,11 @@
 #include <fstream>
 #include <iostream>
 #include <algorithm>
+#include <unordered_map>
 
 #include <experimental/filesystem>
 #include "Group.h"
+#include "Math.h"
 
 using namespace EngineLayer;
 using namespace EngineLayer::FdrAnalysis;
@@ -60,13 +62,13 @@ namespace TaskLayer
         privateProteinGroups = value;
     }
     
-    std::vector<std::unordered_map<std::string, std::vector<PeptideSpectralMatch*>>*> PostSearchAnalysisTask::getPsmsGroupedByFile() const
+    std::vector<std::pair<std::string, std::vector<PeptideSpectralMatch*>>>& PostSearchAnalysisTask::getPsmsGroupedByFile()
     {
         return privatePsmsGroupedByFile;
     }
     
     
-    void PostSearchAnalysisTask::setPsmsGroupedByFile(const std::vector<std::unordered_map<std::string, std::vector<PeptideSpectralMatch*>>*> &value)    {
+    void PostSearchAnalysisTask::setPsmsGroupedByFile(const std::vector<std::pair<std::string, std::vector<PeptideSpectralMatch*>>> &value)    {
         privatePsmsGroupedByFile = value;
     }
     
@@ -453,21 +455,20 @@ namespace TaskLayer
                         p::Accession;
                     });
 #endif
-                auto proteinsOrderedByAccession = proteinGroup->getProteins();
-                std::sort(proteinsOrderedByAccession.begin(), proteinsOrderedByAccession.end(), [&]
-                          (Protein *l, Protein *r) {
-                              return l->getAccession() < r->getAccession();
-                          });
+                std::vector<Protein*> proteinsOrderedByAccession(proteinGroup->getProteins().begin(), proteinGroup->getProteins().end());
+                std::sort( proteinsOrderedByAccession.begin(), proteinsOrderedByAccession.end(), [&] (Protein *l, Protein *r) {
+                        return l->getAccession() < r->getAccession();
+                    });
                 
 #ifdef ORIG
                 auto flashLfqProteinGroup = new FlashLFQ::ProteinGroup(proteinGroup->getProteinGroupName(),
-                                                                       std::string::Join("|", proteinsOrderedByAccession->Select([&] (std::any p) {
-                                                                                   p::GeneNames->Select([&] (std::any x) {
-                                                                                           x::Item2;
-                                                                                       }).FirstOrDefault();
-                                                                               })), std::string::Join("|", proteinsOrderedByAccession->Select([&] (std::any p){
-                                                                                           p::Organism;
-                                                                                       }).Distinct()));
+                               std::string::Join("|", proteinsOrderedByAccession->Select([&] (std::any p) {
+                                           p::GeneNames->Select([&] (std::any x) {
+                                                   x::Item2;
+                                               }).FirstOrDefault();
+                                       })), std::string::Join("|", proteinsOrderedByAccession->Select([&] (std::any p){
+                                                   p::Organism;
+                                               }).Distinct()));
 #endif
                 std::string del = "|";
                 std::vector<std::string> svec1, svec2;
@@ -834,59 +835,176 @@ namespace TaskLayer
         
         // write best (highest-scoring) PSM per peptide
         writtenFile = getParameters()->getOutputFolder() +  "/AllPeptides.psmtsv";
+#ifdef ORIG
+        // EDGAR: I don't think this needs a groupby, only first element is used. more like a distinct.
         std::vector<PeptideSpectralMatch*> peptides = getParameters()->getAllPsms().GroupBy([&] (std::any b) {
                 b::FullSequence;
             })->Select([&] (std::any b)  {
                     b::FirstOrDefault();
 		}).ToList();
+#endif
+        std::vector<PeptideSpectralMatch*> peptides;
+        for ( auto b:  getParameters()->getAllPsms() ) {
+            bool found=  false;
+            for ( auto p: peptides ) {
+                if (b->getFullSequence() == p->getFullSequence() ) {
+                    found = true;
+                    break;
+                }
+            }
+            if ( !found ) {
+                peptides.push_back(b);
+            }
+        }
+        
+#ifdef ORIG
+        //EDGAR: the same here.
         WritePsmsToTsv(filteredPsmListForOutput.GroupBy([&] (std::any b)  {
                     b::FullSequence;
 		})->Select([&] (std::any b) {
                         b::FirstOrDefault();
                     }).ToList(), writtenFile, getParameters()->getSearchParameters()->getModsToWriteSelection());
+#endif
+        std::vector<PeptideSpectralMatch*> tmppeptides;
+        for ( auto b:  filteredPsmListForOutput ) {
+            bool found=  false;
+            for ( auto p: tmppeptides ) {
+                if (b->getFullSequence() == p->getFullSequence() ) {
+                    found = true;
+                    break;
+                }
+            }
+            if ( !found ) {
+                tmppeptides.push_back(b);
+            }
+        }
+        auto tempvar = getParameters()->getSearchParameters()->getModsToWriteSelection();
+        WritePsmsToTsv(tmppeptides, writtenFile, &tempvar);        
         std::vector<std::string> svec2 = {getParameters()->getSearchTaskId()};
         FinishedWritingFile(writtenFile, svec2);
         
         // write summary text
+#ifdef ORIG
         getParameters()->getSearchTaskResults()->AddNiceText("All target PSMS within 1% FDR: " + getParameters()->getAllPsms().size()([&] (std::any a)    {
                     return a::FdrInfo::QValue <= 0.01 && !a::IsDecoy;
                 }));
+#endif
+        int count=0;
+        for ( auto a :  getParameters()->getAllPsms() ) {
+            if ( a->getFdrInfo()->getQValue() <= 0.01 && !a->getIsDecoy() ) {
+                count++;
+            }
+        }
+        getParameters()->getSearchTaskResults()->AddNiceText("All target PSMS within 1% FDR: " + std::to_string(count));
+                                                             
+#ifdef ORIG
         getParameters()->getSearchTaskResults()->AddNiceText("All target peptides within 1% FDR: " + peptides.size()([&] (std::any a){
                     return a::FdrInfo::QValue <= 0.01 && !a::IsDecoy;
 		}));
+#endif
+        count=0;
+        for ( auto a :  peptides ) {
+            if ( a->getFdrInfo()->getQValue() <= 0.01 && !a->getIsDecoy() ) {
+                count++;
+            }
+        }
+        getParameters()->getSearchTaskResults()->AddNiceText("All target peptides within 1% FDR: " + std::to_string(count));
+
         if (getParameters()->getSearchParameters()->getDoParsimony())
         {
+#ifdef ORIG
             getParameters()->getSearchTaskResults()->AddNiceText("All target protein groups within 1% FDR: " + std::to_string(getProteinGroups().size()([&] (std::any b) {
                             return b::QValue <= 0.01 && !b::IsDecoy;
 			})) + "\r\n");
+#endif
+            count=0;
+            for ( auto b :  getProteinGroups() ) {
+                if ( b->getQValue() <= 0.01 && !b->getIsDecoy() ) {
+                    count++;
+                }
+            }
+            getParameters()->getSearchTaskResults()->AddNiceText("All target protein groups within 1% FDR: " +
+                                                                 std::to_string(count) + "\r\n");                       
         }
         
+#ifdef ORIG
         setPsmsGroupedByFile(filteredPsmListForOutput.GroupBy([&] (std::any p) {
                     p::FullFilePath;
 		}));
-        
-        for (auto file : getPsmsGroupedByFile())
+#endif
+        auto tmparg = new std::vector<std::pair<std::string, std::vector<PeptideSpectralMatch*>>>;
+        std::function<bool(PeptideSpectralMatch*,PeptideSpectralMatch*)> f1 = [&]
+            (PeptideSpectralMatch *l, PeptideSpectralMatch *r) {
+            return l->getFullFilePath() < r->getFullFilePath(); } ;
+        std::function<bool(PeptideSpectralMatch*,PeptideSpectralMatch*)> f2 = [&]
+            (PeptideSpectralMatch *l, PeptideSpectralMatch *r) {
+            return l->getFullFilePath() != r->getFullFilePath(); } ;
+        std::vector<std::vector<PeptideSpectralMatch*>> tmppsms= Group::GroupBy ( filteredPsmListForOutput, f1, f2);
+        for ( auto p: tmppsms ) {
+            tmparg->push_back(std::make_pair(p[0]->getFullFilePath(), p));
+        }
+        setPsmsGroupedByFile(*tmparg);
+
+        for (auto file : getPsmsGroupedByFile() )
         {
             // write summary text
-            auto psmsForThisFile = file; //->ToList();
-            std::string fname = (*file->begin()).FullFilePath;
+            auto psmsForThisFile = file.second; //->ToList();
+            std::string fname = file.first;
             std::string strippedFileName = fname.substr(0, fname.find_last_of(".")); 
+#ifdef ORIG
             auto peptidesForFile = psmsForThisFile.GroupBy([&] (std::any b)  {
                     b::FullSequence;
                 })->Select([&] (std::any b)   {
                         b::FirstOrDefault();
                     }).ToList();
+#endif
+            std::vector<PeptideSpectralMatch*> peptidesForFile;
+            for ( auto b : psmsForThisFile ) {
+                bool found = false;
+                for ( auto q: peptidesForFile ) {
+                    if ( b->getFullSequence() == q->getFullSequence() ) {
+                        found = true;
+                        break;
+                    }
+                }
+                if ( !found ) {
+                    peptidesForFile.push_back(b);
+                }
+            }
             
-            getParameters()->getSearchTaskResults()->AddNiceText("MS2 spectra in " + strippedFileName + ": " + std::to_string(getParameters()->getNumMs2SpectraPerFile()[strippedFileName][0]));
-            getParameters()->getSearchTaskResults()->AddNiceText("Precursors fragmented in " + strippedFileName + ": " + std::to_string(getParameters()->getNumMs2SpectraPerFile()[strippedFileName][1]));
-            getParameters()->getSearchTaskResults()->AddNiceText("Target PSMs within 1% FDR in " + strippedFileName + ": " + psmsForThisFile.size()([&] (std::any a) {
+            getParameters()->getSearchTaskResults()->AddNiceText("MS2 spectra in " + strippedFileName + ": " +
+                                       std::to_string(getParameters()->getNumMs2SpectraPerFile()[strippedFileName][0]));
+            getParameters()->getSearchTaskResults()->AddNiceText("Precursors fragmented in " + strippedFileName +
+                                  ": " + std::to_string(getParameters()->getNumMs2SpectraPerFile()[strippedFileName][1]));
+#ifdef ORIG
+            getParameters()->getSearchTaskResults()->AddNiceText("Target PSMs within 1% FDR in " + strippedFileName + ": " +
+                                       psmsForThisFile.size()([&] (std::any a) {
                         return a::FdrInfo::QValue <= 0.01 && !a::IsDecoy;
                     }));
+#endif
+            int count =0;
+            for ( auto a: psmsForThisFile ) {
+                if ( a->getFdrInfo()->getQValue() <= 0.01 && !a->getIsDecoy() ) {
+                    count++;
+                }
+            }
+            getParameters()->getSearchTaskResults()->AddNiceText("Target PSMs within 1% FDR in " + strippedFileName + ": "
+                                                                 + std::to_string(count));
+#ifdef ORIG
             getParameters()->getSearchTaskResults()->AddNiceText("Target peptides within 1% FDR in " +
                                                                  strippedFileName + ": " +
                                                                  std::to_string(peptidesForFile.size()([&] (std::any a)  {
                                                                              return a::FdrInfo::QValue <= 0.01 && !a::IsDecoy;
                                                                          })) + "\r\n");
+#endif
+            count = 0;
+            for ( auto a: peptidesForFile ) {
+                if ( a->getFdrInfo()->getQValue() <= 0.01 && !a->getIsDecoy() ) {
+                    count++;
+                }
+            }
+            getParameters()->getSearchTaskResults()->AddNiceText("Target peptides within 1% FDR in " +
+                                                                 strippedFileName + ": " + std::to_string(count));
             
             // writes all individual spectra file search results to subdirectory
             if (getParameters()->getCurrentRawFileList().size() > 1)
@@ -896,25 +1014,23 @@ namespace TaskLayer
                 
                 // write PSMs
                 writtenFile = getParameters()->getIndividualResultsOutputFolder() + "/" + strippedFileName + "_PSMs.psmtsv";
-                WritePsmsToTsv(psmsForThisFile, writtenFile, getParameters()->getSearchParameters()->getModsToWriteSelection());
+                auto targ = getParameters()->getSearchParameters()->getModsToWriteSelection();
+                WritePsmsToTsv(psmsForThisFile, writtenFile, &targ);
                 std::vector<std::string> tmpvec = {getParameters()->getSearchTaskId(),
-                                                   "Individual Spectra Files", file->front().getFullFilePath()};
+                                                   "Individual Spectra Files", file.second.front()->getFullFilePath()};
                 FinishedWritingFile(writtenFile, tmpvec );
                 
                 // write PSMs for percolator
                 writtenFile = getParameters()->getIndividualResultsOutputFolder() + "/" + strippedFileName +
                     "_PSMsFormattedForPercolator.tsv";
                 WritePsmsForPercolator(psmsForThisFile, writtenFile, getCommonParameters()->getQValueOutputFilter());
-                std::vector<std::string> tmpvec2 = {getParameters()->getSearchTaskId(),
-                                                    "Individual Spectra Files", file->front().getFullFilePath()};
-                FinishedWritingFile(writtenFile, tmpvec2 );
+                FinishedWritingFile(writtenFile, tmpvec );
                 
                 // write best (highest-scoring) PSM per peptide
                 writtenFile = getParameters()->getIndividualResultsOutputFolder() + "/" + strippedFileName + "_Peptides.psmtsv";
-                WritePsmsToTsv(peptidesForFile, writtenFile, getParameters()->getSearchParameters()->getModsToWriteSelection());
-                std::vector<std::string> tmpvec3 = {getParameters()->getSearchTaskId(), "Individual Spectra Files",
-                                                    file->front().getFullFilePath()};
-                FinishedWritingFile(writtenFile, tmpvec3);
+                auto targ2 = getParameters()->getSearchParameters()->getModsToWriteSelection();
+                WritePsmsToTsv(peptidesForFile, writtenFile, &targ2);
+                FinishedWritingFile(writtenFile, tmpvec);
             }
         }
     }
@@ -938,20 +1054,44 @@ namespace TaskLayer
             {
                 FileSystem::createDirectory(getParameters()->getIndividualResultsOutputFolder());
                 
-                for (auto fullFilePath : getPsmsGroupedByFile().Select([&] (std::any v)    {
-                            v::Key;
-                        }))
+#ifdef ORIG
+                //for (auto fullFilePath : getPsmsGroupedByFile().Select([&] (std::any v)    {
+                //            v::Key;
+                //        }))
+#endif
+                std::vector<std::string> tmpFilePath;
+                for ( auto v: getPsmsGroupedByFile() ) {
+                    tmpFilePath.push_back(v.first);
+                }
+
+                for (auto fullFilePath : tmpFilePath )
                 {
-                    std::string strippedFileName = Path::GetFileNameWithoutExtension(fullFilePath);
-                    
+                    std::string strippedFileName = fullFilePath.substr(0,fullFilePath.find_last_of("."));
+#ifdef ORIG
                     std::vector<PeptideSpectralMatch*> psmsForThisFile = getPsmsGroupedByFile().Where([&] (std::any p)  {
                             return p->Key == fullFilePath;
                         }).SelectMany([&] (std::any g)   {
                                 return g;
                             }).ToList();
+#endif
+                    std::vector<PeptideSpectralMatch*> psmsForThisFile;
+                    for ( auto p: getPsmsGroupedByFile() ) {
+                        if ( p.first == fullFilePath ) {
+                            for ( auto g : p.second ) {
+                                psmsForThisFile.push_back(g);
+                            }
+                        }   
+                    }
+                    
+#ifdef ORIG
                     auto subsetProteinGroupsForThisFile = getProteinGroups().Select([&] (std::any p)  {
                             p::ConstructSubsetProteinGroup(fullFilePath);
                         }).ToList();
+#endif
+                    std::vector<EngineLayer::ProteinGroup*> subsetProteinGroupsForThisFile;
+                    for ( auto p: getProteinGroups() ) {
+                        subsetProteinGroupsForThisFile.push_back(p->ConstructSubsetProteinGroup(fullFilePath));
+                    }
                     
                     std::vector<std::string> tmpvec = {getParameters()->getSearchTaskId(),
                                                        "Individual Spectra Files", fullFilePath};
@@ -964,9 +1104,21 @@ namespace TaskLayer
                     
                     subsetProteinGroupsForThisFile = subsetProteinScoringAndFdrResults->SortedAndScoredProteinGroups;
                     
-                    getParameters()->getSearchTaskResults()->AddNiceText("Target protein groups within 1 % FDR in " + strippedFileName + ": " + subsetProteinGroupsForThisFile.size()([&] (std::any b)  {
-                                return b::QValue <= 0.01 && !b::IsDecoy;
-                            }));
+#ifdef ORIG
+                    getParameters()->getSearchTaskResults()->AddNiceText("Target protein groups within 1 % FDR in " +
+                                                                         strippedFileName + ": " +
+                                                                         subsetProteinGroupsForThisFile.size()([&] (std::any b)  {
+                                                                                 return b::QValue <= 0.01 && !b::IsDecoy;
+                                                                             }));
+#endif
+                    int count=0;
+                    for ( auto b: subsetProteinGroupsForThisFile) {
+                        if ( b->getQValue() <= 0.01 && !b->getIsDecoy() ) {
+                            count++;
+                        }
+                    }
+                    getParameters()->getSearchTaskResults()->AddNiceText("Target protein groups within 1 % FDR in " +
+                                                                         strippedFileName + ": " + std::to_string(count));
                     
                     // write individual spectra file protein groups results to tsv
                     if (getParameters()->getCurrentRawFileList().size() > 1)
@@ -977,8 +1129,10 @@ namespace TaskLayer
                         tmpvec2.push_back(getParameters()->getSearchTaskId());
                         tmpvec2.push_back("Individual Spectra Files");
                         tmpvec2.push_back(fullFilePath);
-                        WriteProteinGroupsToTsv(subsetProteinGroupsForThisFile, writtenFile, tmpvec2,
-                                                getCommonParameters()->getQValueOutputFilter());
+
+                        auto targ = getCommonParameters()->getQValueOutputFilter();
+                        WriteProteinGroupsToTsv(subsetProteinGroupsForThisFile, writtenFile,
+                                                tmpvec2, targ);
                     }
                     
                     // write mzID
@@ -988,14 +1142,16 @@ namespace TaskLayer
                         tmpvec2a.push_back(getParameters()->getSearchTaskId());
                         tmpvec2a.push_back("Individual Spectra Files");
                         tmpvec2a.push_back(fullFilePath);
+
                         Status("Writing mzID...", tmpvec2a);
                         
                         auto mzidFilePath = getParameters()->getIndividualResultsOutputFolder() + "/" +
                             strippedFileName + ".mzID";
+                        auto targ1 = getParameters()->getVariableModifications();
+                        auto targ2 = getParameters()->getFixedModifications();
+                        std::vector<Protease*> vecarg1 = {getCommonParameters()->getDigestionParams()->getProtease()};
                         MzIdentMLWriter::WriteMzIdentMl(psmsForThisFile, subsetProteinGroupsForThisFile,
-                                                        getParameters()->getVariableModifications(),
-                                                        getParameters()->getFixedModifications(),
-                                                        {getCommonParameters()->getDigestionParams()->getProtease()},
+                                                        targ1, targ2, vecarg1,
                                                         getCommonParameters()->getQValueOutputFilter(),
                                                         getCommonParameters()->getProductMassTolerance(),
                                                         getCommonParameters()->getPrecursorMassTolerance(),
@@ -1064,11 +1220,11 @@ namespace TaskLayer
                 {
                     std::vector<std::string> vec3 = {getParameters()->getSearchTaskId(),
                                                      "Individual Spectra Files",
-                                                     file->Key->FullFilePathWithExtension}
-                        WritePeakQuantificationResultsToTsv(getParameters()->getFlashLfqResults(),
-                                                            getParameters()->getIndividualResultsOutputFolder(),
-                                                            file->Key->FilenameWithoutExtension + "_QuantifiedPeaks",
-                                                            vec3);
+                                                     file.first->FullFilePathWithExtension};
+                    WritePeakQuantificationResultsToTsv(getParameters()->getFlashLfqResults(),
+                                                        getParameters()->getIndividualResultsOutputFolder(),
+                                                        file.first->FilenameWithoutExtension + "_QuantifiedPeaks",
+                                                        vec3);
                 }
             }
         }
@@ -1094,7 +1250,7 @@ namespace TaskLayer
             for ( auto b:  getParameters()->getAllPsms() ) {
                 if ( b->getFdrInfo()->getQValueNotch() <= 0.01 &&
                      b->getFdrInfo()->getQValue()      <= 0.01 &&
-                     !b->getIsDecoy                            &&
+                     !b->getIsDecoy()                          &&
                      b->getBaseSequence().length() != 0 ){
                     confidentPsms.push_back(b);
                 }
@@ -1119,7 +1275,7 @@ namespace TaskLayer
                 for (auto peptide : myPepsWithSetMods)
                 {
                     std::vector<PeptideWithSetModifications*> myPepList;
-                    std::unordered_map<Protein*, std::vector<PeptideWithSetModifications*>>::const_iterator proteinToConfidentBaseSequences_iterator = proteinToConfidentBaseSequences.find(peptide.Protein.NonVariantProtein);
+                    std::unordered_map<Protein*, std::vector<PeptideWithSetModifications*>>::const_iterator proteinToConfidentBaseSequences_iterator = proteinToConfidentBaseSequences.find(peptide->getProtein()->getNonVariantProtein());
                     if (proteinToConfidentBaseSequences_iterator != proteinToConfidentBaseSequences.end())
                     {
                         myPepList = proteinToConfidentBaseSequences_iterator->second;
@@ -1129,7 +1285,7 @@ namespace TaskLayer
                     {
                         //myPepList = proteinToConfidentBaseSequences_iterator->second;
                         std::vector<PeptideWithSetModifications*> tvec = {peptide};
-                        proteinToConfidentBaseSequences.emplace(peptide->Protein.NonVariantProtein, tvec);
+                        proteinToConfidentBaseSequences.emplace(peptide->getProtein()->getNonVariantProtein(), tvec);
                     }
                 }
             }
@@ -1137,19 +1293,25 @@ namespace TaskLayer
             // Add user mod selection behavours to Pruned DB
             for (auto modType : getParameters()->getSearchParameters()->getModsToWriteSelection())
             {
-                for (Modification *mod : GlobalVariables::getAllModsKnown().Where([&] (std::any b)    {
-                            b::ModificationType->Equals(modType.Key);
-                        }))
+#ifdef ORIG
+                //for (Modification *mod : GlobalVariables::getAllModsKnown().Where([&] (std::any b)    {
+                //            b::ModificationType->Equals(modType.Key);
+                //        }))
+#endif
+                for (Modification *mod : GlobalVariables::getAllModsKnown() )
                 {
-                    if (modType.Value == 1) // Write if observed and in database
+                    if ( mod->getModificationType() != modType.first ) {
+                        continue;
+                    }
+                    if (modType.second == 1) // Write if observed and in database
                     {
                         modificationsToWriteIfBoth.insert(mod);
                     }
-                    if (modType.Value == 2) // Write if in database
+                    if (modType.second == 2) // Write if in database
                     {
                         modificationsToWriteIfInDatabase.insert(mod);
                     }
-                    if (modType.Value == 3) // Write if observed
+                    if (modType.second == 3) // Write if observed
                     {
                         modificationsToWriteIfObserved.insert(mod);
                     }
@@ -1167,7 +1329,7 @@ namespace TaskLayer
             for ( auto b:  getParameters()->getAllPsms() ) {
                 if ( b->getFdrInfo()->getQValueNotch() <= 0.01 &&
                      b->getFdrInfo()->getQValue()      <= 0.01 &&
-                     !b->getIsDecoy                            &&
+                     !b->getIsDecoy()                          &&
                      b->getFullSequence().length() != 0 ){
                     ModPsms.push_back(b);
                 }
@@ -1190,7 +1352,8 @@ namespace TaskLayer
                 for (auto peptide : myPepsWithSetMods)
                 {
                     std::vector<PeptideWithSetModifications*> myPepList;
-                    std::unordered_map<Protein*, std::vector<PeptideWithSetModifications*>>::const_iterator proteinToConfidentModifiedSequences_iterator = proteinToConfidentModifiedSequences.find(peptide->getProtein()->getNonVariantProtein());
+                    std::unordered_map<Protein*, std::vector<PeptideWithSetModifications*>>::const_iterator proteinToConfidentModifiedSequences_iterator =
+                        proteinToConfidentModifiedSequences.find(peptide->getProtein()->getNonVariantProtein());
                     if (proteinToConfidentModifiedSequences_iterator != proteinToConfidentModifiedSequences.end())
                     {
                         myPepList = proteinToConfidentModifiedSequences_iterator->second;
@@ -1206,253 +1369,518 @@ namespace TaskLayer
             }
             
             // mods included in pruned database will only be confidently localized mods (peptide's FullSequence != null)
-            for (auto nonVariantProtein : getParameters()->getProteinList().Select([&] (std::any p)  {
-                        p::NonVariantProtein;
-                    }).Distinct())
+#ifdef ORIG
+            //for (auto nonVariantProtein : getParameters()->getProteinList().Select([&] (std::any p)  {
+            //            p::NonVariantProtein;
+            //        }).Distinct())
+#endif
+            std::vector<Protein*> tmpVarProtein;
+            for (auto p: getParameters()->getProteinList() ) {
+                bool found = false;
+                for ( auto q : tmpVarProtein ) {
+                    if ( p->getNonVariantProtein()->Equals(q) ) {
+                        found = true;
+                        break;
+                    }
+                }
+                if ( !found ) {
+                    tmpVarProtein.push_back( p->getNonVariantProtein());
+                }
+            }
+
+            for ( auto nonVariantProtein : tmpVarProtein )
             {
-                if (!nonVariantProtein::IsDecoy)
+                if (!nonVariantProtein->getIsDecoy())
                 {
                     std::vector<PeptideWithSetModifications*> psms;
-                    std::unordered_map<Protein*, std::vector<PeptideWithSetModifications*>>::const_iterator proteinToConfidentModifiedSequences_iterator = proteinToConfidentModifiedSequences.find(nonVariantProtein);
+                    std::unordered_map<Protein*, std::vector<PeptideWithSetModifications*>>::const_iterator proteinToConfidentModifiedSequences_iterator =
+                        proteinToConfidentModifiedSequences.find(nonVariantProtein);
                     psms = proteinToConfidentModifiedSequences_iterator->second;
                     
                     // sequence variant is null if mod is not on a variant
-                    std::unordered_set<(int, Modification, SequenceVariation)*> modsObservedOnThisProtein;
+                    //std::unordered_set<std::tuple<int, Modification*, SequenceVariation*>> modsObservedOnThisProtein;
+                    PSATTuple1_set modsObservedOnThisProtein;
                     
                     for (auto psm : (psms.size() != 0 ) ? psms : std::vector<PeptideWithSetModifications*>())
                     {
-                        for (auto idxModKV : psm->AllModsOneIsNterminus)
+                        for (auto idxModKV : psm->getAllModsOneIsNterminus())
                         {
-                            int proteinIdx = GetOneBasedIndexInProtein(idxModKV->Key, psm);
-                            SequenceVariation *relevantVariant = psm->Protein.AppliedSequenceVariations.FirstOrDefault([&] (std::any sv) {
+                            int proteinIdx = GetOneBasedIndexInProtein(idxModKV.first, psm);
+#ifdef ORIG
+                            SequenceVariation *relevantVariant = psm->Protein.AppliedSequenceVariations.FirstOrDefault([&]
+                                                                                                                       (std::any sv) {
                                     VariantApplication::IsSequenceVariantModification(sv, proteinIdx);
                                 });
+#endif
+                            SequenceVariation *relevantVariant=nullptr;
+                            for ( auto sv : psm->getProtein()->getAppliedSequenceVariations() ) {
+                                if ( VariantApplication::IsSequenceVariantModification(sv, proteinIdx) ) {
+                                    relevantVariant = sv;
+                                    break;
+                                }
+                            }
+#ifdef ORIG
                             SequenceVariation *unappliedVariant = relevantVariant == nullptr ? nullptr : psm->Protein.SequenceVariations.FirstOrDefault([&] (std::any sv)  {
                                     return sv::Description != nullptr &&
                                     sv::Description->Equals(relevantVariant->Description);
                                 });
-                            modsObservedOnThisProtein.insert((VariantApplication::RestoreModificationIndex(psm->Protein, proteinIdx), idxModKV->Value, unappliedVariant));
+#endif
+                            SequenceVariation *unappliedVariant = nullptr;
+                            if ( relevantVariant != nullptr ) {
+                                for ( auto sv : psm->getProtein()->getSequenceVariations() ) {
+                                    if ( sv->getDescription() != nullptr &&
+                                         sv->getDescription()->Equals(relevantVariant->getDescription()) ) {
+                                        unappliedVariant = sv;
+                                        break;
+                                    }
+                                }
+                            }
+                            
+                            modsObservedOnThisProtein.insert(std::make_tuple(
+                                                                 VariantApplication::RestoreModificationIndex(psm->getProtein(),
+                                                                                                              proteinIdx),
+                                                                 idxModKV.second,
+                                                                 unappliedVariant));
                         }
                     }
                     
-                    std::unordered_map<(SequenceVariation, int)*, std::vector<Modification*>> modsToWrite;
+                    //std::unordered_map<std::tuple<SequenceVariation*, int>, std::vector<Modification*>> modsToWrite;
+                    PSATTuple2_map modsToWrite;
                     
                     //Add if observed (regardless if in database)
                     for (auto observedMod : modsObservedOnThisProtein)
                     {
-                        auto tempMod = observedMod->Item2;
+                        auto tempMod = std::get<1>(observedMod);
                         
-                        if (std::find(modificationsToWriteIfObserved.begin(), modificationsToWriteIfObserved.end(), tempMod) != modificationsToWriteIfObserved.end())
+                        if (std::find(modificationsToWriteIfObserved.begin(), modificationsToWriteIfObserved.end(), tempMod) !=
+                            modificationsToWriteIfObserved.end())
                         {
-                            auto svIdxKey = (observedMod->Item3, observedMod->Item1);
+                            auto svIdxKey = std::make_tuple(std::get<2>(observedMod), std::get<0>(observedMod));
                             if (modsToWrite.find(svIdxKey) == modsToWrite.end())
                             {
-                                std::vector<Modification*> tvec = {observedMod->Item2};
+                                std::vector<Modification*> tvec = {std::get<1>(observedMod)};
                                 modsToWrite.emplace(svIdxKey, tvec);
                             }
                             else
                             {
-                                modsToWrite[svIdxKey].push_back(observedMod->Item2);
+                                modsToWrite[svIdxKey].push_back(std::get<1>(observedMod));
                             }
                         }
                     }
                     
                     // Add modification if in database (two cases: always or if observed)
-                    for (auto modkv : nonVariantProtein::OneBasedPossibleLocalizedModifications)
+                    for (auto modkv : nonVariantProtein->getOneBasedPossibleLocalizedModifications() )
                     {
-                        for (auto mod : modkv->Value)
+                        for (auto mod : modkv.second)
                         {
                             //Add if always In Database or if was observed and in database and not set to not include
-                            if (std::find(modificationsToWriteIfInDatabase.begin(), modificationsToWriteIfInDatabase.end(), mod) != modificationsToWriteIfInDatabase.end() ||
-                                (std::find(modificationsToWriteIfBoth.begin(), modificationsToWriteIfBoth.end(), mod) != modificationsToWriteIfBoth.end() &&
-                                 std::find(modsObservedOnThisProtein.begin(), modsObservedOnThisProtein.end(), (modkv->Key, mod, nullptr)) != modsObservedOnThisProtein.end())))	{
-                            if (modsToWrite.find((nullptr, modkv->Key)) == modsToWrite.end())
-                            {
-                                modsToWrite.emplace((nullptr, modkv->Key), std::vector<Modification*> {mod});
+                            if (std::find(modificationsToWriteIfInDatabase.begin(), modificationsToWriteIfInDatabase.end(), mod) !=
+                                modificationsToWriteIfInDatabase.end()                                                          ||
+                                (std::find(modificationsToWriteIfBoth.begin(), modificationsToWriteIfBoth.end(), mod) !=
+                                 modificationsToWriteIfBoth.end()                                                               &&
+                                 std::find(modsObservedOnThisProtein.begin(), modsObservedOnThisProtein.end(),
+                                           std::make_tuple(modkv.first, mod, nullptr) ) != modsObservedOnThisProtein.end()))  {
+                                if (modsToWrite.find(std::make_tuple(nullptr, modkv.first)) == modsToWrite.end())
+                                {
+                                    modsToWrite.emplace(std::make_tuple(nullptr, modkv.first), std::vector<Modification*> {mod});
+                                }
+                                else
+                                {
+                                    modsToWrite[std::make_tuple(nullptr, modkv.first)].push_back(mod);
+                                }
                             }
-                            else
+                        }
+                    }
+                    
+                    // Add variant modification if in database (two cases: always or if observed)
+                    for (SequenceVariation *sv : nonVariantProtein->getSequenceVariations())
+                    {
+                        for (auto modkv : sv->getOneBasedModifications())
+                        {
+                            for (auto mod : modkv.second)
                             {
-                                modsToWrite[(nullptr, modkv->Key)].push_back(mod);
+                                //Add if always In Database or if was observed and in database and not set to not include
+                                if (std::find(modificationsToWriteIfInDatabase.begin(), modificationsToWriteIfInDatabase.end(), mod) !=
+                                    modificationsToWriteIfInDatabase.end()                                                   ||
+                                    (std::find(modificationsToWriteIfBoth.begin(), modificationsToWriteIfBoth.end(), mod) !=
+                                     modificationsToWriteIfBoth.end()                                                        &&
+                                     std::find(modsObservedOnThisProtein.begin(), modsObservedOnThisProtein.end(),
+                                               std::make_tuple(modkv.first, mod, sv)) != modsObservedOnThisProtein.end())     )
+                                {
+                                    if (modsToWrite.find(std::make_tuple(sv, modkv.first)) == modsToWrite.end())
+                                    {
+                                        modsToWrite.emplace(std::make_tuple(sv, modkv.first), std::vector<Modification*> {mod});
+                                    }
+                                    else
+                                    {
+                                        modsToWrite[std::make_tuple(sv, modkv.first)].push_back(mod);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                    if (proteinToConfidentBaseSequences.find(nonVariantProtein->getNonVariantProtein()) !=
+                        proteinToConfidentBaseSequences.end())
+                    {
+                        // adds confidently localized and identified mods
+                        nonVariantProtein->getOneBasedPossibleLocalizedModifications().clear();
+#ifdef ORIG
+                        //for (auto kvp : modsToWrite.Where([&] (std::any kv)  {
+                        //            return kv::Key->Item1 == nullptr;
+                        //        }))
+#endif
+                        for (auto kvp : modsToWrite)
+                        {
+                            if ( std::get<0>(kvp.first) != nullptr )
+                            {
+                                continue;
+                            }
+                            
+                            nonVariantProtein->getOneBasedPossibleLocalizedModifications()[std::get<1>(kvp.first)] = kvp.second;
+                        }
+                        for (auto sv : nonVariantProtein->getSequenceVariations())
+                        {
+                            sv->getOneBasedModifications().clear();
+#ifdef ORIG
+                            //for (auto kvp : modsToWrite.Where([&] (std::any kv)  {
+                            //            return kv::Key->Item1 != nullptr && kv::Key->Item1->Equals(sv);
+                            //        }))
+#endif
+                            for (auto kvp : modsToWrite )
+                            {
+                                if ( std::get<0>(kvp.first) == nullptr ||
+                                     !(std::get<0>(kvp.first))->Equals(sv) ) {
+                                    continue;
+                                }
+                                sv->getOneBasedModifications()[std::get<1>(kvp.first)] =  kvp.second;
                             }
                         }
                     }
                 }
                 
-                // Add variant modification if in database (two cases: always or if observed)
-                for (SequenceVariation *sv : nonVariantProtein::SequenceVariations)
-                {
-                    for (auto modkv : sv->OneBasedModifications)
-                    {
-                        for (auto mod : modkv->Value)
-                        {
-                            //Add if always In Database or if was observed and in database and not set to not include
-                            if (std::find(modificationsToWriteIfInDatabase.begin(), modificationsToWriteIfInDatabase.end(), mod) != modificationsToWriteIfInDatabase.end() ||
-                                (std::find(modificationsToWriteIfBoth.begin(), modificationsToWriteIfBoth.end(), mod) != modificationsToWriteIfBoth.end() &&
-                                 std::find(modsObservedOnThisProtein.begin(), modsObservedOnThisProtein.end(), (modkv->Key, mod, sv)) != modsObservedOnThisProtein.end())))
-                        {
-                            if (modsToWrite.find((sv, modkv->Key)) == modsToWrite.end())
-                            {
-                                modsToWrite.emplace((sv, modkv->Key), std::vector<Modification*> {mod});
-                            }
-                            else
-                            {
-                                modsToWrite[(sv, modkv->Key)].push_back(mod);
-                            }
+        
+                //writes all proteins
+#ifdef ORIG
+                //if (getParameters()->getDatabaseFilenameList().Any([&] (std::any b)  {
+                //    !b::IsContaminant;
+                //}))
+#endif
+                bool cond = false;
+                for ( auto b: getParameters()->getDatabaseFilenameList() ) {
+                    if ( !b->getIsContaminant() ) {
+                        cond = true;
+                        break;
+                    }
+                }
+                bool cond2 = false;
+                for ( auto b: getParameters()->getDatabaseFilenameList() ) {
+                    if ( b->getIsContaminant() ) {
+                        cond2 = true;
+                        break;
+                    }
+                }
+
+                //Edgar: calculcate the basename only once to avoid repetitive code.
+                std::string outputXMLdbBaseNameWO, outputXMLdbBaseName;
+                if ( cond) {
+                    std::vector<std::string> fnameVec;
+                    for ( auto b: getParameters()->getDatabaseFilenameList() ) {
+                        if ( !b->getIsContaminant() ) {
+                            std::string fname = b->getFilePath();
+                            std::string fname_short = fname.substr(0, fname.find_last_of("."));
+                            fnameVec.push_back(fname_short);
                         }
                     }
+                    std::string del="-";
+                    outputXMLdbBaseNameWO = getParameters()->getOutputFolder() + "/" + StringHelper::join(fnameVec, del);
                 }
-            }
-            
-            if (proteinToConfidentBaseSequences.find(nonVariantProtein::NonVariantProtein) != proteinToConfidentBaseSequences.end())
-            {
-                // adds confidently localized and identified mods
-                nonVariantProtein::OneBasedPossibleLocalizedModifications->Clear();
-                for (auto kvp : modsToWrite.Where([&] (std::any kv)  {
-                            return kv::Key->Item1 == nullptr;
-                        }))
-                {
-                    nonVariantProtein::OneBasedPossibleLocalizedModifications->Add(kvp::Key->Item2, kvp->Value);
-                }
-                for (auto sv : nonVariantProtein::SequenceVariations)
-                {
-                    sv->OneBasedModifications->Clear();
-                    for (auto kvp : modsToWrite.Where([&] (std::any kv)  {
-                                return kv::Key->Item1 != nullptr && kv::Key->Item1->Equals(sv);
-                            }))
-                    {
-                        sv->OneBasedModifications->Add(kvp::Key->Item2, kvp->Value);
+                if ( cond2 )  {
+                    std::vector<std::string> fnameVec;
+                    for ( auto b: getParameters()->getDatabaseFilenameList() ) {
+                        if ( b->getIsContaminant() ) {
+                            std::string fname = b->getFilePath();
+                            std::string fname_short = fname.substr(0, fname.find_last_of("."));
+                            fnameVec.push_back(fname_short);
+                        }
                     }
+                    std::string del="-";
+                    outputXMLdbBaseName = getParameters()->getOutputFolder() + "/" + StringHelper::join(fnameVec, del);
                 }
-            }
-        }
-        
-        
-        //writes all proteins
-        if (getParameters()->getDatabaseFilenameList().Any([&] (std::any b)  {
-                    !b::IsContaminant;
-                }))
-        {
-            std::string outputXMLdbFullName = FileSystem::combine(getParameters()->getOutputFolder(), std::string::Join("-", getParameters()->getDatabaseFilenameList().Where([&] (std::any b)  {
-                            !b::IsContaminant;
-                        })->Select([&] (std::any b)  {
-                                Path::GetFileNameWithoutExtension(b::FilePath);
-                            })) + "pruned.xml");
-            ProteinDbWriter::WriteXmlDatabase(std::unordered_map<std::string, std::unordered_set<std::tuple<int, Modification*>>>(), getParameters()->getProteinList().Select([&] (std::any p)  {
+                
+                if ( cond) 
+                {
+#ifdef ORIG
+                    std::string outputXMLdbFullName = FileSystem::combine(getParameters()->getOutputFolder(),
+                                                         std::string::Join("-", getParameters()->getDatabaseFilenameList().Where([&] (std::any b)  {
+                                                                     !b::IsContaminant;
+                                                                 })->Select([&] (std::any b)  {
+                                                                         Path::GetFileNameWithoutExtension(b::FilePath);
+                                                                     })) + "pruned.xml");
+#endif
+                    std::string outputXMLdbFullName =  outputXMLdbBaseNameWO + "pruned.xml";
+                    
+#ifdef ORG
+                    ProteinDbWriter::WriteXmlDatabase(std::unordered_map<std::string, std::unordered_set<std::tuple<int, Modification*>>>(), getParameters()->getProteinList().Select([&] (std::any p)  {
                         p::NonVariantProtein;
                     }).Where([&] (std::any b) {
                             return !b::IsDecoy && !b::IsContaminant;
                         }).ToList(), outputXMLdbFullName);
-            FinishedWritingFile(outputXMLdbFullName, std::vector<std::string> {getParameters()->getSearchTaskId()});
+#endif
+                    std::vector<Protein*> proteinList;
+                    for ( auto p: getParameters()->getProteinList() ) {
+                        auto b = p->getNonVariantProtein();
+                        if ( !b->getIsDecoy() && !b->getIsContaminant() ) {
+                            proteinList.push_back(p);
+                        }
+                    }
+                    std::unordered_map<std::string,ModDbTuple_set> tmpmap;
+                    ProteinDbWriter::WriteXmlDatabase(tmpmap, proteinList, outputXMLdbFullName);
+
+                    std::vector<std::string> tmpvec = {getParameters()->getSearchTaskId()};
+                    FinishedWritingFile(outputXMLdbFullName, tmpvec);
+                }
+            
+#ifdef ORIG
+                //if (getParameters()->getDatabaseFilenameList().Any([&] (std::any b) {
+                //        b::IsContaminant;
+                //    }))
+#endif
+                if ( cond2 )
+                {
+#ifdef ORIG
+                    std::string outputXMLdbFullNameContaminants = FileSystem::combine(getParameters()->getOutputFolder(),
+                                                  std::string::Join("-", getParameters()->getDatabaseFilenameList().Where([&] (std::any b)  {
+                                                              b::IsContaminant;
+                                                          })->Select([&] (std::any b) {
+                                                                  Path::GetFileNameWithoutExtension(b::FilePath);
+                                                              })) + "pruned.xml");
+#endif
+                    std::string outputXMLdbFullNameContaminants = outputXMLdbBaseName +  "pruned.xml";
+#ifdef ORIG                    
+                    ProteinDbWriter::WriteXmlDatabase(std::unordered_map<std::string, std::unordered_set<std::tuple<int, Modification*>>>(),
+                                                      getParameters()->getProteinList().Select([&] (std::any p)  {
+                            p::NonVariantProtein;
+                        }).Where([&] (std::any b) {
+                                return !b::IsDecoy && b::IsContaminant;
+                            }).ToList(), outputXMLdbFullNameContaminants);
+#endif
+                    std::vector<Protein*> proteinList;
+                    for ( auto p: getParameters()->getProteinList() ) {
+                        auto b = p->getNonVariantProtein();
+                        if ( !b->getIsDecoy() && b->getIsContaminant() ) {
+                            proteinList.push_back(p);
+                        }
+                    }
+                    std::unordered_map<std::string, ModDbTuple_set> tmpmap;
+                    ProteinDbWriter::WriteXmlDatabase(tmpmap, proteinList, outputXMLdbFullNameContaminants);
+                    std::vector<std::string> tmpvec = {getParameters()->getSearchTaskId()};
+                    FinishedWritingFile(outputXMLdbFullNameContaminants, tmpvec);
+                }
+            
+                //writes only detected proteins
+#ifdef ORIG
+                //if (getParameters()->getDatabaseFilenameList().Any([&] (std::any b)  {
+                //        !b::IsContaminant;
+                //    }))
+#endif
+                if ( cond) 
+                {
+#ifdef ORIG
+                    std::string outputXMLdbFullName = FileSystem::combine(getParameters()->getOutputFolder(),
+                                           std::string::Join("-", getParameters()->getDatabaseFilenameList().Where([&] (std::any b)   {
+                                         !b::IsContaminant;
+                                     })->Select([&] (std::any b) {
+                                             Path::GetFileNameWithoutExtension(b::FilePath);
+                                         })) + "proteinPruned.xml");
+#endif
+                    std::string outputXMLdbFullName = outputXMLdbBaseNameWO + "proteinPruned.xml";
+
+#ifdef ORIG
+                    ProteinDbWriter::WriteXmlDatabase(std::unordered_map<std::string, std::unordered_set<std::tuple<int, Modification*>>>(),
+                                                      proteinToConfidentBaseSequences.Keys->Where([&] (std::any b) {
+                            return !b::IsDecoy && !b::IsContaminant;
+                        }).ToList(), outputXMLdbFullName);
+#endif
+                    std::vector<Protein*> proteinList;
+                    for ( auto p:  proteinToConfidentBaseSequences ) {
+                        auto b = std::get<0>(p);
+                        if ( !b->getIsDecoy() && !b->getIsContaminant() ) {
+                            proteinList.push_back(b);
+                        }
+                    }
+                    std::unordered_map<std::string, ModDbTuple_set> tmpmap;
+                    ProteinDbWriter::WriteXmlDatabase(tmpmap, proteinList, outputXMLdbFullName);
+                
+                    std::vector<std::string> tmpvec = {getParameters()->getSearchTaskId()};
+                    FinishedWritingFile(outputXMLdbFullName, tmpvec);
+                }
+            
+#ifdef ORIG
+                //if (getParameters()->getDatabaseFilenameList().Any([&] (std::any b)  {
+                //        b::IsContaminant;
+                //    }))
+#endif
+                if ( cond2 ) 
+                {
+#ifdef ORIG
+                    std::string outputXMLdbFullNameContaminants = FileSystem::combine(getParameters()->getOutputFolder(),
+                                       std::string::Join("-", getParameters()->getDatabaseFilenameList().Where([&] (std::any b) {
+                                                   b::IsContaminant;
+                                               })->Select([&] (std::any b)  {
+                                                       Path::GetFileNameWithoutExtension(b::FilePath);
+                                                   })) + "proteinPruned.xml");
+#endif
+                    std::string outputXMLdbFullNameContaminants = outputXMLdbBaseName + "proteinPruned.xml";
+#ifdef ORIG            
+                    ProteinDbWriter::WriteXmlDatabase(std::unordered_map<std::string, std::unordered_set<std::tuple<int, Modification*>>>(),
+                                                      proteinToConfidentBaseSequences.Keys->Where([&] (std::any b)  {
+                                                              return !b::IsDecoy && b::IsContaminant;
+                                                          }).ToList(), outputXMLdbFullNameContaminants);
+#endif
+                    std::vector<Protein*> proteinList;
+                    for ( auto p:  proteinToConfidentBaseSequences ) {
+                        auto b = std::get<0>(p);
+                        if ( !b->getIsDecoy() && b->getIsContaminant() ) {
+                            proteinList.push_back(b);
+                        }
+                    }
+                    std::unordered_map<std::string, ModDbTuple_set> tmpmap;
+                    ProteinDbWriter::WriteXmlDatabase(tmpmap, proteinList, outputXMLdbFullNameContaminants);
+                    
+                    std::vector<std::string> tmpvec = {getParameters()->getSearchTaskId()};
+                    FinishedWritingFile(outputXMLdbFullNameContaminants, tmpvec);
+                }
+            
+            }
         }
-        if (getParameters()->getDatabaseFilenameList().Any([&] (std::any b) {
-                    b::IsContaminant;
-                }))
-        {
-            std::string outputXMLdbFullNameContaminants = FileSystem::combine(getParameters()->getOutputFolder(), std::string::Join("-", getParameters()->getDatabaseFilenameList().Where([&] (std::any b)  {
-                            b::IsContaminant;
-                        })->Select([&] (std::any b) {
-                                Path::GetFileNameWithoutExtension(b::FilePath);
-                            })) + "pruned.xml");
-            ProteinDbWriter::WriteXmlDatabase(std::unordered_map<std::string, std::unordered_set<std::tuple<int, Modification*>>>(), getParameters()->getProteinList().Select([&] (std::any p)  {
-                        p::NonVariantProtein;
-                    }).Where([&] (std::any b) {
-                            return !b::IsDecoy && b::IsContaminant;
-                        }).ToList(), outputXMLdbFullNameContaminants);
-            std::vector<std::string> tvec = {getParameters()->getSearchTaskId()};
-            FinishedWritingFile(outputXMLdbFullNameContaminants, tvec);
-        }
-        
-        //writes only detected proteins
-        if (getParameters()->getDatabaseFilenameList().Any([&] (std::any b)  {
-                    !b::IsContaminant;
-                }))
-        {
-            std::string outputXMLdbFullName = FileSystem::combine(getParameters()->getOutputFolder(),
-                                                                  std::string::Join("-", getParameters()->getDatabaseFilenameList().Where([&] (std::any b)   {
-                                                                              !b::IsContaminant;
-                                                                          })->Select([&] (std::any b) {
-                                                                                  Path::GetFileNameWithoutExtension(b::FilePath);
-                                                                              })) + "proteinPruned.xml");
-            ProteinDbWriter::WriteXmlDatabase(std::unordered_map<std::string, std::unordered_set<std::tuple<int, Modification*>>>(), proteinToConfidentBaseSequences.Keys->Where([&] (std::any b) {
-                        return !b::IsDecoy && !b::IsContaminant;
-                    }).ToList(), outputXMLdbFullName);
-            FinishedWritingFile(outputXMLdbFullName, std::vector<std::string> {getParameters()->getSearchTaskId()});
-        }
-        if (getParameters()->getDatabaseFilenameList().Any([&] (std::any b)  {
-                    b::IsContaminant;
-                }))
-        {
-            std::string outputXMLdbFullNameContaminants = FileSystem::combine(getParameters()->getOutputFolder(), std::string::Join("-", getParameters()->getDatabaseFilenameList().Where([&] (std::any b) {
-                            b::IsContaminant;
-                        })->Select([&] (std::any b)  {
-                                Path::GetFileNameWithoutExtension(b::FilePath);
-                            })) + "proteinPruned.xml");
-            ProteinDbWriter::WriteXmlDatabase(std::unordered_map<std::string, std::unordered_set<std::tuple<int, Modification*>>>(), proteinToConfidentBaseSequences.Keys->Where([&] (std::any b)  {
-                        return !b::IsDecoy && b::IsContaminant;
-                    }).ToList(), outputXMLdbFullNameContaminants);
-            FinishedWritingFile(outputXMLdbFullNameContaminants, std::vector<std::string> {getParameters()->getSearchTaskId()});
-        }
-        
     }
-    
+        
     int PostSearchAnalysisTask::GetOneBasedIndexInProtein(int oneIsNterminus, PeptideWithSetModifications *peptideWithSetModifications)
     {
         if (oneIsNterminus == 1)
         {
-            return peptideWithSetModifications->OneBasedStartResidueInProtein;
+            return peptideWithSetModifications->getOneBasedStartResidueInProtein();
         }
-        if (oneIsNterminus == peptideWithSetModifications->Length + 2)
+        if (oneIsNterminus == peptideWithSetModifications->getLength() + 2)
         {
-            return peptideWithSetModifications->OneBasedEndResidueInProtein;
+            return peptideWithSetModifications->getOneBasedEndResidueInProtein();
         }
-        return peptideWithSetModifications->OneBasedStartResidueInProtein + oneIsNterminus - 2;
+        return peptideWithSetModifications->getOneBasedStartResidueInProtein() + oneIsNterminus - 2;
     }
     
     void PostSearchAnalysisTask::WriteTree(BinTreeStructure *myTreeStructure, const std::string &writtenFile)
     {
-        StreamWriter output = StreamWriter(writtenFile);
-        output.WriteLine("MassShift\tCount\tCountDecoy\tCountTarget\tCountLocalizeableTarget\tCountNonLocalizeableTarget\tFDR\tArea 0.01t\tArea 0.255\tFracLocalizeableTarget\tMine\tUnimodID\tUnimodFormulas\tUnimodDiffs\tAA\tCombos\tModsInCommon\tAAsInCommon\tResidues\tprotNtermLocFrac\tpepNtermLocFrac\tpepCtermLocFrac\tprotCtermLocFrac\tFracWithSingle\tOverlappingFrac\tMedianLength\tUniprot");
-        for (Bin *bin : myTreeStructure->getFinalBins().OrderByDescending([&] (std::any b) {
-                    b->Count;
-                }))
-        {
-            output.WriteLine(bin->MassShift.ToString("F4") + "\t" +
-                             bin->Count.ToString() + "\t" +
-                             bin->CountDecoy.ToString() + "\t" +
-                             bin->CountTarget.ToString() + "\t" +
-                             bin->LocalizeableTarget.ToString() + "\t" +
-                             (bin->CountTarget - bin->LocalizeableTarget).ToString() + "\t" +
-                             (bin->Count == 0 ? NAN : static_cast<double>(bin->CountDecoy) / bin->Count).ToString("F3") + "\t" +
-                             (Normal::CDF(0, 1, bin->ComputeZ(0.01))).ToString("F3") + "\t" +
-                             (Normal::CDF(0, 1, bin->ComputeZ(0.255))).ToString("F3") + "\t" +
-                             (bin->CountTarget == 0 ? NAN : static_cast<double>(bin->LocalizeableTarget) / bin->CountTarget).ToString("F3") + "\t" +
-                             bin->Mine + "\t" + bin->UnimodId + "\t" + bin->UnimodFormulas + "\t" +
-                             bin->UnimodDiffs + "\t" + bin->AA + "\t" + bin->Combos + "\t" +
-                             std::string::Join(",", bin->ModsInCommon::OrderByDescending([&] (std::any b){
-                                         b->Value;
-                                     }).Where([&] (std::any b)	{
-                                             return b->Value > bin->CountTarget / 10.0;
-                                         })->Select([&] (std::any b) {
-                                                 return b::Key + ":" + (static_cast<double>(b->Value) / bin->CountTarget).ToString("F3");
-                                             })) + "\t" +
-                             std::string::Join(",", bin->AAsInCommon::OrderByDescending([&] (std::any b){
-                                         b->Value;
-                                     }).Where([&] (std::any b) {
-                                             return b->Value > bin->CountTarget / 10.0;
-                                         })->Select([&] (std::any b)	{
-                                                 return b::Key + ":" + (static_cast<double>(b->Value) / bin->CountTarget).ToString("F3");
-                                             })) + "\t" +
-                             std::string::Join(",", bin->ResidueCount::OrderByDescending([&] (std::any b) {
-                                         b->Value;
-                                     })->Select([&] (std::any b){
-                                             return b::Key + ":" + b->Value;
-                                         })) + "\t" +
-                             (bin->LocalizeableTarget == 0 ? NAN : static_cast<double>(bin->ProtNlocCount) / bin->LocalizeableTarget).ToString("F3") + "\t" +
-                             (bin->LocalizeableTarget == 0 ? NAN : static_cast<double>(bin->PepNlocCount) / bin->LocalizeableTarget).ToString("F3") + "\t" +
-                             (bin->LocalizeableTarget == 0 ? NAN : static_cast<double>(bin->PepClocCount) / bin->LocalizeableTarget).ToString("F3") + "\t" + (bin->LocalizeableTarget == 0 ? NAN : static_cast<double>(bin->ProtClocCount) / bin->LocalizeableTarget).ToString("F3") + "\t" +
-                             (bin->FracWithSingle).ToString("F3") + "\t" +
-                             (static_cast<double>(bin->Overlapping) / bin->CountTarget).ToString("F3") + "\t" +
-                             (bin->MedianLength).ToString("F3") + "\t" + bin->UniprotID);
+        std::ofstream output(writtenFile);
+        output << "MassShift\tCount\tCountDecoy\tCountTarget\tCountLocalizeableTarget\tCountNonLocalizeableTarget\tFDR\tArea 0.01t\tArea 0.255\tFracLocalizeableTarget\tMine\tUnimodID\tUnimodFormulas\tUnimodDiffs\tAA\tCombos\tModsInCommon\tAAsInCommon\tResidues\tprotNtermLocFrac\tpepNtermLocFrac\tpepCtermLocFrac\tprotCtermLocFrac\tFracWithSingle\tOverlappingFrac\tMedianLength\tUniprot" << std::endl;
+
+#ifdef ORIG
+        //  for (Bin *bin : myTreeStructure->getFinalBins().OrderByDescending([&] (std::any b) {
+        //            b->Count;
+        //        }))
+#endif
+        auto tmpBins =  myTreeStructure->getFinalBins();
+        std::sort(tmpBins.begin(), tmpBins.end(), [&] (Bin *l, Bin *r) {
+                return l->getCount() > r->getCount(); });
+        for ( Bin *bin: tmpBins ) 
+        {         
+#ifdef ORIG
+            std::string tmpstring1 = std::string::Join(",", bin->ModsInCommon::OrderByDescending([&] (std::any b){
+                        b->Value;
+                    }).Where([&] (std::any b)	{
+                            return b->Value > bin->CountTarget / 10.0;
+                        })->Select([&] (std::any b) {
+                                return b::Key + ":" + (static_cast<double>(b->Value) / bin->CountTarget).ToString("F3");
+                            }));
+#endif
+            std::vector<std::tuple<std::string, int>> tmpvec;
+            for ( auto b: bin->ModsInCommon ) {
+                if ( std::get<1>(b) > (bin->getCountTarget()/10.0) ) {
+                    tmpvec.push_back(b);
+                }
+            }
+            std::sort(tmpvec.begin(), tmpvec.end(), [&] (std::tuple<std::string, int> l, std::tuple<std::string, int> r) {
+                    return std::get<1>(l) > std::get<1>(r);
+                });
+            
+            std::vector<std::string> tmpstringvec;
+            for ( auto b: tmpvec ) {
+                std::string s = std::get<0>(b) + ":" + std::to_string(static_cast<double>(std::get<1>(b)) / bin->getCountTarget());
+                tmpstringvec.push_back(s);
+            }
+            std::string del = ",";
+            std::string tmpstring1 = StringHelper::join(tmpstringvec, del);       
+
+#ifdef ORIG
+            std::string tmpstring2 = std::string::Join(",", bin->AAsInCommon::OrderByDescending([&] (std::any b){
+                        b->Value;
+                    }).Where([&] (std::any b) {
+                            return b->Value > bin->CountTarget / 10.0;
+                        })->Select([&] (std::any b)	{
+                                return b::Key + ":" + (static_cast<double>(b->Value) / bin->CountTarget).ToString("F3");
+                            }));
+#endif
+            std::vector<std::tuple<char, int>> tmpvec2;
+            for ( auto b: bin->getAAsInCommon() ) {
+                if ( std::get<1>(b) > (bin->getCountTarget()/10.0) ) {
+                    tmpvec2.push_back(b);
+                }
+            }
+            std::sort(tmpvec2.begin(), tmpvec2.end(), [&] (std::tuple<char, int> l, std::tuple<char, int> r) {
+                    return std::get<1>(l) > std::get<1>(r);
+                });
+            tmpstringvec.clear();
+            for ( auto b: tmpvec2 ) {
+                std::string s = std::get<0>(b) + ":" + std::to_string(static_cast<double>(std::get<1>(b)) / bin->getCountTarget());
+                tmpstringvec.push_back(s);
+            }
+            std::string tmpstring2 = StringHelper::join(tmpstringvec, del);
+            
+#ifdef ORIG
+            std::string tmpstring3 = std::string::Join(",", bin->ResidueCount::OrderByDescending([&] (std::any b) {
+                        b->Value;
+                    })->Select([&] (std::any b){
+                            return b::Key + ":" + b->Value;
+                        }));
+#endif
+            tmpvec2.clear();
+            for ( auto b: bin->ResidueCount ) {
+                tmpvec2.push_back(b);
+            }
+            std::sort(tmpvec2.begin(), tmpvec2.end(), [&] (std::tuple<char, int> l, std::tuple<char, int> r) {
+                    return std::get<1>(l) > std::get<1>(r);
+                });
+            tmpstringvec.clear();
+            for ( auto b: tmpvec2 ) {
+                std::string s = std::get<0>(b) + ":" + std::to_string(std::get<1>(b));
+                tmpstringvec.push_back(s);
+            }
+            std::string tmpstring3 = StringHelper::join(tmpstringvec, del);
+            
+            output << bin->getMassShift() << "\t" <<
+                bin->getCount() <<  "\t" <<
+                bin->getCountDecoy() << "\t" <<
+                bin->getCountTarget()<< "\t" <<
+                bin->getLocalizeableTarget() << "\t" <<
+                (bin->getCountTarget() - bin->getLocalizeableTarget()) << "\t" <<
+                (bin->getCount() == 0 ? NAN : static_cast<double>(bin->getCountDecoy() / bin->getCount())) << "\t" <<
+                Math::NormalDistribution ( 0, 1, bin->ComputeZ(0.01)) << "\t" <<
+                Math::NormalDistribution (0, 1, bin->ComputeZ(0.255)) << "\t" <<
+                (bin->getCountTarget() == 0 ? NAN : static_cast<double>(bin->getLocalizeableTarget() / bin->getCountTarget())) << "\t" <<
+                bin->getMine() << "\t" << bin->getUnimodId() << "\t" <<
+                bin->getUnimodFormulas() << "\t" <<
+                bin->getUnimodDiffs() << "\t" << bin->AA << "\t" <<
+                bin->getCombos() << "\t" <<
+                tmpstring1 + "\t" <<
+                tmpstring2 + "\t" <<
+                tmpstring3 + "\t" <<
+                (bin->getLocalizeableTarget() == 0 ? NAN : static_cast<double>(bin->getProtNlocCount() / bin->getLocalizeableTarget())) << "\t" <<
+                (bin->getLocalizeableTarget() == 0 ? NAN : static_cast<double>(bin->getPepNlocCount() / bin->getLocalizeableTarget())) << "\t" <<
+                (bin->getLocalizeableTarget() == 0 ? NAN : static_cast<double>(bin->getPepClocCount() / bin->getLocalizeableTarget())) << "\t" <<
+                (bin->getLocalizeableTarget() == 0 ? NAN : static_cast<double>(bin->getProtClocCount() / bin->getLocalizeableTarget())) << "\t" <<
+                bin->getFracWithSingle() << "\t" <<
+                (static_cast<double>(bin->getOverlapping()) / bin->getCountTarget()) << "\t" <<
+                bin->getMedianLength() << "\t" <<  bin->getUniprotID() << std::endl;
         }
         
     }
@@ -1461,10 +1889,10 @@ namespace TaskLayer
                                                         const std::string &writtenFileForPercolator,
                                                         double qValueCutoff)
     {
-        StreamWriter output = StreamWriter(writtenFileForPercolator);
-        output.WriteLine("SpecId\tLabel\tScanNr\tF1\tF2\tPeptide\tProteins");
-        output.WriteLine("DefaultDirection\t-\t-\t1\t1\t\t");
-        for (int i = 0; i < psmList.size(); i++)
+        std::ofstream output(writtenFileForPercolator);
+        output << "SpecId\tLabel\tScanNr\tF1\tF2\tPeptide\tProteins" << std::endl;
+        output << "DefaultDirection\t-\t-\t1\t1\t\t" << std::endl;
+        for (int i = 0; i < (int)psmList.size(); i++)
         {
             auto psm = psmList[i];
             
@@ -1473,20 +1901,27 @@ namespace TaskLayer
                 continue;
             }
             
-            output.Write(std::to_string(i));
-            output.Write('\t' + std::to_string(psm->getIsDecoy() ? -1 : 1));
-            output.Write('\t' + std::to_string(psm->getScanNumber()));
+            output << std::to_string(i);
+            output << '\t' << std::to_string(psm->getIsDecoy() ? -1 : 1);
+            output << '\t' << psm->getScanNumber();
             
             // Features
-            output.Write(StringHelper::toString('\t') + std::string::Join("\t", psm->getFeatures()));
+            std::string del = "\t";
+            auto vec = psm->getFeatures();
+            std::vector<std::string> stringvec;
+            for ( auto v: vec ) {
+                stringvec.push_back(std::to_string(v));
+            }
+            output << StringHelper::toString('\t') << StringHelper::join(stringvec, del );
             
             // HACKY: Ignores all ambiguity
-            auto pwsm = psm->BestMatchingPeptides.front().Peptide;
+            auto pwsm = std::get<1>(psm->getBestMatchingPeptides().front());
             
-            output.Write('\t' + (pwsm->PreviousAminoAcid + "." + pwsm->FullSequence + "." + pwsm->NextAminoAcid).ToString());
-            output.Write('\t' + (pwsm->Protein.Accession).ToString());
-            output.WriteLine();
+            output << '\t' << pwsm->getPreviousAminoAcid() << "." << pwsm->getFullSequence() << "." << pwsm->getNextAminoAcid();
+            output << '\t' << pwsm->getProtein()->getAccession();
+            output << std::endl;
         }
+        output.close();
     }
     
     
@@ -1495,11 +1930,11 @@ namespace TaskLayer
                                                          std::vector<std::string> &nestedIds,
                                                          double qValueCutoff)
     {
-        if (proteinGroups.size() > 0 && proteinGroups.Any())
+        if ( proteinGroups.size() > 0 )
         {
-            StreamWriter output = StreamWriter(filePath);
-            output.WriteLine(proteinGroups.front().GetTabSeparatedHeader());
-            for (int i = 0; i < proteinGroups.size(); i++)
+            std::ofstream output(filePath);
+            output << proteinGroups.front()->GetTabSeparatedHeader() << std::endl;
+            for (int i = 0; i < (int)proteinGroups.size(); i++)
             {
                 if ((!getParameters()->getSearchParameters()->getWriteDecoys() &&
                      proteinGroups[i]->getIsDecoy()) ||
@@ -1510,7 +1945,7 @@ namespace TaskLayer
                 }
                 else if (proteinGroups[i]->getQValue() <= qValueCutoff)
                 {
-                    output.WriteLine(proteinGroups[i]);
+                    output << proteinGroups[i] << std::endl;
                 }
             }
         }
