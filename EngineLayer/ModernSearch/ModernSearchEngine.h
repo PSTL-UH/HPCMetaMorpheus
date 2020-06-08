@@ -47,7 +47,7 @@ namespace EngineLayer
                 //delete dissociationType;
             }
             
-            ModernSearchEngine(std::vector<PeptideSpectralMatch*> &globalPsms,
+            ModernSearchEngine(std::vector<PeptideSpectralMatch*> globalPsms,
                                std::vector<Ms2ScanWithSpecificMass*> &listOfSortedms2Scans,
                                std::vector<PeptideWithSetModifications*> &peptideIndex,
                                std::vector<std::vector<int>> &fragmentIndex,

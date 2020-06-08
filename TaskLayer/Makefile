@@ -32,9 +32,11 @@ all:
 	make $(MMORPHEUS_LIB) 
 	cd CalibrationTask ; make ; cd ..
 	cd EventArgs ; make ; cd ..
-	cd GPTMDTask ; make ; cd ..
 	cd SearchTask ; make ; cd ..
 	cd XLSearchTask ; make ; cd ..
+
+#	cd GPTMDTask ; make ; cd ..
+
 
 $(MMORPHEUS_LIB): $(HEADER) $(OBJ) 
 	$(AR) $(AR_FLAGS) $(MMORPHEUS_LIB_DIR)/$(MMORPHEUS_LIB) $(OBJ)
@@ -47,6 +49,7 @@ clean:
 	rm -rf *.o *~
 	cd CalibrationTask ; make clean ; cd ..
 	cd EventArgs ; make clean ; cd ..
-	cd GPTMDTask ; make clean ; cd ..
 	cd SearchTask ; make clean ; cd ..
 	cd XLSearchTask ; make clean ; cd ..
+
+#	cd GPTMDTask ; make clean ; cd ..

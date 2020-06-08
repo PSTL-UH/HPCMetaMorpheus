@@ -17,7 +17,7 @@ namespace EngineLayer
     namespace ModernSearch
     {
         
-        ModernSearchEngine::ModernSearchEngine(std::vector<PeptideSpectralMatch*> &globalPsms,
+        ModernSearchEngine::ModernSearchEngine(std::vector<PeptideSpectralMatch*> globalPsms,
                                                std::vector<Ms2ScanWithSpecificMass*> &listOfSortedms2Scans,
                                                std::vector<PeptideWithSetModifications*> &peptideIndex,
                                                std::vector<std::vector<int>> &fragmentIndex,
@@ -25,15 +25,16 @@ namespace EngineLayer
                                                CommonParameters *commonParameters,
                                                MassDiffAcceptor *massDiffAcceptor,
                                                double maximumMassThatFragmentIonScoreIsDoubled,
-                                               std::vector<std::string> &nestedIds) : MetaMorpheusEngine(commonParameters, nestedIds),
-                                                                    FragmentIndex(fragmentIndex),
-                                                                    PeptideSpectralMatches(globalPsms),
-                                                                    ListOfSortedMs2Scans(listOfSortedms2Scans),
-                                                                    PeptideIndex(peptideIndex),
-                                                                    CurrentPartition(currentPartition + 1),
-                                                                    massDiffAcceptor(massDiffAcceptor),
-                                                                    dissociationType(commonParameters->getDissociationType()),
-                                                                    MaxMassThatFragmentIonScoreIsDoubled(maximumMassThatFragmentIonScoreIsDoubled)
+                                               std::vector<std::string> &nestedIds) :
+            MetaMorpheusEngine(commonParameters, nestedIds),
+            FragmentIndex(fragmentIndex),
+            PeptideSpectralMatches(globalPsms),
+            ListOfSortedMs2Scans(listOfSortedms2Scans),
+            PeptideIndex(peptideIndex),
+            CurrentPartition(currentPartition + 1),
+            massDiffAcceptor(massDiffAcceptor),
+            dissociationType(commonParameters->getDissociationType()),
+            MaxMassThatFragmentIonScoreIsDoubled(maximumMassThatFragmentIonScoreIsDoubled)
         {
         }
         

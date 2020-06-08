@@ -8,7 +8,8 @@
 #
 include ../Makefile.defs
 
-CEXECS = TestToml
+CEXECS = BinGenerationTest \
+	 TestToml
 
 
 
@@ -28,10 +29,13 @@ cxxtests: $(CEXECS)
 TestToml: TestToml.o 
 	$(CXX) $^ -o $@ $(LDFLAGS)
 
+BinGenerationTest: BinGenerationTest.o 
+	$(CXX) $^ -o $@ $(LDFLAGS)
+
 ###################################################################################################
 
 
 clean:
 	rm -rf *.o *~
 
-	rm -f TestToml
+	rm -f TestToml BinGenerationTest

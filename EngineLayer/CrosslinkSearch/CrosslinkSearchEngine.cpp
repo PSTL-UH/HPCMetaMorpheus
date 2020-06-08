@@ -37,7 +37,7 @@ namespace EngineLayer
                                                      bool quench_NH2,
                                                      bool quench_Tris,
                                                      std::vector<std::string> &nestedIds) :
-            ModernSearchEngine(nullptr,
+            ModernSearchEngine(std::vector<EngineLayer::PeptideSpectralMatch*>(),
                                listOfSortedms2Scans,
                                peptideIndex,
                                fragmentIndex,
@@ -50,8 +50,8 @@ namespace EngineLayer
             CrosslinkSearchTopN(CrosslinkSearchTop),
             TopN(CrosslinkSearchTopNum),
             QuenchH2O(quench_H2O),
-                                                                                            QuenchNH2(quench_NH2),
-                                                                                            QuenchTris(quench_Tris)
+            QuenchNH2(quench_NH2),
+            QuenchTris(quench_Tris)
         {
             GenerateCrosslinkModifications(crosslinker);
             //AllCrosslinkerSites = privateCrosslinker->getCrosslinkerModSites().ToCharArray().Concat(privateCrosslinker->getCrosslinkerModSites2().ToCharArray())->Distinct()->ToArray();

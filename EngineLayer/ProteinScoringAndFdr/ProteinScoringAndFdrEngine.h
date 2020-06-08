@@ -20,11 +20,11 @@ namespace EngineLayer
     class ProteinScoringAndFdrEngine : public MetaMorpheusEngine
     {
     private:
-        const std::vector<PeptideSpectralMatch*> NewPsms;
+        std::vector<PeptideSpectralMatch*> NewPsms;
         const bool NoOneHitWonders;
         const bool TreatModPeptidesAsDifferentPeptides;
         const bool MergeIndistinguishableProteinGroups;
-        const std::vector<ProteinGroup*> ProteinGroups;
+        std::vector<ProteinGroup*> ProteinGroups;
         
     public:
         ProteinScoringAndFdrEngine(std::vector<ProteinGroup*> &proteinGroups, std::vector<PeptideSpectralMatch*> &newPsms, bool noOneHitWonders, bool treatModPeptidesAsDifferentPeptides, bool mergeIndistinguishableProteinGroups, CommonParameters *commonParameters, std::vector<std::string> &nestedIds);

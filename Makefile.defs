@@ -18,7 +18,13 @@ MMORPHEUS_LIB      = libmmorpheus.a
 MZLIB_DIR      = /home/gabriel/XLMS/mzlib-master
 MZLIB_INC_DIR  = $(MZLIB_DIR)/include 
 MZLIB_LIB_DIR  = $(MZLIB_DIR)/lib
-MZLIB_LIB      = libmzlib.a
+MZLIB_LIB      = -lmzlib 
+FLASHLFQ_LIB   = -lflashlfq
+
+XSD_DIR = /usr
+XSD_INC_DIR = $(XSD_DIR)/include
+XSD_LIB_DIR = $(XSD_DIR)/lib64
+XSD_LIB = -lxerces-c
 
 
 #Set some Flags
@@ -31,7 +37,7 @@ CFLAGS      = -g -O0
 
 
 CXX         = g++              
-CXXFLAGS    = -Wall -g -O0 -Wno-delete-non-virtual-dtor -Wno-unused-function -I$(MMORPHEUS_INC_DIR) -I$(MZLIB_INC_DIR) -I$(MZLIB_DIR) -I$(MZLIB_DIR)/MzLibUtil -std=c++17
+CXXFLAGS    = -Wall -g -O0 -Wno-delete-non-virtual-dtor -Wno-unused-function -I$(MMORPHEUS_INC_DIR) -I$(MZLIB_INC_DIR) -I$(MZLIB_DIR) -I$(MZLIB_DIR)/MzLibUtil -std=gnu++17
 CXXLOCALFLAGS = -DNDEBUG
-LDFLAGS     = -L$(MMORPHEUS_LIB_DIR) -lmmorpheus -L$(MZLIB_LIB_DIR) -lmzlib
+LDFLAGS     = -L$(MMORPHEUS_LIB_DIR) -lmmorpheus -L$(MZLIB_LIB_DIR) $(MZLIB_LIB) $(FLASHLFQ_LIB) -lz -lstdc++fs -L$(XSD_LIB_DIR) $(XSD_LIB)
 
