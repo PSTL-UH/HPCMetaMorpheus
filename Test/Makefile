@@ -30,7 +30,8 @@ TestToml: TestToml.o
 	$(CXX) $^ -o $@ $(LDFLAGS)
 
 BinGenerationTest: BinGenerationTest.o 
-	$(CXX) $^ -o $@ $(LDFLAGS)
+	$(CXX) $(CXXFLAGS) -c TestDataFile.cpp
+	$(CXX) $^ -o $@ TestDataFile.o $(LDFLAGS)
 
 ###################################################################################################
 
