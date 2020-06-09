@@ -38,25 +38,25 @@ OBJ = 	 CommonParameters.o           \
 .SUFFIXES: .o.cpp
 
 all:    
-	make $(MMORPHEUS_LIB) 
-	cd EventArgs; make ; cd ..
-	cd Indexing; make ; cd ..
-	cd FdrAnalysis; make ; cd ..
-	cd ModernSearch; make ; cd ..
-	cd CrosslinkSearch; make ; cd ..
-	cd PrecursorSearchModes; make ; cd ..
-	cd Calibration; make ; cd ..
-	cd ClassicSearch; make ; cd ..
-	cd HistogramAnalysis; make ; cd ..
-	cd Localization; make ; cd ..
-	cd ModificationAnalysis; make ; cd ..
-	cd NonSpecificEnzymeSearch; make ; cd ..
-	cd ProteinParsimony; make ; cd ..
-	cd ProteinScoringAndFdr; make ; cd ..
+	$(MAKE) $(MMORPHEUS_LIB) 
+	cd EventArgs; $(MAKE) ; cd ..
+	cd Indexing; $(MAKE) ; cd ..
+	cd FdrAnalysis; $(MAKE) ; cd ..
+	cd ModernSearch; $(MAKE) ; cd ..
+	cd CrosslinkSearch; $(MAKE) ; cd ..
+	cd PrecursorSearchModes; $(MAKE) ; cd ..
+	cd Calibration; $(MAKE) ; cd ..
+	cd ClassicSearch; $(MAKE) ; cd ..
+	cd HistogramAnalysis; $(MAKE) ; cd ..
+	cd Localization; $(MAKE) ; cd ..
+	cd ModificationAnalysis; $(MAKE) ; cd ..
+	cd NonSpecificEnzymeSearch; $(MAKE) ; cd ..
+	cd ProteinParsimony; $(MAKE) ; cd ..
+	cd ProteinScoringAndFdr; $(MAKE) ; cd ..
 
 
-#	cd Gptmd; make ; cd ..
-#	cd MetaDraw; make ; cd ..
+#	cd Gptmd; $(MAKE) ; cd ..
+#	cd MetaDraw; $(MAKE) ; cd ..
 
 
 $(MMORPHEUS_LIB): $(HEADER) $(OBJ) 
@@ -68,20 +68,20 @@ $(OBJ):	$(HEADER)
 
 clean:  
 	rm -rf *.o *~
-	cd EventArgs; make clean; cd ..
-	cd Indexing; make clean; cd ..
-	cd FdrAnalysis; make clean; cd ..
-	cd ModernSearch; make clean; cd ..
-	cd CrosslinkSearch; make clean; cd ..
-	cd PrecursorSearchModes; make clean; cd ..
-	cd Calibration; make clean; cd ..
-	cd ClassicSearch; make clean; cd ..
-	cd HistogramAnalysis; make clean; cd ..
-	cd Localization; make clean; cd ..
-	cd ModificationAnalysis; make clean; cd ..
-	cd NonSpecificEnzymeSearch; make clean; cd ..
-	cd ProteinParsimony; make clean; cd ..
-	cd ProteinScoringAndFdr; make clean; cd ..
+	cd EventArgs; $(MAKE) clean; cd ..
+	cd Indexing; $(MAKE) clean; cd ..
+	cd FdrAnalysis; $(MAKE) clean; cd ..
+	cd ModernSearch; $(MAKE) clean; cd ..
+	cd CrosslinkSearch; $(MAKE) clean; cd ..
+	cd PrecursorSearchModes; $(MAKE) clean; cd ..
+	cd Calibration; $(MAKE) clean; cd ..
+	cd ClassicSearch; $(MAKE) clean; cd ..
+	cd HistogramAnalysis; $(MAKE) clean; cd ..
+	cd Localization; $(MAKE) clean; cd ..
+	cd ModificationAnalysis; $(MAKE) clean; cd ..
+	cd NonSpecificEnzymeSearch; $(MAKE) clean; cd ..
+	cd ProteinParsimony; $(MAKE) clean; cd ..
+	cd ProteinScoringAndFdr; $(MAKE) clean; cd ..
 
-#	cd Gptmd; make clean; cd ..
-#	cd MetaDraw; make clean; cd ..
+#	cd Gptmd; $(MAKE) clean; cd ..
+#	cd MetaDraw; $(MAKE) clean; cd ..

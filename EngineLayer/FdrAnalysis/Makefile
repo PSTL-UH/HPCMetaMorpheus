@@ -17,7 +17,7 @@ OBJ = 	  FdrAnalysisEngine.o  FdrAnalysisResults.o  FdrInfo.o
 .SUFFIXES: .o.cpp
 
 all:    
-	make $(MMORPHEUS_LIB) 
+	$(MAKE) $(MMORPHEUS_LIB) 
 
 
 $(MMORPHEUS_LIB): $(HEADER) $(OBJ) 

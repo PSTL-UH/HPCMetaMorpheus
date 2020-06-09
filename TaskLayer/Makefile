@@ -29,13 +29,13 @@ OBJ = 	 DbForTask.o              \
 .SUFFIXES: .o.cpp
 
 all:    
-	make $(MMORPHEUS_LIB) 
-	cd CalibrationTask ; make ; cd ..
-	cd EventArgs ; make ; cd ..
-	cd SearchTask ; make ; cd ..
-	cd XLSearchTask ; make ; cd ..
+	$(MAKE) $(MMORPHEUS_LIB) 
+	cd CalibrationTask ; $(MAKE) ; cd ..
+	cd EventArgs ; $(MAKE) ; cd ..
+	cd SearchTask ; $(MAKE) ; cd ..
+	cd XLSearchTask ; $(MAKE) ; cd ..
 
-#	cd GPTMDTask ; make ; cd ..
+#	cd GPTMDTask ; $(MAKE) ; cd ..
 
 
 $(MMORPHEUS_LIB): $(HEADER) $(OBJ) 
@@ -47,9 +47,9 @@ $(OBJ):	$(HEADER)
 
 clean:  
 	rm -rf *.o *~
-	cd CalibrationTask ; make clean ; cd ..
-	cd EventArgs ; make clean ; cd ..
-	cd SearchTask ; make clean ; cd ..
-	cd XLSearchTask ; make clean ; cd ..
+	cd CalibrationTask ; $(MAKE) clean ; cd ..
+	cd EventArgs ; $(MAKE) clean ; cd ..
+	cd SearchTask ; $(MAKE) clean ; cd ..
+	cd XLSearchTask ; $(MAKE) clean ; cd ..
 
 #	cd GPTMDTask ; make clean ; cd ..
