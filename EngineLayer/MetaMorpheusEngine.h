@@ -51,15 +51,15 @@ namespace EngineLayer
 	public:
 		static std::unordered_map<DissociationType, double> complementaryIonConversionDictionary;
 
-		static EventHandler<SingleEngineEventArgs> *StartingSingleEngineHandler;
+		EventHandler<SingleEngineEventArgs> *StartingSingleEngineHandler;
 
-		static EventHandler<SingleEngineFinishedEventArgs> *FinishedSingleEngineHandler;
+		EventHandler<SingleEngineFinishedEventArgs> *FinishedSingleEngineHandler;
 
-		static EventHandler<StringEventArgs> *OutLabelStatusHandler;
+		EventHandler<StringEventArgs> *OutLabelStatusHandler;
 
-		static EventHandler<StringEventArgs> *WarnHandler;
+		EventHandler<StringEventArgs> *WarnHandler;
 
-		static EventHandler<ProgressEventArgs> *OutProgressHandler;
+		EventHandler<ProgressEventArgs> *OutProgressHandler;
 
 		static double CalculatePeptideScore(MsDataScan *thisScan, std::vector<MatchedFragmentIon*> &matchedFragmentIons, double maximumMassThatFragmentIonScoreIsDoubled);
 

@@ -69,7 +69,7 @@ namespace TaskLayer
             
 	protected:
             StringBuilder *const ProseCreatedWhileRunning = new StringBuilder();
-            static MyTaskResults *myTaskResults;
+            MyTaskResults *myTaskResults;
             
 	public:
             virtual ~MetaMorpheusTask()
@@ -97,16 +97,17 @@ namespace TaskLayer
             static EventHandler<StringEventArgs> *NewCollectionHandler = new EventHandler<StringEventArgs>();
             static EventHandler<ProgressEventArgs> *OutProgressHandler = new EventHandler<ProgressEventArgs>();
 #endif
-            static EventHandler<SingleTaskEventArgs> *FinishedSingleTaskHandler;
-            static EventHandler<SingleFileEventArgs> *FinishedWritingFileHandler;
-            static EventHandler<SingleTaskEventArgs> *StartingSingleTaskHandler;
-            static EventHandler<StringEventArgs> *StartingDataFileHandler;
-            static EventHandler<StringEventArgs> *FinishedDataFileHandler;
-            static EventHandler<StringEventArgs> *OutLabelStatusHandler;
-            static EventHandler<StringEventArgs> *WarnHandler;
-            static EventHandler<StringEventArgs> *LogHandler;
-            static EventHandler<StringEventArgs> *NewCollectionHandler;
-            static EventHandler<ProgressEventArgs> *OutProgressHandler;
+
+            EventHandler<SingleTaskEventArgs> *FinishedSingleTaskHandler;
+            EventHandler<SingleFileEventArgs> *FinishedWritingFileHandler;
+            EventHandler<SingleTaskEventArgs> *StartingSingleTaskHandler;
+            EventHandler<StringEventArgs> *StartingDataFileHandler;
+            EventHandler<StringEventArgs> *FinishedDataFileHandler;
+            EventHandler<StringEventArgs> *OutLabelStatusHandler;
+            EventHandler<StringEventArgs> *WarnHandler;
+            EventHandler<StringEventArgs> *LogHandler;
+            EventHandler<StringEventArgs> *NewCollectionHandler;
+            EventHandler<ProgressEventArgs> *OutProgressHandler;
             
             MyTask getTaskType() const;
             void setTaskType(MyTask value);
@@ -162,7 +163,7 @@ namespace TaskLayer
             
             void Status(const std::string &v, std::vector<std::string> &nestedIds);
             
-            static void Warn(const std::string &v);
+            void Warn(const std::string &v);
             
             void Log(const std::string &v, std::vector<std::string> &nestedIds);
             
@@ -180,11 +181,11 @@ namespace TaskLayer
             static std::pair<std::string, std::string> GetModsFromString (std::string value);
             
             //void SingleEngineHandlerInTask(std::any sender, SingleEngineFinishedEventArgs *e);
-            static void SingleEngineHandlerInTask(SingleEngineFinishedEventArgs e);
+            void SingleEngineHandlerInTask(SingleEngineFinishedEventArgs e);
             
-            static void FinishedSingleTask(const std::string &displayName);
+            void FinishedSingleTask(const std::string &displayName);
             
-            static void StartingSingleTask(const std::string &displayName);
+            void StartingSingleTask(const std::string &displayName);
             
 #ifdef NOT_NOW
             static std::vector<std::type_info> GetSubclassesAndItself(std::type_info type);

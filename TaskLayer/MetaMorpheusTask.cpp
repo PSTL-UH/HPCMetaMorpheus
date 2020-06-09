@@ -176,7 +176,8 @@ namespace TaskLayer
                     //Warn("Could not get precursor ion for MS2 scan #" + ms2scan->getOneBasedScanNumber() + "; " + ex.Message);
                     std::string s = "Could not get precursor ion for MS2 scan #";
                     s += ms2scan->getOneBasedScanNumber() + "; ";
-                    Warn(s);
+                    //Warn(s);
+                    std::cout << s << std::endl;
                     continue;
                 }
                 
@@ -366,8 +367,8 @@ namespace TaskLayer
         trw.tomlWriteNewFile(output_path, tomlConfig);
 
         
-        MetaMorpheusEngine::FinishedSingleEngineHandler->addListener("SingleEngineHandlerInTask",
-                                                                     SingleEngineHandlerInTask);
+        //MetaMorpheusEngine::FinishedSingleEngineHandler->addListener("SingleEngineHandlerInTask",
+        //                                                             SingleEngineHandlerInTask);
         try
         {
             clock_t begin = clock();
@@ -434,7 +435,7 @@ namespace TaskLayer
         }
         catch (const std::runtime_error &e)
         {
-            MetaMorpheusEngine::FinishedSingleEngineHandler->removeListener("SingleEngineHandlerInTask");
+            //MetaMorpheusEngine::FinishedSingleEngineHandler->removeListener("SingleEngineHandlerInTask");
             std::string resultsFileName = output_folder + "/results.txt";
             //e.Data->Add("folder", output_folder);
             std::ofstream file(resultsFileName);
@@ -498,7 +499,7 @@ namespace TaskLayer
         std::vector<std::string> svec2 = {displayName};
         FinishedWritingFile(proseFilePath, svec2);
         
-        MetaMorpheusEngine::FinishedSingleEngineHandler->removeListener("SingleEngineHandlerInTask");
+        //MetaMorpheusEngine::FinishedSingleEngineHandler->removeListener("SingleEngineHandlerInTask");
         return myTaskResults;
     }
     

@@ -45,7 +45,7 @@ namespace TaskLayer
         MyFileManager(bool disposeOfFileWhenDone);
         
         //static TangibleEvent<EventHandler<StringEventArgs>> *WarnHandler = new TangibleEvent<EventHandler<StringEventArgs>>();
-        static EventHandler<StringEventArgs> *WarnHandler;
+        EventHandler<StringEventArgs> *WarnHandler;
         
         bool SeeIfOpen(const std::string path);
         
