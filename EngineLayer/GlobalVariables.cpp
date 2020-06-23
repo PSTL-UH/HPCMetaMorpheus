@@ -18,14 +18,14 @@ namespace EngineLayer
     std::vector<Modification*> GlobalVariables::privateUnimodDeserialized;
     std::vector<Modification*> GlobalVariables::privateUniprotDeseralized;
     //UsefulProteomicsDatabases::obo *GlobalVariables::privatePsiModDeserialized;
-    obo *GlobalVariables::privatePsiModDeserialized;
+    std::unique_ptr<obo> GlobalVariables::privatePsiModDeserialized;
     std::unordered_map<std::string, Modification*> GlobalVariables::privateAllModsKnownDictionary;
     std::unordered_map<std::string, DissociationType> GlobalVariables::privateAllSupportedDissociationTypes;
     std::string GlobalVariables::privateExperimentalDesignFileName;
     std::vector<Modification*> GlobalVariables::_AllModsKnown;
     std::unordered_set<std::string> GlobalVariables::_AllModTypesKnown;
     
-    GlobalVariables::StaticConstructor::StaticConstructor()
+    void GlobalVariables::GlobalVariables_init()
     {
         privateMetaMorpheusVersion = "0.0.295";
         
@@ -69,19 +69,20 @@ namespace EngineLayer
 #endif
         privateDataDir = std::experimental::filesystem::current_path();
         
-        std::string datadir = FileSystem::combine(getDataDir(), "Data" );
-        privateElementsLocation = FileSystem::combine(datadir, "elements.dat");
+        std::string datadir = getDataDir() + "/Data" ;
+        privateElementsLocation = datadir +  "/elements.dat";
         UsefulProteomicsDatabases::Loaders::LoadElements(getElementsLocation());
         
         privateExperimentalDesignFileName = "ExperimentalDesign.tsv";
 
-        privateUnimodDeserialized = UsefulProteomicsDatabases::Loaders::LoadUnimod(FileSystem::combine(datadir, "unimod.xml")); //.ToList();
-        privatePsiModDeserialized = UsefulProteomicsDatabases::Loaders::LoadPsiMod(FileSystem::combine(datadir, "PSI-MOD.obo.xml"));
-        auto formalChargesDictionary = UsefulProteomicsDatabases::Loaders::GetFormalChargesDictionary(getPsiModDeserialized());
-        privateUniprotDeseralized = UsefulProteomicsDatabases::Loaders::LoadUniprot(FileSystem::combine(datadir, "ptmlist.txt"), formalChargesDictionary); //.ToList();
+        privateUnimodDeserialized = UsefulProteomicsDatabases::Loaders::LoadUnimod(datadir + "/unimod.xml"); 
+        privatePsiModDeserialized = UsefulProteomicsDatabases::Loaders::LoadPsiMod(datadir + "PSI-MOD.obo.xml");
+
+        auto formalChargesDictionary = UsefulProteomicsDatabases::Loaders::GetFormalChargesDictionary(privatePsiModDeserialized);
+        privateUniprotDeseralized = UsefulProteomicsDatabases::Loaders::LoadUniprot(datadir + "/ptmlist.txt", formalChargesDictionary); 
         
         //for (auto modFile : Directory::GetFiles(FileSystem::combine(getDataDir(), "Mods")))
-        for (auto  modFile : std::experimental::filesystem::directory_iterator(FileSystem::combine(getDataDir(), "Mods")))
+        for (auto  modFile : std::experimental::filesystem::directory_iterator(getDataDir() + "/Mods"))
         {
             std::vector<std::tuple<Modification *, std::string>> errorMods;
             std::vector<Modification *> mods;
@@ -140,11 +141,13 @@ namespace EngineLayer
             });
     }
     
-    GlobalVariables::StaticConstructor GlobalVariables::staticConstructor;
     std::vector<std::string> GlobalVariables::ErrorsReadingMods;
     
     std::string GlobalVariables::getDataDir()
     {
+        if ( _AllModsKnown.empty() ) {
+            GlobalVariables_init();
+        }
         return privateDataDir;
     }
     
@@ -184,10 +187,10 @@ namespace EngineLayer
     }
     
     //UsefulProteomicsDatabases::obo *GlobalVariables::getPsiModDeserialized()
-    obo *GlobalVariables::getPsiModDeserialized()
-    {
-        return privatePsiModDeserialized;
-    }
+    //std::unique_ptr<obo> GlobalVariables::getPsiModDeserialized()
+    //{
+    //    return privatePsiModDeserialized;
+    // }
     
     std::vector<Modification*> GlobalVariables::getAllModsKnown()
     {

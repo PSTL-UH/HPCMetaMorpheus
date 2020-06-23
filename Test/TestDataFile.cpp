@@ -8,7 +8,7 @@ using namespace Proteomics::ProteolyticDigestion;
 namespace Test
 {
     
-    TestDataFile::TestDataFile()  : MsDataFile(2,  new MassSpectrometry::SourceFile(nullptr, nullptr, nullptr, nullptr, nullptr ))
+    TestDataFile::TestDataFile()  : MsDataFile(2,  new MassSpectrometry::SourceFile("", "", "", "", "" ))
     {
         
         //auto mz1 = std::vector<double> {50, 60, 70, 80, 90, 402.18629720155.ToMz(2)};
@@ -42,7 +42,7 @@ namespace Test
     }
     
     TestDataFile::TestDataFile(double closeMassDifference) :
-        MsDataFile(2,  new MassSpectrometry::SourceFile(nullptr, nullptr, nullptr, nullptr, nullptr ))
+        MsDataFile(2,  new MassSpectrometry::SourceFile("", "", "", "", "" ))
     {
         auto mz1 = std::vector<double> {50, 60, 70, 80, 90, Chemistry::ClassExtensions::ToMz(402.18629720155,2)};
         auto intensities1 = std::vector<double> {1, 1, 1, 1, 1, 1};
@@ -73,7 +73,7 @@ namespace Test
     }
     
     TestDataFile::TestDataFile(bool emptyScan) :
-        MsDataFile( 2,  new MassSpectrometry::SourceFile(nullptr, nullptr, nullptr, nullptr, nullptr ))
+        MsDataFile( 2,  new MassSpectrometry::SourceFile("", "", "", "", "" ))
     {
         std::vector<double> mz1 = {50};
         std::vector<double> intensities1 =  {1};
@@ -105,7 +105,7 @@ namespace Test
     }
     
     TestDataFile::TestDataFile(const std::string &slightlyLargerDataFile) :
-        MsDataFile(2,  new MassSpectrometry::SourceFile(nullptr, nullptr, nullptr, nullptr, nullptr ))
+        MsDataFile(2,  new MassSpectrometry::SourceFile("", "", "", "", "" ))
     {
         std::vector<double> mz1 = {50, 60, 70, 80, 90, Chemistry::ClassExtensions::ToMz(630.27216, 2)};
         std::vector<double> intensities1 =  {1, 1, 1, 1, 1, 1};
@@ -138,7 +138,7 @@ namespace Test
     }
     
     TestDataFile::TestDataFile(double precursor, std::vector<double> &products) :
-        MsDataFile(2,  new MassSpectrometry::SourceFile(nullptr, nullptr, nullptr, nullptr, nullptr ))
+        MsDataFile(2,  new MassSpectrometry::SourceFile("", "", "", "", "" ))
     {
         std::vector<double> mz1 = {Chemistry::ClassExtensions::ToMz(precursor, 2)};
         std::vector<double> intensities1 =  {1};
@@ -173,7 +173,7 @@ namespace Test
     }
     
     TestDataFile::TestDataFile(std::vector<PeptideWithSetModifications*> &pepWithSetModss, bool additionalMasses) :
-        MsDataFile(2,  new MassSpectrometry::SourceFile("(no nativeID format)", "mzML format", nullptr, "SHA-1", "fake.mzML", nullptr))
+        MsDataFile(2,  new MassSpectrometry::SourceFile("(no nativeID format)", "mzML format", "", "SHA-1", "fake.mzML", ""))
     {
         auto ScansHere = new std::vector<MsDataScan*>();
         for (int i = 0; i < (int)pepWithSetModss.size(); i++)
@@ -235,7 +235,7 @@ namespace Test
     }
     
     TestDataFile::TestDataFile(PeptideWithSetModifications *pepWithSetMods) :
-        MsDataFile(2,  new MassSpectrometry::SourceFile("(no nativeID format)", "mzML format", nullptr, "SHA-1", "(C:\fake.mzML)", nullptr))
+        MsDataFile(2,  new MassSpectrometry::SourceFile("(no nativeID format)", "mzML format", "", "SHA-1", "fake.mzML", ""))
     {
         std::vector<double> mz1 = {Chemistry::ClassExtensions::ToMz(pepWithSetMods->getMonoisotopicMass(), 2),
                                    Chemistry::ClassExtensions::ToMz(pepWithSetMods->getMonoisotopicMass() + Constants::C13MinusC12, 2),
@@ -289,7 +289,7 @@ namespace Test
     }
     
     TestDataFile::TestDataFile(PeptideWithSetModifications *pepWithSetMods, const std::string &v) :
-        MsDataFile(2,  new MassSpectrometry::SourceFile(nullptr, nullptr, nullptr, nullptr, nullptr ))
+        MsDataFile(2,  new MassSpectrometry::SourceFile( "", "", "", "", "" ))
     {
         if (v == "quadratic")
         {
@@ -349,7 +349,7 @@ namespace Test
     }
     
     TestDataFile::TestDataFile(PeptideWithSetModifications *pepWithSetMods, int charge, double intensity, double rt) :
-        MsDataFile(2,  new MassSpectrometry::SourceFile(nullptr, nullptr, nullptr, nullptr, nullptr ))
+        MsDataFile(2,  new MassSpectrometry::SourceFile("", "", "", "", "" ))
     {
         std::vector<double> mz1 = {Chemistry::ClassExtensions::ToMz(pepWithSetMods->getMonoisotopicMass(), charge),
                                    Chemistry::ClassExtensions::ToMz(pepWithSetMods->getMonoisotopicMass() + 1.003, charge),
@@ -402,7 +402,7 @@ namespace Test
     }
     
     TestDataFile::TestDataFile(int MS3) :
-        MsDataFile(2,  new MassSpectrometry::SourceFile(nullptr, nullptr, nullptr, nullptr, nullptr ))
+        MsDataFile(2,  new MassSpectrometry::SourceFile("", "", "", "", "" ))
     {
         std::vector<double> mz1 = {50, 60, 70, 80, 90,
                                    Chemistry::ClassExtensions::ToMz(764.1376, 2)};
@@ -471,7 +471,7 @@ namespace Test
     
     TestDataFile::TestDataFile(std::vector<double> &ms2Mz, std::vector<double> &ms2Intensities, double precursorMass,
                                int precursorZ, double rt) :
-        MsDataFile(2,  new MassSpectrometry::SourceFile(nullptr, nullptr, nullptr, nullptr, nullptr ))
+        MsDataFile(2,  new MassSpectrometry::SourceFile("", "", "", "", "" ))
     {
         std::vector<double> v1 = {Chemistry::ClassExtensions::ToMz(precursorMass, precursorZ),
                                   Chemistry::ClassExtensions::ToMz(precursorMass + 1.003, precursorZ)};

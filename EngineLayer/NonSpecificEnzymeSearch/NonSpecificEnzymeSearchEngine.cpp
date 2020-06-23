@@ -23,7 +23,9 @@ namespace EngineLayer
     namespace NonSpecificEnzymeSearch
     {
 
-        const double NonSpecificEnzymeSearchEngine::WaterMonoisotopicMass = PeriodicTable::GetElement("H")->getPrincipalIsotope()->getAtomicMass() * 2 + PeriodicTable::GetElement("O")->getPrincipalIsotope()->getAtomicMass();
+        //const double NonSpecificEnzymeSearchEngine::WaterMonoisotopicMass = PeriodicTable::GetElement("H")->getPrincipalIsotope()->getAtomicMass() * 2 + PeriodicTable::GetElement("O")->getPrincipalIsotope()->getAtomicMass();
+        // Edgar: replacing by the actual value obtained by running
+        const double NonSpecificEnzymeSearchEngine::WaterMonoisotopicMass = 18.01056468403;
         
         NonSpecificEnzymeSearchEngine::NonSpecificEnzymeSearchEngine(std::vector<std::vector<PeptideSpectralMatch*>> &globalPsms,
                                                                      std::vector<Ms2ScanWithSpecificMass*> &listOfSortedms2Scans,

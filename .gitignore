@@ -2,10 +2,13 @@
 *.a
 *~
 *\#
+lib
 typescript
-Test/ChemicalFormulaTestFixture
-Test/ElementsAndIsotopesTests
-Test/TestModifications
-Test/TestAminoAcids
+Test/BinGenerationTest
+Test/BinGenerationTest.xml
+Test/BinGenerationTest.mzML
+Test/config.toml
+Test/TestToml
 Test/elements.dat
+Test/proteases.tsv
 

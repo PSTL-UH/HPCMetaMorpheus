@@ -7,6 +7,8 @@
 #include <stdexcept>
 #include <any>
 #include <typeinfo>
+#include <fstream>
+
 #include "exceptionhelper.h"
 #include "stringhelper.h"
 #include "stringbuilder.h"
@@ -65,7 +67,8 @@ namespace TaskLayer
 	public:
             //static TomlSettings *const tomlConfig;
             // static toml::Table tomlConfig;
-            static toml::Value tomlConfig;
+            std::ofstream tomlFile;
+            virtual void writeTomlConfig ( std::string &filename, std::ofstream &tomlFd);
             
 	protected:
             StringBuilder *const ProseCreatedWhileRunning = new StringBuilder();

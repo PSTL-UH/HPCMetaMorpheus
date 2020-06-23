@@ -61,8 +61,11 @@ namespace TaskLayer
         
         TaskLayer::SearchParameters *getSearchParameters() const;
         void setSearchParameters(TaskLayer::SearchParameters *value);
+
+        void writeTomlConfig(std::string &filename, std::ofstream &tomlFd );
         
-        static MassDiffAcceptor *GetMassDiffAcceptor(Tolerance *precursorMassTolerance, MassDiffAcceptorType massDiffAcceptorType,
+        static MassDiffAcceptor *GetMassDiffAcceptor(Tolerance *precursorMassTolerance,
+                                                     MassDiffAcceptorType massDiffAcceptorType,
                                                      const std::string &customMdac);
         
     protected:

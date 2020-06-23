@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
+#include <memory>
 #include "stringhelper.h"
 #include "tangible_filesystem.h"
 
@@ -33,28 +34,20 @@ namespace EngineLayer
 		static GlobalSettings privateGlobalSettings;
 		static std::vector<Modification*> privateUnimodDeserialized;
 		static std::vector<Modification*> privateUniprotDeseralized;
-		//static UsefulProteomicsDatabases::obo *privatePsiModDeserialized;
-		static obo *privatePsiModDeserialized;
+
+		static std::unique_ptr<obo> privatePsiModDeserialized;
 		static std::unordered_map<std::string, Modification*> privateAllModsKnownDictionary;
 		static std::unordered_map<std::string, DissociationType> privateAllSupportedDissociationTypes;
 		static std::string privateExperimentalDesignFileName;
 
 		static std::vector<Modification*> _AllModsKnown;
 		static std::unordered_set<std::string> _AllModTypesKnown;
-
-	private:
-		class StaticConstructor
-		{
-		public:
-			StaticConstructor();
-		};
-
-	private:
-		static GlobalVariables::StaticConstructor staticConstructor;
-
-
+                
+                static void GlobalVariables_init();
+                
 	public:
 		static std::vector<std::string> ErrorsReadingMods;
+
 		// File locations
 		static std::string getDataDir();
 		static bool getStopLoops();
@@ -64,10 +57,10 @@ namespace EngineLayer
 		static GlobalSettings getGlobalSettings();
 		static std::vector<Modification*> getUnimodDeserialized();
 		static std::vector<Modification*> getUniprotDeseralized();
-		//static UsefulProteomicsDatabases::obo *getPsiModDeserialized();
-		static obo *getPsiModDeserialized();
+
+		//static std::unique_ptr<obo> getPsiModDeserialized();
 		static std::vector<Modification*> getAllModsKnown();
-		//static std::vector<std::string> getAllModTypesKnown();
+
 		static std::unordered_set<std::string> getAllModTypesKnown();
 		static std::unordered_map<std::string, Modification*> getAllModsKnownDictionary();
 		static void setAllModsKnownDictionary(const std::unordered_map<std::string, Modification*> &value);

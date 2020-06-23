@@ -10,13 +10,13 @@ include Makefile.defs
 
 
 all:    
-	cd EngineLayer ; make ; cd ..
-	cd TaskLayer ; make ; cd ..
-	cd CMD ; make ; cd ..
+	cd EngineLayer ; $(MAKE) ; cd ..
+	cd TaskLayer ; $(MAKE) ; cd ..
+	cd CMD ; $(MAKE) ; cd ..
 
 clean:  
-	cd EngineLayer ; make clean ; cd ..
-	cd TaskLayer ; make clean ; cd ..
-	cd CMD ; make clean ; cd ..
+	cd EngineLayer ; $(MAKE) clean ; cd ..
+	cd TaskLayer ; $(MAKE) clean ; cd ..
+	cd CMD ; $(MAKE) clean ; cd ..
 	cd $(MMORPHEUS_LIB_DIR) ; rm -f $(MMORPHEUS_LIB) ; cd ..
 	rm -rf *.o *~

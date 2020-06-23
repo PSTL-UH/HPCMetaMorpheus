@@ -18,6 +18,8 @@
 
 #include "Chemistry/ClassExtensions.h"
 #include "UsefulProteomicsDatabases/UsefulProteomicsDatabases.h"
+#include "MassSpectrometry/Enums/DissociationType.h"
+#include "Proteomics/ProteolyticDigestion/CleavageSpecificity.h"
 
 //For XML serialization / deserialization
 #include "include/cereal/types/memory.hpp"
@@ -98,10 +100,98 @@ namespace TaskLayer
                                     }); 
         });
 #endif
+    void MetaMorpheusTask::writeTomlConfig (std::string &filename, std::ofstream &tomlFd )
+    {
+        if ( !tomlFd.is_open() ) {
+            tomlFd.open(filename, std::ios_base::app );
+            if ( !tomlFd.is_open() ) {
+                std::cout << "Could not open file " << filename << std::endl;
+                return;
+            }
+        }
 
-    // toml::Table MetaMorpheusTask::tomlConfig;
-    toml::Value MetaMorpheusTask::tomlConfig;
+        CommonParameters *cparams = getCommonParameters();
+        toml::Table common_params;
+        common_params["MaxThreadsToUsePerFile"] = cparams->getMaxThreadsToUsePerFile();
 
+        auto var1 = cparams->getListOfModsFixed();
+        std::vector<std::string> vecvar1;
+        for ( auto v : *var1 ) {
+            std::string s = std::get<0>(v) + "\t" + std::get<1>(v);
+            vecvar1.push_back(s);
+        }
+        std::string del  = "\t\t";
+        std::string res1 = StringHelper::join(vecvar1, del);
+        common_params["ListOfModsFixed"] = res1;
+
+        auto var2 = cparams->getListOfModsVariable();
+        std::vector<std::string> vecvar2;
+        for ( auto v : *var2 ) {
+            std::string s = std::get<0>(v) + "\t" + std::get<1>(v);
+            vecvar2.push_back(s);
+        }
+        std::string res2 = StringHelper::join(vecvar2, del);
+        common_params["ListOfModsVariable"] = res2;
+
+        common_params["DoPrecursorDeconvolution"] = cparams->getDoPrecursorDeconvolution();
+        common_params["UseProvidedPrecursorInfo"] = cparams->getUseProvidedPrecursorInfo();
+        common_params["DeconvolutionIntensityRatio"] = cparams->getDeconvolutionIntensityRatio();
+        common_params["DeconvolutionMaxAssumedChargeState"] = cparams->getDeconvolutionMaxAssumedChargeState();
+
+        std::string res3 = StringHelper::formatSimple("{0}{1} PPM", "±",
+                                                      cparams->getDeconvolutionMassTolerance()->getValue());
+        common_params["DeconvolutionMassTolerance"] = res3;
+        common_params["TotalPartitions"] = cparams->getTotalPartitions();
+
+        std::string res4 = StringHelper::formatSimple("{0}{1} PPM", "±",
+                                                      cparams->getProductMassTolerance()->getValue());
+        common_params["ProductMassTolerance"] = res4 ;
+
+        std::string res5 = StringHelper::formatSimple("{0}{1} PPM", "±",
+                                                      cparams->getPrecursorMassTolerance()->getValue());
+        common_params["PrecursorMassTolerance"] = res5;
+        common_params["AddCompIons"] = cparams->getAddCompIons();
+        common_params["ScoreCutoff"] = cparams->getScoreCutoff();
+        common_params["ReportAllAmbiguity"] = cparams->getReportAllAmbiguity();
+        common_params["TopNpeaks"] = cparams->getTopNpeaks();
+        common_params["MinRatio"] = cparams->getMinRatio();
+        common_params["TrimMs1Peaks"] = cparams->getTrimMsMsPeaks();
+        common_params["TrimMsMsPeaks"] = cparams->getTrimMsMsPeaks();
+        common_params["UseDeltaScore"] = cparams->getUseDeltaScore();
+        common_params["CalculateEValue"] =  cparams->getCalculateEValue();
+        common_params["QValueOutputFilter"] = cparams->getQValueOutputFilter();
+
+        common_params["DissociationType"] = GetDissocationType::GetDissocationTypeAsString(cparams->getDissociationType());
+        common_params["AssumeOrphanPeaksAreZ1Fragments"] = cparams->getAssumeOrphanPeaksAreZ1Fragments();
+        common_params["MaxHeterozygousVariants"] = cparams->getMaxHeterozygousVariants();
+        common_params["MinVariantDepth"] = cparams->getMinVariantDepth();
+
+        tomlFd << std::endl;
+        tomlFd << "[CommonParameters]" << std::endl;
+        tomlFd << common_params ;
+
+        toml::Table digest_params;
+        DigestionParams *dparams = cparams->getDigestionParams();
+        
+        digest_params["MaxMissedCleavages"] = dparams->getMaxMissedCleavages();
+        digest_params["InitiatorMethionineBehavior"] = ProteolyticDigestion::InitiatorMethionineBehaviorToString(dparams->getInitiatorMethionineBehavior());
+        digest_params["MinPeptideLength"] = dparams->getMinPeptideLength();
+        digest_params["MaxPeptideLength"] = dparams->getMaxPeptideLength();
+        digest_params["MaxModificationIsoforms"] = dparams->getMaxModificationIsoforms();
+        digest_params["MaxModsForPeptide"] = dparams->getMaxModsForPeptide();
+        digest_params["Protease"] = dparams->getProtease()->ToString();
+        digest_params["SearchModeType"] = ProteolyticDigestion::CleavageSpecificityExtension::GetCleavageSpecificityAsString(dparams->getSearchModeType());
+        digest_params["FragmentationTerminus"] = Fragmentation:: FragmentationTerminusToString(dparams->getFragmentationTerminus());
+        digest_params["SpecificProtease"] = dparams->getSpecificProtease()->ToString();
+
+        tomlFd << std::endl;
+        tomlFd << "[CommonParameters.DigestionParams]" << std::endl;
+        tomlFd << digest_params;
+
+        tomlFd.close();
+        
+        return;
+    }
     MetaMorpheusTask::MetaMorpheusTask(MyTask taskType)
     {
         this->setTaskType(taskType);
@@ -353,7 +443,7 @@ namespace TaskLayer
                                              std::vector<std::string> &currentRawDataFilepathList,
                                              const std::string &displayName)
     {
-        StartingSingleTask(displayName);
+        //StartingSingleTask(displayName);
         
 #ifdef ORIG
         auto tomlFileName = FileSystem::combine(Directory::GetParent(output_folder)->ToString(), "Task Settings", displayName + "config.toml");
@@ -362,9 +452,9 @@ namespace TaskLayer
 #endif
 
         std::experimental::filesystem::path output_directory = output_folder;
-        std::string output_path = output_directory.parent_path().string() + "Task Settings" + displayName + "config.toml";
-        Toml trw;
-        trw.tomlWriteNewFile(output_path, tomlConfig);
+        //std::string output_path = output_directory.parent_path().string() + "/Task Settings/" + "config.toml";
+        std::string output_path = output_directory.parent_path().string() + "/config.toml";
+        this->writeTomlConfig(output_path, tomlFile);
 
         
         //MetaMorpheusEngine::FinishedSingleEngineHandler->addListener("SingleEngineHandlerInTask",
@@ -392,6 +482,7 @@ namespace TaskLayer
                     //public static T ReadFile<T>(string filePath, TomlSettings settings)
                     TomlTable *fileSpecificSettings = Toml::ReadFile(fileSpecificTomlPath, tomlConfig);
 #endif
+                    Toml trw;
                     toml::Value toml_value = trw.tomlReadFile(fileSpecificTomlPath);
                     
                     //original

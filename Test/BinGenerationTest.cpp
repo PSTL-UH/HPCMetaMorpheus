@@ -31,7 +31,8 @@ int main ( int argc, char **argv )
     std::cout << i << ". PeriodicTableLoader" << std::endl;
     const std::string elfile="elements.dat";
     const std::string &elr=elfile;
-    UsefulProteomicsDatabases::PeriodicTableLoader::Load (elr);
+    Chemistry::PeriodicTable::Load (elr);
+    //UsefulProteomicsDatabases::PeriodicTableLoader::Load (elr);
 
     std::cout << ++i << ". TestBinGeneration" << std::endl;
     Test::BinGenerationTest::TestBinGeneration();

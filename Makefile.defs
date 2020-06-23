@@ -33,7 +33,7 @@ AR_FLAGS    = clr
 
 
 CC          = gcc
-CFLAGS      = -g -O0
+CFLAGS      = -g -O0 -Wall
 
 
 CXX         = g++              

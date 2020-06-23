@@ -19,6 +19,7 @@
 #include "../../EngineLayer/EventArgs/ProgressEventArgs.h"
 #include "PostSearchAnalysisParameters.h"
 #include "PostSearchAnalysisTask.h"
+#include "UsefulProteomicsDatabases/DecoyType.h"
 
 #include "stringhelper.h"
 
@@ -35,6 +36,77 @@ namespace TaskLayer
         setSearchParameters(&tempVar2);
     }
     
+    void  SearchTask::writeTomlConfig(std::string &filename, std::ofstream &tomlFd )
+    {
+        if ( !tomlFd.is_open() ) {
+            tomlFd.open(filename );
+            if ( !tomlFd.is_open() ) {
+                std::cout << "Could not open file " << filename << std::endl;
+                return;
+            }
+        }
+        
+        toml::Value v;
+        std::string key = "TaskType", value = "Search";
+        v.set ( key, value);
+        tomlFd << v;
+
+        SearchParameters *sparams = getSearchParameters();
+        toml::Table search_params;
+
+        search_params["DisposeOfFileWhenDone"] = sparams->getDisposeOfFileWhenDone();
+        search_params["DoParsimony"] = sparams-> getDoParsimony();
+        search_params["ModPeptidesAreDifferent"] = sparams->getModPeptidesAreDifferent();
+        search_params["NoOneHitWonders"] = sparams->getNoOneHitWonders();
+        search_params["MatchBetweenRuns"] = sparams->getMatchBetweenRuns();
+        search_params["Normalize"] = sparams->getNormalize();
+        search_params["QuantifyPpmTol"] = sparams->getQuantifyPpmTol();
+        search_params["DoHistogramAnalysis"] = sparams->getDoHistogramAnalysis();
+        search_params["SearchTarget"] = sparams->getSearchTarget();
+        auto var = sparams->getDecoyType();
+        search_params["DecoyType"] =  UsefulProteomicsDatabases::DecoyTypeToString(var);
+        search_params["MassDiffAcceptorType"] = TaskLayer::MassDiffAcceptorTypeToString(sparams->getMassDiffAcceptorType());
+        search_params["WritePrunedDatabase"] = sparams->getWritePrunedDatabase();
+        search_params["KeepAllUniprotMods"] = sparams->getKeepAllUniprotMods();
+        search_params["DoLocalizationAnalysis"] = sparams->getDoLocalizationAnalysis();
+        search_params["DoQuantification"] = sparams->getDoQuantification();
+        search_params["SearchType"] = TaskLayer::SearchTypeToString(sparams->getSearchType());
+
+        toml::Array sarr;
+        auto var2 = sparams->getLocalFdrCategories();
+        for ( auto t: var2 ) {
+            sarr.push_back(EngineLayer::FdrCategoryToString(t));
+        }
+        search_params["LocalFdrCategories"] = sarr;
+        search_params["MaxFragmentSize"] = sparams->getMaxFragmentSize();
+        search_params["HistogramBinTolInDaltons"] = sparams->getHistogramBinTolInDaltons();
+        search_params["MaximumMassThatFragmentIonScoreIsDoubled"] = sparams->getMaximumMassThatFragmentIonScoreIsDoubled();
+        search_params["WriteMzId"] = sparams->getWriteMzId();
+        search_params["WritePepXml"] = sparams->getWritePepXml();
+        search_params["WriteDecoys"] = sparams->getWriteDecoys();
+        search_params["WriteContaminants"] = sparams->getWriteContaminants();
+        
+        tomlFd << std::endl;
+        tomlFd << "[SearchParameters]" << std::endl;
+        tomlFd << search_params;        
+        
+        std::unordered_map<std::string, int> modsmap = sparams->getModsToWriteSelection();
+        toml::Value v2;
+        for ( auto p: modsmap ) {
+            std::string key = "\'" + p.first + "\'";
+            int value = p.second;
+            v2.set ( key, value);
+        }
+        tomlFd << std::endl;
+        tomlFd << "[SearchParameters.ModsToWriteSelection]" << std::endl;
+        tomlFd << v2;
+        
+        MetaMorpheusTask::writeTomlConfig(filename, tomlFd );
+        if ( tomlFd.is_open() ) {
+            tomlFd.close();
+        }
+        return;
+    }
     TaskLayer::SearchParameters *SearchTask::getSearchParameters() const
     {
         return privateSearchParameters;
