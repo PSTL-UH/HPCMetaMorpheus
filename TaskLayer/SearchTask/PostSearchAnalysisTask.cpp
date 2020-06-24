@@ -211,8 +211,8 @@ namespace TaskLayer
         std::vector<std::string> svec;
         svec.push_back(getParameters()->getSearchTaskId());
         auto tmppsms = getParameters()->getAllPsms();
-        FdrAnalysisEngine tempVar( tmppsms, massDiffAcceptorNumNotches, getCommonParameters(), svec);
-        (&tempVar)->Run();
+        auto tempVar = new FdrAnalysisEngine ( tmppsms, massDiffAcceptorNumNotches, getCommonParameters(), svec);
+        tempVar->Run();
         
         // sort by q-value because of group FDR stuff
         // e.g. multiprotease FDR, non/semi-specific protease, etc
@@ -254,18 +254,18 @@ namespace TaskLayer
         // run parsimony
         auto tmppsms = getParameters()->getAllPsms();
         std::vector<std::string> svec = {getParameters()->getSearchTaskId()};
-        ProteinParsimonyEngine tempVar(tmppsms, getParameters()->getSearchParameters()->getModPeptidesAreDifferent(),
+        auto tempVar = new ProteinParsimonyEngine (tmppsms, getParameters()->getSearchParameters()->getModPeptidesAreDifferent(),
                                        getCommonParameters(), svec );
-        ProteinParsimonyResults *proteinAnalysisResults = static_cast<ProteinParsimonyResults*>((&tempVar)->Run());
+        ProteinParsimonyResults *proteinAnalysisResults = static_cast<ProteinParsimonyResults*>(tempVar->Run());
         
         // score protein groups and calculate FDR
         auto tmp = proteinAnalysisResults->getProteinGroups();
         tmppsms = getParameters()->getAllPsms();
-        ProteinScoringAndFdrEngine tempVar2(tmp, tmppsms,
+        auto tempVar2 = new ProteinScoringAndFdrEngine (tmp, tmppsms,
                                             getParameters()->getSearchParameters()->getNoOneHitWonders(),
                                             getParameters()->getSearchParameters()->getModPeptidesAreDifferent(),
                                             true, getCommonParameters(), svec);
-        ProteinScoringAndFdrResults *proteinScoringAndFdrResults = static_cast<ProteinScoringAndFdrResults*>((&tempVar2)->Run());
+        ProteinScoringAndFdrResults *proteinScoringAndFdrResults = static_cast<ProteinScoringAndFdrResults*>(tempVar2->Run());
         
         setProteinGroups(proteinScoringAndFdrResults->SortedAndScoredProteinGroups);
         
@@ -311,8 +311,8 @@ namespace TaskLayer
                         tmppsms.push_back(b);
                     }
                 }
-                LocalizationEngine tempVar(tmppsms, myMsDataFile, combinedParams, svec2);
-                (&tempVar)->Run();
+                auto tempVar = new LocalizationEngine (tmppsms, myMsDataFile, combinedParams, svec2);
+                tempVar->Run();
                 getParameters()->getMyFileManager()->DoneWithFile(origDataFile);
                 std::vector<std::string> svec3 = {getParameters()->getSearchTaskId(), "Individual Spectra Files",
                                                   origDataFile};
@@ -1095,12 +1095,12 @@ namespace TaskLayer
                     
                     std::vector<std::string> tmpvec = {getParameters()->getSearchTaskId(),
                                                        "Individual Spectra Files", fullFilePath};
-                    ProteinScoringAndFdrEngine tempVar(subsetProteinGroupsForThisFile, psmsForThisFile,
+                    auto tempVar = new ProteinScoringAndFdrEngine (subsetProteinGroupsForThisFile, psmsForThisFile,
                                                        getParameters()->getSearchParameters()->getNoOneHitWonders(),
                                                        getParameters()->getSearchParameters()->getModPeptidesAreDifferent(),
                                                        false, getCommonParameters(),
                                                        tmpvec );
-                    ProteinScoringAndFdrResults *subsetProteinScoringAndFdrResults = static_cast<ProteinScoringAndFdrResults*>((&tempVar)->Run());
+                    ProteinScoringAndFdrResults *subsetProteinScoringAndFdrResults = static_cast<ProteinScoringAndFdrResults*>(tempVar->Run());
                     
                     subsetProteinGroupsForThisFile = subsetProteinScoringAndFdrResults->SortedAndScoredProteinGroups;
                     

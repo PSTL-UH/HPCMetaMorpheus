@@ -473,7 +473,8 @@ namespace TaskLayer
                 std::string rawFilePath = currentRawDataFilepathList[i];
                 std::experimental::filesystem::path rdpath = rawFilePath;
                 std::string directory = rdpath.parent_path();
-                std::string fname = rawFilePath.substr(rawFilePath.find_last_of("."));
+                std::string basename = rawFilePath.substr(rawFilePath.find_last_of("/"));
+                std::string fname = basename.substr(1, basename.find_last_of(".")-1);
                 std::string fileSpecificTomlPath = directory + "/" + fname + ".toml";
                 if (std::experimental::filesystem::exists(fileSpecificTomlPath))
                 {
@@ -853,22 +854,39 @@ namespace TaskLayer
     {
         std::vector<std::string> s = {id};
         StringEventArgs tempVar(v, s);
-        if ( OutLabelStatusHandler != nullptr )
+        if ( OutLabelStatusHandler != nullptr ) {
             OutLabelStatusHandler->Invoke(tempVar);
+        }
+        else {
+            std::cout << v << " " << id << std::endl;
+        }
+        
     }
     
     void MetaMorpheusTask::Status(const std::string &v, std::vector<std::string> &nestedIds)
     {
         StringEventArgs tempVar(v, nestedIds);
-        if ( OutLabelStatusHandler != nullptr )
+        if ( OutLabelStatusHandler != nullptr ) {
             OutLabelStatusHandler->Invoke(tempVar);
+        }
+        else {
+            std::cout << v << " " ;
+            for ( auto p : nestedIds ) {
+                std::cout << p << " ";
+            }
+            std::cout << std::endl;
+        }
     }
     
     void MetaMorpheusTask::Warn(const std::string &v)
     {
         StringEventArgs tempVar(v, std::vector<std::string>() );
-        if ( WarnHandler != nullptr )
+        if ( WarnHandler != nullptr ) {
             WarnHandler->Invoke(tempVar);
+        }
+        else {
+            std::cout << "Warn : " << v << std::endl;
+        }
     }
     
     void MetaMorpheusTask::Log(const std::string &v, std::vector<std::string> &nestedIds)

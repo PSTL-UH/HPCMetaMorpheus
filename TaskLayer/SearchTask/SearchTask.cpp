@@ -181,7 +181,7 @@ namespace TaskLayer
 #endif  //
         bool found = false;
         for ( auto x: currentRawFileList ) {
-            int pos = x.find_last_of(".");
+            int pos = x.find_last_of(".")+1;
             std::string extension = x.substr(pos, x.length() );
             if ( extension == "mgf" ) {
                 found = true;
@@ -400,6 +400,7 @@ namespace TaskLayer
                     int start = currentPartition * proteinList.size() / combinedParams->getTotalPartitions();
                     int count = ((currentPartition + 1) * proteinList.size() / combinedParams->getTotalPartitions()) -
                         (currentPartition * proteinList.size() / combinedParams->getTotalPartitions());
+
                     std::vector<Protein*> proteinListSubset;
                     for (auto i = 0; i < count; i++ ) {
                         proteinListSubset.push_back( proteinList[start+i] );
@@ -428,10 +429,10 @@ namespace TaskLayer
                     
                     Status("Searching files...", taskId);
                     
-                    ModernSearchEngine tempVar(fileSpecificPsms, arrayOfMs2ScansSortedByMass, peptideIndex,
+                    auto tempVar = new ModernSearchEngine (fileSpecificPsms, arrayOfMs2ScansSortedByMass, peptideIndex,
                                                fragmentIndex, currentPartition, combinedParams, massDiffAcceptor,
                                                getSearchParameters()->getMaximumMassThatFragmentIonScoreIsDoubled(), thisId);
-                    (&tempVar)->Run();
+                    tempVar->Run();
                     
                     ProgressEventArgs tempVar2(100, "Done with search " + std::to_string(currentPartition + 1) + "/" +
                                                std::to_string(combinedParams->getTotalPartitions()) + "!", thisId);
@@ -507,12 +508,12 @@ namespace TaskLayer
                         
                         Status("Searching files...", taskId);
                         
-                        NonSpecificEnzymeSearchEngine tempVar3(fileSpecificPsmsSeparatedByFdrCategory,
+                        auto tempVar3 = new NonSpecificEnzymeSearchEngine (fileSpecificPsmsSeparatedByFdrCategory,
                                                                arrayOfMs2ScansSortedByMass, peptideIndex, fragmentIndex,
                                                                precursorIndex, currentPartition, paramToUse, massDiffAcceptor,
                                                                getSearchParameters()->getMaximumMassThatFragmentIonScoreIsDoubled(),
                                                                thisId);
-                        (&tempVar3)->Run();
+                        tempVar3->Run();
                         
                         ProgressEventArgs tempVar4(100, "Done with search " + std::to_string(currentPartition + 1) + "/" +
                                                    std::to_string(paramToUse->getTotalPartitions()) + "!", thisId);
@@ -539,9 +540,9 @@ namespace TaskLayer
             else
             {
                 Status("Starting search...", thisId);
-                ClassicSearchEngine tempVar5(fileSpecificPsms, arrayOfMs2ScansSortedByMass, variableModifications,
+                auto tempVar5 = new ClassicSearchEngine(fileSpecificPsms, arrayOfMs2ScansSortedByMass, variableModifications,
                                              fixedModifications, proteinList, massDiffAcceptor, combinedParams, thisId);
-                (&tempVar5)->Run();
+                tempVar5->Run();
                 
                 ProgressEventArgs tempVar6(100, "Done with search!", thisId);
                 ReportProgress(&tempVar6);

@@ -84,15 +84,14 @@ const std::string MyFileManager::DesiredXRawFileVersion = "3.0.29.0";
         if (MyMsDataFiles_iterator != MyMsDataFiles.end() )
         {
             delete filter;
-            return MyMsDataFiles_iterator->second;
-            
+            return MyMsDataFiles_iterator->second;            
         }
         
         // By now know that need to load this file!!!
         //std::lock_guard<std::mutex> lock(FileLoadingLock);
         std::string extension = origDataFile.substr(origDataFile.find_last_of("."));
         
-        if ( extension == ".mzM" )
+        if ( extension == ".mzML" )
         {
             // arguments:  const std::string &filePath, FilteringParams *filterParams, int maxThreads
             MyMsDataFiles[origDataFile] = Mzml::LoadAllStaticData(origDataFile, filter,

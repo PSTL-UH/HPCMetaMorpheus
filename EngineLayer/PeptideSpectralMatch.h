@@ -213,7 +213,7 @@ namespace EngineLayer
 
         static void AddBasicMatchData(std::unordered_map<std::string, std::string> &s, PeptideSpectralMatch *psm);
 
-        static void AddPeptideSequenceData(std::unordered_map<std::string, std::string> s,
+        static void AddPeptideSequenceData(std::unordered_map<std::string, std::string> &s,
                                            PeptideSpectralMatch *psm,
                                            std::unordered_map<std::string, int> *ModsToWritePruned);
 
@@ -243,7 +243,7 @@ namespace EngineLayer
         static std::string SequenceVariantString(PeptideWithSetModifications *p, SequenceVariation *applied);
 
 
-        static void AddMatchScoreData(std::unordered_map<std::string, std::string> s, PeptideSpectralMatch *peptide);
+        static void AddMatchScoreData(std::unordered_map<std::string, std::string> &s, PeptideSpectralMatch *peptide);
 
     public:
         static void AddMatchedIonsData(std::unordered_map<std::string, std::string> &s, PeptideSpectralMatch *psm);

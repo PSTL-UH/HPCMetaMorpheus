@@ -109,12 +109,14 @@ namespace EngineLayer
                 //                          Environment::ProcessorCount - 1 : 1 : maxThreadsToUsePerFile);
 		setMaxThreadsToUsePerFile(maxThreadsToUsePerFile == -1 ? 4 : maxThreadsToUsePerFile);
                 
-		PpmTolerance tempVar(20);
-		setProductMassTolerance((productMassTolerance != nullptr) ? productMassTolerance : &tempVar);
-		PpmTolerance tempVar2(5);
-		setPrecursorMassTolerance((precursorMassTolerance != nullptr) ? precursorMassTolerance : &tempVar2);
-		PpmTolerance tempVar3(4);
-		setDeconvolutionMassTolerance((deconvolutionMassTolerance != nullptr) ? deconvolutionMassTolerance : &tempVar3);
+		auto tempVar = new PpmTolerance(20);
+		setProductMassTolerance((productMassTolerance != nullptr) ? productMassTolerance : tempVar);
+
+		auto tempVar2 = new PpmTolerance(5);
+		setPrecursorMassTolerance((precursorMassTolerance != nullptr) ? precursorMassTolerance : tempVar2);
+
+		auto tempVar3 = new PpmTolerance(4);
+		setDeconvolutionMassTolerance((deconvolutionMassTolerance != nullptr) ? deconvolutionMassTolerance : tempVar3);
                 if ( digestionParams != nullptr ) {
                     setDigestionParams(digestionParams);
                 }

@@ -805,7 +805,7 @@ namespace EngineLayer
         s["Different Peak Matches"] = psm == nullptr ? " " : std::to_string(psm->getNumDifferentMatchingPeptides());
     }
     
-    void PeptideSpectralMatch::AddPeptideSequenceData(std::unordered_map<std::string, std::string> s,
+    void PeptideSpectralMatch::AddPeptideSequenceData(std::unordered_map<std::string, std::string>& s,
                                                       PeptideSpectralMatch *psm,
                                                       std::unordered_map<std::string, int> *ModsToWritePruned)
     {
@@ -820,546 +820,548 @@ namespace EngineLayer
                 p::Peptide;
             }).ToList();
 #endif
-    std::vector<PeptideWithSetModifications*> pepsWithMods;
-    for ( auto p: psm->_bestMatchingPeptides ) {
-        pepsWithMods.push_back(std::get<1>(p));
-    }
-    
-#ifdef ORIG
-    s["Base Sequence"] = pepWithModsIsNull ? " " : Resolve(pepWithModsIsNull ? nullptr : pepsWithMods.Select([&] (std::any b)
-    {
-        b::BaseSequence;
-    }))->ResolvedString;
-#endif
-    if ( pepWithModsIsNull ) {
-        s["Base Sequence"] = " ";
-    }
-    else {
-        std::vector<std::string> vs;
-        for ( auto b : pepsWithMods ) {
-            vs.push_back(b->getBaseSequence());
-        }
-        std::tuple<std::string, std::string>res = Resolve(vs);
-        s["Base Sequence"] = std::get<0>(res);
-    }
-    
-#ifdef ORIG
-    s["Full Sequence"] = pepWithModsIsNull ? " " : Resolve(pepWithModsIsNull ? nullptr : pepsWithMods.Select([&] (std::any b)
-    {
-        b::FullSequence;
-    }))->ResolvedString;
-#endif
-    if ( pepWithModsIsNull ) {
-        s["Full Sequence"] = " ";
-    }
-    else {
-        std::vector<std::string> vs;
-        for ( auto b : pepsWithMods ) {
-            vs.push_back(b->getFullSequence());
-        }
-        std::tuple<std::string, std::string>res = Resolve(vs);
-        s["Full Sequence"] = std::get<0>(res);
-    }
-    
-#ifdef ORIG
-    s["Essential Sequence"] = pepWithModsIsNull ? " " : Resolve(pepWithModsIsNull ? nullptr : pepsWithMods.Select([&] (std::any b)
-    {
-        b::EssentialSequence(ModsToWritePruned);
-    }))->ResolvedString;
-#endif
-    if ( pepWithModsIsNull ) {
-        s["Essential Sequence"] = " ";
-    }
-    else {
-        std::vector<std::string> vs;
-        for ( auto b : pepsWithMods ) {
-            vs.push_back(b->EssentialSequence(ModsToWritePruned));
-        }
-        std::tuple<std::string, std::string>res = Resolve(vs);
-        s["Essential Sequence"] = std::get<0>(res);
-    }
-    
-#ifdef ORIG
-    s["Mods"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
-    {
-        b::AllModsOneIsNterminus;
-    }))->ResolvedString;
-#endif
-    if ( pepWithModsIsNull ) {
-        s["Mods"] = " ";
-    }
-    else {
-        std::vector<std::unordered_map<int, Modification*>> vc;
-        for ( auto b : pepsWithMods ) {
-            vc.push_back( b->getAllModsOneIsNterminus() );
-        }
-        std::tuple<std::string, std::unordered_map<std::string, int>>res = Resolve(vc);
-        s["Mods"] = std::get<0>(res);
-    }
-    
-#ifdef ORIG
-    s["Mods Chemical Formulas"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any p)
-    {
-        p::AllModsOneIsNterminus->Select([&] (std::any v)
-    {
-        v->Value;
-    });
-    }))->ResolvedString;
-#endif
-    if ( pepWithModsIsNull ) {
-        s["Mods Chemical Formulas"] = " ";
-    }
-    else {
-        std::vector<Modification *> vm;
-        for ( auto b : pepsWithMods ) {
-            for ( auto v : b->getAllModsOneIsNterminus() ) {
-                vm.push_back(std::get<1>(v));
+        std::vector<PeptideWithSetModifications*> pepsWithMods;
+        if ( !pepWithModsIsNull ) {
+            for ( auto p: psm->_bestMatchingPeptides ) {
+                pepsWithMods.push_back(std::get<1>(p));
             }
         }
-        std::tuple<std::string, ChemicalFormula *>res = Resolve(vm);
-        s["Mods Chemical Formulas"] = std::get<0>(res);                
-    }
     
 #ifdef ORIG
-    s["Mods Combined Chemical Formula"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
-    {
-        b::AllModsOneIsNterminus->Select([&] (std::any c)
-    {
-        (dynamic_cast<Modification*>(c->Value));
-    });
-    }))->ResolvedString;
+        s["Base Sequence"] = pepWithModsIsNull ? " " : Resolve(pepWithModsIsNull ? nullptr : pepsWithMods.Select([&] (std::any b)
+        {
+            b::BaseSequence;
+        }))->ResolvedString;
 #endif
-    if ( pepWithModsIsNull ) {
-        s["Mods Combined Chemical Formula"] = " ";
-    }
-    else {
-        std::vector<Modification *> vm;
-        for ( auto b : pepsWithMods ) {
-            for ( auto v : b->getAllModsOneIsNterminus() ) {
-                vm.push_back(std::get<1>(v));
+        if ( pepWithModsIsNull ) {
+            s["Base Sequence"] = " ";
+        }
+        else {
+            std::vector<std::string> vs;
+            for ( auto b : pepsWithMods ) {
+                vs.push_back(b->getBaseSequence());
             }
+            std::tuple<std::string, std::string>res = Resolve(vs);
+            s["Base Sequence"] = std::get<0>(res);
         }
-        std::tuple<std::string, ChemicalFormula *>res = Resolve(vm);
-        s["Mods Combined Chemical Formula"] = std::get<0>(res);
-    }
-    
+        
 #ifdef ORIG
-    s["Num Variable Mods"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
-    {
-        b::NumVariableMods;
-    }))->Item1;
+        s["Full Sequence"] = pepWithModsIsNull ? " " : Resolve(pepWithModsIsNull ? nullptr : pepsWithMods.Select([&] (std::any b)
+        {
+            b::FullSequence;
+        }))->ResolvedString;
 #endif
-    if ( pepWithModsIsNull ) {
-        s["Num Variable Mods"] = " ";
-    }
-    else {
-        std::vector<int> vi;
-        for ( auto b : pepsWithMods ) {
-            vi.push_back(b->getNumVariableMods());
+        if ( pepWithModsIsNull ) {
+            s["Full Sequence"] = " ";
         }
-        std::tuple<std::string, std::optional<int>>res = Resolve(vi);
-        s["Num Variable Mods"] = std::get<0>(res);
-    }
-    
-#ifdef ORIG
-    s["Missed Cleavages"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
-    {
-        b::MissedCleavages.ToString(CultureInfo::InvariantCulture);
-    }))->ResolvedString;
-#endif
-    if ( pepWithModsIsNull ) {
-        s["Missed Cleavages"] = " ";
-    }
-    else {
-        std::vector<std::string> vs;
-        for ( auto b : pepsWithMods ) {
-            vs.push_back(std::to_string(b->getMissedCleavages()));
+        else {
+            std::vector<std::string> vs;
+            for ( auto b : pepsWithMods ) {
+                vs.push_back(b->getFullSequence());
+            }
+            std::tuple<std::string, std::string>res = Resolve(vs);
+            s["Full Sequence"] = std::get<0>(res);
         }
-        std::tuple<std::string, std::string>res = Resolve(vs);
-        s["Missed Cleavages"] = std::get<0>(res);
-    }
-    
+        
 #ifdef ORIG
-    s["Peptide Monoisotopic Mass"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
-    {
-        b::MonoisotopicMass;
-    }))->ResolvedString;
+        s["Essential Sequence"] = pepWithModsIsNull ? " " : Resolve(pepWithModsIsNull ? nullptr : pepsWithMods.Select([&] (std::any b)
+        {
+            b::EssentialSequence(ModsToWritePruned);
+        }))->ResolvedString;
 #endif
-    if ( pepWithModsIsNull ) {
-        s["Peptide Monoisotopic Mass"] = " ";
-    }
-    else {
-        std::vector<double> vd;
-        for ( auto b : pepsWithMods ) {
-            vd.push_back(b->getMonoisotopicMass());
+        if ( pepWithModsIsNull ) {
+            s["Essential Sequence"] = " ";
         }
-        std::tuple<std::string, std::optional<double>>res = Resolve(vd);
-        s["Peptide Monoisotopic Mass"] = std::get<0>(res);
-    }
-    
-#ifdef ORIG
-    s["Mass Diff (Da)"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
-    {
-        return psm->getScanPrecursorMass() - b::MonoisotopicMass;
-    }))->ResolvedString;
-#endif
-    if ( pepWithModsIsNull ) {
-        s["Mass Diff (Da)"] = " ";
-    }
-    else {
-        std::vector<double> vd;
-        for ( auto b : pepsWithMods ) {
-            vd.push_back((psm->getScanPrecursorMass() - b->getMonoisotopicMass() ));
+        else {
+            std::vector<std::string> vs;
+            for ( auto b : pepsWithMods ) {
+                vs.push_back(b->EssentialSequence(ModsToWritePruned));
+            }
+            std::tuple<std::string, std::string>res = Resolve(vs);
+            s["Essential Sequence"] = std::get<0>(res);
         }
-        std::tuple<std::string, std::optional<double>>res = Resolve(vd);
-        s["Mass Diff (Da)"] = std::get<0>(res);
-    }
-    
+        
 #ifdef ORIG
-    s["Mass Diff (ppm)"] = pepWithModsIsNull ? " " : ResolveF2(pepsWithMods.Select([&] (std::any b)
-    {
-        ((psm->getScanPrecursorMass() - b::MonoisotopicMass) / b::MonoisotopicMass * 1e6);
-    })).ResolvedString;
+        s["Mods"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
+        {
+            b::AllModsOneIsNterminus;
+        }))->ResolvedString;
 #endif
-    if ( pepWithModsIsNull ) {
-        s["Mass Diff (ppm)"] = " ";
-    }
-    else {
-        std::vector<double> vd;
-        for ( auto b : pepsWithMods ) {
-            vd.push_back((psm->getScanPrecursorMass() - b->getMonoisotopicMass())/ b->getMonoisotopicMass() * 1e6 );
+        if ( pepWithModsIsNull ) {
+            s["Mods"] = " ";
         }
-        std::tuple<std::string, std::optional<double>>res = Resolve(vd);
-        s["Mass Diff (ppm)"] = std::get<0>(res);
-    }
-    
-#ifdef ORIG
-    s["Protein Accession"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
-    {
-        b::Protein::Accession;
-    }), psm->getFullSequence())->ResolvedString;
-#endif
-    if ( pepWithModsIsNull ) {
-        s["Protein Accession"] = " ";
-    }
-    else {
-        std::vector<std::string> vs;
-        for ( auto b : pepsWithMods ) {
-            vs.push_back(b->getProtein()->getAccession());
+        else {
+            std::vector<std::unordered_map<int, Modification*>> vc;
+            for ( auto b : pepsWithMods ) {
+                vc.push_back( b->getAllModsOneIsNterminus() );
+            }
+            std::tuple<std::string, std::unordered_map<std::string, int>>res = Resolve(vc);
+            s["Mods"] = std::get<0>(res);
         }
-        std::tuple<std::string, std::string>res = Resolve(vs, psm->getFullSequence());
-        s["Protein Accession"] = std::get<0>(res);
-    }
-    
+        
 #ifdef ORIG
-    s["Protein Name"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
-    {
-        b::Protein->FullName;
-    }), psm->getFullSequence())->ResolvedString;
+        s["Mods Chemical Formulas"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any p)
+        {
+            p::AllModsOneIsNterminus->Select([&] (std::any v)
+        {
+            v->Value;
+        });
+        }))->ResolvedString;
 #endif
-    if ( pepWithModsIsNull ) {
-        s["Protein Name"] = " ";
-    }
-    else {
-        std::vector<std::string> vs;
-        for ( auto b : pepsWithMods ) {
-            vs.push_back(b->getProtein()->getFullName());
+        if ( pepWithModsIsNull ) {
+            s["Mods Chemical Formulas"] = " ";
         }
-        std::tuple<std::string, std::string>res = Resolve(vs, psm->getFullSequence());
-        s["Protein Name"] = std::get<0>(res);
-    }
-    
-#ifdef ORIG
-    s["Gene Name"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
-    {
-        std::string::Join(", ", b::Protein::GeneNames->Select([&] (std::any d)
-    {
-        StringHelper::formatSimple("{0}:{1}", d::Item1, d::Item2);
-    }));
-    }), psm->getFullSequence())->ResolvedString;
-#endif
-    if ( pepWithModsIsNull ) {
-        s["Gene Name"] = " ";
-    }
-    else {
-        std::vector<std::string> vs;
-        for ( auto b : pepsWithMods ) {
-            std::string s;
-            std::vector<std::tuple<std::string, std::string>> genes = b->getProtein()->getGeneNames();
-            for ( auto d = genes.begin(); d == genes.end(); d++  ) {
-                if ( d == (genes.end() - 1 )){ 
-                    s += std::get<0>(*d) + ":" + std::get<1>(*d) ;
-                }
-                else {
-                    s += std::get<0>(*d) + ":" + std::get<1>(*d) + ", ";
+        else {
+            std::vector<Modification *> vm;
+            for ( auto b : pepsWithMods ) {
+                for ( auto v : b->getAllModsOneIsNterminus() ) {
+                    vm.push_back(std::get<1>(v));
                 }
             }
-            vs.push_back(s);
+            std::tuple<std::string, ChemicalFormula *>res = Resolve(vm);
+            s["Mods Chemical Formulas"] = std::get<0>(res);                
         }
-        std::tuple<std::string, std::string>res = Resolve(vs, psm->getFullSequence() );
-        s["Gene Name"] = std::get<0>(res);
-    }
-    
+        
 #ifdef ORIG
-    s["Intersecting Sequence Variations"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
-    {
-        std::string::Join(", ", b::Protein::AppliedSequenceVariations::Where([&] (std::any av)
-    {
-        IntersectsWithVariation(b, av, false);
-    })->Select([&] (std::any av)  {
+        s["Mods Combined Chemical Formula"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
+        {
+            b::AllModsOneIsNterminus->Select([&] (std::any c)
+        {
+            (dynamic_cast<Modification*>(c->Value));
+        });
+        }))->ResolvedString;
+#endif
+        if ( pepWithModsIsNull ) {
+            s["Mods Combined Chemical Formula"] = " ";
+        }
+        else {
+            std::vector<Modification *> vm;
+            for ( auto b : pepsWithMods ) {
+                for ( auto v : b->getAllModsOneIsNterminus() ) {
+                    vm.push_back(std::get<1>(v));
+                }
+            }
+            std::tuple<std::string, ChemicalFormula *>res = Resolve(vm);
+            s["Mods Combined Chemical Formula"] = std::get<0>(res);
+        }
+        
+#ifdef ORIG
+        s["Num Variable Mods"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
+        {
+            b::NumVariableMods;
+        }))->Item1;
+#endif
+        if ( pepWithModsIsNull ) {
+            s["Num Variable Mods"] = " ";
+        }
+        else {
+            std::vector<int> vi;
+            for ( auto b : pepsWithMods ) {
+                vi.push_back(b->getNumVariableMods());
+            }
+            std::tuple<std::string, std::optional<int>>res = Resolve(vi);
+            s["Num Variable Mods"] = std::get<0>(res);
+        }
+        
+#ifdef ORIG
+        s["Missed Cleavages"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
+        {
+            b::MissedCleavages.ToString(CultureInfo::InvariantCulture);
+        }))->ResolvedString;
+#endif
+        if ( pepWithModsIsNull ) {
+            s["Missed Cleavages"] = " ";
+        }
+        else {
+            std::vector<std::string> vs;
+            for ( auto b : pepsWithMods ) {
+                vs.push_back(std::to_string(b->getMissedCleavages()));
+            }
+            std::tuple<std::string, std::string>res = Resolve(vs);
+            s["Missed Cleavages"] = std::get<0>(res);
+        }
+        
+#ifdef ORIG
+        s["Peptide Monoisotopic Mass"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
+        {
+            b::MonoisotopicMass;
+        }))->ResolvedString;
+#endif
+        if ( pepWithModsIsNull ) {
+            s["Peptide Monoisotopic Mass"] = " ";
+        }
+        else {
+            std::vector<double> vd;
+            for ( auto b : pepsWithMods ) {
+                vd.push_back(b->getMonoisotopicMass());
+            }
+            std::tuple<std::string, std::optional<double>>res = Resolve(vd);
+            s["Peptide Monoisotopic Mass"] = std::get<0>(res);
+        }
+        
+#ifdef ORIG
+        s["Mass Diff (Da)"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
+        {
+            return psm->getScanPrecursorMass() - b::MonoisotopicMass;
+        }))->ResolvedString;
+#endif
+        if ( pepWithModsIsNull ) {
+            s["Mass Diff (Da)"] = " ";
+        }
+        else {
+            std::vector<double> vd;
+            for ( auto b : pepsWithMods ) {
+                vd.push_back((psm->getScanPrecursorMass() - b->getMonoisotopicMass() ));
+            }
+            std::tuple<std::string, std::optional<double>>res = Resolve(vd);
+            s["Mass Diff (Da)"] = std::get<0>(res);
+        }
+        
+#ifdef ORIG
+        s["Mass Diff (ppm)"] = pepWithModsIsNull ? " " : ResolveF2(pepsWithMods.Select([&] (std::any b)
+        {
+            ((psm->getScanPrecursorMass() - b::MonoisotopicMass) / b::MonoisotopicMass * 1e6);
+        })).ResolvedString;
+#endif
+        if ( pepWithModsIsNull ) {
+            s["Mass Diff (ppm)"] = " ";
+        }
+        else {
+            std::vector<double> vd;
+            for ( auto b : pepsWithMods ) {
+                vd.push_back((psm->getScanPrecursorMass() - b->getMonoisotopicMass())/ b->getMonoisotopicMass() * 1e6 );
+            }
+            std::tuple<std::string, std::optional<double>>res = Resolve(vd);
+            s["Mass Diff (ppm)"] = std::get<0>(res);
+        }
+        
+#ifdef ORIG
+        s["Protein Accession"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
+        {
+            b::Protein::Accession;
+        }), psm->getFullSequence())->ResolvedString;
+#endif
+        if ( pepWithModsIsNull ) {
+            s["Protein Accession"] = " ";
+        }
+        else {
+            std::vector<std::string> vs;
+            for ( auto b : pepsWithMods ) {
+                vs.push_back(b->getProtein()->getAccession());
+            }
+            std::tuple<std::string, std::string>res = Resolve(vs, psm->getFullSequence());
+            s["Protein Accession"] = std::get<0>(res);
+        }
+        
+#ifdef ORIG
+        s["Protein Name"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
+        {
+            b::Protein->FullName;
+        }), psm->getFullSequence())->ResolvedString;
+#endif
+        if ( pepWithModsIsNull ) {
+            s["Protein Name"] = " ";
+        }
+        else {
+            std::vector<std::string> vs;
+            for ( auto b : pepsWithMods ) {
+                vs.push_back(b->getProtein()->getFullName());
+            }
+            std::tuple<std::string, std::string>res = Resolve(vs, psm->getFullSequence());
+            s["Protein Name"] = std::get<0>(res);
+        }
+        
+#ifdef ORIG
+        s["Gene Name"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
+        {
+            std::string::Join(", ", b::Protein::GeneNames->Select([&] (std::any d)
+        {
+            StringHelper::formatSimple("{0}:{1}", d::Item1, d::Item2);
+        }));
+        }), psm->getFullSequence())->ResolvedString;
+#endif
+        if ( pepWithModsIsNull ) {
+            s["Gene Name"] = " ";
+        }
+        else {
+            std::vector<std::string> vs;
+            for ( auto b : pepsWithMods ) {
+                std::string s;
+                std::vector<std::tuple<std::string, std::string>> genes = b->getProtein()->getGeneNames();
+                for ( auto d = genes.begin(); d == genes.end(); d++  ) {
+                    if ( d == (genes.end() - 1 )){ 
+                        s += std::get<0>(*d) + ":" + std::get<1>(*d) ;
+                    }
+                    else {
+                        s += std::get<0>(*d) + ":" + std::get<1>(*d) + ", ";
+                    }
+                }
+                vs.push_back(s);
+            }
+            std::tuple<std::string, std::string>res = Resolve(vs, psm->getFullSequence() );
+            s["Gene Name"] = std::get<0>(res);
+        }
+        
+#ifdef ORIG
+        s["Intersecting Sequence Variations"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
+        {
+            std::string::Join(", ", b::Protein::AppliedSequenceVariations::Where([&] (std::any av)
+        {
+            IntersectsWithVariation(b, av, false);
+        })->Select([&] (std::any av)  {
+                SequenceVariantString(b, av);
+            }));
+        }))->ResolvedString;
+#endif
+        if ( pepWithModsIsNull ) {
+            s["Intersecting Sequence Variations"] = " ";
+        }
+        else {
+            std::vector<std::string> vs;
+            for ( auto b : pepsWithMods ) {
+                std::string s;
+                std::vector<SequenceVariation*> variations = b->getProtein()->getAppliedSequenceVariations();
+                for ( auto av = variations.begin(); av == variations.end(); av++ ) {
+                    if ( IntersectsWithVariation(b, *av, false ) ) {
+                        s += SequenceVariantString(b, *av ) + ", ";
+                    }
+                    vs.push_back(s);
+                }
+            }
+            std::tuple<std::string, std::string>res = Resolve(vs );
+            s["Intersecting Sequence Variations"] = std::get<0>(res);
+        }
+        
+#ifdef ORIG
+        s["Identified Sequence Variations"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
+        {
+            std::string::Join(", ", b::Protein::AppliedSequenceVariations::Where([&] (std::any av)
+        {
+            IntersectsWithVariation(b, av, true);
+        })->Select([&] (std::any av)
+        {
             SequenceVariantString(b, av);
         }));
-    }))->ResolvedString;
+        }))->ResolvedString;
 #endif
-    if ( pepWithModsIsNull ) {
-        s["Intersecting Sequence Variations"] = " ";
-    }
-    else {
-        std::vector<std::string> vs;
-        for ( auto b : pepsWithMods ) {
-            std::string s;
-            std::vector<SequenceVariation*> variations = b->getProtein()->getAppliedSequenceVariations();
-            for ( auto av = variations.begin(); av == variations.end(); av++ ) {
-                if ( IntersectsWithVariation(b, *av, false ) ) {
-                    s += SequenceVariantString(b, *av ) + ", ";
+        if ( pepWithModsIsNull ) {
+            s["Identified Sequence Variations"] = " ";
+        }
+        else {
+            std::vector<std::string> vs;
+            for ( auto b : pepsWithMods ) {
+                std::string s;
+                std::vector<SequenceVariation*> variations = b->getProtein()->getAppliedSequenceVariations();
+                for ( auto av = variations.begin(); av == variations.end(); av++ ) {
+                    if ( IntersectsWithVariation(b, *av, true ) ) {
+                        s += SequenceVariantString(b, *av ) + ", ";
+                    }
+                    vs.push_back(s);
                 }
-                vs.push_back(s);
             }
+            std::tuple<std::string, std::string>res = Resolve(vs );
+            s["Identified Sequence Variations"] = std::get<0>(res);
         }
-        std::tuple<std::string, std::string>res = Resolve(vs );
-        s["Intersecting Sequence Variations"] = std::get<0>(res);
-    }
-    
+        
 #ifdef ORIG
-    s["Identified Sequence Variations"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
-    {
-        std::string::Join(", ", b::Protein::AppliedSequenceVariations::Where([&] (std::any av)
-    {
-        IntersectsWithVariation(b, av, true);
-    })->Select([&] (std::any av)
-    {
-        SequenceVariantString(b, av);
-    }));
-    }))->ResolvedString;
-#endif
-    if ( pepWithModsIsNull ) {
-        s["Identified Sequence Variations"] = " ";
-    }
-    else {
-        std::vector<std::string> vs;
-        for ( auto b : pepsWithMods ) {
-            std::string s;
-            std::vector<SequenceVariation*> variations = b->getProtein()->getAppliedSequenceVariations();
-            for ( auto av = variations.begin(); av == variations.end(); av++ ) {
-                if ( IntersectsWithVariation(b, *av, true ) ) {
-                    s += SequenceVariantString(b, *av ) + ", ";
-                }
-                vs.push_back(s);
-            }
-        }
-        std::tuple<std::string, std::string>res = Resolve(vs );
-        s["Identified Sequence Variations"] = std::get<0>(res);
-    }
-    
-#ifdef ORIG
-    s["Splice Sites"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
-    {
-        std::string::Join(", ", b::Protein::SpliceSites::Where([&] (std::any d)
-    {
-        Includes(b, d);
-    })->Select([&] (std::any d)
-    {
-        StringHelper::formatSimple("{0}-{1}", d::OneBasedBeginPosition.ToString(), d::OneBasedEndPosition.ToString());
-    }));
-    }))->ResolvedString;
-#endif
-    if ( pepWithModsIsNull ) {
-        s["Splice Sites"] = " ";
-    }
-    else {
-        std::vector<std::string> vs;
-        for ( auto b : pepsWithMods ) {
-            std::string s;
-            std::vector<SpliceSite*> sites = b->getProtein()->getSpliceSites();
-            for ( auto d = sites.begin(); d == sites.end(); d++ ) {
-                if ( Includes (b, *d) ) {
-                    s+= std::to_string((*d)->getOneBasedBeginPosition()) + "-" + std::to_string((*d)->getOneBasedEndPosition());
-                }
-                vs.push_back(s);                        
-            }
-        }
-        std::tuple<std::string, std::string>res = Resolve(vs );
-        s["Splice Sites"] = std::get<0>(res);
-    }
-    
-#ifdef ORIG
-    s["Organism Name"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
-    {
-        b::Protein::Organism;
-    }))->Item1;
-    
-#endif
-    if ( pepWithModsIsNull ) {
-        s["Organism Name"] = " ";
-    }
-    else {
-        std::vector<std::string> vs;
-        for ( auto b : pepsWithMods ) {
-            vs.push_back(b->getProtein()->getOrganism());
-        }
-        std::tuple<std::string, std::string>res = Resolve(vs);
-        s["Organism Name"] = std::get<0>(res);
-    }
-    
-#ifdef ORIG
-    s["Contaminant"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
-    {
-        b::Protein::IsContaminant ? "Y" : "N";
-    }))->Item1;
-#endif
-    if ( pepWithModsIsNull ) {
-        s["Contaminant"] = " ";
-    }
-    else {
-        std::vector<std::string> vs;
-        for ( auto b : pepsWithMods ) {
-            std::string yes = "Y";
-            std::string no = "N";
-            if ( b->getProtein()->getIsContaminant() ) {
-                vs.push_back(yes);
-            }
-            else {
-                vs.push_back(no);
-            }
-        }
-        std::tuple<std::string, std::string>res = Resolve(vs);
-        s["Contaminant"] = std::get<0>(res);
-    }
-    
-#ifdef ORIG
-    s["Decoy"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
-    {
-        b::Protein::IsDecoy ? "Y" : "N";
-    }))->Item1;
-#endif
-    if ( pepWithModsIsNull ) {
-        s["Decoy"] = " ";
-    }
-    else {
-        std::vector<std::string> vs;
-        for ( auto b : pepsWithMods ) {
-            std::string yes = "Y";
-            std::string no = "N";
-            if ( b->getProtein()->getIsDecoy() ) {
-                vs.push_back(yes);
-            }
-            else {
-                vs.push_back(no);
-            }
-        }
-        std::tuple<std::string, std::string>res = Resolve(vs );
-        s["Decoy"] = std::get<0>(res);
-    }
-    
-#ifdef ORIG
-    s["Peptide Description"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
-    {
-        b::PeptideDescription;
-    }))->Item1;
-    
-#endif
-    if ( pepWithModsIsNull ) {
-        s["Peptide Description"] = " ";
-    }
-    else {
-        std::vector<std::string> vs;
-        for ( auto b : pepsWithMods ) {
-            vs.push_back(b->getPeptideDescription() );
-        }
-        std::tuple<std::string, std::string>res = Resolve(vs);
-        s["Peptide Description"] = std::get<0>(res);
-    }
-    
-#ifdef ORIG
-    s["Start and End Residues In Protein"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
-    {
-        (StringHelper::formatSimple("[{0} to {1}]", b::OneBasedStartResidueInProtein.ToString(CultureInfo::InvariantCulture),
-                                    b::OneBasedEndResidueInProtein.ToString(CultureInfo::InvariantCulture)));
-    }), psm->getFullSequence())->ResolvedString;
-#endif
-    if ( pepWithModsIsNull ) {
-        s["Start and End Residues In Protein"] = " ";
-    }
-    else {
-        std::vector<std::string> vs;
-        for ( auto b : pepsWithMods ) {
-            std::string s;
-            s = std::to_string(b->getOneBasedStartResidueInProtein()) + " to " +
-                std::to_string(b->getOneBasedEndResidueInProtein());
-            vs.push_back(s);
-        }
-        std::tuple<std::string, std::string>res = Resolve(vs, psm->getFullSequence() );
-        s["Start and End Residues In Protein"] = std::get<0>(res);
-    }
-    
-#ifdef ORIG
-    s["Previous Amino Acid"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
-    {
-        b::PreviousAminoAcid.ToString();
-    }))->ResolvedString;
-    
-#endif
-    if ( pepWithModsIsNull ) {
-        s["Previous Amino Acid"] = " ";
-    }
-    else {
-        std::vector<std::string> vs;
-        for ( auto b : pepsWithMods ) {
-            vs.push_back(std::to_string(b->getPreviousAminoAcid()) );
-        }
-        std::tuple<std::string, std::string>res = Resolve(vs);
-        s["Previous Amino Acid"] = std::get<0>(res);
-    }
-    
-#ifdef ORIG
-    s["Next Amino Acid"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
-    {
-        b::NextAminoAcid.ToString();
-    }))->ResolvedString;
-    
-#endif
-    if ( pepWithModsIsNull ) {
-        s["Next Amino Acid"] = " ";
-    }
-    else {
-        std::vector<std::string> vs;
-        for ( auto b : pepsWithMods ) {
-            vs.push_back(std::to_string(b->getNextAminoAcid() ));
-        }
-        std::tuple<std::string, std::string>res = Resolve(vs );
-        s["Next Amino Acid"] = std::get<0>(res);
-    }
-    
-    std::string allScores = " ";
-    std::string theoreticalsSearched = " ";
-    if (!pepWithModsIsNull && psm->getFdrInfo() != nullptr && psm->getFdrInfo()->getCalculateEValue())
-    {
-#ifdef ORIG
-        allScores = std::string::Join(";", psm->getAllScores().Select([&] (std::any p)
+        s["Splice Sites"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
         {
-            p.ToString("F2", CultureInfo::InvariantCulture);
+            std::string::Join(", ", b::Protein::SpliceSites::Where([&] (std::any d)
+        {
+            Includes(b, d);
+        })->Select([&] (std::any d)
+        {
+            StringHelper::formatSimple("{0}-{1}", d::OneBasedBeginPosition.ToString(), d::OneBasedEndPosition.ToString());
         }));
+        }))->ResolvedString;
 #endif
-        std::vector<double> scores = psm->getAllScores();
-        for ( auto p = scores.begin(); p == scores.end(); p++ ) {
-            allScores += std::to_string(*p) + ";";
+        if ( pepWithModsIsNull ) {
+            s["Splice Sites"] = " ";
         }
-        theoreticalsSearched = std::to_string(psm->getAllScores().size());
-    }
-    
-    s["All Scores"] = allScores;
-    s["Theoreticals Searched"] = theoreticalsSearched;
-    s["Decoy/Contaminant/Target"] = pepWithModsIsNull ? " " : psm->getIsDecoy() ? "D" : psm->getIsContaminant() ? "C" : "T";
+        else {
+            std::vector<std::string> vs;
+            for ( auto b : pepsWithMods ) {
+                std::string s;
+                std::vector<SpliceSite*> sites = b->getProtein()->getSpliceSites();
+                for ( auto d = sites.begin(); d == sites.end(); d++ ) {
+                    if ( Includes (b, *d) ) {
+                        s+= std::to_string((*d)->getOneBasedBeginPosition()) + "-" + std::to_string((*d)->getOneBasedEndPosition());
+                    }
+                    vs.push_back(s);                        
+                }
+            }
+            std::tuple<std::string, std::string>res = Resolve(vs );
+            s["Splice Sites"] = std::get<0>(res);
+        }
+        
+#ifdef ORIG
+        s["Organism Name"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
+        {
+            b::Protein::Organism;
+        }))->Item1;
+        
+#endif
+        if ( pepWithModsIsNull ) {
+            s["Organism Name"] = " ";
+        }
+        else {
+            std::vector<std::string> vs;
+            for ( auto b : pepsWithMods ) {
+                vs.push_back(b->getProtein()->getOrganism());
+            }
+            std::tuple<std::string, std::string>res = Resolve(vs);
+            s["Organism Name"] = std::get<0>(res);
+        }
+        
+#ifdef ORIG
+        s["Contaminant"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
+        {
+            b::Protein::IsContaminant ? "Y" : "N";
+        }))->Item1;
+#endif
+        if ( pepWithModsIsNull ) {
+            s["Contaminant"] = " ";
+        }
+        else {
+            std::vector<std::string> vs;
+            for ( auto b : pepsWithMods ) {
+                std::string yes = "Y";
+                std::string no = "N";
+                if ( b->getProtein()->getIsContaminant() ) {
+                    vs.push_back(yes);
+                }
+                else {
+                    vs.push_back(no);
+                }
+            }
+            std::tuple<std::string, std::string>res = Resolve(vs);
+            s["Contaminant"] = std::get<0>(res);
+        }
+        
+#ifdef ORIG
+        s["Decoy"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
+        {
+            b::Protein::IsDecoy ? "Y" : "N";
+        }))->Item1;
+#endif
+        if ( pepWithModsIsNull ) {
+            s["Decoy"] = " ";
+        }
+        else {
+            std::vector<std::string> vs;
+            for ( auto b : pepsWithMods ) {
+                std::string yes = "Y";
+                std::string no = "N";
+                if ( b->getProtein()->getIsDecoy() ) {
+                    vs.push_back(yes);
+                }
+                else {
+                    vs.push_back(no);
+                }
+            }
+            std::tuple<std::string, std::string>res = Resolve(vs );
+            s["Decoy"] = std::get<0>(res);
+        }
+        
+#ifdef ORIG
+        s["Peptide Description"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
+        {
+            b::PeptideDescription;
+        }))->Item1;
+        
+#endif
+        if ( pepWithModsIsNull ) {
+            s["Peptide Description"] = " ";
+        }
+        else {
+            std::vector<std::string> vs;
+            for ( auto b : pepsWithMods ) {
+                vs.push_back(b->getPeptideDescription() );
+            }
+            std::tuple<std::string, std::string>res = Resolve(vs);
+            s["Peptide Description"] = std::get<0>(res);
+        }
+        
+#ifdef ORIG
+        s["Start and End Residues In Protein"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
+        {
+            (StringHelper::formatSimple("[{0} to {1}]", b::OneBasedStartResidueInProtein.ToString(CultureInfo::InvariantCulture),
+                                        b::OneBasedEndResidueInProtein.ToString(CultureInfo::InvariantCulture)));
+        }), psm->getFullSequence())->ResolvedString;
+#endif
+        if ( pepWithModsIsNull ) {
+            s["Start and End Residues In Protein"] = " ";
+        }
+        else {
+            std::vector<std::string> vs;
+            for ( auto b : pepsWithMods ) {
+                std::string s;
+                s = std::to_string(b->getOneBasedStartResidueInProtein()) + " to " +
+                    std::to_string(b->getOneBasedEndResidueInProtein());
+                vs.push_back(s);
+            }
+            std::tuple<std::string, std::string>res = Resolve(vs, psm->getFullSequence() );
+            s["Start and End Residues In Protein"] = std::get<0>(res);
+        }
+        
+#ifdef ORIG
+        s["Previous Amino Acid"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
+        {
+            b::PreviousAminoAcid.ToString();
+        }))->ResolvedString;
+        
+#endif
+        if ( pepWithModsIsNull ) {
+            s["Previous Amino Acid"] = " ";
+        }
+        else {
+            std::vector<std::string> vs;
+            for ( auto b : pepsWithMods ) {
+                vs.push_back(std::to_string(b->getPreviousAminoAcid()) );
+            }
+            std::tuple<std::string, std::string>res = Resolve(vs);
+            s["Previous Amino Acid"] = std::get<0>(res);
+        }
+        
+#ifdef ORIG
+        s["Next Amino Acid"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
+        {
+            b::NextAminoAcid.ToString();
+        }))->ResolvedString;
+        
+#endif
+        if ( pepWithModsIsNull ) {
+            s["Next Amino Acid"] = " ";
+        }
+        else {
+            std::vector<std::string> vs;
+            for ( auto b : pepsWithMods ) {
+                vs.push_back(std::to_string(b->getNextAminoAcid() ));
+            }
+            std::tuple<std::string, std::string>res = Resolve(vs );
+            s["Next Amino Acid"] = std::get<0>(res);
+        }
+        
+        std::string allScores = " ";
+        std::string theoreticalsSearched = " ";
+        if (!pepWithModsIsNull && psm->getFdrInfo() != nullptr && psm->getFdrInfo()->getCalculateEValue())
+        {
+#ifdef ORIG
+            allScores = std::string::Join(";", psm->getAllScores().Select([&] (std::any p)
+            {
+                p.ToString("F2", CultureInfo::InvariantCulture);
+            }));
+#endif
+            std::vector<double> scores = psm->getAllScores();
+            for ( auto p = scores.begin(); p == scores.end(); p++ ) {
+                allScores += std::to_string(*p) + ";";
+            }
+            theoreticalsSearched = std::to_string(psm->getAllScores().size());
+        }
+        
+        s["All Scores"] = allScores;
+        s["Theoreticals Searched"] = theoreticalsSearched;
+        s["Decoy/Contaminant/Target"] = pepWithModsIsNull ? " " : psm->getIsDecoy() ? "D" : psm->getIsContaminant() ? "C" : "T";
     }
     
     
@@ -1582,7 +1584,7 @@ namespace EngineLayer
     }
     
     //C# TO C++ CONVERTER TODO TASK: Local functions are not converted by C# to C++ Converter:
-    void PeptideSpectralMatch::AddMatchScoreData(std::unordered_map<std::string, std::string> s, PeptideSpectralMatch *peptide)
+    void PeptideSpectralMatch::AddMatchScoreData(std::unordered_map<std::string, std::string> &s, PeptideSpectralMatch *peptide)
     {
         std::string localizedScores = " ";
         std::string improvementPossible = " ";

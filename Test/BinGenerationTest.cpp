@@ -140,10 +140,10 @@ namespace Test
         File::Delete(mzmlFilePath);
         Directory::Delete(testdir + "/Task Settings", true);
 #endif
-        std::experimental::filesystem::remove(proteinDbFilePath);
-        std::experimental::filesystem::remove(mzmlFilePath);
-        std::experimental::filesystem::remove_all(output_folder);
-        std::experimental::filesystem::remove_all(testdir + "/Task Settings");        
+        //std::experimental::filesystem::remove(proteinDbFilePath);
+        //std::experimental::filesystem::remove(mzmlFilePath);
+        //std::experimental::filesystem::remove_all(output_folder);
+        //std::experimental::filesystem::remove_all(testdir + "/Task Settings");        
         delete myMsDataFile;
         delete prot4;
         delete prot3;
@@ -177,8 +177,8 @@ namespace Test
         st->getSearchParameters()->setDoQuantification(true);
         
         std::string proteinDbFilePath = testdir + "/TestProteinSplitAcrossFiles.xml";
-        std::string mzmlFilePath1 = testdir + "TestProteinSplitAcrossFiles1.mzML";
-        std::string mzmlFilePath2 = testdir + "TestProteinSplitAcrossFiles2.mzML";
+        std::string mzmlFilePath1 = testdir + "/TestProteinSplitAcrossFiles1.mzML";
+        std::string mzmlFilePath2 = testdir + "/TestProteinSplitAcrossFiles2.mzML";
         
         ModificationMotif *motif;
         ModificationMotif::TryGetMotif("D", &motif);
@@ -233,11 +233,11 @@ namespace Test
         Directory::Delete(testdir + "/Task Settings", true);
 #endif
 
-        std::experimental::filesystem::remove(proteinDbFilePath);
-        std::experimental::filesystem::remove(mzmlFilePath1);
-        std::experimental::filesystem::remove(mzmlFilePath2);
-        std::experimental::filesystem::remove_all(output_folder);
-        std::experimental::filesystem::remove_all(testdir + "/Task Settings");
+        //std::experimental::filesystem::remove(proteinDbFilePath);
+        //std::experimental::filesystem::remove(mzmlFilePath1);
+        //std::experimental::filesystem::remove(mzmlFilePath2);
+        //std::experimental::filesystem::remove_all(output_folder);
+        //std::experimental::filesystem::remove_all(testdir + "/Task Settings");
         
         delete myMsDataFile2;
         delete myMsDataFile1;

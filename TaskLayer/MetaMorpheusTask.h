@@ -101,16 +101,16 @@ namespace TaskLayer
             static EventHandler<ProgressEventArgs> *OutProgressHandler = new EventHandler<ProgressEventArgs>();
 #endif
 
-            EventHandler<SingleTaskEventArgs> *FinishedSingleTaskHandler;
-            EventHandler<SingleFileEventArgs> *FinishedWritingFileHandler;
-            EventHandler<SingleTaskEventArgs> *StartingSingleTaskHandler;
-            EventHandler<StringEventArgs> *StartingDataFileHandler;
-            EventHandler<StringEventArgs> *FinishedDataFileHandler;
-            EventHandler<StringEventArgs> *OutLabelStatusHandler;
-            EventHandler<StringEventArgs> *WarnHandler;
-            EventHandler<StringEventArgs> *LogHandler;
-            EventHandler<StringEventArgs> *NewCollectionHandler;
-            EventHandler<ProgressEventArgs> *OutProgressHandler;
+            EventHandler<SingleTaskEventArgs> *FinishedSingleTaskHandler=nullptr;
+            EventHandler<SingleFileEventArgs> *FinishedWritingFileHandler=nullptr;
+            EventHandler<SingleTaskEventArgs> *StartingSingleTaskHandler=nullptr;
+            EventHandler<StringEventArgs> *StartingDataFileHandler=nullptr;
+            EventHandler<StringEventArgs> *FinishedDataFileHandler=nullptr;
+            EventHandler<StringEventArgs> *OutLabelStatusHandler=nullptr;
+            EventHandler<StringEventArgs> *WarnHandler=nullptr;
+            EventHandler<StringEventArgs> *LogHandler=nullptr;
+            EventHandler<StringEventArgs> *NewCollectionHandler=nullptr;
+            EventHandler<ProgressEventArgs> *OutProgressHandler=nullptr;
             
             MyTask getTaskType() const;
             void setTaskType(MyTask value);

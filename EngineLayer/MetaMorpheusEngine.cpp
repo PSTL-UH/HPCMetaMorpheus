@@ -24,21 +24,15 @@ namespace EngineLayer
 	{DissociationType::CID, Constants::protonMass}
     };
 
-
-    EventHandler<SingleEngineEventArgs> *StartingSingleEngineHandler = new EventHandler<SingleEngineEventArgs>();
-
-    EventHandler<SingleEngineFinishedEventArgs> *FinishedSingleEngineHandler = new EventHandler<SingleEngineFinishedEventArgs>();
-
-    EventHandler<StringEventArgs> *OutLabelStatusHandler = new EventHandler<StringEventArgs>();
-
-    EventHandler<StringEventArgs> *WarnHandler = new EventHandler<StringEventArgs>();
-
-    EventHandler<ProgressEventArgs> *OutProgressHandler = new EventHandler<ProgressEventArgs>();
-
-
     
     MetaMorpheusEngine::MetaMorpheusEngine(CommonParameters *commonParameters, std::vector<std::string> &nestedIds) : commonParameters(commonParameters), nestedIds(nestedIds)
     {
+        StartingSingleEngineHandler = new EventHandler<SingleEngineEventArgs>();        
+        FinishedSingleEngineHandler = new EventHandler<SingleEngineFinishedEventArgs>();        
+        OutLabelStatusHandler = new EventHandler<StringEventArgs>();        
+        WarnHandler = new EventHandler<StringEventArgs>();        
+        OutProgressHandler = new EventHandler<ProgressEventArgs>();
+
     }
 
     double MetaMorpheusEngine::CalculatePeptideScore(MsDataScan *thisScan, std::vector<MatchedFragmentIon*> &matchedFragmentIons, double maximumMassThatFragmentIonScoreIsDoubled)
