@@ -596,7 +596,7 @@ namespace TaskLayer
         parameters->setMyFileManager(myFileManager);
         parameters->setNumNotches(numNotches);
         parameters->setOutputFolder(OutputFolder);
-        parameters->setIndividualResultsOutputFolder(OutputFolder + "Individual File Results");
+        parameters->setIndividualResultsOutputFolder(OutputFolder + "/Individual File Results");
         parameters->setFlashLfqResults(flashLfqResults);
         parameters->setFileSettingsList(fileSettingsList);
         parameters->setNumMs2SpectraPerFile(numMs2SpectraPerFile);

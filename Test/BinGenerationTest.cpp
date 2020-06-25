@@ -69,7 +69,8 @@ namespace Test
         st->getSearchParameters()->setDoParsimony(true);
         st->getSearchParameters()->setDoQuantification(true);
         
-        std::string proteinDbFilePath = testdir +  "/BinGenerationTest.xml";
+        //std::string proteinDbFilePath = testdir +  "/BinGenerationTest.xml";
+        std::string proteinDbFilePath = testdir +  "/BinGenerationTest.fasta";
         std::string mzmlFilePath = testdir + "/BinGenerationTest.mzML";
         
         Protein *prot1 = new Protein("MEDEEK", "prot1");
@@ -216,7 +217,7 @@ namespace Test
         std::unordered_map<std::string, ModDbTuple_set> tempvar;
         ProteinDbWriter::WriteXmlDatabase(tempvar, proteinList, proteinDbFilePath);
         
-        std::string output_folder = testdir + "TestProteinSplitAcrossFiles";
+        std::string output_folder = testdir + "/TestProteinSplitAcrossFiles";
         FileSystem::createDirectory(output_folder);
 
         auto db  = new DbForTask(proteinDbFilePath, false);

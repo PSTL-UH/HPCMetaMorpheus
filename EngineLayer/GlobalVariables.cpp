@@ -10,6 +10,8 @@ using namespace Proteomics;
 namespace EngineLayer
 {
 
+    static bool is_init  = false;
+    
     std::string GlobalVariables::privateDataDir;
     bool GlobalVariables::privateStopLoops = false;
     std::string GlobalVariables::privateElementsLocation;
@@ -27,9 +29,16 @@ namespace EngineLayer
     
     void GlobalVariables::GlobalVariables_init()
     {
+
+        if  ( is_init ) {
+            return;
+        }
+
+        is_init = true;
+
         privateMetaMorpheusVersion = "0.0.295";
         
-        if (getMetaMorpheusVersion() == "1.0.0.0")
+        if (privateMetaMorpheusVersion == "1.0.0.0")
         {
 #if defined(DEBUG)
             privateMetaMorpheusVersion += "Not a release version. DEBUG.";
@@ -42,15 +51,8 @@ namespace EngineLayer
             // as of 0.0.277, AppVeyor appends the build number
             // this is intentional; it's to avoid conflicting AppVeyor build numbers
             // trim the build number off the version number for displaying/checking versions, etc
-            auto foundIndexes = std::vector<int>();
-            for (int i = 0; i < (int)getMetaMorpheusVersion().length(); i++)
-            {
-                if (getMetaMorpheusVersion()[i] == L'.')
-                {
-                    foundIndexes.push_back(i);
-                }
-            }
-            privateMetaMorpheusVersion = getMetaMorpheusVersion().substr(0, foundIndexes.back());
+            int pos = privateMetaMorpheusVersion.find_last_of(".");
+            privateMetaMorpheusVersion = privateMetaMorpheusVersion.substr(0, pos);
         }
         
 #ifdef ORIG
@@ -76,7 +78,7 @@ namespace EngineLayer
         privateExperimentalDesignFileName = "ExperimentalDesign.tsv";
 
         privateUnimodDeserialized = UsefulProteomicsDatabases::Loaders::LoadUnimod(datadir + "/unimod.xml"); 
-        privatePsiModDeserialized = UsefulProteomicsDatabases::Loaders::LoadPsiMod(datadir + "PSI-MOD.obo.xml");
+        privatePsiModDeserialized = UsefulProteomicsDatabases::Loaders::LoadPsiMod(datadir + "/PSI-MOD.obo.xml");
 
         auto formalChargesDictionary = UsefulProteomicsDatabases::Loaders::GetFormalChargesDictionary(privatePsiModDeserialized);
         privateUniprotDeseralized = UsefulProteomicsDatabases::Loaders::LoadUniprot(datadir + "/ptmlist.txt", formalChargesDictionary); 

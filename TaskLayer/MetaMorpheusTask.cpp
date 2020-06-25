@@ -47,59 +47,6 @@ using namespace UsefulProteomicsDatabases;
 
 namespace TaskLayer
 {
-
-//The TomlSettings tomlConfig seems to serve as the settings required to read and process or write toml content later on.  
-//I'm having trouble determining exactly what settings it is providing though.  It clearly has Tolerance, PpmTolerance, AbsoluteTolerance, and Protease information
-//but I havent figured out how this translates to providing read or write settings yet.
-#ifdef ORIG
-    TomlSettings *const MetaMorpheusTask::tomlConfig = TomlSettings::Create([&] (std::any cfg)   {
-            cfg::ConfigureType<Tolerance*>([&] (std::any type) {
-                    type::WithConversionFor<TomlString*>([&] (std::any convert) {
-                            convert::FromToml([&] (std::any tmlString) {
-                                    Tolerance::ParseToleranceString(tmlString->Value);
-                                });
-                        });
-                }).ConfigureType<PpmTolerance*>([&] (std::any type){
-                        type::WithConversionFor<TomlString*>([&] (std::any convert){
-                                convert::ToToml([&] (std::any custom) {
-                                        custom.ToString();
-                                    });
-                            });
-                    }).ConfigureType<AbsoluteTolerance*>([&] (std::any type) {
-                            type::WithConversionFor<TomlString*>([&] (std::any convert) {
-                                    convert::ToToml([&] (std::any custom){
-                                            custom.ToString();
-                                        });
-                                });
-                        }).ConfigureType<Protease*>([&] (std::any type) {
-                                type::WithConversionFor<TomlString*>([&] (std::any convert)	{
-                                        convert::ToToml([&] (std::any custom) {
-                                                custom.ToString();
-                                            }).FromToml([&] (std::any tmlString){
-                                                    ProteaseDictionary::Dictionary[tmlString->Value];
-                                                });
-                                    });
-                            }).ConfigureType<std::vector<std::string>>([&] (std::any type)	{
-                                    type::WithConversionFor<TomlString*>([&] (std::any convert)	{
-                                            convert::ToToml([&] (std::any custom) {
-                                                    std::string::Join("\t", custom);
-                                                }).FromToml([&] (std::any tmlString)	{
-                                                        GetModsTypesFromString(tmlString->Value);
-                                                    });
-                                        });
-                                }).ConfigureType<std::vector<(std::string, std::string)*>>([&] (std::any type)	{
-                                        type::WithConversionFor<TomlString*>([&] (std::any convert) {
-                                                convert::ToToml([&] (std::any custom)	{
-                                                        std::string::Join("\t\t", custom->Select([&] (std::any b) {
-                                                                    return b::Item1 + "\t" + b::Item2;
-                                                                }));
-                                                    }).FromToml([&] (std::any tmlString){
-                                                            GetModsFromString(tmlString->Value);
-                                                        });
-                                            });
-                                    }); 
-        });
-#endif
     void MetaMorpheusTask::writeTomlConfig (std::string &filename, std::ofstream &tomlFd )
     {
         if ( !tomlFd.is_open() ) {
@@ -450,10 +397,15 @@ namespace TaskLayer
         Toml::WriteFile(this, tomlFileName, tomlConfig);
         FinishedWritingFile(tomlFileName, std::vector<std::string> {displayName});
 #endif
-
+        GlobalVariables::GlobalVariables_init();
+        
         std::experimental::filesystem::path output_directory = output_folder;
-        //std::string output_path = output_directory.parent_path().string() + "/Task Settings/" + "config.toml";
-        std::string output_path = output_directory.parent_path().string() + "/config.toml";
+        std::string output_dir = output_directory.parent_path().string() + "/Task Settings";
+        if ( !std::experimental::filesystem::exists(output_dir ) ){
+            std::experimental::filesystem::create_directory(output_dir);
+        }       
+        
+        std::string output_path = output_dir + "/config.toml";
         this->writeTomlConfig(output_path, tomlFile);
 
         
@@ -751,7 +703,7 @@ namespace TaskLayer
             std::tuple<std::string, std::string> elem = std::make_tuple( b->getModificationType(),
                                                                          b->getIdWithMotif());
             if ( std::find(tmp->begin(), tmp->end(), elem ) != tmp->end() ) {
-                variableModifications.push_back(b);
+                fixedModifications.push_back(b);
             }
         }
         
@@ -761,6 +713,11 @@ namespace TaskLayer
         for ( auto p = tmpmods.begin(); p != tmpmods.end(); p++ ) {
             localizableModificationTypes.push_back(*p);
         }
+        std::cout << "getAllModsKnown() " <<  GlobalVariables::getAllModsKnown().size() << std::endl;
+        std::cout << "getAllModTypesKnown() " <<  GlobalVariables::getAllModTypesKnown().size() << std::endl;
+        std::cout << "variableMods " << variableModifications.size() << std::endl;
+        std::cout << "fixedMods " << fixedModifications.size() << std::endl;
+        std::cout << "localizableModificationTypes " << localizableModificationTypes.size() << std::endl;
         
 #ifdef ORIG
         auto recognizedVariable = variableModifications.Select([&] (std::any p)      {

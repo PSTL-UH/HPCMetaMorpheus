@@ -43,9 +43,10 @@ namespace EngineLayer
 		static std::vector<Modification*> _AllModsKnown;
 		static std::unordered_set<std::string> _AllModTypesKnown;
                 
-                static void GlobalVariables_init();
                 
 	public:
+                static void GlobalVariables_init();
+
 		static std::vector<std::string> ErrorsReadingMods;
 
 		// File locations
