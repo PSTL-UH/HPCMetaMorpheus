@@ -18,7 +18,10 @@ namespace EngineLayer
     namespace ClassicSearch
     {
         
-        ClassicSearchEngine::ClassicSearchEngine(std::vector<PeptideSpectralMatch*> &globalPsms, std::vector<Ms2ScanWithSpecificMass*> &arrayOfSortedMS2Scans, std::vector<Modification*> &variableModifications, std::vector<Modification*> &fixedModifications,
+        ClassicSearchEngine::ClassicSearchEngine(std::vector<PeptideSpectralMatch*> &globalPsms,
+                                                 std::vector<Ms2ScanWithSpecificMass*> &arrayOfSortedMS2Scans,
+                                                 std::vector<Modification*> &variableModifications,
+                                                 std::vector<Modification*> &fixedModifications,
                                                  std::vector<Protein*> &proteinList,
                                                  MassDiffAcceptor *searchMode,
                                                  CommonParameters *commonParameters,
@@ -74,7 +77,8 @@ namespace EngineLayer
                         //return;
                         break;
                     }
-                            
+                    
+                    int jj=0;
                     // digest each protein into peptides and search for each peptide in all spectra within precursor mass tolerance
                     for (PeptideWithSetModifications *peptide : Proteins[i]->Digest(commonParameters->getDigestionParams(),
                                                     const_cast<std::vector<Proteomics::Modification*>&>(FixedModifications),
@@ -91,7 +95,6 @@ namespace EngineLayer
                             double thisScore = CalculatePeptideScore(scan->TheScan->getTheScan(), matchedIons, 0);
                             
                             bool meetsScoreCutoff = thisScore >= commonParameters->getScoreCutoff();
-                            
                             // this is thread-safe because even if the score improves from another thread writing to this PSM,
                             // the lock combined with AddOrReplace method will ensure thread safety
                             if (meetsScoreCutoff || commonParameters->getCalculateEValue())
@@ -102,7 +105,6 @@ namespace EngineLayer
                                     bool scoreImprovement = PeptideSpectralMatches[scan->ScanIndex] == nullptr ||
                                         (thisScore - PeptideSpectralMatches[scan->ScanIndex]->getRunnerUpScore()) >
                                         -PeptideSpectralMatch::ToleranceForScoreDifferentiation;
-                                    
                                     if (scoreImprovement)
                                     {
                                         if (PeptideSpectralMatches[scan->ScanIndex] == nullptr)
@@ -130,6 +132,7 @@ namespace EngineLayer
                                 }
                             }
                         }
+                        jj++;
                     }
                     
                     // report search progress (proteins searched so far out of total proteins in database)
@@ -143,10 +146,11 @@ namespace EngineLayer
                                                    const_cast<std::vector<std::string>&>(nestedIds));
                         ReportProgress(&tempVar2);
                     }
+                    
+                    
                 }
             }
-        
-    
+            
             // remove peptides below the score cutoff that were stored to calculate expectation values
             if (commonParameters->getCalculateEValue())
             {

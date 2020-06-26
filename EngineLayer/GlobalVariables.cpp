@@ -51,8 +51,10 @@ namespace EngineLayer
             // as of 0.0.277, AppVeyor appends the build number
             // this is intentional; it's to avoid conflicting AppVeyor build numbers
             // trim the build number off the version number for displaying/checking versions, etc
-            int pos = privateMetaMorpheusVersion.find_last_of(".");
-            privateMetaMorpheusVersion = privateMetaMorpheusVersion.substr(0, pos);
+
+            //Edgar: not doing this in the C++ version for now.
+            //int pos = privateMetaMorpheusVersion.find_last_of(".");
+            //privateMetaMorpheusVersion = privateMetaMorpheusVersion.substr(0, pos);
         }
         
 #ifdef ORIG

@@ -287,7 +287,8 @@ namespace TaskLayer
             }
             
             scansWithPrecursors[i] = std::vector<Ms2ScanWithSpecificMass*>();
-            std::vector<IsotopicEnvelope*> neutralExperimentalFragments = Ms2ScanWithSpecificMass::GetNeutralExperimentalFragments(ms2scan, commonParameters);
+            std::vector<IsotopicEnvelope*> neutralExperimentalFragments = Ms2ScanWithSpecificMass::GetNeutralExperimentalFragments(ms2scan,
+                                                                                                                                   commonParameters);
             
             for (auto precursor : precursors)
             {

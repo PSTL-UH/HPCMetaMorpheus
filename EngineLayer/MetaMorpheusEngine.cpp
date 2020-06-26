@@ -35,7 +35,8 @@ namespace EngineLayer
 
     }
 
-    double MetaMorpheusEngine::CalculatePeptideScore(MsDataScan *thisScan, std::vector<MatchedFragmentIon*> &matchedFragmentIons, double maximumMassThatFragmentIonScoreIsDoubled)
+    double MetaMorpheusEngine::CalculatePeptideScore(MsDataScan *thisScan, std::vector<MatchedFragmentIon*> &matchedFragmentIons,
+                                                     double maximumMassThatFragmentIonScoreIsDoubled)
     {
         double score = 0;
         
@@ -53,9 +54,11 @@ namespace EngineLayer
         return score;
     }
     
-    std::vector<MatchedFragmentIon*> MetaMorpheusEngine::MatchFragmentIons(Ms2ScanWithSpecificMass *scan, std::vector<Product*> &theoreticalProducts, CommonParameters *commonParameters)
+    std::vector<MatchedFragmentIon*> MetaMorpheusEngine::MatchFragmentIons(Ms2ScanWithSpecificMass *scan,
+                                                                           std::vector<Product*> &theoreticalProducts,
+                                                                           CommonParameters *commonParameters)
     {
-        auto matchedFragmentIons = std::vector<MatchedFragmentIon*>();
+        std::vector<MatchedFragmentIon*> matchedFragmentIons;
         
         // if the spectrum has no peaks
         if (scan->getExperimentalFragments().empty())
@@ -76,7 +79,8 @@ namespace EngineLayer
             auto closestExperimentalMass = scan->GetClosestExperimentalFragmentMass(product->NeutralMass);
             
             // is the mass error acceptable?
-            if (commonParameters->getProductMassTolerance()->Within(closestExperimentalMass->monoisotopicMass, product->NeutralMass) && closestExperimentalMass->charge <= scan->getPrecursorCharge())
+            if (commonParameters->getProductMassTolerance()->Within(closestExperimentalMass->monoisotopicMass, product->NeutralMass) &&
+                closestExperimentalMass->charge <= scan->getPrecursorCharge())
             {
                 auto tempVar = new MatchedFragmentIon(product,
                                                       Chemistry::ClassExtensions::ToMz(closestExperimentalMass->monoisotopicMass,
@@ -112,12 +116,12 @@ namespace EngineLayer
                                                                         compIonMass)                                &&
                     closestExperimentalMass->charge <= scan->getPrecursorCharge())
                 {
-                    MatchedFragmentIon tempVar2(product,
-                                                Chemistry::ClassExtensions::ToMz(closestExperimentalMass->monoisotopicMass,
-                                                                                 closestExperimentalMass->charge),
-                                                closestExperimentalMass->totalIntensity,
-                                                closestExperimentalMass->charge);
-                    matchedFragmentIons.push_back(&tempVar2);
+                    auto tempVar2 = new MatchedFragmentIon (product,
+                                                            Chemistry::ClassExtensions::ToMz(closestExperimentalMass->monoisotopicMass,
+                                                                                             closestExperimentalMass->charge),
+                                                            closestExperimentalMass->totalIntensity,
+                                                            closestExperimentalMass->charge);
+                    matchedFragmentIons.push_back(tempVar2);
                 }
             }
         }

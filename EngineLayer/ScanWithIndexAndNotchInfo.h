@@ -1,7 +1,5 @@
 ﻿#pragma once
 
-//C# TO C++ CONVERTER NOTE: Forward class declarations:
-//namespace EngineLayer { class Ms2ScanWithSpecificMass; }
 #include "Ms2ScanWithSpecificMass.h"
 
 namespace EngineLayer

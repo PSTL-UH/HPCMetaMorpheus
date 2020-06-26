@@ -147,17 +147,20 @@ namespace TaskLayer
             //GroupBy tuple
             std::vector<std::vector<PeptideSpectralMatch *>>tvec;
             for ( auto psm : tmppsms ) {
+                bool found = false;
                 for ( auto t : tvec ) {
                     if ( t[0]->getFullFilePath() == psm->getFullFilePath()                      &&
                          t[0]->getScanNumber()   == psm->getScanNumber()                        &&
                          t[0]->getPeptideMonisotopicMass() == psm->getPeptideMonisotopicMass() ) {
                         t.push_back(psm);
+                        found = true;
+                        break;
                     }
-                    else {
-                        std::vector<PeptideSpectralMatch *> *t = new std::vector<PeptideSpectralMatch *>;
-                        t->push_back(psm);
-                        tvec.push_back(*t);
-                    }
+                }
+                if ( !found )  {
+                    std::vector<PeptideSpectralMatch *> *t = new std::vector<PeptideSpectralMatch *>;
+                    t->push_back(psm);
+                    tvec.push_back(*t);
                 }
             }
             // Select first

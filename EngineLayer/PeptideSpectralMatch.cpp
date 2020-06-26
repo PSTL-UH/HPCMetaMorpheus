@@ -1088,7 +1088,7 @@ namespace EngineLayer
             for ( auto b : pepsWithMods ) {
                 std::string s;
                 std::vector<std::tuple<std::string, std::string>> genes = b->getProtein()->getGeneNames();
-                for ( auto d = genes.begin(); d == genes.end(); d++  ) {
+                for ( auto d = genes.begin(); d != genes.end(); d++  ) {
                     if ( d == (genes.end() - 1 )){ 
                         s += std::get<0>(*d) + ":" + std::get<1>(*d) ;
                     }
@@ -1121,7 +1121,7 @@ namespace EngineLayer
             for ( auto b : pepsWithMods ) {
                 std::string s;
                 std::vector<SequenceVariation*> variations = b->getProtein()->getAppliedSequenceVariations();
-                for ( auto av = variations.begin(); av == variations.end(); av++ ) {
+                for ( auto av = variations.begin(); av != variations.end(); av++ ) {
                     if ( IntersectsWithVariation(b, *av, false ) ) {
                         s += SequenceVariantString(b, *av ) + ", ";
                     }
@@ -1152,7 +1152,7 @@ namespace EngineLayer
             for ( auto b : pepsWithMods ) {
                 std::string s;
                 std::vector<SequenceVariation*> variations = b->getProtein()->getAppliedSequenceVariations();
-                for ( auto av = variations.begin(); av == variations.end(); av++ ) {
+                for ( auto av = variations.begin(); av != variations.end(); av++ ) {
                     if ( IntersectsWithVariation(b, *av, true ) ) {
                         s += SequenceVariantString(b, *av ) + ", ";
                     }
@@ -1183,7 +1183,7 @@ namespace EngineLayer
             for ( auto b : pepsWithMods ) {
                 std::string s;
                 std::vector<SpliceSite*> sites = b->getProtein()->getSpliceSites();
-                for ( auto d = sites.begin(); d == sites.end(); d++ ) {
+                for ( auto d = sites.begin(); d != sites.end(); d++ ) {
                     if ( Includes (b, *d) ) {
                         s+= std::to_string((*d)->getOneBasedBeginPosition()) + "-" + std::to_string((*d)->getOneBasedEndPosition());
                     }
@@ -1353,7 +1353,7 @@ namespace EngineLayer
             }));
 #endif
             std::vector<double> scores = psm->getAllScores();
-            for ( auto p = scores.begin(); p == scores.end(); p++ ) {
+            for ( auto p = scores.begin(); p != scores.end(); p++ ) {
                 allScores += std::to_string(*p) + ";";
             }
             theoreticalsSearched = std::to_string(psm->getAllScores().size());
@@ -1422,7 +1422,7 @@ namespace EngineLayer
 #endif
         std::unordered_map<int, Modification*> modsOnVariantOneIsNTerm;
         std::unordered_map<int, Modification*> tmp = p->getAllModsOneIsNterminus();
-        for ( auto kv = tmp.begin(); kv == tmp.end(); kv++ ) {
+        for ( auto kv = tmp.begin(); kv != tmp.end(); kv++ ) {
             if ( (kv->first == 1 && applied->getOneBasedBeginPosition() == 1)  ||
                  (applied->getOneBasedBeginPosition() <= kv->first - 2 + p->getOneBasedStartResidueInProtein() &&
                   (kv->first -2 + p->getOneBasedStartResidueInProtein()) <= applied ->getOneBasedEndPosition() )) {
@@ -1583,7 +1583,6 @@ namespace EngineLayer
         s["Matched Ion Counts"] = nullPsm ? " " : std::to_string(psm->getMatchedFragmentIons().size());
     }
     
-    //C# TO C++ CONVERTER TODO TASK: Local functions are not converted by C# to C++ Converter:
     void PeptideSpectralMatch::AddMatchScoreData(std::unordered_map<std::string, std::string> &s, PeptideSpectralMatch *peptide)
     {
         std::string localizedScores = " ";
@@ -1592,7 +1591,7 @@ namespace EngineLayer
             //	localizedScores = GlobalVariables.CheckLengthOfOutput(("[" + string.Join(",",
             //                  peptide.LocalizedScores.Select(b => b.ToString("F3", CultureInfo.InvariantCulture))) + "]"));
             std::vector<std::string>vs;
-            for ( auto b = peptide->getLocalizedScores().begin(); b == peptide->getLocalizedScores().end(); b++ ) {
+            for ( auto b = peptide->getLocalizedScores().begin(); b != peptide->getLocalizedScores().end(); b++ ) {
                 vs.push_back(std::to_string(*b));
             }
             localizedScores = "[" + StringHelper::join(vs, ',') + "]";
@@ -1640,7 +1639,6 @@ namespace EngineLayer
         //delete seriesStringBuilder;
     }
     
-    //C# TO C++ CONVERTER TODO TASK: Methods returning tuples are not converted by C# to C++ Converter:
     //static(string ResolvedString, ChemicalFormula ResolvedValue) Resolve(IEnumerable<IEnumerable<Modification>> enumerable);
     std::tuple<std::string, ChemicalFormula*> PeptideSpectralMatch::Resolve(std::vector<Modification *> enumerable)
     {
@@ -1676,9 +1674,14 @@ namespace EngineLayer
         //}
 
         // Note: C++ version assumes that we have a std::vector<Modification*>, not a std::vector<std::vector<Modification*>>
-        // Might have to revisit if this is not correct.
+        // Most likely not correct and will have to be fixed..
         ChemicalFormula *firstChemFormula = new ChemicalFormula();
         bool equals = true;
+
+        if ( enumerable.empty() ) {
+            return (std::make_tuple("unknown", nullptr));
+        }
+        
         auto firstMods = enumerable.front();
         if (firstMods == nullptr || firstMods->getChemicalFormula() == nullptr) {
             return (std::make_tuple("unknown", nullptr));
@@ -1708,8 +1711,6 @@ namespace EngineLayer
         else {
             return (std::make_tuple(firstChemFormula->getFormula(), firstChemFormula));
         }
-
-        
     }  
 
     std::tuple<std::string, std::unordered_map<std::string, int>> PeptideSpectralMatch::Resolve(std::vector<std::unordered_map<int, Modification*>> enumerable)
@@ -1718,7 +1719,7 @@ namespace EngineLayer
         //Dictionary<string, int> firstDict = list[0].Values.OrderBy(b => b.IdWithMotif).GroupBy(b =>
         //                                    b.IdWithMotif).ToDictionary(b => b.Key, b => b.Count());
         std::vector<Modification*> fvec;
-        for ( auto b = enumerable.front().begin(); b == enumerable.front().end(); b++ ) {
+        for ( auto b = enumerable.front().begin(); b != enumerable.front().end(); b++ ) {
             fvec.push_back(b->second);
         }
         std::sort ( fvec.begin(), fvec.end(), [&] (Modification *r, Modification *l) {
@@ -1726,7 +1727,7 @@ namespace EngineLayer
             });
         std::vector<std::vector<Modification *>> firstVec;
         int current = 0;
-        for ( auto o = fvec.begin(); o == fvec.end(); o++ ) {
+        for ( auto o = fvec.begin(); o != fvec.end(); o++ ) {
             if ( o == fvec.begin() ) {
                 std::vector<Modification *> *v = new std::vector<Modification *>;
                 firstVec.push_back(*v);
@@ -1761,7 +1762,7 @@ namespace EngineLayer
                 continue;
             }
             std::vector<Modification*> mvec;
-            for ( auto b = dict.begin(); b == dict.end(); b++ ) {
+            for ( auto b = dict.begin(); b != dict.end(); b++ ) {
                 mvec.push_back(b->second);
             }
             std::sort ( mvec.begin(), mvec.end(), [&] (Modification *r, Modification *l) {
@@ -1769,7 +1770,7 @@ namespace EngineLayer
                 });
             std::vector<std::vector<Modification *>> tempVec;
             int current = 0;
-            for ( auto o = mvec.begin(); o == mvec.end(); o++ ) {
+            for ( auto o = mvec.begin(); o != mvec.end(); o++ ) {
                 if ( o == mvec.begin() ) {
                     std::vector<Modification *> *v = new std::vector<Modification *>;
                     tempVec.push_back(*v);
@@ -1814,7 +1815,7 @@ namespace EngineLayer
         if ( !equals ) {
             std::vector<std::string>vs;
             for ( auto i: enumerable) {
-                for ( auto j = i.begin(); j == i.end(); j++ ) {
+                for ( auto j = i.begin(); j != i.end(); j++ ) {
                     vs.push_back(j->second->getIdWithMotif());
                 }
             }
@@ -1825,7 +1826,7 @@ namespace EngineLayer
         }
         else {
             std::vector<std::string>vs;
-            for ( auto i = fvec.begin(); i == fvec.end(); i++ ) {
+            for ( auto i = fvec.begin(); i != fvec.end(); i++ ) {
                 vs.push_back( (*i)->getIdWithMotif());
             }
             std::sort( vs.begin(), vs.end() );

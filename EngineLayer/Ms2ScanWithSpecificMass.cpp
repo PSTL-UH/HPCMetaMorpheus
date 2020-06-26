@@ -12,7 +12,12 @@ using namespace MassSpectrometry;
 namespace EngineLayer
 {
 
-	Ms2ScanWithSpecificMass::Ms2ScanWithSpecificMass(MsDataScan *mzLibScan, double precursorMonoisotopicPeakMz, int precursorCharge, const std::string &fullFilePath, CommonParameters *commonParam, std::vector<IsotopicEnvelope*> &neutralExperimentalFragments)
+	Ms2ScanWithSpecificMass::Ms2ScanWithSpecificMass(MsDataScan *mzLibScan,
+                                                         double precursorMonoisotopicPeakMz,
+                                                         int precursorCharge,
+                                                         const std::string &fullFilePath,
+                                                         CommonParameters *commonParam,
+                                                         std::vector<IsotopicEnvelope*> &neutralExperimentalFragments)
 	{
             privatePrecursorMonoisotopicPeakMz = precursorMonoisotopicPeakMz;
             privatePrecursorCharge = precursorCharge;
@@ -30,10 +35,8 @@ namespace EngineLayer
                     })->ToArray();
             }
 #endif
-            if (!getExperimentalFragments().empty()) {
-                for ( auto p: getExperimentalFragments() ) {
-                    DeconvolutedMonoisotopicMasses.push_back(p->monoisotopicMass );
-                }
+            for ( auto p: getExperimentalFragments() ) {
+                DeconvolutedMonoisotopicMasses.push_back(p->monoisotopicMass );
             }
 	}
 
@@ -134,8 +137,8 @@ namespace EngineLayer
                 if ( std::find(alreadyClaimedMzs.begin(), alreadyClaimedMzs.end(), Chemistry::ClassExtensions::RoundedDouble(mz)) == alreadyClaimedMzs.end() )
                 {
                     std::vector<std::tuple<double, double>> dt = {std::make_tuple(mz, intensity)};
-                    IsotopicEnvelope tempVar(dt, Chemistry::ClassExtensions::ToMass(mz, 1), 1, intensity, 0, 0);
-                    neutralExperimentalFragmentMasses.push_back(&tempVar);
+                    auto tempVar = new IsotopicEnvelope (dt, Chemistry::ClassExtensions::ToMass(mz, 1), 1, intensity, 0, 0);
+                    neutralExperimentalFragmentMasses.push_back(tempVar);
                 }
             }
     
@@ -146,7 +149,7 @@ namespace EngineLayer
             })->ToArray();
 #endif
         std::sort ( neutralExperimentalFragmentMasses.begin(), neutralExperimentalFragmentMasses.end(), [&] (IsotopicEnvelope *e1, IsotopicEnvelope *e2 ) {
-                return e1->monoisotopicMass > e2->monoisotopicMass;
+                return e1->monoisotopicMass < e2->monoisotopicMass;
             });
         return neutralExperimentalFragmentMasses;
     }

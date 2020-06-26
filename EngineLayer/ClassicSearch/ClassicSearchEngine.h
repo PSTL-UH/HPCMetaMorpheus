@@ -35,7 +35,7 @@ namespace EngineLayer
             const std::vector<Protein*> Proteins;
             const std::vector<Modification*> FixedModifications;
             const std::vector<Modification*> VariableModifications;
-            std::vector<PeptideSpectralMatch*> PeptideSpectralMatches;
+            std::vector<PeptideSpectralMatch*> &PeptideSpectralMatches;
             std::vector<Ms2ScanWithSpecificMass*> const ArrayOfSortedMS2Scans;
             std::vector<double> MyScanPrecursorMasses;
             
@@ -45,7 +45,14 @@ namespace EngineLayer
                 //delete SearchMode;
             }
             
-            ClassicSearchEngine(std::vector<PeptideSpectralMatch*> &globalPsms, std::vector<Ms2ScanWithSpecificMass*> &arrayOfSortedMS2Scans, std::vector<Modification*> &variableModifications, std::vector<Modification*> &fixedModifications, std::vector<Protein*> &proteinList, MassDiffAcceptor *searchMode, CommonParameters *commonParameters, std::vector<std::string> &nestedIds);
+            ClassicSearchEngine(std::vector<PeptideSpectralMatch*> &globalPsms,
+                                std::vector<Ms2ScanWithSpecificMass*> &arrayOfSortedMS2Scans,
+                                std::vector<Modification*> &variableModifications,
+                                std::vector<Modification*> &fixedModifications,
+                                std::vector<Protein*> &proteinList,
+                                MassDiffAcceptor *searchMode,
+                                CommonParameters *commonParameters,
+                                std::vector<std::string> &nestedIds);
             
         protected:
             MetaMorpheusEngineResults *RunSpecific() override;

@@ -7,8 +7,6 @@
 #include <algorithm>
 #include <optional>
 
-//C# TO C++ CONVERTER NOTE: Forward class declarations:
-//namespace EngineLayer { class CommonParameters; }
 #include "CommonParameters.h"
 
 #include "Chemistry/Chemistry.h"
@@ -30,7 +28,12 @@ namespace EngineLayer
         std::vector<IsotopicEnvelope*> privateExperimentalFragments;
         
     public:
-        Ms2ScanWithSpecificMass(MsDataScan *mzLibScan, double precursorMonoisotopicPeakMz, int precursorCharge, const std::string &fullFilePath, CommonParameters *commonParam, std::vector<IsotopicEnvelope*> &neutralExperimentalFragments);
+        Ms2ScanWithSpecificMass(MsDataScan *mzLibScan,
+                                double precursorMonoisotopicPeakMz,
+                                int precursorCharge,
+                                const std::string &fullFilePath,
+                                CommonParameters *commonParam,
+                                std::vector<IsotopicEnvelope*> &neutralExperimentalFragments);
         
         MsDataScan *getTheScan() const;
         double getPrecursorMonoisotopicPeakMz() const override;
