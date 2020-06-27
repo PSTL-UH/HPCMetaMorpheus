@@ -603,11 +603,13 @@ namespace EngineLayer
                             });
                     }))->ResolvedValue);
 #endif
-        std::vector<Modification *> vmod;
+        std::vector<std::vector<Modification *>> vmod(_bestMatchingPeptides.size() );
+        int i=0;
         for ( auto b: _bestMatchingPeptides ) {
             for ( auto c: std::get<1>(b)->getAllModsOneIsNterminus() ) {
-                vmod.push_back(std::get<1>(c));
+                vmod[i].push_back(std::get<1>(c));
             }
+            i++;
         }
         std::tuple<std::string, ChemicalFormula *> res11 = Resolve (vmod);
         setModsChemicalFormula(std::get<1>(res11));
@@ -738,7 +740,7 @@ namespace EngineLayer
             if ( found ) {
                 for ( auto p = _bestMatchingPeptides.begin(); p !=_bestMatchingPeptides.end(); p++ ) {
                     if ( std::find(parsimoniousProteins.begin(), parsimoniousProteins.end(),
-                                   std::get<1>(*p)->getProtein() ) != parsimoniousProteins.end()) {
+                                   std::get<1>(*p)->getProtein() ) == parsimoniousProteins.end()) {
                         _bestMatchingPeptides.erase (p);
                     }
                 }
@@ -756,7 +758,7 @@ namespace EngineLayer
 #endif
             for ( auto p = _bestMatchingPeptides.begin(); p !=_bestMatchingPeptides.end(); p++ ) {
                 if ( std::find(parsimoniousProteins.begin(), parsimoniousProteins.end(),
-                               std::get<1>(*p)->getProtein() ) != parsimoniousProteins.end()) {
+                               std::get<1>(*p)->getProtein() ) == parsimoniousProteins.end()) {
                     _bestMatchingPeptides.erase (p);
                 }
             }
@@ -912,11 +914,13 @@ namespace EngineLayer
             s["Mods Chemical Formulas"] = " ";
         }
         else {
-            std::vector<Modification *> vm;
+            std::vector<std::vector<Modification *>> vm(pepsWithMods.size() );
+            int i=0;
             for ( auto b : pepsWithMods ) {
                 for ( auto v : b->getAllModsOneIsNterminus() ) {
-                    vm.push_back(std::get<1>(v));
+                    vm[i].push_back(std::get<1>(v));
                 }
+                i++;
             }
             std::tuple<std::string, ChemicalFormula *>res = Resolve(vm);
             s["Mods Chemical Formulas"] = std::get<0>(res);                
@@ -935,11 +939,13 @@ namespace EngineLayer
             s["Mods Combined Chemical Formula"] = " ";
         }
         else {
-            std::vector<Modification *> vm;
+            std::vector<std::vector<Modification *>> vm(pepsWithMods.size() );
+            int i=0;
             for ( auto b : pepsWithMods ) {
                 for ( auto v : b->getAllModsOneIsNterminus() ) {
-                    vm.push_back(std::get<1>(v));
+                    vm[i].push_back(std::get<1>(v));
                 }
+                i++;
             }
             std::tuple<std::string, ChemicalFormula *>res = Resolve(vm);
             s["Mods Combined Chemical Formula"] = std::get<0>(res);
@@ -1640,41 +1646,8 @@ namespace EngineLayer
     }
     
     //static(string ResolvedString, ChemicalFormula ResolvedValue) Resolve(IEnumerable<IEnumerable<Modification>> enumerable);
-    std::tuple<std::string, ChemicalFormula*> PeptideSpectralMatch::Resolve(std::vector<Modification *> enumerable)
+    std::tuple<std::string, ChemicalFormula*> PeptideSpectralMatch::Resolve(std::vector<std::vector<Modification *>> enumerable)
     {
-        //var list = enumerable.ToList();
-        //ChemicalFormula firstChemFormula = new ChemicalFormula();
-        //foreach (var firstMods in list[0]) {
-        //	if (firstMods == nullptr || firstMods.ChemicalFormula == nullptr) {
-        //		return ("unknown", nullptr);
-        //	}
-        //	firstChemFormula.Add(firstMods.ChemicalFormula);
-        //}
-        //bool equals = true;
-        //List<ChemicalFormula> formulas = new List<ChemicalFormula>();
-        //foreach (var anEnum in list) {
-        //	ChemicalFormula fhere = new ChemicalFormula();
-        //	foreach (var mod in anEnum){
-        //		if (mod == nullptr || mod.ChemicalFormula == nullptr)	{
-        //			return ("unknown", nullptr);
-        //		}
-        //		fhere.Add(mod.ChemicalFormula);
-        //	}
-        //	if (!firstChemFormula.Equals(fhere)) {
-        //		equals = false;
-        //	}
-        //	formulas.Add(fhere);
-        //}
-        //if (!equals) {
-        //	var returnString = GlobalVariables.CheckLengthOfOutput(string.Join("|", formulas.Select(b => b.Formula)));
-        //	return (returnString, nullptr);
-        //}
-        //else {
-        //	return (firstChemFormula.Formula, firstChemFormula);
-        //}
-
-        // Note: C++ version assumes that we have a std::vector<Modification*>, not a std::vector<std::vector<Modification*>>
-        // Most likely not correct and will have to be fixed..
         ChemicalFormula *firstChemFormula = new ChemicalFormula();
         bool equals = true;
 
@@ -1682,33 +1655,57 @@ namespace EngineLayer
             return (std::make_tuple("unknown", nullptr));
         }
         
-        auto firstMods = enumerable.front();
-        if (firstMods == nullptr || firstMods->getChemicalFormula() == nullptr) {
-            return (std::make_tuple("unknown", nullptr));
-        }
-        firstChemFormula->Add(firstMods->getChemicalFormula());
-
-        std::vector<ChemicalFormula> *formulas = new std::vector<ChemicalFormula>();
-        for (auto anEnum : enumerable ) {
-            ChemicalFormula *fhere = new ChemicalFormula();
-            if (anEnum == nullptr || anEnum->getChemicalFormula() == nullptr)	{
+        for ( auto firstMods : enumerable.front() ) {
+            if (firstMods == nullptr || firstMods->getChemicalFormula() == nullptr) {
+                delete firstChemFormula;
                 return (std::make_tuple("unknown", nullptr));
             }
-            fhere->Add(anEnum->getChemicalFormula());
+            firstChemFormula->Add(firstMods->getChemicalFormula() );
+        }
+
+        std::vector<ChemicalFormula*> formulas;
+        for (auto anEnum : enumerable ) {
+            ChemicalFormula *fhere = new ChemicalFormula();
+            for ( auto mod : anEnum ) {
+                if (mod == nullptr || mod->getChemicalFormula() == nullptr)	{
+                    delete firstChemFormula;
+                    delete fhere;
+                    for ( auto p: formulas ) {
+                        if ( p != nullptr ) {
+                            delete p;
+                        }
+                    }
+                    return (std::make_tuple("unknown", nullptr));
+                }
+                fhere->Add(mod->getChemicalFormula());
+            }
             if (!firstChemFormula->Equals(fhere)) {
                 equals = false;
             }
-            formulas->push_back(fhere);
+            formulas.push_back(fhere);
         }
+
+
         if (!equals) {
             std::vector<std::string> vs;
-            for ( auto f: *formulas ) {
-                vs.push_back ( f.getFormula() );
+            for ( auto f: formulas ) {
+                vs.push_back ( f->getFormula() );
             }
             std::string returnString = GlobalVariables::CheckLengthOfOutput(StringHelper::join(vs, '|'));
+            delete firstChemFormula;
+            for ( auto p: formulas ) {
+                if ( p != nullptr ) {
+                    delete p;
+                }
+            }
             return (std::make_tuple(returnString, nullptr));
         }
         else {
+            for ( auto p: formulas ) {
+                if ( p != nullptr ) {
+                    delete p;
+                }
+            }
             return (std::make_tuple(firstChemFormula->getFormula(), firstChemFormula));
         }
     }  

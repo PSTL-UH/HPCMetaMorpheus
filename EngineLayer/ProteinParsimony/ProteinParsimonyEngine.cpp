@@ -590,8 +590,8 @@ namespace EngineLayer
 
     std::vector<ProteinGroup*> ProteinParsimonyEngine::ConstructProteinGroups(std::unordered_set<PeptideWithSetModifications*> &uniquePeptides)
     {
-        std::vector<ProteinGroup*> proteinGroups = std::vector<ProteinGroup*>();
-        auto proteinToPeptidesMatching = std::unordered_map<Protein*, std::unordered_set<PeptideWithSetModifications*>>();
+        std::vector<ProteinGroup*> proteinGroups;
+        std::unordered_map<Protein*, std::unordered_set<PeptideWithSetModifications*>> proteinToPeptidesMatching;
 
         for (auto peptide : _fdrFilteredPeptides) {
             std::unordered_set<PeptideWithSetModifications*> peptidesHere;
@@ -622,8 +622,8 @@ namespace EngineLayer
             }
 
             std::unordered_set<Proteomics::Protein*> tmp1 = {std::get<0>(kvp)};
-            ProteinGroup tempVar(tmp1, allPeptidesHere, uniquePeptidesHere);
-            proteinGroups.push_back(&tempVar);
+            auto tempVar = new ProteinGroup (tmp1, allPeptidesHere, uniquePeptidesHere);
+            proteinGroups.push_back(tempVar);
         }
 
         for (auto proteinGroup : proteinGroups) {
@@ -632,10 +632,10 @@ namespace EngineLayer
                     !proteinGroup->Proteins->Contains(p::Protein);
                 });
 #endif
-            std::unordered_set<PeptideWithSetModifications*> newAllPeptides = proteinGroup->getAllPeptides();
-            for ( auto p = newAllPeptides.begin(); p!= newAllPeptides.end(); p++ ) {
-                if ( proteinGroup->getProteins().find((*p)->getProtein()) != proteinGroup->getProteins().end() ) {
-                    newAllPeptides.erase(*p);
+            std::unordered_set<PeptideWithSetModifications*> newAllPeptides;// = proteinGroup->getAllPeptides();
+            for ( auto p : proteinGroup->getAllPeptides() ){
+                if ( proteinGroup->getProteins().find(p->getProtein()) == proteinGroup->getProteins().end() ) {
+                    newAllPeptides.insert(p);
                 }
             }
             proteinGroup->setAllPeptides(newAllPeptides);

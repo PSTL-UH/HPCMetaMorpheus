@@ -13,9 +13,9 @@ using namespace Proteomics::ProteolyticDigestion;
 namespace EngineLayer
 {
 
-    ProteinGroup::ProteinGroup(std::unordered_set<Protein*> &proteins,
-                               std::unordered_set<PeptideWithSetModifications*> &peptides,
-                               std::unordered_set<PeptideWithSetModifications*> &uniquePeptides)
+    ProteinGroup::ProteinGroup(std::unordered_set<Protein*> proteins,
+                               std::unordered_set<PeptideWithSetModifications*> peptides,
+                               std::unordered_set<PeptideWithSetModifications*> uniquePeptides)
     {
         setProteins(proteins);
 #ifdef ORIG        

@@ -197,7 +197,7 @@ namespace EngineLayer
         /// Notches 1,0,1,0 returns as 1|0|1|0
         /// </summary>
 
-        static std::tuple<std::string, ChemicalFormula*> Resolve(std::vector<Modification *> enumerable);
+        static std::tuple<std::string, ChemicalFormula*> Resolve(std::vector<std::vector<Modification *>> enumerable);
         
         static std::tuple<std::string, std::unordered_map<std::string, int>> Resolve(std::vector<std::unordered_map<int, Modification*>> enumerable);
 

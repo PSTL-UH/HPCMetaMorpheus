@@ -252,7 +252,7 @@ namespace EngineLayer
                 })))->size() > 1;
                     }).ToList();
 #endif
-                auto pG = proteinGroups;
+                std::vector<ProteinGroup*> pG = proteinGroups;
                 proteinGroups.clear();
                 for ( auto p:  proteinGroups ){
                     int size=0;
@@ -278,7 +278,7 @@ namespace EngineLayer
                 //    }).ToList();
             
 #endif                
-                auto pG = proteinGroups;
+                std::vector<ProteinGroup*> pG = proteinGroups;
                 proteinGroups.clear();
                 for ( auto p:  proteinGroups ){
                     int size=0;

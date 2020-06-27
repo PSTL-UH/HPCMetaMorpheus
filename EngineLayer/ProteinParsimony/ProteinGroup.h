@@ -69,8 +69,8 @@ namespace EngineLayer
         std::unordered_map<SpectraFileInfo*, double> privateIntensitiesByFile;
         
     public:
-        ProteinGroup(std::unordered_set<Protein*> &proteins, std::unordered_set<PeptideWithSetModifications*> &peptides,
-                     std::unordered_set<PeptideWithSetModifications*> &uniquePeptides);
+        ProteinGroup(std::unordered_set<Protein*> proteins, std::unordered_set<PeptideWithSetModifications*> peptides,
+                     std::unordered_set<PeptideWithSetModifications*> uniquePeptides);
         
         bool getIsDecoy() const;
         

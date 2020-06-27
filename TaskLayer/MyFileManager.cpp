@@ -81,7 +81,7 @@ const std::string MyFileManager::DesiredXRawFileVersion = "3.0.29.0";
         FilteringParams *filter = new FilteringParams(topNpeaks, minRatio, 1, trimMs1Peaks, trimMsMsPeaks);
         //MsDataFile value = new MsDataFile(false);
         std::unordered_map<std::string, MsDataFile*>::const_iterator MyMsDataFiles_iterator = MyMsDataFiles.find(origDataFile);
-        if (MyMsDataFiles_iterator != MyMsDataFiles.end() )
+        if (MyMsDataFiles_iterator != MyMsDataFiles.end() && MyMsDataFiles_iterator->second != nullptr )
         {
             delete filter;
             return MyMsDataFiles_iterator->second;            
