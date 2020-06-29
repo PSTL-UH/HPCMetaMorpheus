@@ -264,6 +264,12 @@ namespace TaskLayer
         // score protein groups and calculate FDR
         auto tmp = proteinAnalysisResults->getProteinGroups();
         tmppsms = getParameters()->getAllPsms();
+
+        std::cout << "ProteinAnalysis: after ParsimonyEngine: tmp size " << tmp.size() << " tmppsms size " << tmppsms.size() << std::endl;
+        for ( auto p : tmp ) {
+            std::cout << p->ToString() << std::endl;
+        }
+        
         auto tempVar2 = new ProteinScoringAndFdrEngine (tmp, tmppsms,
                                             getParameters()->getSearchParameters()->getNoOneHitWonders(),
                                             getParameters()->getSearchParameters()->getModPeptidesAreDifferent(),
@@ -424,14 +430,15 @@ namespace TaskLayer
             }).ToList();
 #endif
         std::vector<PeptideSpectralMatch*> unambiguousPsmsBelowOnePercentFdr;
-        for ( auto p = getParameters()->getAllPsms().begin(); p != getParameters()->getAllPsms().end(); p++ ) {
-            if ( (*p)->getFdrInfo()->getQValue() <= 0.01      &&
-                 (*p)->getFdrInfo()->getQValueNotch() <= 0.01 &&
-                 !(*p)->getIsDecoy()                          &&
-                 (*p)->getFullSequence().length() != 0 ) {
-                unambiguousPsmsBelowOnePercentFdr.push_back(*p);
+        for ( auto p : getParameters()->getAllPsms() ) {
+            if ( p->getFdrInfo()->getQValue() <= 0.01      &&
+                 p->getFdrInfo()->getQValueNotch() <= 0.01 &&
+                 !p->getIsDecoy()                          &&
+                 p->getFullSequence().length() != 0 ) {
+                unambiguousPsmsBelowOnePercentFdr.push_back(p);
             }
         }
+
         
         
 #ifdef ORIG
@@ -476,17 +483,19 @@ namespace TaskLayer
                 std::string del = "|";
                 std::vector<std::string> svec1, svec2;
                 for ( auto p: proteinsOrderedByAccession ) {
-                    svec1.push_back(std::get<1>(p->getGeneNames().front()) );
-                    bool found  = false;
-                    for ( auto q: svec2 ) {
-                        if ( q == p->getOrganism() ) {
-                            found = true;
-                            break;
+                    if ( p->getGeneNames().size() > 0 ) {
+                        svec1.push_back(std::get<1>(p->getGeneNames().front()) );
+                        bool found  = false;
+                        for ( auto q: svec2 ) {
+                            if ( q == p->getOrganism() ) {
+                                found = true;
+                                break;
+                            }
+                        }
+                        if (!found ) {
+                            svec2.push_back(p->getOrganism() );
                         }
                     }
-                    if (!found ) {
-                        svec2.push_back(p->getOrganism() );
-                    }                    
                 }
                 std::string s1 = StringHelper::join (svec1, del);
                 std::string s2 = StringHelper::join (svec2, del);
@@ -510,6 +519,7 @@ namespace TaskLayer
                     {
                         flashLfqProteinGroups = psmToProteinGroups_iterator->second;
                         flashLfqProteinGroups.push_back(flashLfqProteinGroup);
+                        psmToProteinGroups.emplace(psm, flashLfqProteinGroups);
                     }
                     else
                     {
@@ -578,6 +588,7 @@ namespace TaskLayer
                     {
                         proteinGroups = psmToProteinGroups_iterator->second;
                         proteinGroups.push_back(accessionToPg[protein->getAccession()]);
+                        psmToProteinGroups.emplace(psm, proteinGroups);
                     }
                     else
                     {
@@ -748,9 +759,9 @@ namespace TaskLayer
             //    }).ToList();
 #endif
             std::vector<PeptideSpectralMatch*> limitedpsms_with_fdr;
-            for ( auto p = getParameters()->getAllPsms().begin(); p != getParameters()->getAllPsms().end(); p++ ) {
-                if ( (*p)->getFdrInfo()->getQValue() <= 0.01 ) {
-                    limitedpsms_with_fdr.push_back(*p);
+            for ( auto p : getParameters()->getAllPsms() ) {
+                if ( p->getFdrInfo()->getQValue() <= 0.01 ) {
+                    limitedpsms_with_fdr.push_back(p);
                 }
             }
             
@@ -793,10 +804,10 @@ namespace TaskLayer
             }).ToList();
 #endif
         std::vector<PeptideSpectralMatch*> filteredPsmListForOutput;
-        for ( auto p = getParameters()->getAllPsms().begin(); p != getParameters()->getAllPsms().end(); p++ ) {
-            if ( (*p)->getFdrInfo()->getQValue() <= getCommonParameters()->getQValueOutputFilter()      &&
-                 (*p)->getFdrInfo()->getQValueNotch() <= getCommonParameters()->getQValueOutputFilter() ) {
-                filteredPsmListForOutput.push_back(*p);
+        for ( auto p : getParameters()->getAllPsms() ) {
+            if ( p->getFdrInfo()->getQValue() <= getCommonParameters()->getQValueOutputFilter()      &&
+                 p->getFdrInfo()->getQValueNotch() <= getCommonParameters()->getQValueOutputFilter() ) {
+                filteredPsmListForOutput.push_back(p);
             }
         }
         
@@ -1283,6 +1294,7 @@ namespace TaskLayer
                     {
                         myPepList = proteinToConfidentBaseSequences_iterator->second;
                         myPepList.push_back(peptide);
+                        proteinToConfidentBaseSequences.emplace(peptide->getProtein()->getNonVariantProtein(),myPepList );
                     }
                     else
                     {
@@ -1361,6 +1373,7 @@ namespace TaskLayer
                     {
                         myPepList = proteinToConfidentModifiedSequences_iterator->second;
                         myPepList.push_back(peptide);
+                        proteinToConfidentModifiedSequences.emplace(peptide->getProtein()->getNonVariantProtein(), myPepList );
                     }
                     else
                     {

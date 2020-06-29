@@ -1846,6 +1846,11 @@ namespace EngineLayer
         //                   b.ToString("F2", CultreInfo.InvariantCulture))));
         //	return (returnString, nullptr);
         //}
+        std::string emptyString = "";
+        if ( enumerable.size() == 0 ) {
+            return ( std::make_tuple ( emptyString, std::nullopt));
+        }
+
         double max = *std::max_element(enumerable.begin(), enumerable.end());
         double min = *std::min_element(enumerable.begin(), enumerable.end());
         if ( max - min < ToleranceForDoubleResolutionF2 ) {
@@ -1866,6 +1871,11 @@ namespace EngineLayer
     //static(string ResolvedString, Nullable<double> ResolvedValue) Resolve(IEnumerable<double> enumerable);
     std::tuple<std::string, std::optional<double>> PeptideSpectralMatch::Resolve(std::vector<double> enumerable)
     {
+        std::string emptyString = "";
+        if ( enumerable.size() == 0 ) {
+            return ( std::make_tuple ( emptyString, std::nullopt));
+        }
+
         double max = *std::max_element(enumerable.begin(), enumerable.end());
         double min = *std::min_element(enumerable.begin(), enumerable.end());
         if ( max - min < ToleranceForDoubleResolutionF5 ) {
@@ -1896,6 +1906,11 @@ namespace EngineLayer
         //                                                  b.ToString(CultureInfo.InvariantCulture))));
         //	return (returnString, nullptr);
         //}
+        std::string emptyString = "";
+        if ( enumerable.size() == 0 ) {
+            return ( std::make_tuple ( emptyString, std::nullopt));
+        }
+
         int first = enumerable.front();
         bool allfirst=true;
         for ( auto b : enumerable )  {
@@ -1920,8 +1935,12 @@ namespace EngineLayer
     //static(string ResolvedString, string ResolvedValue) Resolve(IEnumerable<string> enumerable);
     std::tuple<std::string, std::string> PeptideSpectralMatch::Resolve(std::vector<std::string> enumerable)
     {
-        std::string first= enumerable.front() ;
         std::string emptyString = "";
+        if ( enumerable.size() == 0 ) {
+            return ( std::make_tuple ( emptyString, emptyString ));
+        }
+        
+        std::string first= enumerable.front() ;
         bool allnull=true, allfirst=true;
         for ( auto b : enumerable )  {
             if ( b != "" ) {
@@ -1947,8 +1966,13 @@ namespace EngineLayer
     std::tuple<std::string, std::string> PeptideSpectralMatch::Resolve(std::vector<std::string> enumerable,
                                                                        std::string ambiguousIfNull)
     {
-        std::string first= enumerable.front() ;
+
         std::string emptyString = "";
+        if ( enumerable.size() == 0 ) {
+            return ( std::make_tuple ( emptyString, emptyString ));
+        }
+        
+        std::string first= enumerable.front() ;
         bool allnull=true, allfirst=true;
         for ( auto b : enumerable )  {
             if ( b != "" ) {

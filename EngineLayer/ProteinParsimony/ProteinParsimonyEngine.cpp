@@ -140,9 +140,9 @@ namespace EngineLayer
             std::function<bool(PeptideSpectralMatch*,PeptideSpectralMatch*)> f1 = [&](PeptideSpectralMatch *l, PeptideSpectralMatch *r) {return l->digestionParams->getProtease() < r->digestionParams->getProtease(); } ;
             std::function<bool(PeptideSpectralMatch*,PeptideSpectralMatch*)> f2 = [&](PeptideSpectralMatch *l, PeptideSpectralMatch *r) {return l->digestionParams->getProtease() != r->digestionParams->getProtease(); } ;
             std::vector<std::vector<PeptideSpectralMatch*>> tmpPsms = Group::GroupBy ( _fdrFilteredPsms, f1, f2);
-
+            
             for ( auto protease : tmpPsms ) {
-                std::unordered_map<std::string, std::vector<PeptideSpectralMatch*>> sequenceWithPsms = std::unordered_map<std::string, std::vector<PeptideSpectralMatch*>>();
+                std::unordered_map<std::string, std::vector<PeptideSpectralMatch*>> sequenceWithPsms;
 
                 // for each protease, match the base sequence of each peptide to its PSMs
                 for (PeptideSpectralMatch *psm : protease) {
@@ -151,6 +151,7 @@ namespace EngineLayer
                     if (sequenceWithPsms_iterator != sequenceWithPsms.end()) {
                         peptidesForThisBaseSequence = sequenceWithPsms_iterator->second;
                         peptidesForThisBaseSequence.push_back(psm);
+                        sequenceWithPsms.emplace(psm->getBaseSequence(), peptidesForThisBaseSequence);
                     }
                     else {
                         //peptidesForThisBaseSequence = sequenceWithPsms_iterator->second;
@@ -181,7 +182,8 @@ namespace EngineLayer
                             }
                         }
                     }
-                    
+                    std::cout << " baseSequence " << std::get<0>(baseSequence) << std::endl;
+                    std::cout << " peptidesWithNotchInfo " << peptidesWithNotchInfo.size() << std::endl;
                     // if the base seq has >1 PeptideWithSetMods object and has >0 mods, it might need to be matched
                     //to new proteins
 #ifdef ORIG
@@ -249,10 +251,11 @@ namespace EngineLayer
         std::function<bool(PeptideWithSetModifications*,PeptideWithSetModifications*)> f3 = [&](PeptideWithSetModifications *l, PeptideWithSetModifications *r) {return l->getDigestionParams()->getProtease() < r->getDigestionParams()->getProtease(); } ;
         std::function<bool(PeptideWithSetModifications*,PeptideWithSetModifications*)> f4 = [&](PeptideWithSetModifications *l, PeptideWithSetModifications *r) {return l->getDigestionParams()->getProtease() != r->getDigestionParams()->getProtease(); } ;
         std::vector<std::vector<PeptideWithSetModifications*>> peptidesGroupedByProtease = Group::GroupBy ( tmpFilteredPeptides, f3, f4);
+        std::cout << "peptidesGroupedByProtease size " << peptidesGroupedByProtease.size() << std::endl;
         
         for (auto peptidesForThisProtease : peptidesGroupedByProtease) {
-            std::unordered_map<std::string, std::vector<Protein*>> peptideSequenceToProteinsForThisProtease = std::unordered_map<std::string, std::vector<Protein*>>();
-            std::unordered_map<std::string, std::vector<PeptideWithSetModifications*>> sequenceToPwsm = std::unordered_map<std::string, std::vector<PeptideWithSetModifications*>>();
+            std::unordered_map<std::string, std::vector<Protein*>> peptideSequenceToProteinsForThisProtease;
+            std::unordered_map<std::string, std::vector<PeptideWithSetModifications*>> sequenceToPwsm;
 
             for (auto peptide : peptidesForThisProtease) {
                 std::string sequence = peptide->getBaseSequence();
@@ -267,6 +270,7 @@ namespace EngineLayer
                 if (peptideSequenceToProteinsForThisProtease_iterator != peptideSequenceToProteinsForThisProtease.end()) {
                     proteinsForThisPeptideSequence = peptideSequenceToProteinsForThisProtease_iterator->second;
                     proteinsForThisPeptideSequence.push_back(peptide->getProtein());
+                    peptideSequenceToProteinsForThisProtease.emplace(sequence, proteinsForThisPeptideSequence);
                 }
                 else {
                     //proteinsForThisPeptideSequence = peptideSequenceToProteinsForThisProtease_iterator->second;
@@ -280,6 +284,7 @@ namespace EngineLayer
                 if (sequenceToPwsm_iterator != sequenceToPwsm.end()) {
                     peptidesForThisSequence = sequenceToPwsm_iterator->second;
                     peptidesForThisSequence.push_back(peptide);
+                    sequenceToPwsm.emplace (sequence, peptidesForThisSequence);
                 }
                 else {
                     //peptidesForThisSequence = sequenceToPwsm_iterator->second;
@@ -322,6 +327,7 @@ namespace EngineLayer
             if (peptideSequenceToProteins_iterator != peptideSequenceToProteins.end()) {
                 proteinsForThisPeptideSequence = peptideSequenceToProteins_iterator->second;
                 proteinsForThisPeptideSequence.push_back(peptide->getProtein());
+                peptideSequenceToProteins.emplace(sequence, proteinsForThisPeptideSequence );
             }
             else {
                 //proteinsForThisPeptideSequence = peptideSequenceToProteins_iterator->second;
@@ -334,6 +340,7 @@ namespace EngineLayer
             if (proteinToPepSeqMatch_iterator != proteinToPepSeqMatch.end()) {
                 peptideSequences = proteinToPepSeqMatch_iterator->second;
                 peptideSequences.emplace(sequence);
+                proteinToPepSeqMatch.emplace(peptide->getProtein(), peptideSequences);
             }
             else {
                 //peptideSequences = proteinToPepSeqMatch_iterator->second;
@@ -398,6 +405,7 @@ namespace EngineLayer
                     if (algDictionary_iterator != algDictionary.end()) {
                         peptideSequences = algDictionary_iterator->second;
                         peptideSequences.emplace(std::get<0>(kvp)->getSequence());
+                        algDictionary.emplace(protein, peptideSequences );
                     }
                     else {
                         //peptideSequences = algDictionary_iterator->second;
@@ -599,6 +607,7 @@ namespace EngineLayer
             if (proteinToPeptidesMatching_iterator != proteinToPeptidesMatching.end()) {
                 peptidesHere = proteinToPeptidesMatching_iterator->second;
                 peptidesHere.insert(peptide);
+                proteinToPeptidesMatching.emplace(peptide->getProtein(), peptidesHere);
             }
             else {
                 //peptidesHere = proteinToPeptidesMatching_iterator->second;
@@ -622,6 +631,7 @@ namespace EngineLayer
             }
 
             std::unordered_set<Proteomics::Protein*> tmp1 = {std::get<0>(kvp)};
+            
             auto tempVar = new ProteinGroup (tmp1, allPeptidesHere, uniquePeptidesHere);
             proteinGroups.push_back(tempVar);
         }
@@ -634,7 +644,7 @@ namespace EngineLayer
 #endif
             std::unordered_set<PeptideWithSetModifications*> newAllPeptides;// = proteinGroup->getAllPeptides();
             for ( auto p : proteinGroup->getAllPeptides() ){
-                if ( proteinGroup->getProteins().find(p->getProtein()) == proteinGroup->getProteins().end() ) {
+                if ( proteinGroup->getProteins().find(p->getProtein()) != proteinGroup->getProteins().end() ) {
                     newAllPeptides.insert(p);
                 }
             }

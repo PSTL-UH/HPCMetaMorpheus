@@ -78,6 +78,7 @@ namespace EngineLayer
                         {
                             psmsForThisPeptide = peptideToPsmMatching_iterator->second;
                             psmsForThisPeptide.insert(psm);
+                            peptideToPsmMatching.emplace(pepWithSetMods, psmsForThisPeptide );
                         }
                     }
                 }
@@ -309,6 +310,7 @@ namespace EngineLayer
                 {
                     groups = accessionToProteinGroup_iterator->second;
                     groups.push_back(pg);
+                    accessionToProteinGroup.emplace(stippedAccession, groups );
                 }
                 else
                 {

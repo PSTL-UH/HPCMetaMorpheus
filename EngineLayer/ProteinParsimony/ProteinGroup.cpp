@@ -318,10 +318,12 @@ namespace EngineLayer
 #endif
         std::string s;
         for ( auto p= ListOfProteinsOrderedByAccession.begin(); p != ListOfProteinsOrderedByAccession.end(); p++ ){
-            s += std::get<1>((*p)->getGeneNames()[0]);
-            if ( p+1 != ListOfProteinsOrderedByAccession.end() ){
-                s+= "|";
-            }
+            if ( (*p)->getGeneNames().size() > 0 ) {
+                    s += std::get<1>((*p)->getGeneNames()[0]);
+                    if ( p+1 != ListOfProteinsOrderedByAccession.end() ){
+                        s+= "|";
+                    }
+                }
         }
         sb->append(GlobalVariables::CheckLengthOfOutput(s));
         sb->append("\t");
@@ -343,13 +345,15 @@ namespace EngineLayer
                     break;
                 }
             }
-            if ( !found  ) {
+            if ( !found && tmps != "" ) {
                 vs.push_back(tmps);
             }
         }
         std::string ps = "|";
-        sb->append(GlobalVariables::CheckLengthOfOutput(StringHelper::join(vs, ps)));
-        sb->append("\t");
+        if ( vs.size() > 0 ) {
+            sb->append(GlobalVariables::CheckLengthOfOutput(StringHelper::join(vs, ps)));
+            sb->append("\t");
+        }
         
         // list of protein names
 #ifdef ORIG
@@ -367,12 +371,14 @@ namespace EngineLayer
                     break;
                 }
             }
-            if ( !found  ) {
+            if ( !found && tmps != "" ) {
                 vs.push_back(tmps);
             }
         }
-        sb->append(GlobalVariables::CheckLengthOfOutput(StringHelper::join(vs, ps)));
-        sb->append("\t");
+        if ( vs.size() > 0 ) {
+            sb->append(GlobalVariables::CheckLengthOfOutput(StringHelper::join(vs, ps)));
+            sb->append("\t");
+        }
         
         // list of masses
 #ifdef ORIG
@@ -396,19 +402,16 @@ namespace EngineLayer
         }
         
 
-        std::vector<double> masses;
         std::vector<std::string> massesString;
         for (auto sequence : sequences)
         {
             try
             {
                 auto  tempVar = new Proteomics::AminoAcidPolymer::Peptide(sequence);
-                masses.push_back(tempVar->getMonoisotopicMass());
                 massesString.push_back(std::to_string(tempVar->getMonoisotopicMass()));
             }
             catch (const std::runtime_error &e1)
             {
-                masses.push_back(NAN);
                 massesString.push_back(std::to_string(NAN));
             }
         }
@@ -695,8 +698,9 @@ namespace EngineLayer
         sb->append(getBestPeptideQValue());
         sb->append("\t");
         
+        std::string retstring = sb->toString();
         delete sb;
-        return sb->toString();
+        return retstring;
     }
     
     void ProteinGroup::Score()
