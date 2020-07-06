@@ -28,7 +28,7 @@ namespace EngineLayer
     class PeptideSpectralMatch
     {
     private:
-        ChemicalFormula *privateModsChemicalFormula;
+        ChemicalFormula *privateModsChemicalFormula=nullptr;
         std::string privateFullSequence;
         std::optional<int> privateNotch;
         std::string privateBaseSequence;
@@ -52,7 +52,7 @@ namespace EngineLayer
         double privateScanPrecursorMass = 0;
         std::string privateFullFilePath;
         int privateScanIndex = 0;
-        FdrInfo *privateFdrInfo;
+        FdrInfo *privateFdrInfo=nullptr;
         double privateScore = 0;
         double privateDeltaScore = 0;
         double privateRunnerUpScore = 0;
@@ -71,9 +71,15 @@ namespace EngineLayer
         virtual ~PeptideSpectralMatch()
         {
             delete digestionParams;
+            delete privateModsChemicalFormula;
+            delete privateFdrInfo;
         }
         
-        PeptideSpectralMatch(PeptideWithSetModifications *peptide, int notch, double score, int scanIndex, IScan *scan, DigestionParams *digestionParams, std::vector<MatchedFragmentIon*> &matchedFragmentIons);
+        PeptideSpectralMatch(PeptideWithSetModifications *peptide,
+                             int notch, double score,
+                             int scanIndex, IScan *scan,
+                             DigestionParams *digestionParams,
+                             std::vector<MatchedFragmentIon*> &matchedFragmentIons);
         
         std::vector<std::tuple<int, PeptideWithSetModifications *>> getBestMatchingPeptides() const;
 

@@ -370,16 +370,16 @@ namespace EngineLayer
             
             setScore(newScore);
             
-            getPeptidesToMatchingFragments().clear();
-            getPeptidesToMatchingFragments().emplace(pwsm, matchedFragmentIons);
+            privatePeptidesToMatchingFragments.clear();
+            privatePeptidesToMatchingFragments.emplace(pwsm, matchedFragmentIons);
         }
         else if (newScore - getScore() > -ToleranceForScoreDifferentiation && reportAllAmbiguity) //else if the same score and ambiguity is allowed
         {
             _bestMatchingPeptides.push_back(std::make_tuple(notch, pwsm));
             
-            if (getPeptidesToMatchingFragments().find(pwsm) == getPeptidesToMatchingFragments().end())
+            if (privatePeptidesToMatchingFragments.find(pwsm) == privatePeptidesToMatchingFragments.end())
             {
-                getPeptidesToMatchingFragments().emplace(pwsm, matchedFragmentIons);
+                privatePeptidesToMatchingFragments.emplace(pwsm, matchedFragmentIons);
             }
         }
         else if (getScore() - getRunnerUpScore() > ToleranceForScoreDifferentiation)
@@ -426,8 +426,8 @@ namespace EngineLayer
                                             double cumulativeDecoyNotch, double qValueNotch, double maximumLikelihood, double eValue,
                                             double eScore, bool calculateEValue)
     {
-        FdrInfo tempVar= FdrInfo();
-        setFdrInfo(&tempVar);
+        FdrInfo* tempVar= new FdrInfo();
+        setFdrInfo(tempVar);
         getFdrInfo()->setCumulativeTarget(cumulativeTarget);
         getFdrInfo()->setCumulativeDecoy(cumulativeDecoy);
         getFdrInfo()->setQValue(qValue);
@@ -1468,6 +1468,7 @@ namespace EngineLayer
             std::vector<MatchedFragmentIon*> matchedIons = psm->getMatchedFragmentIons();
             if (matchedIons.empty())
             {
+                std::cout << "PeptidesToMatchingFragments().size() " << psm->getPeptidesToMatchingFragments().size() << std::endl;
                 matchedIons = psm->getPeptidesToMatchingFragments().begin()->second;
             }
             
@@ -1597,13 +1598,20 @@ namespace EngineLayer
             //	localizedScores = GlobalVariables.CheckLengthOfOutput(("[" + string.Join(",",
             //                  peptide.LocalizedScores.Select(b => b.ToString("F3", CultureInfo.InvariantCulture))) + "]"));
             std::vector<std::string>vs;
-            for ( auto b = peptide->getLocalizedScores().begin(); b != peptide->getLocalizedScores().end(); b++ ) {
-                vs.push_back(std::to_string(*b));
+            for ( auto b : peptide->getLocalizedScores() ) {
+                vs.push_back(std::to_string(b));
             }
             localizedScores = "[" + StringHelper::join(vs, ',') + "]";
             //	improvementPossible = (peptide.LocalizedScores.Max() - peptide.Score).ToString("F3", CultureInfo.InvariantCulture);
-            auto max = std::max_element(peptide->getLocalizedScores().begin(), peptide->getLocalizedScores().end()); 
-            improvementPossible = std::to_string((*max - peptide->getScore()));
+            std::cout << "peptide->getLocalizedScores().size() " << peptide->getLocalizedScores().size() << std::endl;
+            //auto max = std::max_element(peptide->getLocalizedScores().begin(), peptide->getLocalizedScores().end()); 
+            auto max = peptide->getLocalizedScores()[0];
+            for ( auto p : peptide->getLocalizedScores() ) {
+                if ( p > max ) {
+                    max = p;
+                }
+            }
+            improvementPossible = std::to_string((max - peptide->getScore()));
 	}
 	s["Localized Scores"] = localizedScores;
 	s["Improvement Possible"] = improvementPossible;

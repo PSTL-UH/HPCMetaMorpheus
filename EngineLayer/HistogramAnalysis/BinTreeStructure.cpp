@@ -42,8 +42,8 @@ namespace EngineLayer
             }
             std::sort(listOfMassShifts.begin(), listOfMassShifts.end() );
             
-            double minMassShift = *(std::min(listOfMassShifts.begin(), listOfMassShifts.end()));
-            double maxMassShift = *(std::max(listOfMassShifts.begin(), listOfMassShifts.end()));
+            double minMassShift = *(std::min_element(listOfMassShifts.begin(), listOfMassShifts.end()));
+            double maxMassShift = *(std::max_element(listOfMassShifts.begin(), listOfMassShifts.end()));
             
             std::vector<int> p(listOfMassShifts.size());
             
@@ -66,7 +66,7 @@ namespace EngineLayer
                 p[i] = lastIndex - firstIndex;
             }
             
-            int maxP = *(std::max(p.begin(), p.end()));
+            int maxP = *(std::max_element(p.begin(), p.end()));
             std::vector<double> sigma(listOfMassShifts.size());
             
             for (int i = 0; i < (int)listOfMassShifts.size(); i++)
