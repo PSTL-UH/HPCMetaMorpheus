@@ -6,7 +6,6 @@
 #include <cmath>
 #include <tuple>
 
-//C# TO C++ CONVERTER NOTE: Forward class declarations:
 #include "../PeptideSpectralMatch.h"
 
 #include "Proteomics/Proteomics.h"
@@ -54,7 +53,6 @@ namespace EngineLayer
             std::string privateUnimodId = "-";
             double privateMassShift = 0;
             std::string privateMine;
-            std::unordered_map<char, int> privateAAsInCommon;
             int privateOverlapping = 0;
             double privateFracWithSingle = 0;
             double privateMedianLength = 0;
@@ -64,6 +62,7 @@ namespace EngineLayer
             std::unordered_map<char, int> ResidueCount;
             std::unordered_map<std::string, std::tuple<std::string, std::string, PeptideSpectralMatch*>> UniquePSMs;
             std::unordered_map<std::string, int> ModsInCommon;
+            std::unordered_map<char, int> AAsInCommon;
             
             Bin(double massShift);
             

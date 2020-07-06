@@ -32,9 +32,15 @@ namespace EngineLayer
             
         public:
             std::vector<Bin*> getFinalBins() const;
-            void setFinalBins(const std::vector<Bin*> &value);
+            void setFinalBins(const std::vector<Bin*> value);
             
             void GenerateBins(std::vector<PeptideSpectralMatch*> &targetAndDecoyMatches, double dc);
+
+            ~BinTreeStructure() {
+                for (unsigned long i =0; i <privateFinalBins.size() ; i++ ) {
+                    delete privateFinalBins[i];
+                }
+            }
             
         private:
             static double GetSigma(double thisMassShift, int thisP, int i,

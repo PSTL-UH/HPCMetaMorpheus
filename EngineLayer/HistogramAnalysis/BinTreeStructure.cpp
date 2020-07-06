@@ -18,7 +18,7 @@ namespace EngineLayer
             return privateFinalBins;
         }
         
-        void BinTreeStructure::setFinalBins(const std::vector<Bin*> &value)
+        void BinTreeStructure::setFinalBins(const std::vector<Bin*> value)
         {
             privateFinalBins = value;
         }
@@ -80,18 +80,17 @@ namespace EngineLayer
                 else
                 {
                     // SIGMA IS THE DISTANCE TO THE CLOSEST MASS SHIFT THAT HAS A HIGHER P VALUE THAN ITSELF
-                    
                     sigma[i] = GetSigma(thisMassShift, thisP, i, listOfMassShifts, p);
                 }
             }
-            
+
             std::vector<OkBin*> listokbin;
             for (int i = 0; i < (int)sigma.size(); i++)
             {
-                OkBin tempVar(listOfMassShifts[i], sigma[i], p[i]);
-                listokbin.push_back(&tempVar);
+                auto tempVar = new OkBin (listOfMassShifts[i], sigma[i], p[i]);
+                listokbin.push_back(tempVar);
             }
-            
+                        
             std::unordered_set<double> prelimBins;
 #ifdef ORIG
             //for (OkBin *okbin : listokbin.OrderByDescending([&] (std::any b)    {
@@ -121,6 +120,10 @@ namespace EngineLayer
                     prelimBins.insert(okbin->MassShift);
                 }
             }
+
+//            for ( int ii=0; ii< (int)listokbin.size(); ii++ ) {
+//                delete listokbin[ii];
+//            }
             
             auto forFinalBins = std::unordered_map<double, std::vector<double>>();
             for (auto ok : prelimBins)
@@ -155,7 +158,7 @@ namespace EngineLayer
             
             for (int i = 0; i < (int)targetAndDecoyMatches.size(); i++)
             {
-                for (auto bin : getFinalBins())
+                for (auto bin : privateFinalBins)
                 {
                     if (targetAndDecoyMatches[i]->getPeptideMonisotopicMass().has_value() &&
                         std::abs(targetAndDecoyMatches[i]->getScanPrecursorMass() -
@@ -173,7 +176,7 @@ namespace EngineLayer
                     }).ToList());
 #endif
             newBins.clear();
-            for ( auto b : getFinalBins() ) {
+            for ( auto b : privateFinalBins ) {
                 if ( b->getCount() > 1 ) {
                     newBins.push_back(b);
                 }
@@ -196,6 +199,14 @@ namespace EngineLayer
             
             IdentifyFracWithSingle();
             IdentifyMedianLength();
+
+            for ( auto onebin: privateFinalBins ) {
+                std::cout << "AAsInCommON.size() is "  << onebin->AAsInCommon.size() << std::endl;
+                std::cout << "ResidueCount.size() " << onebin->ResidueCount.size() << std::endl;
+                std::cout << "UniquePSMs.size() " << onebin->UniquePSMs.size() << std::endl;
+                std::cout << "ModsInCommon.size() is " << onebin->ModsInCommon.size() << std::endl;
+            }
+            
         }
         
         double BinTreeStructure::GetSigma(double thisMassShift, int thisP, int i, std::vector<double> &listOfMassShifts,
@@ -234,7 +245,7 @@ namespace EngineLayer
         
         void BinTreeStructure::IdentifyFracWithSingle()
         {
-            for (auto bin : getFinalBins())
+            for (auto bin : privateFinalBins)
             {
 #ifdef ORIG
                 auto numTarget = bin->UniquePSMs.Values->Count([&] (std::any b)  {
@@ -268,7 +279,7 @@ namespace EngineLayer
         
         void BinTreeStructure::IdentifyMedianLength()
         {
-            for (auto bin : getFinalBins())
+            for (auto bin : privateFinalBins)
             {
 #ifdef ORIG
                 auto numTarget = bin->UniquePSMs.Values->Count([&] (std::any b) {
@@ -307,9 +318,9 @@ namespace EngineLayer
         
         void BinTreeStructure::IdentifyAAsInCommon()
         {
-            for (auto bin : getFinalBins())
+            for (auto bin : privateFinalBins)
             {
-                bin->setAAsInCommon(std::unordered_map<char, int>());
+                //bin->setAAsInCommon(std::unordered_map<char, int>());
 #ifdef ORIG
                 //for (auto hehe : bin->UniquePSMs.Values->Where([&] (std::any b)    {
                 //            !b::Item3->IsDecoy;
@@ -329,13 +340,13 @@ namespace EngineLayer
                     }
                     for (auto ch : chars)
                     {
-                        if (bin->getAAsInCommon().find(ch) != bin->getAAsInCommon().end())
+                        if (bin->AAsInCommon.find(ch) != bin->AAsInCommon.end())
                         {
-                            bin->getAAsInCommon()[ch]++;
+                            bin->AAsInCommon[ch]++;
                         }
                         else
                         {
-                            bin->getAAsInCommon().emplace(ch, 1);
+                            bin->AAsInCommon.emplace(ch, 1);
                         }
                     }
                 }
@@ -344,9 +355,9 @@ namespace EngineLayer
         
         void BinTreeStructure::IdentifyMods()
         {
-            for (auto bin : getFinalBins())
+            for (auto bin : privateFinalBins)
             {
-                bin->ModsInCommon = std::unordered_map<std::string, int>();
+                //bin->ModsInCommon = std::unordered_map<std::string, int>();
 #ifdef ORIG
                 //for (auto hehe : bin->UniquePSMs.Values->Where([&] (std::any b) {
                 //            !b::Item3->IsDecoy;
@@ -410,7 +421,7 @@ namespace EngineLayer
         
         void BinTreeStructure::IdentifyResidues()
         {
-            for (auto bin : getFinalBins())
+            for (auto bin : privateFinalBins)
             {
                 bin->IdentifyResidues();
             }
@@ -418,7 +429,7 @@ namespace EngineLayer
         
         void BinTreeStructure::IdentifyUnimodBins(double v)
         {
-            for (auto bin : getFinalBins())
+            for (auto bin : privateFinalBins)
             {
                 bin->IdentifyUnimodBins(v);
             }
@@ -426,7 +437,7 @@ namespace EngineLayer
         
         void BinTreeStructure::IdentifyUniprotBins(double v)
         {
-            for (auto bin : getFinalBins())
+            for (auto bin : privateFinalBins)
             {
                 bin->IdentifyUniprotBins(v);
             }
@@ -440,7 +451,7 @@ namespace EngineLayer
                 }).Sum();
 #endif
             double totalTargetCount =0;
-            for ( auto b:  getFinalBins() ) {
+            for ( auto b:  privateFinalBins ) {
                 totalTargetCount += b->getCountTarget();
             }
             //auto ok = std::unordered_set<std::tuple<double, double, double>>();
@@ -452,7 +463,7 @@ namespace EngineLayer
             //            return std::abs(b->getMassShift()) > v;
             //        }))
 #endif
-            for (auto bin : getFinalBins() )
+            for (auto bin : privateFinalBins )
             {
                 if ( std::abs(bin->getMassShift()) <= v ) {
                     continue;
@@ -463,7 +474,7 @@ namespace EngineLayer
                 //            return std::abs(b->getMassShift()) > v;
                 //        }))
 #endif
-                for ( auto bin2: getFinalBins() ) 
+                for ( auto bin2: privateFinalBins ) 
                 {
                     if ( std::abs(bin2->getMassShift()) <= v ) {
                         continue;
@@ -484,7 +495,7 @@ namespace EngineLayer
         
         void BinTreeStructure::IdentifyAA(double v)
         {
-            for (auto bin : getFinalBins())
+            for (auto bin : privateFinalBins)
             {
                 bin->IdentifyAA(v);
             }
@@ -512,7 +523,7 @@ namespace EngineLayer
                     new MyInfo(71.000729, "H C2 N O2"),
                     new MyInfo(50.000394, "H2 O3")
                 };
-            for (auto bin : getFinalBins())
+            for (auto bin : privateFinalBins)
             {
                 bin->setMine("");
                 for (auto myInfo : myInfos)

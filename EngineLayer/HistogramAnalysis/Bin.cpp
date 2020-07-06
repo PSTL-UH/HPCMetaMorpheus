@@ -177,12 +177,12 @@ namespace EngineLayer
         
         std::unordered_map<char, int> Bin::getAAsInCommon() const
         {
-            return privateAAsInCommon;
+            return AAsInCommon;
         }
         
         void Bin::setAAsInCommon(const std::unordered_map<char, int> &value)
         {
-            privateAAsInCommon = value;
+            AAsInCommon = value;
         }
         
         int Bin::getOverlapping() const

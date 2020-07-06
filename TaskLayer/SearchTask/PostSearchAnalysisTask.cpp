@@ -20,6 +20,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <sstream>
 #include <algorithm>
 #include <unordered_map>
 
@@ -789,8 +790,7 @@ namespace TaskLayer
                 WriteTree(myTreeStructure, writtenFile);
                 FinishedWritingFile(writtenFile, svec);
                 
-                //C# TO C++ CONVERTER TODO TASK: A 'delete myTreeStructure' statement was not added since
-                //myTreeStructure was passed to a method or constructor. Handle memory management manually.
+                delete myTreeStructure;
             }
         }
     }
@@ -1821,12 +1821,13 @@ namespace TaskLayer
             
             std::vector<std::string> tmpstringvec;
             for ( auto b: tmpvec ) {
-                std::string s = std::get<0>(b) + ":" + std::to_string(static_cast<double>(std::get<1>(b)) / bin->getCountTarget());
+                std::stringstream ss;
+                ss <<  std::get<0>(b) << ":" << std::to_string(static_cast<double>(std::get<1>(b)) / bin->getCountTarget());
+                std::string s = ss.str();
                 tmpstringvec.push_back(s);
             }
             std::string del = ",";
             std::string tmpstring1 = StringHelper::join(tmpstringvec, del);       
-
 #ifdef ORIG
             std::string tmpstring2 = std::string::Join(",", bin->AAsInCommon::OrderByDescending([&] (std::any b){
                         b->Value;
@@ -1847,11 +1848,12 @@ namespace TaskLayer
                 });
             tmpstringvec.clear();
             for ( auto b: tmpvec2 ) {
-                std::string s = std::get<0>(b) + ":" + std::to_string(static_cast<double>(std::get<1>(b)) / bin->getCountTarget());
+                std::stringstream ss;
+                ss <<  std::get<0>(b) << ":" << std::to_string(static_cast<double>(std::get<1>(b)) / bin->getCountTarget());
+                std::string s = ss.str();
                 tmpstringvec.push_back(s);
             }
             std::string tmpstring2 = StringHelper::join(tmpstringvec, del);
-            
 #ifdef ORIG
             std::string tmpstring3 = std::string::Join(",", bin->ResidueCount::OrderByDescending([&] (std::any b) {
                         b->Value;
@@ -1868,12 +1870,14 @@ namespace TaskLayer
                 });
             tmpstringvec.clear();
             for ( auto b: tmpvec2 ) {
-                std::string s = std::get<0>(b) + ":" + std::to_string(std::get<1>(b));
+                std::stringstream ss;
+                ss <<  std::get<0>(b) << ":" << std::get<1>(b);
+                std::string s = ss.str();
                 tmpstringvec.push_back(s);
             }
             std::string tmpstring3 = StringHelper::join(tmpstringvec, del);
             
-            output << bin->getMassShift() << "\t" <<
+            output << std::setprecision(4) << bin->getMassShift() << "\t" <<
                 bin->getCount() <<  "\t" <<
                 bin->getCountDecoy() << "\t" <<
                 bin->getCountTarget()<< "\t" <<
@@ -1899,6 +1903,7 @@ namespace TaskLayer
                 bin->getMedianLength() << "\t" <<  bin->getUniprotID() << std::endl;
         }
         
+        output.close();
     }
     
     void PostSearchAnalysisTask::WritePsmsForPercolator(std::vector<PeptideSpectralMatch*> &psmList,
