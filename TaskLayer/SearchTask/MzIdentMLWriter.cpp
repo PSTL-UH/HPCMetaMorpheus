@@ -502,7 +502,8 @@ namespace TaskLayer
                 tempVar23->id("SIR_" + std::to_string(sir_id) );
                 tempVar23->spectraData_ref("SD_" + std::to_string(spectral_ids[psm->getFullFilePath()]) );
                 tempVar23->spectrumID("scan=" + std::to_string(psm->getScanNumber()) );
-                auto t23 = new mzIdentML110::SpectrumIdentificationResultType::SpectrumIdentificationItem_sequence(500);
+                //auto t23 = new mzIdentML110::SpectrumIdentificationResultType::SpectrumIdentificationItem_sequence(500);
+                auto t23 = new mzIdentML110::SpectrumIdentificationResultType::SpectrumIdentificationItem_sequence();
                 tempVar23->SpectrumIdentificationItem(*t23 );
 
                 mzIdentML110::CVParamType *tempVar24 = new mzIdentML110::CVParamType();
@@ -513,6 +514,7 @@ namespace TaskLayer
                 auto t24 = new mzIdentML110::SpectrumIdentificationResultType::cvParam_sequence();
                 t24->push_back(*tempVar24);
                 tempVar23->cvParam(*t24);
+
                 _mzid->DataCollection().AnalysisData().SpectrumIdentificationList()[0].SpectrumIdentificationResult()[sir_id] = *tempVar23;
                 psm_per_scan.emplace(std::make_tuple(psm->getFullFilePath(), psm->getScanNumber()), scan_result_scan_item);
                 sir_id++;
@@ -550,9 +552,10 @@ namespace TaskLayer
 
             auto t26 = new mzIdentML110::SpectrumIdentificationItemType();
             t26->rank(1);
-            t26->chargeState(psm->getScanPrecursorCharge() );
-            t26->id("SII_" + std::to_string(std::get<0>(scan_result_scan_item)) + "_"
-                    + std::to_string(std::get<1>(scan_result_scan_item)) );
+            t26->chargeState(psm->getScanPrecursorCharge());
+            std::string stemp = "SII_" + std::to_string(std::get<0>(scan_result_scan_item)) + "_"
+                + std::to_string(std::get<1>(scan_result_scan_item));
+            t26->id(stemp);
             t26->experimentalMassToCharge(std::round(psm->getScanPrecursorMonoisotopicPeakMz()*std::pow(10,5))/std::pow(10,5) );
             t26->passThreshold(psm->getFdrInfo()->getQValue() <= 0.01 );
             t26->peptide_ref("P_" + std::get<0>(peptide_ids[psm->getFullSequence()]) );
@@ -563,20 +566,24 @@ namespace TaskLayer
             
 #endif
             auto t26a = new mzIdentML110::SpectrumIdentificationItemType::PeptideEvidenceRef_sequence(bestMatchingPeptides.size());
-            t26->PeptideEvidenceRef() = *t26a;
+            t26->PeptideEvidenceRef(*t26a);
             auto t26b = new mzIdentML110::SpectrumIdentificationItemType::cvParam_sequence();
             t26b->push_back(*tempVar25);
             t26b->push_back(*tempVar26);
             t26->cvParam(*t26b );
-                
-            _mzid->DataCollection().AnalysisData().SpectrumIdentificationList()[0].SpectrumIdentificationResult()[std::get<0>(scan_result_scan_item)].SpectrumIdentificationItem()[std::get<1>(scan_result_scan_item)] = *t26;
+
+            int current_elem = std::get<1>(scan_result_scan_item);
+            if (  (int)_mzid->DataCollection().AnalysisData().SpectrumIdentificationList()[0].SpectrumIdentificationResult()[std::get<0>(scan_result_scan_item)].SpectrumIdentificationItem().size() < current_elem+1 ) {
+                _mzid->DataCollection().AnalysisData().SpectrumIdentificationList()[0].SpectrumIdentificationResult()[std::get<0>(scan_result_scan_item)].SpectrumIdentificationItem().resize(current_elem+1);
+            }
+            _mzid->DataCollection().AnalysisData().SpectrumIdentificationList()[0].SpectrumIdentificationResult()[std::get<0>(scan_result_scan_item)].SpectrumIdentificationItem().at(std::get<1>(scan_result_scan_item)) = *t26;
             
             if (psm->getPeptideMonisotopicMass().has_value())
             {
                 auto tt =std::round(Chemistry::ClassExtensions::ToMz( psm->getPeptideMonisotopicMass().value(),
                                                                       psm->getScanPrecursorCharge() )
                                     * std::pow(10, 5)) / std::pow(10, 5);
-                _mzid->DataCollection().AnalysisData().SpectrumIdentificationList()[0].SpectrumIdentificationResult()[std::get<0>(scan_result_scan_item)].SpectrumIdentificationItem()[std::get<1>(scan_result_scan_item)].calculatedMassToCharge().set(tt);
+                _mzid->DataCollection().AnalysisData().SpectrumIdentificationList()[0].SpectrumIdentificationResult()[std::get<0>(scan_result_scan_item)].SpectrumIdentificationItem().at(std::get<1>(scan_result_scan_item)).calculatedMassToCharge().set(tt);
                 
                 //_mzid->DataCollection().AnalysisData().SpectrumIdentificationList()[0].SpectrumIdentificationResult()[std::get<0>(scan_result_scan_item)].SpectrumIdentificationItem()[std::get<1>(scan_result_scan_item)]->calculatedMassToChargeSpecified() = true;
             }
@@ -593,7 +600,7 @@ namespace TaskLayer
                 tempVar27->peptideEvidence_ref("PE_" + std::to_string(peptide_evidence_ids[p]));
                 auto at1 = std::get<0>(scan_result_scan_item);
                 auto at2 = std::get<1>(scan_result_scan_item);
-                _mzid->DataCollection().AnalysisData().SpectrumIdentificationList()[0].SpectrumIdentificationResult()[at1].SpectrumIdentificationItem()[at2].PeptideEvidenceRef()[pe] = *tempVar27;
+                _mzid->DataCollection().AnalysisData().SpectrumIdentificationList()[0].SpectrumIdentificationResult()[at1].SpectrumIdentificationItem().at(at2).PeptideEvidenceRef()[pe] = *tempVar27;
                 pe++;
             }
         }
@@ -848,6 +855,7 @@ namespace TaskLayer
         //writer->Close();
         //delete _indexedSerializer;
 
+        //.SpectrumIdentificationList()[0].SpectrumIdentificationResult()[].SpectrumIdentificationItem()[] 
         // Serialize the object model to XML.
         //
         xml_schema::namespace_infomap map;

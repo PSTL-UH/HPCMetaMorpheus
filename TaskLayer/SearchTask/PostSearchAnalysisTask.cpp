@@ -1138,7 +1138,7 @@ namespace TaskLayer
                     if (getParameters()->getCurrentRawFileList().size() > 1)
                     {
                         writtenFile =  getParameters()->getIndividualResultsOutputFolder() +"/" +
-                            strippedFileName + "_ProteinGroups.tsv";
+                            strippedFileName.substr(strippedFileName.find_last_of("/")) + "_ProteinGroups.tsv";
                         std::vector<std::string> tmpvec2;
                         tmpvec2.push_back(getParameters()->getSearchTaskId());
                         tmpvec2.push_back("Individual Spectra Files");
@@ -1160,7 +1160,7 @@ namespace TaskLayer
                         Status("Writing mzID...", tmpvec2a);
                         
                         auto mzidFilePath = getParameters()->getIndividualResultsOutputFolder() + "/" +
-                            strippedFileName + ".mzID";
+                            strippedFileName.substr(strippedFileName.find_last_of("/")) + ".mzID";
                         auto targ1 = getParameters()->getVariableModifications();
                         auto targ2 = getParameters()->getFixedModifications();
                         std::vector<Protease*> vecarg1 = {getCommonParameters()->getDigestionParams()->getProtease()};
@@ -1186,7 +1186,7 @@ namespace TaskLayer
                         Status("Writing pepXML...", svec);
                         
                         auto pepXMLFilePath = getParameters()->getIndividualResultsOutputFolder() + "/" +
-                            strippedFileName + ".pep.XM";
+                            strippedFileName.substr(strippedFileName.find_last_of("/")) + ".pep.XM";
                         auto tempvar = getParameters()->getDatabaseFilenameList();
                         auto tvar = getParameters()->getVariableModifications();
                         auto tvar2 = getParameters()->getFixedModifications();
@@ -1976,7 +1976,8 @@ namespace TaskLayer
     {
         auto fullSeqPath = outputFolder +"/" + fileName + ".tsv";
         
-        flashLFQResults->WriteResults(nullptr, fullSeqPath, nullptr);
+        std::string s1="", s2="";
+        flashLFQResults->WriteResults(s1, fullSeqPath, s2);
         
         FinishedWritingFile(fullSeqPath, nestedIds);
     }
@@ -1988,7 +1989,8 @@ namespace TaskLayer
     {
         auto peaksPath = outputFolder + "/" +  fileName + ".tsv";
         
-        flashLFQResults->WriteResults(peaksPath, nullptr, nullptr);
+        std::string s1="", s2="";
+        flashLFQResults->WriteResults(peaksPath, s1, s2);
         
         FinishedWritingFile(peaksPath, nestedIds);
     }
