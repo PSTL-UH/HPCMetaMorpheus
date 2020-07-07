@@ -266,11 +266,6 @@ namespace TaskLayer
         auto tmp = proteinAnalysisResults->getProteinGroups();
         tmppsms = getParameters()->getAllPsms();
 
-        std::cout << "ProteinAnalysis: after ParsimonyEngine: tmp size " << tmp.size() << " tmppsms size " << tmppsms.size() << std::endl;
-        for ( auto p : tmp ) {
-            std::cout << p->ToString() << std::endl;
-        }
-        
         auto tempVar2 = new ProteinScoringAndFdrEngine (tmp, tmppsms,
                                             getParameters()->getSearchParameters()->getNoOneHitWonders(),
                                             getParameters()->getSearchParameters()->getModPeptidesAreDifferent(),
@@ -1876,31 +1871,34 @@ namespace TaskLayer
                 tmpstringvec.push_back(s);
             }
             std::string tmpstring3 = StringHelper::join(tmpstringvec, del);
-            
-            output << std::setprecision(4) << bin->getMassShift() << "\t" <<
-                bin->getCount() <<  "\t" <<
-                bin->getCountDecoy() << "\t" <<
-                bin->getCountTarget()<< "\t" <<
-                bin->getLocalizeableTarget() << "\t" <<
-                (bin->getCountTarget() - bin->getLocalizeableTarget()) << "\t" <<
-                (bin->getCount() == 0 ? NAN : static_cast<double>(bin->getCountDecoy() / bin->getCount())) << "\t" <<
-                Math::NormalDistribution ( 0, 1, bin->ComputeZ(0.01)) << "\t" <<
-                Math::NormalDistribution (0, 1, bin->ComputeZ(0.255)) << "\t" <<
-                (bin->getCountTarget() == 0 ? NAN : static_cast<double>(bin->getLocalizeableTarget() / bin->getCountTarget())) << "\t" <<
-                bin->getMine() << "\t" << bin->getUnimodId() << "\t" <<
-                bin->getUnimodFormulas() << "\t" <<
-                bin->getUnimodDiffs() << "\t" << bin->AA << "\t" <<
-                bin->getCombos() << "\t" <<
-                tmpstring1 + "\t" <<
-                tmpstring2 + "\t" <<
-                tmpstring3 + "\t" <<
-                (bin->getLocalizeableTarget() == 0 ? NAN : static_cast<double>(bin->getProtNlocCount() / bin->getLocalizeableTarget())) << "\t" <<
-                (bin->getLocalizeableTarget() == 0 ? NAN : static_cast<double>(bin->getPepNlocCount() / bin->getLocalizeableTarget())) << "\t" <<
-                (bin->getLocalizeableTarget() == 0 ? NAN : static_cast<double>(bin->getPepClocCount() / bin->getLocalizeableTarget())) << "\t" <<
-                (bin->getLocalizeableTarget() == 0 ? NAN : static_cast<double>(bin->getProtClocCount() / bin->getLocalizeableTarget())) << "\t" <<
-                bin->getFracWithSingle() << "\t" <<
-                (static_cast<double>(bin->getOverlapping()) / bin->getCountTarget()) << "\t" <<
-                bin->getMedianLength() << "\t" <<  bin->getUniprotID() << std::endl;
+
+            output << std::setprecision(4) << bin->getMassShift() << "\t" << //MassShift
+                bin->getCount() <<  "\t" <<                                  //Count
+                bin->getCountDecoy() << "\t" <<                              //CountDecoy
+                bin->getCountTarget()<< "\t" <<                              //CountTarget
+                bin->getLocalizeableTarget() << "\t" <<                      //CountLocalizeableTarget
+                (bin->getCountTarget() - bin->getLocalizeableTarget()) << "\t" << //CountNonLocalizeableTarget
+                (bin->getCount() == 0 ? NAN : static_cast<double>(bin->getCountDecoy() / bin->getCount())) << "\t" <<  //FDR
+                Math::NormalDistribution ( 0, 1, bin->ComputeZ(0.01)) << "\t" <<                                       //Area 0.01
+                Math::NormalDistribution (0, 1, bin->ComputeZ(0.255)) << "\t" <<                                       //Area 0.255
+                (bin->getCountTarget() == 0 ? NAN : static_cast<double>(bin->getLocalizeableTarget() / bin->getCountTarget())) << "\t" << //FracLocalizeableTarget
+                bin->getMine() << "\t" <<                                    //Mine
+                bin->getUnimodId() << "\t" <<                                //UnimodID
+                bin->getUnimodFormulas() << "\t" <<                          //UnimodFormulas
+                bin->getUnimodDiffs() << "\t" <<                             //UnimodDiffs
+                bin->AA << "\t" <<                                           //AA
+                bin->getCombos() << "\t" <<                                  //Combos
+                tmpstring1 + "\t" <<                                         //ModsInCommon
+                tmpstring2 + "\t" <<                                         //AAsInCommon
+                tmpstring3 + "\t" <<                                         //Residues
+                (bin->getLocalizeableTarget() == 0 ? NAN : static_cast<double>(bin->getProtNlocCount() / bin->getLocalizeableTarget())) << "\t" << //protNtermLocFrac
+                (bin->getLocalizeableTarget() == 0 ? NAN : static_cast<double>(bin->getPepNlocCount() / bin->getLocalizeableTarget())) << "\t" <<  //pepNtermLocFrac 
+                (bin->getLocalizeableTarget() == 0 ? NAN : static_cast<double>(bin->getPepClocCount() / bin->getLocalizeableTarget())) << "\t" <<  //pepCtermLocFrac
+                (bin->getLocalizeableTarget() == 0 ? NAN : static_cast<double>(bin->getProtClocCount() / bin->getLocalizeableTarget())) << "\t" << //protCtermLocFrac
+                bin->getFracWithSingle() << "\t" <<                           //FracWithSingle
+                (static_cast<double>(bin->getOverlapping()) / bin->getCountTarget()) << "\t" << //OverlappingFrac
+                bin->getMedianLength() << "\t" <<                             //MedianLength
+                bin->getUniprotID() << std::endl;                             //Uniprot
         }
         
         output.close();
@@ -1966,7 +1964,7 @@ namespace TaskLayer
                 }
                 else if (proteinGroups[i]->getQValue() <= qValueCutoff)
                 {
-                    output << proteinGroups[i] << std::endl;
+                    output << proteinGroups[i]->ToString() << std::endl;
                 }
             }
         }

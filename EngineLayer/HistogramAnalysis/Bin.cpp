@@ -14,7 +14,6 @@ namespace EngineLayer
         Bin::Bin(double massShift)
         {
             this->privateMassShift = massShift;
-            //UniquePSMs = std::unordered_map<std::string, std::tuple<std::string, std::string, PeptideSpectralMatch*>>();
         }
         
         int Bin::getPepNlocCount() const
@@ -156,7 +155,7 @@ namespace EngineLayer
                     for (auto r : std::get<2>(q)->getLocalizedScores() ) {
                         if ( r > max ) max = r;
                     }
-                    if ( std::get<2>(q)->getIsDecoy() &&
+                    if ( !std::get<2>(q)->getIsDecoy() &&
                          max >= (std::get<2>(q)->getScore()+1) ) {
                         count++;
                     }
@@ -217,13 +216,12 @@ namespace EngineLayer
         
         void Bin::IdentifyResidues()
         {
-            std::unordered_map<char, int> ResidueCount;
-
 #ifdef ORIG
             //for (auto hehe : UniquePSMs.Values->Where([&] (std::any b)  {
             //            return b::Item3->LocalizedScores != nullptr;
             //        }))
 #endif
+            int kk=0;
             for ( auto h :  UniquePSMs ) 
             {
                 auto hehe = std::get<1>(h);
@@ -235,10 +233,12 @@ namespace EngineLayer
                 double bestScore = hehe::Item3->LocalizedScores.Max();
 #endif
                 double bestScore = std::get<2>(hehe)->getLocalizedScores()[0];
+                int ii=0;
                 for ( auto q: std::get<2>(hehe)->getLocalizedScores() ) {
+                    ii++;
                     if ( q > bestScore ) bestScore = q;                    
                 }
-                
+
                 if ( bestScore >= std::get<2>(hehe)->getScore() + 1 &&
                      !std::get<2>(hehe)->getIsDecoy() )
                 {
@@ -276,6 +276,7 @@ namespace EngineLayer
                         }
                     }
                 }
+                kk++;
             }
         }
         

@@ -199,13 +199,6 @@ namespace EngineLayer
             
             IdentifyFracWithSingle();
             IdentifyMedianLength();
-
-            for ( auto onebin: privateFinalBins ) {
-                std::cout << "AAsInCommON.size() is "  << onebin->AAsInCommon.size() << std::endl;
-                std::cout << "ResidueCount.size() " << onebin->ResidueCount.size() << std::endl;
-                std::cout << "UniquePSMs.size() " << onebin->UniquePSMs.size() << std::endl;
-                std::cout << "ModsInCommon.size() is " << onebin->ModsInCommon.size() << std::endl;
-            }
             
         }
         
@@ -292,7 +285,7 @@ namespace EngineLayer
                         numTarget++;
                     }
                 }
-                
+
                 if (numTarget > 0)
                 {
 #ifdef ORIG
@@ -311,7 +304,9 @@ namespace EngineLayer
                             tmpvec.push_back(std::get<2>(q)->getPeptideLength().value() );
                         }
                     }
-                    bin->setMedianLength(Math::Median(tmpvec));                    
+                    //Edgar: well, the name is misleading. Despite of using in the C# version the Statistics::Median function,
+                    // they are really calculating the Mean.
+                    bin->setMedianLength(Math::Mean(tmpvec));                    
                 }
             }
         }

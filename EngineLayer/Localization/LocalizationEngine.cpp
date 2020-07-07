@@ -53,22 +53,23 @@ namespace EngineLayer
                                                                         v1);
                 PeptideWithSetModifications *peptide = std::get<1>(psm->getBestMatchingPeptides().front());
                 double massDifference = psm->getScanPrecursorMass() - peptide->getMonoisotopicMass();
-                
+
                 // this section will iterate through all residues of the peptide and try to localize the mass-diff
                 //at each residue and report a score for each residue
-                auto localizedScores = std::vector<double>();
+                std::vector<double> localizedScores;
                 for (int r = 0; r < peptide->getLength(); r++)
                 {
                     // create new PeptideWithSetMods with unidentified mass difference at the given residue
                     PeptideWithSetModifications *peptideWithLocalizedMassDiff = peptide->Localize(r, massDifference);
-                    
+
                     // this is the list of theoretical products for this peptide with mass-difference on this residue
                     std::vector<Product*> productsWithLocalizedMassDiff = peptideWithLocalizedMassDiff->Fragment(
                         commonParameters->getDissociationType(),
                         commonParameters->getDigestionParams()->getFragmentationTerminus());
+                        
                     
                     auto matchedIons = MatchFragmentIons(scanWithSpecificMass, productsWithLocalizedMassDiff, commonParameters);
-                    
+                        
                     // score when the mass-diff is on this residue
                     double localizedScore = CalculatePeptideScore(scan, matchedIons, 0);
                     
@@ -77,11 +78,10 @@ namespace EngineLayer
                 
                 psm->setLocalizedScores(localizedScores);
                 
-                //C# TO C++ CONVERTER TODO TASK: A 'delete scanWithSpecificMass' statement was not added since
-                //scanWithSpecificMass was passed to a method or constructor. Handle memory management manually.
+                delete scanWithSpecificMass;
             }
             
-			return new LocalizationEngineResults(this);
-		}
-	}
+            return new LocalizationEngineResults(this);
+        }
+    }
 }

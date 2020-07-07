@@ -1468,7 +1468,6 @@ namespace EngineLayer
             std::vector<MatchedFragmentIon*> matchedIons = psm->getMatchedFragmentIons();
             if (matchedIons.empty())
             {
-                std::cout << "PeptidesToMatchingFragments().size() " << psm->getPeptidesToMatchingFragments().size() << std::endl;
                 matchedIons = psm->getPeptidesToMatchingFragments().begin()->second;
             }
             
@@ -1603,7 +1602,6 @@ namespace EngineLayer
             }
             localizedScores = "[" + StringHelper::join(vs, ',') + "]";
             //	improvementPossible = (peptide.LocalizedScores.Max() - peptide.Score).ToString("F3", CultureInfo.InvariantCulture);
-            std::cout << "peptide->getLocalizedScores().size() " << peptide->getLocalizedScores().size() << std::endl;
             //auto max = std::max_element(peptide->getLocalizedScores().begin(), peptide->getLocalizedScores().end()); 
             auto max = peptide->getLocalizedScores()[0];
             for ( auto p : peptide->getLocalizedScores() ) {

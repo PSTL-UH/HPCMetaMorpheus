@@ -29,7 +29,7 @@ cxxtests: $(CEXECS)
 TestToml: TestToml.o 
 	$(CXX) $^ -o $@ $(LDFLAGS)
 
-BinGenerationTest: BinGenerationTest.o 
+BinGenerationTest: BinGenerationTest.o ../lib/libmmorpheus.a
 	$(CXX) $(CXXFLAGS) -c TestDataFile.cpp
 	$(CXX) $^ -o $@ TestDataFile.o $(LDFLAGS)
 

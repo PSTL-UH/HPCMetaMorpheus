@@ -714,11 +714,6 @@ namespace TaskLayer
         for ( auto p = tmpmods.begin(); p != tmpmods.end(); p++ ) {
             localizableModificationTypes.push_back(*p);
         }
-        std::cout << "getAllModsKnown() " <<  GlobalVariables::getAllModsKnown().size() << std::endl;
-        std::cout << "getAllModTypesKnown() " <<  GlobalVariables::getAllModTypesKnown().size() << std::endl;
-        std::cout << "variableMods " << variableModifications.size() << std::endl;
-        std::cout << "fixedMods " << fixedModifications.size() << std::endl;
-        std::cout << "localizableModificationTypes " << localizableModificationTypes.size() << std::endl;
         
 #ifdef ORIG
         auto recognizedVariable = variableModifications.Select([&] (std::any p)      {

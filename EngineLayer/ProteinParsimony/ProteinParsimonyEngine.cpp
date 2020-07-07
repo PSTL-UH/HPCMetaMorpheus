@@ -182,8 +182,6 @@ namespace EngineLayer
                             }
                         }
                     }
-                    std::cout << " baseSequence " << std::get<0>(baseSequence) << std::endl;
-                    std::cout << " peptidesWithNotchInfo " << peptidesWithNotchInfo.size() << std::endl;
                     // if the base seq has >1 PeptideWithSetMods object and has >0 mods, it might need to be matched
                     //to new proteins
 #ifdef ORIG
@@ -251,7 +249,6 @@ namespace EngineLayer
         std::function<bool(PeptideWithSetModifications*,PeptideWithSetModifications*)> f3 = [&](PeptideWithSetModifications *l, PeptideWithSetModifications *r) {return l->getDigestionParams()->getProtease() < r->getDigestionParams()->getProtease(); } ;
         std::function<bool(PeptideWithSetModifications*,PeptideWithSetModifications*)> f4 = [&](PeptideWithSetModifications *l, PeptideWithSetModifications *r) {return l->getDigestionParams()->getProtease() != r->getDigestionParams()->getProtease(); } ;
         std::vector<std::vector<PeptideWithSetModifications*>> peptidesGroupedByProtease = Group::GroupBy ( tmpFilteredPeptides, f3, f4);
-        std::cout << "peptidesGroupedByProtease size " << peptidesGroupedByProtease.size() << std::endl;
         
         for (auto peptidesForThisProtease : peptidesGroupedByProtease) {
             std::unordered_map<std::string, std::vector<Protein*>> peptideSequenceToProteinsForThisProtease;

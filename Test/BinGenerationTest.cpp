@@ -37,8 +37,8 @@ int main ( int argc, char **argv )
     std::cout << ++i << ". TestBinGeneration" << std::endl;
     Test::BinGenerationTest::TestBinGeneration();
 
-    std::cout << ++i << ". TestProteinSplitAcrossFiles" << std::endl;
-    Test::BinGenerationTest::TestProteinSplitAcrossFiles();
+    //std::cout << ++i << ". TestProteinSplitAcrossFiles" << std::endl;
+    //Test::BinGenerationTest::TestProteinSplitAcrossFiles();
     
     return 0;
 }
@@ -123,7 +123,7 @@ namespace Test
         Assert::AreEqual(3, File::ReadLines(testdir + "/MassDifferenceHistogram.tsv").size());
 #endif
         int count=0;
-        std::ifstream input(testdir + "/MassDifferenceHistogram.tsv");
+        std::ifstream input(output_folder + "/MassDifferenceHistogram.tsv");
         if ( input.is_open() ) {
             std::string line;
             while ( getline(input, line ) ) {

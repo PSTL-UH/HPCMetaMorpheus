@@ -26,7 +26,7 @@ namespace EngineLayer
 
             privateTheScan = mzLibScan;
 
-            setExperimentalFragments(neutralExperimentalFragments.empty() ? neutralExperimentalFragments : GetNeutralExperimentalFragments(mzLibScan, commonParam));
+            setExperimentalFragments(!neutralExperimentalFragments.empty() ? neutralExperimentalFragments : GetNeutralExperimentalFragments(mzLibScan, commonParam));
             
 #ifdef ORIG
             if (getExperimentalFragments().Any()) {

@@ -79,7 +79,8 @@ namespace EngineLayer
             auto closestExperimentalMass = scan->GetClosestExperimentalFragmentMass(product->NeutralMass);
             
             // is the mass error acceptable?
-            if (commonParameters->getProductMassTolerance()->Within(closestExperimentalMass->monoisotopicMass, product->NeutralMass) &&
+            if (commonParameters->getProductMassTolerance()->Within(closestExperimentalMass->monoisotopicMass,
+                                                                    product->NeutralMass) &&
                 closestExperimentalMass->charge <= scan->getPrecursorCharge())
             {
                 auto tempVar = new MatchedFragmentIon(product,
