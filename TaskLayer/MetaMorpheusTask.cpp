@@ -22,9 +22,9 @@
 #include "Proteomics/ProteolyticDigestion/CleavageSpecificity.h"
 
 //For XML serialization / deserialization
-#include "include/cereal/types/memory.hpp"
-#include "include/cereal/archives/xml.hpp"
-#include <include/cereal/types/vector.hpp>
+#include "cereal/types/memory.hpp"
+#include "cereal/archives/xml.hpp"
+#include "cereal/types/vector.hpp"
 
 #include <ctime>
 #include <experimental/filesystem>
