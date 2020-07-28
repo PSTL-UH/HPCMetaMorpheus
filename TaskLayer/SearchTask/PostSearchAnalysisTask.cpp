@@ -265,7 +265,11 @@ namespace TaskLayer
         // score protein groups and calculate FDR
         auto tmp = proteinAnalysisResults->getProteinGroups();
         tmppsms = getParameters()->getAllPsms();
-
+        std::cout << "In Proteinanalysis. Size of ProteinGroups is " << tmp.size() << " tmppsms.size() is " << tmppsms.size() << std::endl;
+        for ( auto t : tmp ) {
+            std::cout << "   ProteinGroup name is " << t->getProteinGroupName() << " PsmsBelowOnePercent " << t->getAllPsmsBelowOnePercentFDR().size() << std::endl;           
+        }
+        
         auto tempVar2 = new ProteinScoringAndFdrEngine (tmp, tmppsms,
                                             getParameters()->getSearchParameters()->getNoOneHitWonders(),
                                             getParameters()->getSearchParameters()->getModPeptidesAreDifferent(),
@@ -344,7 +348,7 @@ namespace TaskLayer
         Status("Quantifying...", getParameters()->getSearchTaskId());
         
         // construct file info for FlashLFQ
-        auto spectraFileInfo = std::vector<SpectraFileInfo*>();
+        std::vector<SpectraFileInfo*> spectraFileInfo;
         
         // get experimental design info for normalization
         if (getParameters()->getSearchParameters()->getNormalize())
@@ -495,6 +499,11 @@ namespace TaskLayer
                 }
                 std::string s1 = StringHelper::join (svec1, del);
                 std::string s2 = StringHelper::join (svec2, del);
+                std::cout << "s1 is " << s1 << std::endl;
+                std::cout << "s2 is " << s2 << std::endl;
+                std::cout << "proteinGroupName is " << proteinGroup->getProteinGroupName() << std::endl;
+                
+                    
                 auto flashLfqProteinGroup = new FlashLFQ::ProteinGroup(proteinGroup->getProteinGroupName(),
                                                                        s1, s2 );
                 
@@ -503,23 +512,21 @@ namespace TaskLayer
                 //            return v::FullSequence != nullptr;
                 //        }))
 #endif
+                std::cout << "size of AllPsmsBelowOnePercentFDR is " << proteinGroup->getAllPsmsBelowOnePercentFDR().size() << std::endl;
                 for (auto psm : proteinGroup->getAllPsmsBelowOnePercentFDR() )  
                 {
                     if ( psm->getFullSequence().length() == 0 ) {
+                        std::cout <<"Skipping entry " << (void*)psm << std::endl;
                         continue;
                     }
                     
-                    std::vector<FlashLFQ::ProteinGroup*> flashLfqProteinGroups;
                     std::unordered_map<PeptideSpectralMatch*, std::vector<FlashLFQ::ProteinGroup*>>::const_iterator psmToProteinGroups_iterator = psmToProteinGroups.find(psm);
                     if (psmToProteinGroups_iterator != psmToProteinGroups.end())
                     {
-                        flashLfqProteinGroups = psmToProteinGroups_iterator->second;
-                        flashLfqProteinGroups.push_back(flashLfqProteinGroup);
-                        psmToProteinGroups.emplace(psm, flashLfqProteinGroups);
+                        psmToProteinGroups[psm].push_back(flashLfqProteinGroup);
                     }
                     else
                     {
-                        //flashLfqProteinGroups = psmToProteinGroups_iterator->second;
                         std::vector<FlashLFQ::ProteinGroup*> svec1 = {flashLfqProteinGroup};
                         psmToProteinGroups.emplace(psm, svec1);
                     }
@@ -532,7 +539,7 @@ namespace TaskLayer
         else
         {
             // if protein groups were not constructed, just use accession numbers
-            auto accessionToPg = std::unordered_map<std::string, FlashLFQ::ProteinGroup*>();
+            std::unordered_map<std::string, FlashLFQ::ProteinGroup*> accessionToPg;
             for (auto psm : unambiguousPsmsBelowOnePercentFdr)
             {
 #ifdef ORIG
@@ -578,18 +585,13 @@ namespace TaskLayer
                         accessionToPg.emplace(protein->getAccession(), &tempVar3);
                     }
                     
-                    std::vector<FlashLFQ::ProteinGroup*> proteinGroups;
                     std::unordered_map<PeptideSpectralMatch*, std::vector<FlashLFQ::ProteinGroup*>>::const_iterator psmToProteinGroups_iterator = psmToProteinGroups.find(psm);
                     if (psmToProteinGroups_iterator != psmToProteinGroups.end())
                     {
-                        proteinGroups = psmToProteinGroups_iterator->second;
-                        proteinGroups.push_back(accessionToPg[protein->getAccession()]);
-                        psmToProteinGroups.emplace(psm, proteinGroups);
+                        psmToProteinGroups[psm].push_back(accessionToPg[protein->getAccession()]);
                     }
                     else
                     {
-                        //proteinGroups = psmToProteinGroups_iterator->second;
-                        //psmToProteinGroups.emplace(psm, std::vector<FlashLFQ::ProteinGroup*>(protein->getAccession()) );
                         std::vector<FlashLFQ::ProteinGroup*>vpg = {accessionToPg[protein->getAccession()]};
                         psmToProteinGroups.emplace(psm, vpg );
                     }
@@ -616,6 +618,7 @@ namespace TaskLayer
         {
             if (psmToProteinGroups.find(psm) == psmToProteinGroups.end())
             {
+                std::cout << "Part 2: did not find entry " << (void*)psm << std::endl;
                 psmToProteinGroups.emplace(psm, std::vector<FlashLFQ::ProteinGroup*> {undefinedPg});
             }
             
@@ -648,6 +651,15 @@ namespace TaskLayer
                                                     psm->getScanPrecursorCharge(),
                                                     psmToProteinGroups[psm]);
                 flashLFQIdentifications.push_back(tempVar4);
+            }
+        }
+        std::cout << "flashLFQIdentifications size is " << flashLFQIdentifications.size() << std::endl;
+        for ( auto pp: flashLFQIdentifications ) {
+            std::cout << "   element is " << pp->ToString() << " " << pp->monoisotopicMass << " " << pp->ms2RetentionTimeInMinutes <<std::endl;
+            std::cout << "   proteinGroups.size() " << pp->proteinGroups.size() << std::endl;
+            for ( auto qp : pp->proteinGroups  ) {
+                std::vector<SpectraFileInfo*> t = {pp->fileInfo};
+                std::cout << "      Group " << qp->ToString(t) << std::endl;
             }
         }
         
@@ -730,7 +742,7 @@ namespace TaskLayer
                     if ( pg.find(proteinGroup->getProteinGroupName()) != pg.end() )
                     {
                         auto flashLfqProteinGroup = pg[proteinGroup->getProteinGroupName()];
-                        proteinGroup->getIntensitiesByFile().emplace(spectraFile, flashLfqProteinGroup->GetIntensity(spectraFile));
+                        proteinGroup->getIntensitiesByFile()[spectraFile] =  flashLfqProteinGroup->GetIntensity(spectraFile);
                     }
                     else
                     {
@@ -1283,17 +1295,13 @@ namespace TaskLayer
                 
                 for (auto peptide : myPepsWithSetMods)
                 {
-                    std::vector<PeptideWithSetModifications*> myPepList;
                     std::unordered_map<Protein*, std::vector<PeptideWithSetModifications*>>::const_iterator proteinToConfidentBaseSequences_iterator = proteinToConfidentBaseSequences.find(peptide->getProtein()->getNonVariantProtein());
                     if (proteinToConfidentBaseSequences_iterator != proteinToConfidentBaseSequences.end())
                     {
-                        myPepList = proteinToConfidentBaseSequences_iterator->second;
-                        myPepList.push_back(peptide);
-                        proteinToConfidentBaseSequences.emplace(peptide->getProtein()->getNonVariantProtein(),myPepList );
+                        proteinToConfidentBaseSequences[peptide->getProtein()->getNonVariantProtein()].push_back(peptide);
                     }
                     else
                     {
-                        //myPepList = proteinToConfidentBaseSequences_iterator->second;
                         std::vector<PeptideWithSetModifications*> tvec = {peptide};
                         proteinToConfidentBaseSequences.emplace(peptide->getProtein()->getNonVariantProtein(), tvec);
                     }
@@ -1361,18 +1369,14 @@ namespace TaskLayer
                 
                 for (auto peptide : myPepsWithSetMods)
                 {
-                    std::vector<PeptideWithSetModifications*> myPepList;
                     std::unordered_map<Protein*, std::vector<PeptideWithSetModifications*>>::const_iterator proteinToConfidentModifiedSequences_iterator =
                         proteinToConfidentModifiedSequences.find(peptide->getProtein()->getNonVariantProtein());
                     if (proteinToConfidentModifiedSequences_iterator != proteinToConfidentModifiedSequences.end())
                     {
-                        myPepList = proteinToConfidentModifiedSequences_iterator->second;
-                        myPepList.push_back(peptide);
-                        proteinToConfidentModifiedSequences.emplace(peptide->getProtein()->getNonVariantProtein(), myPepList );
+                        proteinToConfidentModifiedSequences[peptide->getProtein()->getNonVariantProtein()].push_back(peptide);
                     }
                     else
                     {
-                        //myPepList = proteinToConfidentModifiedSequences_iterator->second;
                         std::vector<PeptideWithSetModifications*> tvar = {peptide};
                         proteinToConfidentModifiedSequences.emplace(peptide->getProtein()->getNonVariantProtein(), tvar);
                     }

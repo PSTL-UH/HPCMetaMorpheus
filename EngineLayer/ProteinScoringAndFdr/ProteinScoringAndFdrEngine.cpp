@@ -47,8 +47,7 @@ namespace EngineLayer
                                                         std::vector<PeptideSpectralMatch*> &psmList)
     {
         // add each protein groups PSMs
-        auto peptideToPsmMatching = std::unordered_map<PeptideWithSetModifications*,
-                                                       std::unordered_set<PeptideSpectralMatch*>>();
+        std::unordered_map<PeptideWithSetModifications*, std::unordered_set<PeptideSpectralMatch*>> peptideToPsmMatching;
         for (auto psm : psmList)
         {
             if (psm->getFdrInfo()->getQValueNotch() <= 0.01 && psm->getFdrInfo()->getQValue() <= 0.01)
@@ -65,26 +64,23 @@ namespace EngineLayer
                     for ( auto p: psm->getBestMatchingPeptides() ) {
                         tmpPep.push_back(std::get<1>(p));
                     }
+
                     for ( auto pepWithSetMods : tmpPep )
                     {
-                        std::unordered_set<PeptideSpectralMatch*> psmsForThisPeptide;
-                        std::unordered_map<PeptideWithSetModifications*, std::unordered_set<PeptideSpectralMatch*>>::const_iterator peptideToPsmMatching_iterator = peptideToPsmMatching.find(pepWithSetMods);
+                        std::unordered_map<PeptideWithSetModifications*, std::unordered_set<PeptideSpectralMatch*>>::iterator peptideToPsmMatching_iterator = peptideToPsmMatching.find(pepWithSetMods);
                         if (peptideToPsmMatching_iterator == peptideToPsmMatching.end())
                         {
-                            //psmsForThisPeptide = peptideToPsmMatching_iterator->second;
                             peptideToPsmMatching.emplace(pepWithSetMods, std::unordered_set<PeptideSpectralMatch*> {psm});
                         }
                         else
                         {
-                            psmsForThisPeptide = peptideToPsmMatching_iterator->second;
-                            psmsForThisPeptide.insert(psm);
-                            peptideToPsmMatching.emplace(pepWithSetMods, psmsForThisPeptide );
+                            peptideToPsmMatching[pepWithSetMods].insert(psm);
                         }
                     }
                 }
             }
         }
-        
+
         for (auto proteinGroup : proteinGroups)
         {
             std::vector<PeptideWithSetModifications*> pepsToRemove;
@@ -113,6 +109,7 @@ namespace EngineLayer
                         }
                     }
                     proteinGroup->setAllPsmsBelowOnePercentFDR(tmp);
+                    std::cout << "setting AllPsmsBelowOnePercent for proteingroup " << proteinGroup->getProteinGroupName() << " size " << tmp.size() << std::endl;
                 }
                 else
                 {
@@ -304,17 +301,13 @@ namespace EngineLayer
             {
                 std::string stippedAccession = StripDecoyIdentifier(protein->getAccession());
                 
-                std::vector<ProteinGroup*> groups;
                 std::unordered_map<std::string, std::vector<ProteinGroup*>>::const_iterator accessionToProteinGroup_iterator = accessionToProteinGroup.find(stippedAccession);
                 if (accessionToProteinGroup_iterator != accessionToProteinGroup.end())
                 {
-                    groups = accessionToProteinGroup_iterator->second;
-                    groups.push_back(pg);
-                    accessionToProteinGroup.emplace(stippedAccession, groups );
+                    accessionToProteinGroup[stippedAccession].push_back(pg);
                 }
                 else
                 {
-                    //groups = accessionToProteinGroup_iterator->second;
                     accessionToProteinGroup.emplace(stippedAccession, std::vector<ProteinGroup*> {pg});
                 }
             }
