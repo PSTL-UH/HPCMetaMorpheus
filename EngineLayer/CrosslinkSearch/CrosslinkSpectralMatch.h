@@ -75,7 +75,7 @@ namespace EngineLayer
 
 			std::string ToString();
 
-			static std::unordered_map<std::string, std::string> MatchedIonDataDictionary(PeptideSpectralMatch *psm);
+			static std::vector<std::tuple<std::string, std::string>> MatchedIonDataDictionary(PeptideSpectralMatch *psm);
 		};
 	}
 }

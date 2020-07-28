@@ -7,6 +7,8 @@
 #include <cmath>
 #include <any>
 #include <optional>
+#include <queue>
+
 #include "stringhelper.h"
 #include "stringbuilder.h"
 
@@ -149,7 +151,7 @@ namespace EngineLayer
 	//std::vector<std::tuple<int, PeptideWithSetModifications *>> BestMatchingPeptides;
 
         
-        static std::unordered_map<std::string, std::string> DataDictionary(
+        static std::vector<std::tuple<std::string, std::string>> DataDictionary(
             PeptideSpectralMatch *psm, std::unordered_map<std::string, int> *ModsToWritePruned);
         
         
@@ -217,9 +219,9 @@ namespace EngineLayer
 
         static std::tuple<std::string, std::string> Resolve(std::vector<std::string> enumerable, std::string ambiguousIfNull);
 
-        static void AddBasicMatchData(std::unordered_map<std::string, std::string> &s, PeptideSpectralMatch *psm);
+        static void AddBasicMatchData(std::vector<std::tuple<std::string, std::string>> &s, PeptideSpectralMatch *psm);
 
-        static void AddPeptideSequenceData(std::unordered_map<std::string, std::string> &s,
+        static void AddPeptideSequenceData(std::vector<std::tuple<std::string, std::string>> &s,
                                            PeptideSpectralMatch *psm,
                                            std::unordered_map<std::string, int> *ModsToWritePruned);
 
@@ -249,10 +251,10 @@ namespace EngineLayer
         static std::string SequenceVariantString(PeptideWithSetModifications *p, SequenceVariation *applied);
 
 
-        static void AddMatchScoreData(std::unordered_map<std::string, std::string> &s, PeptideSpectralMatch *peptide);
+        static void AddMatchScoreData(std::vector<std::tuple<std::string, std::string>> &s, PeptideSpectralMatch *peptide);
 
     public:
-        static void AddMatchedIonsData(std::unordered_map<std::string, std::string> &s, PeptideSpectralMatch *psm);
+        static void AddMatchedIonsData(std::vector<std::tuple<std::string, std::string>> &s, PeptideSpectralMatch *psm);
         
     };
 }

@@ -4,12 +4,16 @@
 #include "stringhelper.h"
 #include "GlobalVariables.h"
 
+#include <iostream>
+#include <sstream>
 #include <algorithm>
 #include <vector>
 #include <tuple>
 #include <experimental/filesystem>
 #include <optional>
 #include <numeric>
+#include <iomanip>
+#include <sstream>
 
 using namespace Chemistry;
 using namespace EngineLayer::FdrAnalysis;
@@ -347,12 +351,13 @@ namespace EngineLayer
     std::string PeptideSpectralMatch::GetTabSeparatedHeader()
     {
         // return std::string::Join("\t", DataDictionary(nullptr, nullptr).Keys);
-        std::unordered_map<std::string, std::string> dict = DataDictionary(nullptr, nullptr);
-        std::string s;
+        //std::unordered_map<std::string, std::string> dict = DataDictionary(nullptr, nullptr);
+        std::vector<std::tuple<std::string, std::string>> dict = DataDictionary(nullptr, nullptr);
+        std::stringstream ss;
         for ( auto it = dict.begin(); it != dict.end(); it++ ) {
-            s += it->first + "\t";
-        }
-        return s;
+            ss << std::get<0>(*it) << "\t";
+         }
+        return ss.str();
     }
     
     void PeptideSpectralMatch::AddOrReplace(PeptideWithSetModifications *pwsm, double newScore, int notch,
@@ -390,26 +395,26 @@ namespace EngineLayer
     
     std::string PeptideSpectralMatch::ToString()
     {
-        std::unordered_map<std::string, int> mymap = std::unordered_map<std::string, int>();
+        std::unordered_map<std::string, int> mymap;
         return ToString(&mymap);
     }
     
     std::string PeptideSpectralMatch::ToString(std::unordered_map<std::string, int> *ModstoWritePruned)
     {
         // return std::string::Join("\t", DataDictionary(this, ModstoWritePruned).Values);
-        std::unordered_map<std::string, std::string> dict = DataDictionary(this, ModstoWritePruned);
-        std::string s;
+        //std::unordered_map<std::string, std::string> dict = DataDictionary(this, ModstoWritePruned);
+        std::vector<std::tuple<std::string, std::string>> dict = DataDictionary(this, ModstoWritePruned);
+        std::stringstream ss;
         for ( auto it = dict.begin(); it != dict.end(); it++ ) {
-            s += it->second + "\t";
+            ss << std::get<1>(*it)  <<  "\t";
         }
-        return s;
-        
+        return ss.str();
     }
     
-    std::unordered_map<std::string, std::string> PeptideSpectralMatch::DataDictionary(PeptideSpectralMatch *psm,
+    std::vector<std::tuple<std::string, std::string>> PeptideSpectralMatch::DataDictionary(PeptideSpectralMatch *psm,
                                                              std::unordered_map<std::string, int> *ModsToWritePruned)
     {
-        std::unordered_map<std::string, std::string> s;
+        std::vector<std::tuple<std::string, std::string>> s;
         AddBasicMatchData(s, psm);
         AddPeptideSequenceData(s, psm, ModsToWritePruned);
         AddMatchedIonsData(s, psm);
@@ -773,70 +778,62 @@ namespace EngineLayer
         ResolveAllAmbiguities();
     }
     
-    void PeptideSpectralMatch::AddBasicMatchData(std::unordered_map<std::string, std::string> &s, PeptideSpectralMatch *psm)
+    void PeptideSpectralMatch::AddBasicMatchData(std::vector<std::tuple<std::string, std::string>> &s, PeptideSpectralMatch *psm)
     {
-        // s["File Name"] = psm == nullptr ? " " : Path::GetFileNameWithoutExtension(psm->getFullFilePath());
-        s["File Name"] = psm == nullptr ? " " : std::experimental::filesystem::path(psm->getFullFilePath()).stem();
-        s["Scan Number"] = psm == nullptr ? " " : std::to_string(psm->getScanNumber());
-        s["Scan Retention Time"] = psm == nullptr ? " " : std::to_string(psm->getScanRetentionTime());
-        s["Num Experimental Peaks"] = psm == nullptr ? " " : std::to_string(psm->getScanExperimentalPeaks());
-        s["Total Ion Current"] = psm == nullptr ? " " : std::to_string(psm->getTotalIonCurrent());
-        s["Precursor Scan Number"] = psm == nullptr ? " " : psm->getPrecursorScanNumber().has_value() ? std::to_string(psm->getPrecursorScanNumber().value()) : "unknown";
-        s["Precursor Charge"] = psm == nullptr ? " " : std::to_string(psm->getScanPrecursorCharge());
-        s["Precursor MZ"] = psm == nullptr ? " " : std::to_string(psm->getScanPrecursorMonoisotopicPeakMz());
-        s["Precursor Mass"] = psm == nullptr ? " " : std::to_string(psm->getScanPrecursorMass());
-        s["Score"] = psm == nullptr ? " " : std::to_string(psm->getScore());
-        s["Delta Score"] = psm == nullptr ? " " : std::to_string(psm->getDeltaScore());
-#ifdef ORIG
-        s["Notch"] = psm == nullptr ? " " : Resolve(psm->BestMatchingPeptides->Select([&] (std::any p)
-        {
-            p::Notch;
-        }))->ResolvedString;
-#endif
         if ( psm == nullptr ) {
-            s["Notch"]  = " ";
+            s.push_back(std::make_tuple("File Name", " "));
+            s.push_back(std::make_tuple("Scan Number"  , " "));
+            s.push_back(std::make_tuple("Scan Retention Time" , " "));
+            s.push_back(std::make_tuple("Num Experimental Peaks"  , " "));
+            s.push_back(std::make_tuple("Total Ion Current"  , " "));
+            s.push_back(std::make_tuple("Precursor Scan Number", " "));
+            s.push_back(std::make_tuple("Precursor Charge"  , " "));
+            s.push_back(std::make_tuple("Precursor MZ"  , " "));
+            s.push_back(std::make_tuple("Precursor Mass" , " "));
+            s.push_back(std::make_tuple("Score" , " "));
+            s.push_back(std::make_tuple("Delta Score" , " "));
+            s.push_back(std::make_tuple("Notch",  " "));
+            s.push_back(std::make_tuple("Different Peak Matches" , " "));
+
         }
         else {
+            s.push_back(std::make_tuple("File Name", std::experimental::filesystem::path(psm->getFullFilePath()).stem() ));            
+            s.push_back(std::make_tuple("Scan Number" ,std::to_string(psm->getScanNumber() ) ));
+            s.push_back(std::make_tuple("Scan Retention Time" ,std::to_string(psm->getScanRetentionTime())));
+            s.push_back(std::make_tuple("Num Experimental Peaks" ,std::to_string(psm->getScanExperimentalPeaks())));
+            s.push_back(std::make_tuple("Total Ion Current" ,std::to_string(psm->getTotalIonCurrent())));
+            s.push_back(std::make_tuple("Precursor Scan Number" ,psm->getPrecursorScanNumber().has_value() ? std::to_string(psm->getPrecursorScanNumber().value()) : "unknown"));
+            s.push_back(std::make_tuple("Precursor Charge" ,std::to_string(psm->getScanPrecursorCharge())));
+            s.push_back(std::make_tuple("Precursor MZ" ,std::to_string(psm->getScanPrecursorMonoisotopicPeakMz())));
+            s.push_back(std::make_tuple("Precursor Mass" ,std::to_string(psm->getScanPrecursorMass())));
+            s.push_back(std::make_tuple("Score" ,std::to_string(psm->getScore())));
+            s.push_back(std::make_tuple("Delta Score" ,std::to_string(psm->getDeltaScore())));
             std::vector<int> v;
             for ( auto p: psm->_bestMatchingPeptides ) {
                 v.push_back (std::get<0>(p));
             }
             std::tuple<std::string, std::optional<int>> res = Resolve ( v);
-            s["Notch"] = std::get<0>(res);
+            s.push_back(std::make_tuple("Notch", std::get<0>(res)));            
+            s.push_back(std::make_tuple("Different Peak Matches", std::to_string(psm->getNumDifferentMatchingPeptides())));
         }
-        s["Different Peak Matches"] = psm == nullptr ? " " : std::to_string(psm->getNumDifferentMatchingPeptides());
+                
     }
     
-    void PeptideSpectralMatch::AddPeptideSequenceData(std::unordered_map<std::string, std::string>& s,
+    void PeptideSpectralMatch::AddPeptideSequenceData(std::vector<std::tuple<std::string, std::string>>& s,
                                                       PeptideSpectralMatch *psm,
                                                       std::unordered_map<std::string, int> *ModsToWritePruned)
     {
-#ifdef ORIG
-        bool pepWithModsIsNull = psm == nullptr || psm->BestMatchingPeptides == nullptr ||
-            !psm->BestMatchingPeptides.Any();
-#endif
         bool pepWithModsIsNull = psm == nullptr || psm->_bestMatchingPeptides.empty() == true;
         
-#ifdef ORIG            
-        std::vector<PeptideWithSetModifications*> pepsWithMods = pepWithModsIsNull ? nullptr : psm->BestMatchingPeptides->Select([&] (std::any p) {
-                p::Peptide;
-            }).ToList();
-#endif
         std::vector<PeptideWithSetModifications*> pepsWithMods;
         if ( !pepWithModsIsNull ) {
             for ( auto p: psm->_bestMatchingPeptides ) {
                 pepsWithMods.push_back(std::get<1>(p));
             }
         }
-    
-#ifdef ORIG
-        s["Base Sequence"] = pepWithModsIsNull ? " " : Resolve(pepWithModsIsNull ? nullptr : pepsWithMods.Select([&] (std::any b)
-        {
-            b::BaseSequence;
-        }))->ResolvedString;
-#endif
+
         if ( pepWithModsIsNull ) {
-            s["Base Sequence"] = " ";
+            s.push_back(std::make_tuple("Base Sequence", " "));
         }
         else {
             std::vector<std::string> vs;
@@ -844,17 +841,11 @@ namespace EngineLayer
                 vs.push_back(b->getBaseSequence());
             }
             std::tuple<std::string, std::string>res = Resolve(vs);
-            s["Base Sequence"] = std::get<0>(res);
+            s.push_back(std::make_tuple("Base Sequence", std::get<0>(res) ));
         }
         
-#ifdef ORIG
-        s["Full Sequence"] = pepWithModsIsNull ? " " : Resolve(pepWithModsIsNull ? nullptr : pepsWithMods.Select([&] (std::any b)
-        {
-            b::FullSequence;
-        }))->ResolvedString;
-#endif
         if ( pepWithModsIsNull ) {
-            s["Full Sequence"] = " ";
+            s.push_back(std::make_tuple("Full Sequence", " "));
         }
         else {
             std::vector<std::string> vs;
@@ -862,17 +853,11 @@ namespace EngineLayer
                 vs.push_back(b->getFullSequence());
             }
             std::tuple<std::string, std::string>res = Resolve(vs);
-            s["Full Sequence"] = std::get<0>(res);
+            s.push_back(std::make_tuple("Full Sequence", std::get<0>(res) ));
         }
         
-#ifdef ORIG
-        s["Essential Sequence"] = pepWithModsIsNull ? " " : Resolve(pepWithModsIsNull ? nullptr : pepsWithMods.Select([&] (std::any b)
-        {
-            b::EssentialSequence(ModsToWritePruned);
-        }))->ResolvedString;
-#endif
         if ( pepWithModsIsNull ) {
-            s["Essential Sequence"] = " ";
+            s.push_back(std::make_tuple("Essential Sequence", " "));
         }
         else {
             std::vector<std::string> vs;
@@ -880,17 +865,11 @@ namespace EngineLayer
                 vs.push_back(b->EssentialSequence(ModsToWritePruned));
             }
             std::tuple<std::string, std::string>res = Resolve(vs);
-            s["Essential Sequence"] = std::get<0>(res);
+            s.push_back(std::make_tuple("Essential Sequence", std::get<0>(res) ));
         }
         
-#ifdef ORIG
-        s["Mods"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
-        {
-            b::AllModsOneIsNterminus;
-        }))->ResolvedString;
-#endif
         if ( pepWithModsIsNull ) {
-            s["Mods"] = " ";
+            s.push_back(std::make_tuple("Mods", " "));
         }
         else {
             std::vector<std::unordered_map<int, Modification*>> vc;
@@ -898,7 +877,7 @@ namespace EngineLayer
                 vc.push_back( b->getAllModsOneIsNterminus() );
             }
             std::tuple<std::string, std::unordered_map<std::string, int>>res = Resolve(vc);
-            s["Mods"] = std::get<0>(res);
+            s.push_back(std::make_tuple("Mods", std::get<0>(res) ));
         }
         
 #ifdef ORIG
@@ -911,7 +890,7 @@ namespace EngineLayer
         }))->ResolvedString;
 #endif
         if ( pepWithModsIsNull ) {
-            s["Mods Chemical Formulas"] = " ";
+            s.push_back(std::make_tuple("Mods Chemical Formulas", " "));
         }
         else {
             std::vector<std::vector<Modification *>> vm(pepsWithMods.size() );
@@ -923,7 +902,7 @@ namespace EngineLayer
                 i++;
             }
             std::tuple<std::string, ChemicalFormula *>res = Resolve(vm);
-            s["Mods Chemical Formulas"] = std::get<0>(res);                
+            s.push_back(std::make_tuple("Mods Chemical Formulas", std::get<0>(res) ));
         }
         
 #ifdef ORIG
@@ -936,7 +915,7 @@ namespace EngineLayer
         }))->ResolvedString;
 #endif
         if ( pepWithModsIsNull ) {
-            s["Mods Combined Chemical Formula"] = " ";
+            s.push_back(std::make_tuple("Mods Combined Chemical Formula", " "));
         }
         else {
             std::vector<std::vector<Modification *>> vm(pepsWithMods.size() );
@@ -948,7 +927,7 @@ namespace EngineLayer
                 i++;
             }
             std::tuple<std::string, ChemicalFormula *>res = Resolve(vm);
-            s["Mods Combined Chemical Formula"] = std::get<0>(res);
+            s.push_back(std::make_tuple("Mods Combined Chemical Formula", std::get<0>(res) ));
         }
         
 #ifdef ORIG
@@ -958,7 +937,7 @@ namespace EngineLayer
         }))->Item1;
 #endif
         if ( pepWithModsIsNull ) {
-            s["Num Variable Mods"] = " ";
+            s.push_back(std::make_tuple("Num Variable Mods", " "));
         }
         else {
             std::vector<int> vi;
@@ -966,17 +945,11 @@ namespace EngineLayer
                 vi.push_back(b->getNumVariableMods());
             }
             std::tuple<std::string, std::optional<int>>res = Resolve(vi);
-            s["Num Variable Mods"] = std::get<0>(res);
+            s.push_back(std::make_tuple("Num Variable Mods", std::get<0>(res) ));
         }
         
-#ifdef ORIG
-        s["Missed Cleavages"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
-        {
-            b::MissedCleavages.ToString(CultureInfo::InvariantCulture);
-        }))->ResolvedString;
-#endif
         if ( pepWithModsIsNull ) {
-            s["Missed Cleavages"] = " ";
+            s.push_back(std::make_tuple("Missed Cleavages", " "));
         }
         else {
             std::vector<std::string> vs;
@@ -984,17 +957,11 @@ namespace EngineLayer
                 vs.push_back(std::to_string(b->getMissedCleavages()));
             }
             std::tuple<std::string, std::string>res = Resolve(vs);
-            s["Missed Cleavages"] = std::get<0>(res);
+            s.push_back(std::make_tuple("Missed Cleavages", std::get<0>(res) ));
         }
         
-#ifdef ORIG
-        s["Peptide Monoisotopic Mass"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
-        {
-            b::MonoisotopicMass;
-        }))->ResolvedString;
-#endif
         if ( pepWithModsIsNull ) {
-            s["Peptide Monoisotopic Mass"] = " ";
+            s.push_back(std::make_tuple("Peptide Monoisotopic Mass", " "));
         }
         else {
             std::vector<double> vd;
@@ -1002,17 +969,11 @@ namespace EngineLayer
                 vd.push_back(b->getMonoisotopicMass());
             }
             std::tuple<std::string, std::optional<double>>res = Resolve(vd);
-            s["Peptide Monoisotopic Mass"] = std::get<0>(res);
+            s.push_back(std::make_tuple("Peptide Monoisotopic Mass", std::get<0>(res) ));
         }
         
-#ifdef ORIG
-        s["Mass Diff (Da)"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
-        {
-            return psm->getScanPrecursorMass() - b::MonoisotopicMass;
-        }))->ResolvedString;
-#endif
         if ( pepWithModsIsNull ) {
-            s["Mass Diff (Da)"] = " ";
+            s.push_back(std::make_tuple("Mass Diff (Da)", " "));
         }
         else {
             std::vector<double> vd;
@@ -1020,17 +981,11 @@ namespace EngineLayer
                 vd.push_back((psm->getScanPrecursorMass() - b->getMonoisotopicMass() ));
             }
             std::tuple<std::string, std::optional<double>>res = Resolve(vd);
-            s["Mass Diff (Da)"] = std::get<0>(res);
+            s.push_back(std::make_tuple("Mass Diff (Da)", std::get<0>(res)));
         }
         
-#ifdef ORIG
-        s["Mass Diff (ppm)"] = pepWithModsIsNull ? " " : ResolveF2(pepsWithMods.Select([&] (std::any b)
-        {
-            ((psm->getScanPrecursorMass() - b::MonoisotopicMass) / b::MonoisotopicMass * 1e6);
-        })).ResolvedString;
-#endif
         if ( pepWithModsIsNull ) {
-            s["Mass Diff (ppm)"] = " ";
+            s.push_back(std::make_tuple("Mass Diff (ppm)", " "));
         }
         else {
             std::vector<double> vd;
@@ -1038,17 +993,11 @@ namespace EngineLayer
                 vd.push_back((psm->getScanPrecursorMass() - b->getMonoisotopicMass())/ b->getMonoisotopicMass() * 1e6 );
             }
             std::tuple<std::string, std::optional<double>>res = Resolve(vd);
-            s["Mass Diff (ppm)"] = std::get<0>(res);
+            s.push_back(std::make_tuple("Mass Diff (ppm)", std::get<0>(res) ));
         }
         
-#ifdef ORIG
-        s["Protein Accession"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
-        {
-            b::Protein::Accession;
-        }), psm->getFullSequence())->ResolvedString;
-#endif
         if ( pepWithModsIsNull ) {
-            s["Protein Accession"] = " ";
+            s.push_back(std::make_tuple("Protein Accession", " "));
         }
         else {
             std::vector<std::string> vs;
@@ -1056,17 +1005,11 @@ namespace EngineLayer
                 vs.push_back(b->getProtein()->getAccession());
             }
             std::tuple<std::string, std::string>res = Resolve(vs, psm->getFullSequence());
-            s["Protein Accession"] = std::get<0>(res);
+            s.push_back(std::make_tuple("Protein Accession", std::get<0>(res)));
         }
         
-#ifdef ORIG
-        s["Protein Name"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
-        {
-            b::Protein->FullName;
-        }), psm->getFullSequence())->ResolvedString;
-#endif
         if ( pepWithModsIsNull ) {
-            s["Protein Name"] = " ";
+            s.push_back(std::make_tuple("Protein Name", " "));
         }
         else {
             std::vector<std::string> vs;
@@ -1074,20 +1017,11 @@ namespace EngineLayer
                 vs.push_back(b->getProtein()->getFullName());
             }
             std::tuple<std::string, std::string>res = Resolve(vs, psm->getFullSequence());
-            s["Protein Name"] = std::get<0>(res);
+            s.push_back(std::make_tuple("Protein Name", std::get<0>(res)));
         }
         
-#ifdef ORIG
-        s["Gene Name"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
-        {
-            std::string::Join(", ", b::Protein::GeneNames->Select([&] (std::any d)
-        {
-            StringHelper::formatSimple("{0}:{1}", d::Item1, d::Item2);
-        }));
-        }), psm->getFullSequence())->ResolvedString;
-#endif
         if ( pepWithModsIsNull ) {
-            s["Gene Name"] = " ";
+            s.push_back(std::make_tuple("Gene Name", " "));
         }
         else {
             std::vector<std::string> vs;
@@ -1105,22 +1039,11 @@ namespace EngineLayer
                 vs.push_back(s);
             }
             std::tuple<std::string, std::string>res = Resolve(vs, psm->getFullSequence() );
-            s["Gene Name"] = std::get<0>(res);
+            s.push_back(std::make_tuple("Gene Name", std::get<0>(res)));
         }
         
-#ifdef ORIG
-        s["Intersecting Sequence Variations"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
-        {
-            std::string::Join(", ", b::Protein::AppliedSequenceVariations::Where([&] (std::any av)
-        {
-            IntersectsWithVariation(b, av, false);
-        })->Select([&] (std::any av)  {
-                SequenceVariantString(b, av);
-            }));
-        }))->ResolvedString;
-#endif
         if ( pepWithModsIsNull ) {
-            s["Intersecting Sequence Variations"] = " ";
+            s.push_back(std::make_tuple("Intersecting Sequence Variations", " "));
         }
         else {
             std::vector<std::string> vs;
@@ -1135,23 +1058,11 @@ namespace EngineLayer
                 }
             }
             std::tuple<std::string, std::string>res = Resolve(vs );
-            s["Intersecting Sequence Variations"] = std::get<0>(res);
+            s.push_back(std::make_tuple("Intersecting Sequence Variations", std::get<0>(res) ));
         }
         
-#ifdef ORIG
-        s["Identified Sequence Variations"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
-        {
-            std::string::Join(", ", b::Protein::AppliedSequenceVariations::Where([&] (std::any av)
-        {
-            IntersectsWithVariation(b, av, true);
-        })->Select([&] (std::any av)
-        {
-            SequenceVariantString(b, av);
-        }));
-        }))->ResolvedString;
-#endif
         if ( pepWithModsIsNull ) {
-            s["Identified Sequence Variations"] = " ";
+            s.push_back(std::make_tuple("Identified Sequence Variations", " "));
         }
         else {
             std::vector<std::string> vs;
@@ -1166,7 +1077,7 @@ namespace EngineLayer
                 }
             }
             std::tuple<std::string, std::string>res = Resolve(vs );
-            s["Identified Sequence Variations"] = std::get<0>(res);
+            s.push_back(std::make_tuple("Identified Sequence Variations", std::get<0>(res) ));
         }
         
 #ifdef ORIG
@@ -1182,7 +1093,7 @@ namespace EngineLayer
         }))->ResolvedString;
 #endif
         if ( pepWithModsIsNull ) {
-            s["Splice Sites"] = " ";
+            s.push_back(std::make_tuple("Splice Sites", " "));
         }
         else {
             std::vector<std::string> vs;
@@ -1197,18 +1108,11 @@ namespace EngineLayer
                 }
             }
             std::tuple<std::string, std::string>res = Resolve(vs );
-            s["Splice Sites"] = std::get<0>(res);
+            s.push_back(std::make_tuple("Splice Sites", std::get<0>(res)));
         }
         
-#ifdef ORIG
-        s["Organism Name"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
-        {
-            b::Protein::Organism;
-        }))->Item1;
-        
-#endif
         if ( pepWithModsIsNull ) {
-            s["Organism Name"] = " ";
+            s.push_back(std::make_tuple("Organism Name", " "));
         }
         else {
             std::vector<std::string> vs;
@@ -1216,17 +1120,11 @@ namespace EngineLayer
                 vs.push_back(b->getProtein()->getOrganism());
             }
             std::tuple<std::string, std::string>res = Resolve(vs);
-            s["Organism Name"] = std::get<0>(res);
+            s.push_back(std::make_tuple("Organism Name", std::get<0>(res)));
         }
         
-#ifdef ORIG
-        s["Contaminant"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
-        {
-            b::Protein::IsContaminant ? "Y" : "N";
-        }))->Item1;
-#endif
         if ( pepWithModsIsNull ) {
-            s["Contaminant"] = " ";
+            s.push_back(std::make_tuple("Contaminant", " "));
         }
         else {
             std::vector<std::string> vs;
@@ -1241,17 +1139,11 @@ namespace EngineLayer
                 }
             }
             std::tuple<std::string, std::string>res = Resolve(vs);
-            s["Contaminant"] = std::get<0>(res);
+            s.push_back(std::make_tuple("Contaminant", std::get<0>(res)));
         }
         
-#ifdef ORIG
-        s["Decoy"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
-        {
-            b::Protein::IsDecoy ? "Y" : "N";
-        }))->Item1;
-#endif
         if ( pepWithModsIsNull ) {
-            s["Decoy"] = " ";
+            s.push_back(std::make_tuple("Decoy", " "));
         }
         else {
             std::vector<std::string> vs;
@@ -1266,18 +1158,11 @@ namespace EngineLayer
                 }
             }
             std::tuple<std::string, std::string>res = Resolve(vs );
-            s["Decoy"] = std::get<0>(res);
+            s.push_back(std::make_tuple("Decoy", std::get<0>(res)));
         }
         
-#ifdef ORIG
-        s["Peptide Description"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
-        {
-            b::PeptideDescription;
-        }))->Item1;
-        
-#endif
         if ( pepWithModsIsNull ) {
-            s["Peptide Description"] = " ";
+            s.push_back(std::make_tuple("Peptide Description", " "));
         }
         else {
             std::vector<std::string> vs;
@@ -1285,79 +1170,56 @@ namespace EngineLayer
                 vs.push_back(b->getPeptideDescription() );
             }
             std::tuple<std::string, std::string>res = Resolve(vs);
-            s["Peptide Description"] = std::get<0>(res);
+            s.push_back(std::make_tuple("Peptide Description", std::get<0>(res) ));
         }
         
-#ifdef ORIG
-        s["Start and End Residues In Protein"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
-        {
-            (StringHelper::formatSimple("[{0} to {1}]", b::OneBasedStartResidueInProtein.ToString(CultureInfo::InvariantCulture),
-                                        b::OneBasedEndResidueInProtein.ToString(CultureInfo::InvariantCulture)));
-        }), psm->getFullSequence())->ResolvedString;
-#endif
         if ( pepWithModsIsNull ) {
-            s["Start and End Residues In Protein"] = " ";
+            s.push_back(std::make_tuple("Start and End Residues In Protein", " "));
         }
         else {
             std::vector<std::string> vs;
             for ( auto b : pepsWithMods ) {
                 std::string s;
-                s = std::to_string(b->getOneBasedStartResidueInProtein()) + " to " +
-                    std::to_string(b->getOneBasedEndResidueInProtein());
+                s = "[" + std::to_string(b->getOneBasedStartResidueInProtein()) + " to " +
+                    std::to_string(b->getOneBasedEndResidueInProtein()) + "]";
                 vs.push_back(s);
             }
             std::tuple<std::string, std::string>res = Resolve(vs, psm->getFullSequence() );
-            s["Start and End Residues In Protein"] = std::get<0>(res);
+            s.push_back(std::make_tuple("Start and End Residues In Protein",  std::get<0>(res)));
         }
         
-#ifdef ORIG
-        s["Previous Amino Acid"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
-        {
-            b::PreviousAminoAcid.ToString();
-        }))->ResolvedString;
-        
-#endif
         if ( pepWithModsIsNull ) {
-            s["Previous Amino Acid"] = " ";
+            s.push_back(std::make_tuple("Previous Amino Acid", " "));
         }
         else {
             std::vector<std::string> vs;
             for ( auto b : pepsWithMods ) {
-                vs.push_back(std::to_string(b->getPreviousAminoAcid()) );
+                std::stringstream ss;
+                ss << b->getPreviousAminoAcid();
+                vs.push_back(ss.str() );
             }
             std::tuple<std::string, std::string>res = Resolve(vs);
-            s["Previous Amino Acid"] = std::get<0>(res);
+            s.push_back(std::make_tuple("Previous Amino Acid", std::get<0>(res)));
         }
         
-#ifdef ORIG
-        s["Next Amino Acid"] = pepWithModsIsNull ? " " : Resolve(pepsWithMods.Select([&] (std::any b)
-        {
-            b::NextAminoAcid.ToString();
-        }))->ResolvedString;
-        
-#endif
         if ( pepWithModsIsNull ) {
-            s["Next Amino Acid"] = " ";
+            s.push_back(std::make_tuple("Next Amino Acid", " "));
         }
         else {
             std::vector<std::string> vs;
             for ( auto b : pepsWithMods ) {
-                vs.push_back(std::to_string(b->getNextAminoAcid() ));
+                std::stringstream ss;
+                ss << b->getNextAminoAcid();
+                vs.push_back(ss.str() );
             }
             std::tuple<std::string, std::string>res = Resolve(vs );
-            s["Next Amino Acid"] = std::get<0>(res);
+            s.push_back(std::make_tuple("Next Amino Acid", std::get<0>(res)));
         }
         
         std::string allScores = " ";
         std::string theoreticalsSearched = " ";
         if (!pepWithModsIsNull && psm->getFdrInfo() != nullptr && psm->getFdrInfo()->getCalculateEValue())
         {
-#ifdef ORIG
-            allScores = std::string::Join(";", psm->getAllScores().Select([&] (std::any p)
-            {
-                p.ToString("F2", CultureInfo::InvariantCulture);
-            }));
-#endif
             std::vector<double> scores = psm->getAllScores();
             for ( auto p = scores.begin(); p != scores.end(); p++ ) {
                 allScores += std::to_string(*p) + ";";
@@ -1365,9 +1227,9 @@ namespace EngineLayer
             theoreticalsSearched = std::to_string(psm->getAllScores().size());
         }
         
-        s["All Scores"] = allScores;
-        s["Theoreticals Searched"] = theoreticalsSearched;
-        s["Decoy/Contaminant/Target"] = pepWithModsIsNull ? " " : psm->getIsDecoy() ? "D" : psm->getIsContaminant() ? "C" : "T";
+        s.push_back(std::make_tuple("All Scores", allScores));
+        s.push_back(std::make_tuple("Theoreticals Searched", theoreticalsSearched));
+        s.push_back(std::make_tuple("Decoy/Contaminant/Target", pepWithModsIsNull ? " " : psm->getIsDecoy() ? "D" : psm->getIsContaminant() ? "C" : "T" ));
     }
     
     
@@ -1451,7 +1313,7 @@ namespace EngineLayer
                                           variantWithAnyMods->getFullSequence());
     }
     
-    void PeptideSpectralMatch::AddMatchedIonsData(std::unordered_map<std::string, std::string> &s, PeptideSpectralMatch *psm)
+    void PeptideSpectralMatch::AddMatchedIonsData(std::vector<std::tuple<std::string, std::string>> &s, PeptideSpectralMatch *psm)
     {
         bool nullPsm = (psm == nullptr);
         
@@ -1531,15 +1393,16 @@ namespace EngineLayer
                     if (ion->NeutralTheoreticalProduct->NeutralLoss == 0)
                     {
                         // no neutral loss
-                        ionLabel = std::to_string(static_cast<int>(ion->NeutralTheoreticalProduct->productType)) + "" +
+                        auto pty = ion->NeutralTheoreticalProduct->productType;
+                        ionLabel = ProductTypeToString(pty) + 
                             std::to_string(ion->NeutralTheoreticalProduct->TerminusFragment->FragmentNumber) + "+" +
                             std::to_string(ion->Charge);
                     }
                     else
                     {
                         // ion label with neutral loss
-                        
-                        ionLabel = "(" + std::to_string(static_cast<int>(ion->NeutralTheoreticalProduct->productType)) + "" +
+                        auto pty = ion->NeutralTheoreticalProduct->productType;                        
+                        ionLabel = "(" + ProductTypeToString(pty) + 
                             std::to_string(ion->NeutralTheoreticalProduct->TerminusFragment->FragmentNumber) + "-" +
                             std::to_string(ion->NeutralTheoreticalProduct->NeutralLoss) + ")" + "+" +
                             std::to_string(ion->Charge);
@@ -1577,19 +1440,20 @@ namespace EngineLayer
         }
         
         std::string sep=";";
-        s["Matched Ion Series"] = nullPsm ? " " : StringHelper::trimEnd(seriesStringBuilder->toString(), sep);
+        s.push_back(std::make_tuple("Matched Ion Series", nullPsm ? " " : StringHelper::trimEnd(seriesStringBuilder->toString(), sep) ));
+        
         //C# TO C++ CONVERTER TODO TASK: The following lambda expression could not be converted:
         //stringBuilders.ForEach(p => TangibleLambdaToken86)s["Matched Ion Series"]);
-        s["Matched Ion Mass-To-Charge Ratios"] = nullPsm ? " " : StringHelper::trimEnd(mzStringBuilder->toString(), sep );
-        s["Matched Ion Mass Diff (Da)"] = nullPsm ? " " : StringHelper::trimEnd(fragmentDaErrorStringBuilder->toString(), sep);
-        s["Matched Ion Mass Diff (Ppm)"] = nullPsm ? " " : StringHelper::trimEnd(fragmentPpmErrorStringBuilder->toString(), sep );
-        s["Matched Ion Intensities"] = nullPsm ? " " : StringHelper::trimEnd(fragmentIntensityStringBuilder->toString(), sep);
+        s.push_back(std::make_tuple("Matched Ion Mass-To-Charge Ratios",  nullPsm ? " " : StringHelper::trimEnd(mzStringBuilder->toString(), sep )));
+        s.push_back(std::make_tuple("Matched Ion Mass Diff (Da)", nullPsm ? " " : StringHelper::trimEnd(fragmentDaErrorStringBuilder->toString(), sep)));
+        s.push_back(std::make_tuple("Matched Ion Mass Diff (Ppm)", nullPsm ? " " : StringHelper::trimEnd(fragmentPpmErrorStringBuilder->toString(), sep )));
+        s.push_back(std::make_tuple("Matched Ion Intensities", nullPsm ? " " : StringHelper::trimEnd(fragmentIntensityStringBuilder->toString(), sep)));
         
         // number of matched ions
-        s["Matched Ion Counts"] = nullPsm ? " " : std::to_string(psm->getMatchedFragmentIons().size());
+        s.push_back(std::make_tuple("Matched Ion Counts", nullPsm ? " " : std::to_string(psm->getMatchedFragmentIons().size() )));
     }
     
-    void PeptideSpectralMatch::AddMatchScoreData(std::unordered_map<std::string, std::string> &s, PeptideSpectralMatch *peptide)
+    void PeptideSpectralMatch::AddMatchScoreData(std::vector<std::tuple<std::string, std::string>> &s, PeptideSpectralMatch *peptide)
     {
         std::string localizedScores = " ";
         std::string improvementPossible = " ";
@@ -1598,9 +1462,12 @@ namespace EngineLayer
             //                  peptide.LocalizedScores.Select(b => b.ToString("F3", CultureInfo.InvariantCulture))) + "]"));
             std::vector<std::string>vs;
             for ( auto b : peptide->getLocalizedScores() ) {
-                vs.push_back(std::to_string(b));
+                std::stringstream ss;
+                ss << std::setprecision(6) << b;
+                vs.push_back(ss.str());
             }
-            localizedScores = "[" + StringHelper::join(vs, ',') + "]";
+            std::string del=",";
+            localizedScores = "[" + StringHelper::join(vs, del) + "]";
             //	improvementPossible = (peptide.LocalizedScores.Max() - peptide.Score).ToString("F3", CultureInfo.InvariantCulture);
             //auto max = std::max_element(peptide->getLocalizedScores().begin(), peptide->getLocalizedScores().end()); 
             auto max = peptide->getLocalizedScores()[0];
@@ -1609,10 +1476,12 @@ namespace EngineLayer
                     max = p;
                 }
             }
-            improvementPossible = std::to_string((max - peptide->getScore()));
+            std::stringstream ss2;
+            ss2 << (max - peptide->getScore());
+            improvementPossible = ss2.str();
 	}
-	s["Localized Scores"] = localizedScores;
-	s["Improvement Possible"] = improvementPossible;
+	s.push_back(std::make_tuple("Localized Scores", localizedScores));
+        s.push_back(std::make_tuple("Improvement Possible", improvementPossible));
         std::string cumulativeTarget = " ";
         std::string cumulativeDecoy = " ";
         std::string qValue = " ";
@@ -1622,33 +1491,50 @@ namespace EngineLayer
         std::string eValue = " ";
         std::string eScore = " ";
 	if (peptide != nullptr && peptide->getFdrInfo() != nullptr) {
-            cumulativeTarget = std::to_string(peptide->getFdrInfo()->getCumulativeTarget());
-            cumulativeDecoy = std::to_string(peptide->getFdrInfo()->getCumulativeDecoy());
-            qValue = std::to_string(peptide->getFdrInfo()->getQValue());
-            cumulativeTargetNotch = std::to_string(peptide->getFdrInfo()->getCumulativeTargetNotch());
-            cumulativeDecoyNotch = std::to_string(peptide->getFdrInfo()->getCumulativeDecoyNotch());
-            qValueNotch = std::to_string(peptide->getFdrInfo()->getQValueNotch());
+            std::stringstream ss;
+            ss << peptide->getFdrInfo()->getCumulativeTarget();
+            cumulativeTarget = ss.str();
+
+            ss.str("");
+            ss << peptide->getFdrInfo()->getCumulativeDecoy();
+            cumulativeDecoy = ss.str();
+
+            ss.str("");
+            ss << peptide->getFdrInfo()->getQValue();
+            qValue = ss.str();
+
+            ss.str("");
+            ss << peptide->getFdrInfo()->getCumulativeTargetNotch();
+            cumulativeTargetNotch = ss.str();
+
+            ss.str("");
+            ss << peptide->getFdrInfo()->getCumulativeDecoyNotch();
+            cumulativeDecoyNotch = ss.str();
+
+            ss.str("");
+            ss << peptide->getFdrInfo()->getQValueNotch();
+            qValueNotch = ss.str();
             
 
             if (peptide->getFdrInfo()->getCalculateEValue() ) {
-                eValue = std::to_string(peptide->getFdrInfo()->getEValue());
-                eScore = std::to_string(peptide->getFdrInfo()->getEScore());
+                ss.str("");
+                ss << peptide->getFdrInfo()->getEValue();
+                eValue = ss.str();
+
+                ss.str("");
+                ss << peptide->getFdrInfo()->getEScore();
+                eScore = ss.str();
             }
 	}
-	s["Cumulative Target"] = cumulativeTarget;
-	s["Cumulative Decoy"] = cumulativeDecoy;
-	s["QValue"] = qValue;
-	s["Cumulative Target Notch"] = cumulativeTargetNotch;
-	s["Cumulative Decoy Notch"] = cumulativeDecoyNotch;
-	s["QValue Notch"] = qValueNotch;
-	s["eValue"] = eValue;
-	s["eScore"] = eScore;
+	s.push_back(std::make_tuple("Cumulative Target", cumulativeTarget));
+	s.push_back(std::make_tuple("Cumulative Decoy", cumulativeDecoy));
+	s.push_back(std::make_tuple("QValue", qValue));
+	s.push_back(std::make_tuple("Cumulative Target Notch", cumulativeTargetNotch));
+	s.push_back(std::make_tuple("Cumulative Decoy Notch", cumulativeDecoyNotch));
+	s.push_back(std::make_tuple("QValue Notch", qValueNotch));
+	s.push_back(std::make_tuple("eValue", eValue));
+	s.push_back(std::make_tuple("eScore", eScore));
 		        
-        //delete fragmentIntensityStringBuilder;
-        //delete fragmentPpmErrorStringBuilder;
-        //delete fragmentDaErrorStringBuilder;
-        //delete mzStringBuilder;
-        //delete seriesStringBuilder;
     }
     
     //static(string ResolvedString, ChemicalFormula ResolvedValue) Resolve(IEnumerable<IEnumerable<Modification>> enumerable);

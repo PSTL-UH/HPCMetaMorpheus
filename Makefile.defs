@@ -39,5 +39,5 @@ CFLAGS      = -g -O0 -Wall
 CXX         = g++              
 CXXFLAGS    = -Wall -g -O0 -Wno-delete-non-virtual-dtor -Wno-unused-function -I$(MMORPHEUS_INC_DIR) -I$(MZLIB_INC_DIR) -I$(MZLIB_DIR) -I$(MZLIB_DIR)/MzLibUtil -std=gnu++17
 CXXLOCALFLAGS = -DNDEBUG
-LDFLAGS     = -L$(MMORPHEUS_LIB_DIR) -lmmorpheus -L$(MZLIB_LIB_DIR) $(MZLIB_LIB) $(FLASHLFQ_LIB) -lz -lstdc++fs -L$(XSD_LIB_DIR) $(XSD_LIB)
+LDFLAGS     = -L$(MMORPHEUS_LIB_DIR) -lmmorpheus -L$(MZLIB_LIB_DIR) $(MZLIB_LIB) $(FLASHLFQ_LIB) -lz -lstdc++fs -L$(XSD_LIB_DIR) $(XSD_LIB) -lxml2
 

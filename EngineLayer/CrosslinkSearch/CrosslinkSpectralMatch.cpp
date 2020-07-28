@@ -227,8 +227,9 @@ namespace EngineLayer
             sb->append("QValue" + StringHelper::toString('\t'));
             
             
+            std::string s = sb->toString();
             delete sb;
-            return sb->toString();
+            return s;
         }
         
         std::string CrosslinkSpectralMatch::GetTabSepHeaderSingle()
@@ -261,8 +262,9 @@ namespace EngineLayer
             sb->append("Decoy/Contaminant/Target" + StringHelper::toString('\t'));
             sb->append("QValue" + StringHelper::toString('\t'));
             
+            std::string s = sb->toString();
             delete sb;
-            return sb->toString();
+            return s;
         }
         
         std::string CrosslinkSpectralMatch::GetTabSepHeaderGlyco()
@@ -300,8 +302,9 @@ namespace EngineLayer
             sb->append("GlyMass" + StringHelper::toString('\t'));
             sb->append("GlyStruct(H,N,A,G,F)" + StringHelper::toString('\t'));
             
+            std::string s = sb->toString();
             delete sb;
-            return sb->toString();
+            return s;
         }
         
         std::string CrosslinkSpectralMatch::ToString()
@@ -447,13 +450,14 @@ namespace EngineLayer
             sb->append("\t");
             
             
+            std::string s= sb->toString();
             delete sb;
-            return sb->toString();
+            return s;
         }
         
-        std::unordered_map<std::string, std::string> CrosslinkSpectralMatch::MatchedIonDataDictionary(PeptideSpectralMatch *psm)
+        std::vector<std::tuple<std::string, std::string>> CrosslinkSpectralMatch::MatchedIonDataDictionary(PeptideSpectralMatch *psm)
         {
-            std::unordered_map<std::string, std::string> s;
+            std::vector<std::tuple<std::string, std::string>> s;
             AddMatchedIonsData(s, psm);
             return s;
         }
