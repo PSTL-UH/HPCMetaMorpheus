@@ -15,6 +15,40 @@ namespace EngineLayer
 			UserDefined
 		};
 
+                static std::string CrosslinkerTypeToString( CrosslinkerType &t ) {
+                    std::string s;
+                    if ( t == CrosslinkerType::DSSO ) {
+                        s = "DSSO";
+                    }
+                    else if ( t == CrosslinkerType::DSS ) {
+                        s = "DSS";
+                    }
+                    else if ( t == CrosslinkerType::DisulfideBond ) {
+                        s = "DisulfideBond";
+                    }
+                    else if ( t == CrosslinkerType::DSBU ) {
+                        s = "DSBU";
+                    }
+                    else if ( t == CrosslinkerType::UserDefined ) {
+                        s = "UserDefined";
+                    }
+
+                    return s;
+                }
+                static CrosslinkerType CrosslinkerTypeFromString( std::string &s ) {
+                    if ( s == "DSSO" ) 
+                        return CrosslinkerType::DSSO;
+                    if ( s == "DSS" ) 
+                        return CrosslinkerType::DSS;
+                    if ( s == "DisulfideBond" )
+                        return CrosslinkerType::DisulfideBond;
+                    if ( s == "DSBU" )
+                        return CrosslinkerType::DSBU;
+
+                    //if ( s == "UserDefined" )
+                    return CrosslinkerType::UserDefined;                    
+                }
+                
 		class Crosslinker
 		{
 		private:

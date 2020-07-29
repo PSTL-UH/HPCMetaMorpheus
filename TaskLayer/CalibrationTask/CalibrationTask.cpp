@@ -37,7 +37,8 @@ namespace TaskLayer
     {
         
 #ifdef ORIG
-        EngineLayer::CommonParameters tempVar(, , false, , , , , , , , , , , false, , , new PpmTolerance(25), new PpmTolerance(15));
+        EngineLayer::CommonParameters tempVar(, , false, , , , , , , , , , , false, , ,
+                                              new PpmTolerance(25), new PpmTolerance(15));
 #endif
         std::string taskDescr = "";
         DissociationType dissType = DissociationType::HCD;
@@ -53,16 +54,56 @@ namespace TaskLayer
         bool trimMs1Peaks = false;
         bool useDeltaScore = false;
         bool calculateEValue = false;
-        EngineLayer::CommonParameters tempVar(taskDescr, dissType, false, useProvidedPrecursorInfo, deconvIntensityRatio,
-                                              deconvolutionMaxAssumedChargeState, reportAllAmbiguity, addCompIons, totalPartitions,
-                                              scoreCutoff, topNpeaks, minRatio, trimMs1Peaks, false, useDeltaScore, calculateEValue,
+        EngineLayer::CommonParameters tempVar(taskDescr, dissType, false, useProvidedPrecursorInfo,
+                                              deconvIntensityRatio,
+                                              deconvolutionMaxAssumedChargeState, reportAllAmbiguity,
+                                              addCompIons, totalPartitions,
+                                              scoreCutoff, topNpeaks, minRatio, trimMs1Peaks,
+                                              false, useDeltaScore, calculateEValue,
                                               new PpmTolerance(25), new PpmTolerance(15));
         setCommonParameters(&tempVar);
         
         TaskLayer::CalibrationParameters *tempVar2 = new TaskLayer::CalibrationParameters();
         setCalibrationParameters(tempVar2);
     }
-    
+
+    void CalibrationTask::writeTomlConfig(std::string &filename, std::ofstream &tomlFd )
+    {
+        if ( !tomlFd.is_open() ) {
+            tomlFd.open(filename );
+            if ( !tomlFd.is_open() ) {
+                std::cout << "CalibrationTask: Could not open file " << filename << std::endl;
+                return;
+            }
+        }
+
+        toml::Value v;
+        std::string key = "TaskType", value = "Calibration";
+        v.set ( key, value);
+        tomlFd << v;
+
+        CalibrationParameters *xlparams = getCalibrationParameters();
+        toml::Table search_params;
+
+        search_params["WriteIntermediateFiles"] = xlparams->getWriteIntermediateFiles();
+        search_params["MinMS1IsotopicPeaksNeededForConfirmedIdentification"] = xlparams->getMinMS1IsotopicPeaksNeededForConfirmedIdentification();
+        search_params["MinMS2IsotopicPeaksNeededForConfirmedIdentification"] = xlparams->getMinMS2IsotopicPeaksNeededForConfirmedIdentification();
+        search_params["NumFragmentsNeededForEveryIdentification"] = xlparams-> getNumFragmentsNeededForEveryIdentification();
+
+        tomlFd << std::endl;
+        tomlFd << "[CalibrationParameters]" << std::endl;
+        tomlFd << search_params;
+        
+        
+        // Now write the generic parameters
+        MetaMorpheusTask::writeTomlConfig(filename, tomlFd );
+        if ( tomlFd.is_open() ) {
+            tomlFd.close();
+        }
+        return;
+    }
+
+        
     TaskLayer::CalibrationParameters *CalibrationTask::getCalibrationParameters() const
     {
         return privateCalibrationParameters;
@@ -73,7 +114,11 @@ namespace TaskLayer
         privateCalibrationParameters = value;
     }
     
-    MyTaskResults *CalibrationTask::RunSpecific(const std::string &OutputFolder, std::vector<DbForTask*> &dbFilenameList, std::vector<std::string> &currentRawFileList, const std::string &taskId, std::vector<FileSpecificParameters*> &fileSettingsList)
+    MyTaskResults *CalibrationTask::RunSpecific(const std::string &OutputFolder,
+                                                std::vector<DbForTask*> &dbFilenameList,
+                                                std::vector<std::string> &currentRawFileList,
+                                                const std::string &taskId,
+                                                std::vector<FileSpecificParameters*> &fileSettingsList)
     {
         std::vector<Modification*> variableModifications;
         std::vector<Modification*> fixedModifications;

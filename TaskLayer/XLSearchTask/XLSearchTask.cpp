@@ -12,6 +12,7 @@
 #include "../../EngineLayer/CrosslinkSearch/PsmCrossType.h"
 
 #include "MassSpectrometry/Enums/DissociationType.h"
+#include "UsefulProteomicsDatabases/DecoyType.h"
 
 #include "pepXML/pepXML_v120.h"
 #include "stringhelper.h"
@@ -55,6 +56,60 @@ namespace TaskLayer
         TaskLayer::XlSearchParameters tempVar2;
         setXlSearchParameters(&tempVar2);
     }
+
+    void XLSearchTask::writeTomlConfig(std::string &filename, std::ofstream &tomlFd )
+    {
+        if ( !tomlFd.is_open() ) {
+            tomlFd.open(filename );
+            if ( !tomlFd.is_open() ) {
+                std::cout << "CalibrationTask: Could not open file " << filename << std::endl;
+                return;
+            }
+        }
+
+        toml::Value v;
+        std::string key = "TaskType", value = "XLSearch";
+        v.set ( key, value);
+        tomlFd << v;
+        
+        XlSearchParameters *xlparams = getXlSearchParameters();
+        toml::Table search_params;
+
+        auto tvar1 = xlparams->getDecoyType();
+        search_params["DecoyType"] = DecoyTypeToString(tvar1);
+        auto tvar2 = xlparams->getCrosslinkerType();
+        search_params["CrosslinkerType"] = CrosslinkerTypeToString(tvar2);
+        search_params["CrosslinkSearchTopNum"] = xlparams->getCrosslinkSearchTopNum();
+        //search_params[""] = xlparams->std::string getCrosslinkerName();
+        //search_params[""] = xlparams->std::optional<double> getCrosslinkerTotalMass();
+        //search_params[""] = xlparams->std::optional<double> getCrosslinkerShortMass();
+        //search_params[""] = xlparams->std::optional<double> getCrosslinkerLongMass();
+        //search_params[""] = xlparams->std::optional<double> getCrosslinkerLoopMass();
+        search_params["CrosslinkerResidues"] = xlparams->getCrosslinkerResidues();
+        search_params["CrosslinkerResidues2"] = xlparams->getCrosslinkerResidues2();
+        //search_params[""] = xlparams->std::optional<double> getCrosslinkerDeadEndMassH2O();
+        //search_params[""] = xlparams->std::optional<double> getCrosslinkerDeadEndMassNH2();
+        //search_params[""] = xlparams->std::optional<double> getCrosslinkerDeadEndMassTris();
+        search_params["IsCleavable"] = xlparams->getIsCleavable();
+        search_params["RestrictToTopNHits"] = xlparams->getRestrictToTopNHits();
+        search_params["WriteOutputForPercolator"] = xlparams->getWriteOutputForPercolator();
+        search_params["WritePepXml"] = xlparams->getWritePepXml();
+        search_params["XlQuench_H2O"] = xlparams->getXlQuench_H2O();
+        search_params["XlQuench_Tris"] = xlparams->getXlQuench_Tris();
+        search_params["XlQuench_NH2"] = xlparams->getXlQuench_NH2();
+
+        tomlFd << std::endl;
+        tomlFd << "[XlSearchParameters]" << std::endl;
+        tomlFd << search_params;
+        
+        // Now write the generic parameters
+        MetaMorpheusTask::writeTomlConfig(filename, tomlFd );
+        if ( tomlFd.is_open() ) {
+            tomlFd.close();
+        }
+        return;
+    }
+
     
     TaskLayer::XlSearchParameters *XLSearchTask::getXlSearchParameters() const
     {

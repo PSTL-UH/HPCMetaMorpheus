@@ -6,7 +6,8 @@
 #include <vector>
 #include <cmath>
 #include <limits>
-#include <any>
+#include <iostream>
+#include <fstream>
 #include "stringhelper.h"
 #include "stringbuilder.h"
 #include "tangible_filesystem.h"
@@ -52,6 +53,7 @@ namespace TaskLayer
         
         TaskLayer::XlSearchParameters *getXlSearchParameters() const;
         void setXlSearchParameters(TaskLayer::XlSearchParameters *value);
+        void writeTomlConfig(std::string &filename, std::ofstream &tomlFd );
         
     protected:
         MyTaskResults *RunSpecific(const std::string &OutputFolder, std::vector<DbForTask*> &dbFilenameList,

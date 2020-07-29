@@ -7,6 +7,13 @@ typescript
 Test/BinGenerationTest
 Test/BinGenerationTest.xml
 Test/BinGenerationTest.mzML
+Test/CalibrationTests
+Test/XLTest
+Test/TestData
+Test/TestProteinSplitAcrossFiles/
+Test/TestProteinSplitAcrossFiles1.mzML
+Test/TestProteinSplitAcrossFiles2.mzML
+Test/Task Settings/
 Test/config.toml
 Test/TestToml
 Test/elements.dat
