@@ -265,11 +265,7 @@ namespace TaskLayer
         // score protein groups and calculate FDR
         auto tmp = proteinAnalysisResults->getProteinGroups();
         tmppsms = getParameters()->getAllPsms();
-        std::cout << "In Proteinanalysis. Size of ProteinGroups is " << tmp.size() << " tmppsms.size() is " << tmppsms.size() << std::endl;
-        for ( auto t : tmp ) {
-            std::cout << "   ProteinGroup name is " << t->getProteinGroupName() << " PsmsBelowOnePercent " << t->getAllPsmsBelowOnePercentFDR().size() << std::endl;           
-        }
-        
+
         auto tempVar2 = new ProteinScoringAndFdrEngine (tmp, tmppsms,
                                             getParameters()->getSearchParameters()->getNoOneHitWonders(),
                                             getParameters()->getSearchParameters()->getModPeptidesAreDifferent(),
@@ -499,10 +495,6 @@ namespace TaskLayer
                 }
                 std::string s1 = StringHelper::join (svec1, del);
                 std::string s2 = StringHelper::join (svec2, del);
-                std::cout << "s1 is " << s1 << std::endl;
-                std::cout << "s2 is " << s2 << std::endl;
-                std::cout << "proteinGroupName is " << proteinGroup->getProteinGroupName() << std::endl;
-                
                     
                 auto flashLfqProteinGroup = new FlashLFQ::ProteinGroup(proteinGroup->getProteinGroupName(),
                                                                        s1, s2 );
@@ -512,11 +504,10 @@ namespace TaskLayer
                 //            return v::FullSequence != nullptr;
                 //        }))
 #endif
-                std::cout << "size of AllPsmsBelowOnePercentFDR is " << proteinGroup->getAllPsmsBelowOnePercentFDR().size() << std::endl;
+
                 for (auto psm : proteinGroup->getAllPsmsBelowOnePercentFDR() )  
                 {
                     if ( psm->getFullSequence().length() == 0 ) {
-                        std::cout <<"Skipping entry " << (void*)psm << std::endl;
                         continue;
                     }
                     
@@ -618,7 +609,6 @@ namespace TaskLayer
         {
             if (psmToProteinGroups.find(psm) == psmToProteinGroups.end())
             {
-                std::cout << "Part 2: did not find entry " << (void*)psm << std::endl;
                 psmToProteinGroups.emplace(psm, std::vector<FlashLFQ::ProteinGroup*> {undefinedPg});
             }
             
@@ -653,15 +643,6 @@ namespace TaskLayer
                 flashLFQIdentifications.push_back(tempVar4);
             }
         }
-        std::cout << "flashLFQIdentifications size is " << flashLFQIdentifications.size() << std::endl;
-        for ( auto pp: flashLFQIdentifications ) {
-            std::cout << "   element is " << pp->ToString() << " " << pp->monoisotopicMass << " " << pp->ms2RetentionTimeInMinutes <<std::endl;
-            std::cout << "   proteinGroups.size() " << pp->proteinGroups.size() << std::endl;
-            for ( auto qp : pp->proteinGroups  ) {
-                std::vector<SpectraFileInfo*> t = {pp->fileInfo};
-                std::cout << "      Group " << qp->ToString(t) << std::endl;
-            }
-        }
         
         // run FlashLFQ
         auto flashLfqEngine = new FlashLfqEngine(flashLFQIdentifications,
@@ -673,12 +654,21 @@ namespace TaskLayer
                                                  true,
                                                  GlobalVariables::getElementsLocation(),
                                                  getCommonParameters()->getMaxThreadsToUsePerFile());
+
         
         if (!flashLFQIdentifications.empty())
         {
             getParameters()->setFlashLfqResults(flashLfqEngine->Run());
         }
         
+        auto lfqr = getParameters()->getFlashLfqResults();
+        if ( lfqr != nullptr ) {
+            std::cout << "After Running FlashLfqEngine size of Peaks is " << lfqr->Peaks.size() << std::endl;
+            for ( auto p= lfqr->Peaks.begin(); p != lfqr->Peaks.end() ; p++ ) {
+                std::cout << "  size of Peaks vector is " << std::get<1>(*p).size() << std::endl;
+            }
+        }
+            
         //MultiProtease MBR capability code
         //Parameters.FlashLfqResults = null;
         

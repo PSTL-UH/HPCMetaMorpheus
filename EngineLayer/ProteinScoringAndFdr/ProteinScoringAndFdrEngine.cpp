@@ -109,7 +109,6 @@ namespace EngineLayer
                         }
                     }
                     proteinGroup->setAllPsmsBelowOnePercentFDR(tmp);
-                    std::cout << "setting AllPsmsBelowOnePercent for proteingroup " << proteinGroup->getProteinGroupName() << " size " << tmp.size() << std::endl;
                 }
                 else
                 {
