@@ -8,11 +8,11 @@
 #
 include ../Makefile.defs
 
-CEXECS = BinGenerationTest \
+CEXECS = BinGenerationTest  \
+	 CalibrationTests   \
+	 XLTest             \
+	 XLSearchOutputTest \
 	 TestToml
-
-
-
 
 .SUFFIXES: .cxx .h  
 
@@ -29,6 +29,15 @@ cxxtests: $(CEXECS)
 TestToml: TestToml.o 
 	$(CXX) $^ -o $@ $(LDFLAGS)
 
+CalibrationTests: CalibrationTests.o 
+	$(CXX) $^ -o $@ $(LDFLAGS)
+
+XLTest: XLTest.o 
+	$(CXX) $^ -o $@ $(LDFLAGS)
+
+XLSearchOutputTest: XLSearchOutputTest.o 
+	$(CXX) $^ -o $@ $(LDFLAGS)
+
 BinGenerationTest: BinGenerationTest.o ../lib/libmmorpheus.a
 	$(CXX) $(CXXFLAGS) -c TestDataFile.cpp
 	$(CXX) $^ -o $@ TestDataFile.o $(LDFLAGS)
@@ -39,4 +48,4 @@ BinGenerationTest: BinGenerationTest.o ../lib/libmmorpheus.a
 clean:
 	rm -rf *.o *~
 
-	rm -f TestToml BinGenerationTest
+	rm -f TestToml BinGenerationTest CalibrationTests XLTest XLSearchOutputTest

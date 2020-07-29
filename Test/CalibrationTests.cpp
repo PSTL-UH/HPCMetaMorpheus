@@ -1,48 +1,128 @@
 ﻿#include "CalibrationTests.h"
 #include "../TaskLayer/CalibrationTask/CalibrationTask.h"
 #include "../TaskLayer/DbForTask.h"
+#include <regex>
+#include <string>
 
-using namespace NUnit::Framework;
+#include "../TaskLayer/CalibrationTask/CalibrationTask.h"
 using namespace TaskLayer;
+
+#include "UsefulProteomicsDatabases/UsefulProteomicsDatabases.h"
+using namespace UsefulProteomicsDatabases;
+
+#include "Assert.h"
+#include <experimental/filesystem>
+#include <iostream>
+#include <fstream>
+
+int main ( int argc, char **argv )
+{
+    int i=0;
+    std::cout << i << ". PeriodicTableLoader" << std::endl;
+    const std::string elfile="elements.dat";
+    const std::string &elr=elfile;
+    Chemistry::PeriodicTable::Load (elr);
+    //UsefulProteomicsDatabases::PeriodicTableLoader::Load (elr);
+
+    std::cout << ++i << ". ExperimentalDesignCalibrationTest" << std::endl;
+    Test::CalibrationTests::ExperimentalDesignCalibrationTest();
+
+    return 0;
+}
 
 namespace Test
 {
 
-	void CalibrationTests::ExperimentalDesignCalibrationTest()
-	{
-		CalibrationTask *calibrationTask = new CalibrationTask();
-		std::wstring outputFolder = FileSystem::combine(TestContext::CurrentContext->TestDirectory, LR"(TestCalibration)");
-		std::wstring myFile = FileSystem::combine(TestContext::CurrentContext->TestDirectory, LR"(TestData\SmallCalibratible_Yeast.mzML)");
-		std::wstring myDatabase = FileSystem::combine(TestContext::CurrentContext->TestDirectory, LR"(TestData\smalldb.fasta)");
-		std::wstring filePath = FileSystem::combine(TestContext::CurrentContext->TestDirectory, LR"(TestData\ExperimentalDesign.tsv)");
-		FileSystem::createDirectory(outputFolder);
-//C# TO C++ CONVERTER NOTE: The following 'using' block is replaced by its C++ equivalent:
-//ORIGINAL LINE: using (StreamWriter output = new StreamWriter(filePath))
-		{
-			StreamWriter output = StreamWriter(filePath);
-			output.WriteLine(L"FileName\tCondition\tBiorep\tFraction\tTechrep");
-			output.WriteLine(std::wstring(L"SmallCalibratible_Yeast") + L"\t" + L"condition" + L"\t" + L"1" + L"\t" + L"1" + L"\t" + L"1");
-		}
+    void CalibrationTests::ExperimentalDesignCalibrationTest()
+    {
+        std::string testdir=std::experimental::filesystem::current_path().string();
 
-		calibrationTask->RunTask(outputFolder, {new DbForTask(myDatabase, false)}, {myFile}, L"test");
-		auto expDesignPath = FileSystem::combine(outputFolder, LR"(ExperimentalDesign.tsv)");
-		auto expDesign = File::ReadAllLines(expDesignPath);
-		Assert::That(expDesign[1].find(L"SmallCalibratible_Yeast-calib") != std::wstring::npos);
-		Assert::That(FileSystem::fileExists(FileSystem::combine(outputFolder, LR"(SmallCalibratible_Yeast-calib.mzML)")));
-		Assert::That(FileSystem::fileExists(FileSystem::combine(outputFolder, LR"(SmallCalibratible_Yeast-calib.toml)")));
-		auto lines = File::ReadAllLines(FileSystem::combine(outputFolder, LR"(SmallCalibratible_Yeast-calib.toml)"));
-		auto tolerance = Regex::Match(lines[0], LR"(\d+\.\d*)")->Value;
-		auto tolerance1 = Regex::Match(lines[1], LR"(\d+\.\d*)")->Value;
-		double tol;
-		Assert::That(double::TryParse(tolerance, tol) == true);
-		double tol1;
-		Assert::That(double::TryParse(tolerance1, tol1) == true);
-		Assert::That(lines[0].find(L"PrecursorMassTolerance") != std::wstring::npos);
-		Assert::That(lines[1].find(L"ProductMassTolerance") != std::wstring::npos);
-		File::Delete(filePath);
-		Directory::Delete(outputFolder, true);
-		Directory::Delete(FileSystem::combine(TestContext::CurrentContext->TestDirectory, LR"(Task Settings)"), true);
+        CalibrationTask *calibrationTask = new CalibrationTask();
+        std::string outputFolder = testdir + "/TestCalibration";
+        std::string myFile =  "TestData/SmallCalibratible_Yeast.mzML";
+        std::string myDatabase =  "TestData/smalldb.fasta";
+        std::string filePath =  "TestData/ExperimentalDesign.tsv";
+        FileSystem::createDirectory(outputFolder);
+        
+        std::ofstream output(filePath);
+        output << "FileName\tCondition\tBiorep\tFraction\tTechrep \n";
+        output << "SmallCalibratible_Yeast" << "\t" << "condition" << "\t" << "1" << "\t" << "1" << "\t" << "1";
 
-		delete calibrationTask;
-	}
+        auto tobj = new DbForTask(myDatabase, false);
+        std::vector<DbForTask*> tvec = {tobj};
+        std::vector<std::string> svec = {myFile};
+        calibrationTask->RunTask(outputFolder, tvec, svec,  "test");
+        auto expDesignPath = outputFolder + "/ExperimentalDesign.tsv";
+        //auto expDesign = File::ReadAllLines(expDesignPath);
+        std::vector<std::string> expDesign;
+        std::ifstream input(expDesignPath);
+        if ( input.is_open() ) {
+            std::string line;
+            while ( getline(input, line ) ) {
+                expDesign.push_back(line);
+            }
+        }
+        input.close();
+        
+        Assert::IsTrue(expDesign[1].find("SmallCalibratible_Yeast-calib") != std::string::npos);
+        Assert::IsTrue(FileSystem::fileExists(outputFolder + "/SmallCalibratible_Yeast-calib.mzML"));
+        Assert::IsTrue(FileSystem::fileExists(outputFolder + "/SmallCalibratible_Yeast-calib.toml"));
+        //auto lines = File::ReadAllLines(outputFolder + "/SmallCalibratible_Yeast-calib.toml");
+        std::vector<std::string> lines;
+        std::ifstream input2(outputFolder + "/SmallCalibratible_Yeast-calib.toml");
+        if (input2.is_open() ){
+            std::string line;
+            while (getline(input2, line) ) {
+                lines.push_back(line);
+            }
+        }
+        input2.close();
+        
+        //auto tolerance = Regex::Match(lines[0], "(\d+\.\d*)")->Value;
+        std::regex reg1(R"(\d+\.\d*)");
+        std::sregex_iterator sreg1(lines[0].begin(), lines[0].end(), reg1 ) ;
+        std::sregex_iterator reg_end;
+        if ( sreg1 != reg_end ) {
+            std::string tolerance = sreg1->str();
+            double tol;
+            //Assert::IsTrue(double::TryParse(tolerance, tol) == true);
+            try {
+                tol = std::stod(tolerance);
+            }
+            catch(std::invalid_argument &e) {
+                Assert::IsTrue(false);
+            }
+        }
+        else {
+            Assert::IsTrue(false);
+        }
+        
+        //auto tolerance1 = Regex::Match(lines[1], "(\d+\.\d*)")->Value;
+        std::sregex_iterator sreg2(lines[1].begin(), lines[1].end(), reg1 ) ;
+        if ( sreg2 != reg_end ) {
+            std::string tolerance1 = sreg2->str();
+            double tol1;
+            //Assert::IsTrue(double::TryParse(tolerance1, tol1) == true);
+            try {
+                tol1 = std::stod(tolerance1);
+            }
+            catch(std::invalid_argument &e) {
+                Assert::IsTrue(false);
+            }
+        }
+        else {
+            Assert::IsTrue(false);
+        }
+
+
+        Assert::IsTrue(lines[0].find("PrecursorMassTolerance") != std::string::npos);
+        Assert::IsTrue(lines[1].find("ProductMassTolerance") != std::string::npos);
+
+
+        std::experimental::filesystem::remove(filePath);
+        std::experimental::filesystem::remove_all(outputFolder);
+        std::experimental::filesystem::remove_all("Task Settings");
+        
+        delete calibrationTask;
+    }
 }

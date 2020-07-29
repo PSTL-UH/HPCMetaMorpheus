@@ -37,8 +37,8 @@ int main ( int argc, char **argv )
     std::cout << ++i << ". TestBinGeneration" << std::endl;
     Test::BinGenerationTest::TestBinGeneration();
 
-    //std::cout << ++i << ". TestProteinSplitAcrossFiles" << std::endl;
-    //Test::BinGenerationTest::TestProteinSplitAcrossFiles();
+    std::cout << ++i << ". TestProteinSplitAcrossFiles" << std::endl;
+    Test::BinGenerationTest::TestProteinSplitAcrossFiles();
     
     return 0;
 }
@@ -135,16 +135,10 @@ namespace Test
         }
         Assert::AreEqual(3, count);
         
-#ifdef ORIG
-        Directory::Delete(output_folder, true);
-        File::Delete(proteinDbFilePath);
-        File::Delete(mzmlFilePath);
-        Directory::Delete(testdir + "/Task Settings", true);
-#endif
-        //std::experimental::filesystem::remove(proteinDbFilePath);
-        //std::experimental::filesystem::remove(mzmlFilePath);
-        //std::experimental::filesystem::remove_all(output_folder);
-        //std::experimental::filesystem::remove_all(testdir + "/Task Settings");        
+        std::experimental::filesystem::remove(proteinDbFilePath);
+        std::experimental::filesystem::remove(mzmlFilePath);
+        std::experimental::filesystem::remove_all(output_folder);
+        std::experimental::filesystem::remove_all(testdir + "/Task Settings");        
         delete myMsDataFile;
         delete prot4;
         delete prot3;
@@ -225,14 +219,6 @@ namespace Test
         std::vector<std::string> vs = {mzmlFilePath1, mzmlFilePath2};
 
         st->RunTask(output_folder, tdb, vs, "");
-
-#ifdef ORIG
-        Directory::Delete(output_folder, true);
-        File::Delete(proteinDbFilePath);
-        File::Delete(mzmlFilePath1);
-        File::Delete(mzmlFilePath2);
-        Directory::Delete(testdir + "/Task Settings", true);
-#endif
 
         //std::experimental::filesystem::remove(proteinDbFilePath);
         //std::experimental::filesystem::remove(mzmlFilePath1);
