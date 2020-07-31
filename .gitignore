@@ -2,7 +2,6 @@
 *.a
 *~
 *\#
-lib
 typescript
 Test/BinGenerationTest
 Test/BinGenerationTest.xml
