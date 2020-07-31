@@ -5,16 +5,16 @@
 #include <vector>
 #include "tangible_filesystem.h"
 
-//C# TO C++ CONVERTER NOTE: Forward class declarations:
-namespace EngineLayer { class CommonParameters; }
-namespace TaskLayer { class XlSearchParameters; }
-
 #include "Chemistry/Chemistry.h"
 using namespace Chemistry;
 
-#include "EngineLayer/EngineLayer.h"
+#include "../EngineLayer/EngineLayer.h"
 using namespace EngineLayer;
+
+#include "../EngineLayer/CrosslinkSearch/CrosslinkSearchEngine.h"
 using namespace EngineLayer::CrosslinkSearch;
+
+#include "../EngineLayer/Indexing/IndexingResults.h"
 using namespace EngineLayer::Indexing;
 
 #include "MassSpectrometry/MassSpectrometry.h"
@@ -22,8 +22,6 @@ using namespace MassSpectrometry;
 
 #include "MzLibUtil.h"
 using namespace MzLibUtil;
-//using namespace Nett;
-//using namespace NUnit::Framework;
 
 #include "Proteomics/Proteomics.h"
 using namespace Proteomics;
@@ -31,7 +29,8 @@ using namespace Proteomics::AminoAcidPolymer;
 using namespace Proteomics::Fragmentation;
 using namespace Proteomics::ProteolyticDigestion;
 
-#include "TaskLayer/TaskLayer.h"
+#include "../TaskLayer/TaskLayer.h"
+#include "../TaskLayer/XLSearchTask/XLSearchParameters.h"
 using namespace TaskLayer;
 
 #include "UsefulProteomicsDatabases/UsefulProteomicsDatabases.h"
