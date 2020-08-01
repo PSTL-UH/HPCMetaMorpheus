@@ -184,9 +184,9 @@ namespace Test
     
     void XLTest::XlTestXlPosCal()
     {
-        auto prot = new Protein("MNNNKQQQQ", nullptr);
-        std::vector<DigestionMotif*> motifs = {new DigestionMotif("K", nullptr, 1, nullptr)};
-        Protease *protease = new Protease("New Custom Protease", CleavageSpecificity::Full, nullptr, nullptr, motifs);
+        auto prot = new Protein("MNNNKQQQQ", "");
+        std::vector<DigestionMotif*> motifs = {new DigestionMotif("K", "", 1, "")};
+        Protease *protease = new Protease("New Custom Protease", CleavageSpecificity::Full, "", "", motifs);
         //ProteaseDictionary::Dictionary->Add(protease->Name, protease);
         ProteaseDictionary::insert(protease->getName(), protease);
             
@@ -210,7 +210,8 @@ namespace Test
         Assert::AreEqual((int)c.size(), 4);
         Assert::AreEqual(c.front()->NeutralMass, 146.10552769899999, 1e-6);
         //auto x = CrosslinkSpectralMatch::GetPossibleCrosslinkerModSites(crosslinker->getCrosslinkerModSites().ToCharArray(), pep);//.ToArray();
-        std::vector<char> cvec(crosslinker->getCrosslinkerModSites().begin(), crosslinker->getCrosslinkerModSites().end() );
+        std::string s = crosslinker->getCrosslinkerModSites();
+        std::vector<char> cvec(s.begin(), s.end() );
         auto x = CrosslinkSpectralMatch::GetPossibleCrosslinkerModSites(cvec, pep);        
         Assert::AreEqual(x[0], 5);
         
@@ -225,13 +226,14 @@ namespace Test
         Assert::AreEqual(x2[0], 5);
         
         //Test crosslinker with multiple types of mod
-        auto protSTC = new Protein("GASTACK", nullptr);
+        auto protSTC = new Protein("GASTACK", "");
         std::vector<Modification*> tvec2;
         auto peps = protSTC->Digest(digestionParams, tvec2, variableModifications);
         auto pepSTC = peps[0];
         Assert::AreEqual(pepSTC->getBaseSequence(), "GASTACK");
         Crosslinker *crosslinker2 = new Crosslinker("ST", "C", "crosslinkerSTC", false, -18.01056, 0, 0, 0, 0, 0, 0);
-        std::vector<char> cvec2(crosslinker->getCrosslinkerModSites2().begin(), crosslinker->getCrosslinkerModSites2().end() );
+        std::string s2 = crosslinker->getCrosslinkerModSites2();
+        std::vector<char> cvec2( s2.begin(), s2.end() );
         //std::string crosslinkerModSitesAll = std::string((crosslinker2->getCrosslinkerModSites() + crosslinker2->getCrosslinkerModSites2()).ToCharArray().Distinct()->ToArray());
         std::sort (cvec2.begin(), cvec2.end() );
         auto last = std::unique (cvec2.begin(), cvec2.end() );

@@ -56,21 +56,21 @@ namespace Test
                                  new DigestionParams(minPeptideLength: 5,
                                                      initiatorMethionineBehavior: InitiatorMethionineBehavior::Retain));
 #endif
-        CommonParameters tempVar( "",  DissociationType::HCD, true, true, 3, 12, true, false, 1, 1,
-                                  200, 0.01, false,  true, false, false, nullptr, nullptr, nullptr, -1,
-                                  new DigestionParams("trypsin", 2, 5,  std::numeric_limits<int>::max(),
-                                                      1024, InitiatorMethionineBehavior::Retain));
-        st->setCommonParameters(&tempVar);
-        SearchParameters tempVar2;
-        st->setSearchParameters(&tempVar2);
+        CommonParameters* tempVar = new CommonParameters( "",  DissociationType::HCD, true, true, 3, 12, true, false, 1, 1,
+                                                          200, 0.01, false,  true, false, false, nullptr, nullptr, nullptr, -1,
+                                                          new DigestionParams("trypsin", 2, 5,  std::numeric_limits<int>::max(),
+                                                                              1024, InitiatorMethionineBehavior::Retain));
+        st->setCommonParameters(tempVar);
+        SearchParameters *tempVar2 = new SearchParameters();
+        st->setSearchParameters(tempVar2);
         st->getSearchParameters()->setDoHistogramAnalysis(true);
         st->getSearchParameters()->setMassDiffAcceptorType(MassDiffAcceptorType::Open);
         st->getSearchParameters()->setDecoyType(DecoyType::None);
         st->getSearchParameters()->setDoParsimony(true);
         st->getSearchParameters()->setDoQuantification(true);
         
-        //std::string proteinDbFilePath = testdir +  "/BinGenerationTest.xml";
-        std::string proteinDbFilePath = testdir +  "/BinGenerationTest.fasta";
+        std::string proteinDbFilePath = testdir +  "/BinGenerationTest.xml";
+        //std::string proteinDbFilePath = testdir +  "/BinGenerationTest.fasta";
         std::string mzmlFilePath = testdir + "/BinGenerationTest.mzML";
         
         Protein *prot1 = new Protein("MEDEEK", "prot1");
@@ -111,6 +111,7 @@ namespace Test
         IO::MzML::MzmlMethods::CreateAndWriteMyMzmlWithCalibratedSpectra(myMsDataFile, mzmlFilePath, false);
         std::unordered_map<std::string, ModDbTuple_set> tempvar;
         ProteinDbWriter::WriteXmlDatabase(tempvar, proteinList, proteinDbFilePath);
+        //ProteinDbWriter::WriteFastaDatabase(proteinList, proteinDbFilePath, "|");
         
         std::string output_folder = testdir + "/TestBinGeneration";
         FileSystem::createDirectory(output_folder);
@@ -131,7 +132,7 @@ namespace Test
             }
         }
         else {
-            std::cout << "Could not open file " << testdir << "/MassDifferenceHistogram.tsv" << std::endl;
+            std::cout << "Could not open file " << output_folder << "/MassDifferenceHistogram.tsv" << std::endl;
         }
         Assert::AreEqual(3, count);
         
@@ -158,14 +159,14 @@ namespace Test
                                  new DigestionParams(maxMissedCleavages: 0, minPeptideLength: 5,
                                                      initiatorMethionineBehavior: InitiatorMethionineBehavior::Retain));
 #endif
-        CommonParameters tempVar( "",  DissociationType::HCD, true, true, 3, 12, true, false, 1, 1,
-                                  200, 0.01, false,  true, false, false, nullptr, nullptr, nullptr, -1,
-                                  new DigestionParams("trypsin", 0, 5,  std::numeric_limits<int>::max(),
-                                                      1024, InitiatorMethionineBehavior::Retain));
+        CommonParameters *tempVar = new CommonParameters( "",  DissociationType::HCD, true, true, 3, 12, true, false, 1, 1,
+                                                          200, 0.01, false,  true, false, false, nullptr, nullptr, nullptr, -1,
+                                                          new DigestionParams("trypsin", 0, 5,  std::numeric_limits<int>::max(),
+                                                                              1024, InitiatorMethionineBehavior::Retain));
         
-        st->setCommonParameters(&tempVar);
-        SearchParameters tempVar2;
-        st->setSearchParameters(&tempVar2);
+        st->setCommonParameters(tempVar);
+        SearchParameters *tempVar2  = new SearchParameters();
+        st->setSearchParameters(tempVar2);
         st->getSearchParameters()->setDoHistogramAnalysis(true);
         st->getSearchParameters()->setMassDiffAcceptorType(MassDiffAcceptorType::Open);
         st->getSearchParameters()->setMatchBetweenRuns(true);
