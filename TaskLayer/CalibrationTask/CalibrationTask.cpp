@@ -54,14 +54,14 @@ namespace TaskLayer
         bool trimMs1Peaks = false;
         bool useDeltaScore = false;
         bool calculateEValue = false;
-        EngineLayer::CommonParameters tempVar(taskDescr, dissType, false, useProvidedPrecursorInfo,
-                                              deconvIntensityRatio,
-                                              deconvolutionMaxAssumedChargeState, reportAllAmbiguity,
-                                              addCompIons, totalPartitions,
-                                              scoreCutoff, topNpeaks, minRatio, trimMs1Peaks,
-                                              false, useDeltaScore, calculateEValue,
-                                              new PpmTolerance(25), new PpmTolerance(15));
-        setCommonParameters(&tempVar);
+        auto tempVar = new EngineLayer::CommonParameters (taskDescr, dissType, false, useProvidedPrecursorInfo,
+                                                          deconvIntensityRatio,
+                                                          deconvolutionMaxAssumedChargeState, reportAllAmbiguity,
+                                                          addCompIons, totalPartitions,
+                                                          scoreCutoff, topNpeaks, minRatio, trimMs1Peaks,
+                                                          false, useDeltaScore, calculateEValue,
+                                                          new PpmTolerance(25), new PpmTolerance(15));
+        setCommonParameters(tempVar);
         
         TaskLayer::CalibrationParameters *tempVar2 = new TaskLayer::CalibrationParameters();
         setCalibrationParameters(tempVar2);
@@ -111,6 +111,9 @@ namespace TaskLayer
     
     void CalibrationTask::setCalibrationParameters(TaskLayer::CalibrationParameters *value)
     {
+        if ( privateCalibrationParameters != nullptr ) {
+            delete privateCalibrationParameters;
+        }
         privateCalibrationParameters = value;
     }
     

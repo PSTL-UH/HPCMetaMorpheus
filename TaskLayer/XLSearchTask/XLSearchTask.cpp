@@ -47,14 +47,14 @@ namespace TaskLayer
         bool useDeltaScore = false;
         bool calculateEValue = false;
         
-        EngineLayer::CommonParameters tempVar( taskDescr, dissType, true, true, 3, 12, true, false,
+        auto tempVar = new EngineLayer::CommonParameters( taskDescr, dissType, true, true, 3, 12, true, false,
                                                1, 3, topNpeaks,
                                                minRatio, trimMs1Peaks, trimMsMsPeaks, useDeltaScore,
                                                calculateEValue, nullptr, new PpmTolerance(10));
-        setCommonParameters(&tempVar);
+        setCommonParameters(tempVar);
         
-        TaskLayer::XlSearchParameters tempVar2;
-        setXlSearchParameters(&tempVar2);
+        auto tempVar2 = new TaskLayer::XlSearchParameters();
+        setXlSearchParameters(tempVar2);
     }
 
     void XLSearchTask::writeTomlConfig(std::string &filename, std::ofstream &tomlFd )
@@ -118,6 +118,9 @@ namespace TaskLayer
     
     void XLSearchTask::setXlSearchParameters(TaskLayer::XlSearchParameters *value)
     {
+        if (privateXlSearchParameters != nullptr ) {
+            delete privateXlSearchParameters;
+        }
         privateXlSearchParameters = value;
     }
     

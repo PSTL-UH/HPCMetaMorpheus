@@ -29,11 +29,11 @@ namespace TaskLayer
 
     SearchTask::SearchTask() : MetaMorpheusTask(MyTask::Search)
     {
-        EngineLayer::CommonParameters tempVar;
-        setCommonParameters(&tempVar);
+        auto tempVar = new EngineLayer::CommonParameters();
+        setCommonParameters(tempVar);
         
-        TaskLayer::SearchParameters tempVar2;
-        setSearchParameters(&tempVar2);
+        auto tempVar2 = new TaskLayer::SearchParameters();
+        setSearchParameters(tempVar2);
     }
     
     void  SearchTask::writeTomlConfig(std::string &filename, std::ofstream &tomlFd )
@@ -114,6 +114,9 @@ namespace TaskLayer
     
     void SearchTask::setSearchParameters(TaskLayer::SearchParameters *value)
     {
+        if ( privateSearchParameters != nullptr ) {
+            delete privateSearchParameters;
+        }
         privateSearchParameters = value;
     }
     

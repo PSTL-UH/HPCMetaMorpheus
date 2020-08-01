@@ -54,10 +54,13 @@ namespace TaskLayer
     class CalibrationTask : public MetaMorpheusTask
     {
     private:
-        TaskLayer::CalibrationParameters *privateCalibrationParameters;
+        TaskLayer::CalibrationParameters *privateCalibrationParameters=nullptr;
         
     public:
         CalibrationTask();
+        ~CalibrationTask() {
+            delete privateCalibrationParameters;
+        }
         
         TaskLayer::CalibrationParameters *getCalibrationParameters() const;
         void setCalibrationParameters(TaskLayer::CalibrationParameters *value);

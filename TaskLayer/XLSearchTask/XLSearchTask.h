@@ -46,10 +46,13 @@ namespace TaskLayer
     class XLSearchTask : public MetaMorpheusTask
     {
     private:
-        TaskLayer::XlSearchParameters *privateXlSearchParameters;
+        TaskLayer::XlSearchParameters *privateXlSearchParameters=nullptr;
         
     public:
         XLSearchTask();
+        ~XLSearchTask() {
+            delete privateXlSearchParameters;
+        }
         
         TaskLayer::XlSearchParameters *getXlSearchParameters() const;
         void setXlSearchParameters(TaskLayer::XlSearchParameters *value);

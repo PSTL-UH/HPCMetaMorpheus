@@ -12,7 +12,8 @@ include Makefile.defs
 all:    
 	cd EngineLayer ; $(MAKE) ; cd ..
 	cd TaskLayer ; $(MAKE) ; cd ..
-	cd CMD ; $(MAKE) ; cd ..
+
+#	cd CMD ; $(MAKE) ; cd ..
 
 clean:  
 	cd EngineLayer ; $(MAKE) clean ; cd ..

@@ -161,6 +161,9 @@ namespace TaskLayer
     
     void MetaMorpheusTask::setCommonParameters(EngineLayer::CommonParameters *value)
     {
+        if ( privateCommonParameters != nullptr ) {
+            delete privateCommonParameters;
+        }
         privateCommonParameters = value;
     }
     

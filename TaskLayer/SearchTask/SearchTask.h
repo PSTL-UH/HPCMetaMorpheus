@@ -54,11 +54,14 @@ namespace TaskLayer
     class SearchTask : public MetaMorpheusTask
     {
     private:
-        TaskLayer::SearchParameters *privateSearchParameters;
+        TaskLayer::SearchParameters *privateSearchParameters = nullptr;
         
     public:
         SearchTask();
-        
+        ~SearchTask() {
+            delete privateSearchParameters;
+        }
+    
         TaskLayer::SearchParameters *getSearchParameters() const;
         void setSearchParameters(TaskLayer::SearchParameters *value);
 

@@ -62,7 +62,7 @@ namespace TaskLayer
 	{
 	private:
             MyTask privateTaskType = static_cast<MyTask>(0);
-            EngineLayer::CommonParameters *privateCommonParameters;
+            EngineLayer::CommonParameters *privateCommonParameters = nullptr;
             
 	public:
             //static TomlSettings *const tomlConfig;
@@ -79,6 +79,7 @@ namespace TaskLayer
             {
                 delete ProseCreatedWhileRunning;
                 delete myTaskResults;
+                delete privateCommonParameters;
             }
             
 	protected:
