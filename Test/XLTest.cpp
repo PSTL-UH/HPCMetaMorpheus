@@ -38,13 +38,13 @@ int main ( int argc, char **argv )
     std::cout << ++i << ". XlTestXlPosCal" << std::endl;
     Test::XLTest::XlTestXlPosCal();
 
-#ifdef LATER
     std::cout << ++i << ". XlTestGenerateIntensityRanks" << std::endl;
     Test::XLTest::XlTestGenerateIntensityRanks();
 
     std::cout << ++i << ". XlTest_BSA_DSSO" << std::endl;
     Test::XLTest::XlTest_BSA_DSSO();
 
+#ifdef LATER
     std::cout << ++i << ". XlTest_BSA_DSS_file" << std::endl;
     Test::XLTest::XlTest_BSA_DSS_file();
 
@@ -202,25 +202,27 @@ namespace Test
         Assert::AreEqual(pep->getBaseSequence(), "MNNNK");
         Crosslinker *crosslinker = new Crosslinker();
         crosslinker->SelectCrosslinker(CrosslinkerType::DSS);
-        Assert::AreEqual(crosslinker->getCrosslinkerModSites(), "K");
+        Assert::AreEqual(crosslinker->getCrosslinkerModSites(), "K");        
         Assert::AreEqual(Residue::GetResidue(crosslinker->getCrosslinkerModSites())->getMonoisotopicMass(), 128.09496301518999, 1e-9);
         auto n = pep->Fragment(DissociationType::HCD, FragmentationTerminus::N);
         auto c = pep->Fragment(DissociationType::HCD, FragmentationTerminus::C);
         Assert::AreEqual((int)n.size(), 4);
         Assert::AreEqual((int)c.size(), 4);
         Assert::AreEqual(c.front()->NeutralMass, 146.10552769899999, 1e-6);
+
         //auto x = CrosslinkSpectralMatch::GetPossibleCrosslinkerModSites(crosslinker->getCrosslinkerModSites().ToCharArray(), pep);//.ToArray();
         std::string s = crosslinker->getCrosslinkerModSites();
         std::vector<char> cvec(s.begin(), s.end() );
         auto x = CrosslinkSpectralMatch::GetPossibleCrosslinkerModSites(cvec, pep);        
         Assert::AreEqual(x[0], 5);
-        
+
         auto pep2 = ye[2];
         Assert::AreEqual("MNNNKQQQQ", pep2->getBaseSequence());
         auto n2 = pep2->Fragment(DissociationType::HCD, FragmentationTerminus::N);
         auto c2 = pep2->Fragment(DissociationType::HCD, FragmentationTerminus::C);
         Assert::AreEqual((int)n2.size(), 8);
         Assert::AreEqual((int)c2.size(), 8);
+
         //auto x2 = CrosslinkSpectralMatch::GetPossibleCrosslinkerModSites(crosslinker->getCrosslinkerModSites().ToCharArray(), pep2);//.ToArray();
         auto x2 = CrosslinkSpectralMatch::GetPossibleCrosslinkerModSites(cvec, pep2);//.ToArray();
         Assert::AreEqual(x2[0], 5);
@@ -231,16 +233,30 @@ namespace Test
         auto peps = protSTC->Digest(digestionParams, tvec2, variableModifications);
         auto pepSTC = peps[0];
         Assert::AreEqual(pepSTC->getBaseSequence(), "GASTACK");
+
         Crosslinker *crosslinker2 = new Crosslinker("ST", "C", "crosslinkerSTC", false, -18.01056, 0, 0, 0, 0, 0, 0);
-        std::string s2 = crosslinker->getCrosslinkerModSites2();
-        std::vector<char> cvec2( s2.begin(), s2.end() );
+
         //std::string crosslinkerModSitesAll = std::string((crosslinker2->getCrosslinkerModSites() + crosslinker2->getCrosslinkerModSites2()).ToCharArray().Distinct()->ToArray());
-        std::sort (cvec2.begin(), cvec2.end() );
-        auto last = std::unique (cvec2.begin(), cvec2.end() );
-        std::string tstr (cvec2.begin(), last);
-        std::string crosslinkerModSitesAll = crosslinker2->getCrosslinkerModSites() + tstr;
+        std::string s1 = crosslinker2->getCrosslinkerModSites();
+        std::string s2 = crosslinker2->getCrosslinkerModSites2();
+        std::vector<char> cvec2( s1.begin(), s1.end() );
+        cvec2.insert(cvec2.end(), s2.begin(), s2.end() );
+        std::vector<char> cvec3;
+        for ( auto p : cvec2 ) {
+            bool found = false;
+            for ( auto q : cvec3 ) {
+                if ( p == q ) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found ) {
+                cvec3.push_back(p);
+            }
+        }
+        std::string crosslinkerModSitesAll (cvec3.begin(), cvec3.end());
         Assert::AreEqual(crosslinkerModSitesAll, "STC");
-        
+
         delete crosslinker2;
         delete protSTC;
         delete crosslinker;
@@ -251,14 +267,18 @@ namespace Test
         delete prot;
     }
 
-#ifdef LATER    
 
     void XLTest::XlTestGenerateIntensityRanks()
     {
         std::vector<double> intensity = {1.1, 1.1, 0.5, 3.2, 0.5, 6.0};
         std::vector<int> rank = CrosslinkSpectralMatch::GenerateIntensityRanks(intensity);
         std::vector<int> Rank = {4, 3, 6, 2, 5, 1};
-        Assert::AreEqual(rank, Rank);
+        Assert::AreEqual(rank.size(), Rank.size());
+        if ( rank.size() == Rank.size() ) {
+            for ( int i=0; i< (int)rank.size(); i++ ) {
+                Assert::AreEqual(rank[i], Rank[i] );
+            }
+        }
     }
     
     void XLTest::XlTest_BSA_DSSO()
@@ -267,9 +287,16 @@ namespace Test
 
         //Generate parameters
         PpmTolerance tempVar(10);
+#ifdef ORIG
         DigestionParams tempVar2(minPeptideLength: 5);
-        auto commonParameters = new CommonParameters(, DissociationType::EThcD, false, , , , , , , 1, , , , , , , , &tempVar, , , &tempVar2);
-        
+        auto commonParameters = new CommonParameters(, DissociationType::EThcD, false, , , , , , , 1,
+                                                     , , , , , , ,
+                                                     &tempVar, , , &tempVar2);
+#endif
+        auto commonParameters = new CommonParameters("", DissociationType::EThcD, false, true, 3, 12, true, false, 1, 1,
+                                                     200, 0.01, false, true, false, false, nullptr,
+                                                     &tempVar, nullptr, -1, new DigestionParams("trypsin", 2, 5) );
+            
         auto xlSearchParameters = new XlSearchParameters();
         
         //Create databases contain two protein.
@@ -281,78 +308,130 @@ namespace Test
         
         ModificationMotif *motif1;
         ModificationMotif::TryGetMotif("M", &motif1);
+#ifdef ORIG
         Modification *mod1 = new Modification(_originalId: "Oxidation of M", _modificationType: "Common Variable", _target: motif1,
                                               _locationRestriction: "Anywhere.", _monoisotopicMass: 15.99491461957);
+#endif
+        Modification *mod1 = new Modification("Oxidation of M", "", "Common Variable", "", motif1,
+                                              "Anywhere.", nullptr, std::make_optional((double)15.99491461957));
+        
         ModificationMotif *motif2;
         ModificationMotif::TryGetMotif("C", &motif2);
+#ifdef ORIG
         Modification *mod2 = new Modification(_originalId: "Carbamidomethyl of C", _modificationType: "Common Fixed", _target: motif2,
                                               _locationRestriction: "Anywhere.", _monoisotopicMass: 57.02146372068994);
+#endif
+        Modification *mod2 = new Modification( "Carbamidomethyl of C", "", "Common Fixed", "",  motif2,
+                                               "Anywhere.", nullptr, std::make_optional((double)57.02146372068994));
+        
         auto variableModifications = std::vector<Modification*> {mod1};
         auto fixedModifications = std::vector<Modification*> {mod2};
         auto localizeableModifications = std::vector<Modification*>();
         
         //Run index engine
-        auto indexEngine = new IndexingEngine(proteinList, variableModifications, fixedModifications, 1, DecoyType::Reverse, commonParameters,
-                                              30000, false, std::vector<FileInfo*>(), std::vector<std::string>());
+        std::vector<std::string>pDbs, nestedIds;
+        auto indexEngine = new IndexingEngine(proteinList, variableModifications, fixedModifications, 1, DecoyType::Reverse,
+                                              commonParameters, 30000, false, pDbs, nestedIds);
         
-        auto indexResults = static_cast<IndexingResults*>(indexEngine->Run());
+        IndexingResults* indexResults = static_cast<IndexingResults*>(indexEngine->Run());
         
+#ifdef ORIG
         auto indexedFragments = indexResults->getFragmentIndex().Where([&] (std::any p)    {
                 return p != nullptr;
             }).SelectMany([&] (std::any v)   {
                     return v;
                 }).ToList();
-        Assert::AreEqual(82, indexedFragments.size());
-        Assert::AreEqual(3, indexResults->getPeptideIndex().size());
+        
+#endif
+        std::vector<std::vector<int>> tvvec = indexResults->getFragmentIndex();
+        std::vector<int> indexedFragments;
+        for ( auto p : tvvec ) {
+            if ( !p.empty() ) {
+                // Do the SelectMany flatmap operation
+                for ( auto q: p ) {
+                    indexedFragments.push_back(q);
+                }
+            }
+        }
+        
+        Assert::AreEqual(82, (int)indexedFragments.size());
+        Assert::AreEqual(3, (int)indexResults->getPeptideIndex().size());
         
         //Get MS2 scans.
         auto myMsDataFile = new XLTestDataFile();
-        CommonParameters tempVar3();
+        CommonParameters tempVar3;
+#ifdef ORIG
         auto listOfSortedms2Scans = MetaMorpheusTask::GetMs2Scans(myMsDataFile, "", &tempVar3).OrderBy([&] (std::any b) {
                 b::PrecursorMass;
             })->ToArray();
+#endif
+        std::vector<Ms2ScanWithSpecificMass*>listOfSortedms2Scans = MetaMorpheusTask::GetMs2Scans(myMsDataFile, "", &tempVar3);
+        std::sort (listOfSortedms2Scans.begin(), listOfSortedms2Scans.end(), [&]
+                   (Ms2ScanWithSpecificMass*l, Ms2ScanWithSpecificMass*r) {
+                       return l->getPrecursorMass() < r->getPrecursorMass(); });
         
         //Generate crosslinker, which is DSSO here.
-        Crosslinker tempVar4();
+        Crosslinker tempVar4;
         Crosslinker *crosslinker = (&tempVar4)->SelectCrosslinker(CrosslinkerType::DSSO);
         
         std::vector<CrosslinkSpectralMatch*> possiblePsms(listOfSortedms2Scans.size());
-        CrosslinkSearchEngine tempVar5(possiblePsms, listOfSortedms2Scans, indexResults->getPeptideIndex(), indexResults->getFragmentIndex(),
-                                       0, commonParameters, crosslinker, xlSearchParameters->getRestrictToTopNHits(),
-                                       xlSearchParameters->getCrosslinkSearchTopNum(), xlSearchParameters->getXlQuench_H2O(),
-                                       xlSearchParameters->getXlQuench_NH2(), xlSearchParameters->getXlQuench_Tris(),
-                                       new std::vector<std::string> { });
+        std::vector<std::string> nIds;
+        auto pvar = indexResults->getPeptideIndex();
+        auto pvar2 = indexResults->getFragmentIndex();
+        CrosslinkSearchEngine tempVar5(possiblePsms, listOfSortedms2Scans, pvar,
+                                       pvar2, 0, commonParameters,
+                                       crosslinker, xlSearchParameters->getRestrictToTopNHits(),
+                                       xlSearchParameters->getCrosslinkSearchTopNum(),
+                                       xlSearchParameters->getXlQuench_H2O(),
+                                       xlSearchParameters->getXlQuench_NH2(),
+                                       xlSearchParameters->getXlQuench_Tris(),
+                                       nIds);
         (&tempVar5)->Run();
         
+#ifdef ORIG
         auto newPsms = possiblePsms.Where([&] (std::any p)     {
                 return p != nullptr;
             }).ToList();
+#endif
+        std::vector<CrosslinkSpectralMatch*> newPsms;
+        for ( auto p:  possiblePsms ) {
+            if ( p != nullptr ) {
+                newPsms.push_back(p);
+            }
+        }
+
         for (auto item : newPsms)		{
-            item.SetFdrValues(0, 0, 0, 0, 0, 0, 0, 0, 0, false);
+            item->SetFdrValues(0, 0, 0, 0, 0, 0, 0, 0, 0, false);
         }
         
         //Test newPsms
-        Assert::AreEqual(3, newPsms.size());
+        Assert::AreEqual(3, (int)newPsms.size());
         
         //Test Output
         auto task = new XLSearchTask();
-        task->WritePepXML_xl(newPsms, proteinList, "", variableModifications, fixedModifications, nullptr,
-                             testdir, "pep.XML", std::vector<std::string> { });
+        std::vector<std::string> vs, vs2;
+        task->WritePepXML_xl(newPsms, proteinList, "", variableModifications, fixedModifications, vs,
+                             testdir, "pep.XML", vs2);
         
         // EDGAR: THese line were already commented out in the C# version
         //Test PsmCross.XlCalculateTotalProductMasses
-        //var psmCrossAlpha = new CrosslinkSpectralMatch(digestedList[1], 0, 0, 0, listOfSortedms2Scans[0], commonParameters.DigestionParams,
+        //var psmCrossAlpha = new CrosslinkSpectralMatch(digestedList[1], 0, 0, 0, listOfSortedms2Scans[0],
+        //                                               commonParameters.DigestionParams,
         //                                               new List<MatchedFragmentIon>());
-        //var psmCrossBeta = new CrosslinkSpectralMatch(digestedList[2], 0, 0, 0, listOfSortedms2Scans[0], commonParameters.DigestionParams,
+        //var psmCrossBeta = new CrosslinkSpectralMatch(digestedList[2], 0, 0, 0, listOfSortedms2Scans[0],
+        //                                              commonParameters.DigestionParams,
         //                                              new List<MatchedFragmentIon>());
-        //var linkPos = CrosslinkSpectralMatch.GetPossibleCrosslinkerModSites(crosslinker.CrosslinkerModSites.ToCharArray(), digestedList[1]);
+        //var linkPos = CrosslinkSpectralMatch.GetPossibleCrosslinkerModSites(crosslinker.CrosslinkerModSites.ToCharArray(),
+        //                                                                    digestedList[1]);
         //var productMassesAlphaList = CrosslinkedPeptide.XlGetTheoreticalFragments(DissociationType.EThcD, false, crosslinker,
-        //                                                                          linkPos, digestedList[2].MonoisotopicMass, digestedList[1]);
+        //                                                                          linkPos, digestedList[2].MonoisotopicMass,
+        //                                                                          digestedList[1]);
         //Assert.AreEqual(productMassesAlphaList.First().Value.Count, 50); //TO DO: The number here should be manually verified.
         // EDGAR: END of commented out section
-        File::Delete("singlePsms.tsv");
-        File::Delete("pep.XML.pep.xml");
-        File::Delete("allPsms.tsv");
+
+        std::experimental::filesystem::remove("singlePsms.tsv");
+        std::experimental::filesystem::remove("pep.XML.pep.xml");
+        std::experimental::filesystem::remove("allPsms.tsv");
         
         delete task;
         //C# TO C++ CONVERTER TODO TASK: A 'delete myMsDataFile' statement was not added since myMsDataFile was
@@ -365,6 +444,7 @@ namespace Test
         //passed to a method or constructor. Handle memory management manually.
     }
     
+#ifdef LATER    
     void XLTest::XlTest_BSA_DSS_file()
     {
         std::string testdir=std::experimental::filesystem::current_path().string();
@@ -374,12 +454,12 @@ namespace Test
         FileSystem::createDirectory(testdir + "/TESTXlTestData");
         DbForTask *db = new DbForTask(testdir + "/XlTestData/BSA.fasta", false);
         std::string raw = testdir + "/XlTestData/BSA_DSS_23747.mzML";
-        EverythingRunnerEngine tempVar({("Task", task)}, {raw}, {db}, Environment::CurrentDirectory, "(TESTXlTestData)"));
+        EverythingRunnerEngine tempVar({("Task", task)}, {raw}, {db}, testdir + "/TESTXlTestData");
         (&tempVar)->Run();
         Directory::Delete(testdir +  "/TESTXlTestData", true);
         
-    //C# TO C++ CONVERTER TODO TASK: A 'delete db' statement was not added since db was passed to a
-    //method or constructor. Handle memory management manually.
+        //C# TO C++ CONVERTER TODO TASK: A 'delete db' statement was not added since db was passed to a
+        //method or constructor. Handle memory management manually.
     }
     
     void XLTest::XlTest_GenerateUserDefinedCrosslinker()

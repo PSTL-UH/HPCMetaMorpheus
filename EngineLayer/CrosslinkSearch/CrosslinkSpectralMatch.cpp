@@ -165,7 +165,7 @@ namespace EngineLayer
                 })->ToArray();
             Array::Sort(x, experimental_intensities_rank);
 #endif
-            std::vector<int> experimental_intensities_rank;
+            std::vector<int> experimental_intensities_rank(y.size() );
             int n = y.size();
             std::generate(experimental_intensities_rank.begin(), experimental_intensities_rank.end(), [&] () {return n--;});
             Sort::SortPairs(x, experimental_intensities_rank, x.size() );
