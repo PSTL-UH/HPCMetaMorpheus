@@ -22,7 +22,7 @@ namespace EngineLayer
         class CrosslinkSpectralMatch : public PeptideSpectralMatch
         {
         private:
-            CrosslinkSpectralMatch *privateBetaPeptide;
+            CrosslinkSpectralMatch *privateBetaPeptide=nullptr;
             std::vector<int> privateLinkPositions;
             double privateDeltaScore = 0;
             double privateXLTotalScore = 0;

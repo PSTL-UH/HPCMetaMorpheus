@@ -62,7 +62,7 @@ namespace TaskLayer
         if ( !tomlFd.is_open() ) {
             tomlFd.open(filename );
             if ( !tomlFd.is_open() ) {
-                std::cout << "CalibrationTask: Could not open file " << filename << std::endl;
+                std::cout << "XLSearchTask: Could not open file " << filename << std::endl;
                 return;
             }
         }

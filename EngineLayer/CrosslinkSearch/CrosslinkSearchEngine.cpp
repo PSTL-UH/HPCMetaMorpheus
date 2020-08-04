@@ -2,6 +2,7 @@
 #include "CrosslinkSpectralMatch.h"
 #include "Crosslinker.h"
 #include "../PrecursorSearchModes/MassDiffAcceptor.h"
+#include "../PrecursorSearchModes/OpenMassDiffAcceptor.h"
 #include "../CommonParameters.h"
 #include "../Ms2ScanWithSpecificMass.h"
 #include "../PrecursorSearchModes/SinglePpmAroundZeroMassDiffAcceptor.h"
@@ -43,7 +44,7 @@ namespace EngineLayer
                                fragmentIndex,
                                currentPartition,
                                commonParameters,
-                               nullptr, 0.0,
+                               new OpenSearchMode(), 0.0,
                                nestedIds ),
             GlobalCsms(globalCsms),
             privateCrosslinker(crosslinker),
@@ -106,6 +107,7 @@ namespace EngineLayer
                 // empty the scoring table to score the new scan (conserves memory compared to allocating a new array)
                 //Array::Clear(scoringTable, 0, scoringTable.Length);
                 scoringTable.clear();
+                scoringTable.resize(PeptideIndex.size());
                 idsOfPeptidesPossiblyObserved.clear();
                 auto scan = ListOfSortedMs2Scans[scanIndex];
                 
@@ -132,9 +134,11 @@ namespace EngineLayer
                         std::sort(idsOfPeptidesPossiblyObserved.begin(), idsOfPeptidesPossiblyObserved.end(), [&] (int l, int r) {
                                 return scoringTable[l] > scoringTable[r];}
                             );
-                        idsOfPeptidesPossiblyObserved.resize(TopN);
+                        if (  (int)idsOfPeptidesPossiblyObserved.size() > TopN) {
+                            idsOfPeptidesPossiblyObserved.resize(TopN);
+                        }
                     }
-                    
+                       
                     for (auto id : idsOfPeptidesPossiblyObserved)
                     {
                         PeptideWithSetModifications *peptide = PeptideIndex[id];

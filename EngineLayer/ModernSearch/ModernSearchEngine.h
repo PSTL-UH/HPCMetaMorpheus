@@ -43,7 +43,7 @@ namespace EngineLayer
 
             virtual ~ModernSearchEngine()
             {
-                //delete massDiffAcceptor;
+                delete massDiffAcceptor;
                 //delete dissociationType;
             }
             

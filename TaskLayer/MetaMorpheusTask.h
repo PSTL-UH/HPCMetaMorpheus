@@ -72,14 +72,18 @@ namespace TaskLayer
             
 	protected:
             StringBuilder *const ProseCreatedWhileRunning = new StringBuilder();
-            MyTaskResults *myTaskResults;
+            MyTaskResults *myTaskResults=nullptr;
             
 	public:
             virtual ~MetaMorpheusTask()
             {
                 delete ProseCreatedWhileRunning;
-                delete myTaskResults;
-                delete privateCommonParameters;
+                if (myTaskResults != nullptr ) {
+                    delete myTaskResults;
+                }
+                if ( privateCommonParameters != nullptr ) {
+                    delete privateCommonParameters;
+                }
             }
             
 	protected:
