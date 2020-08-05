@@ -188,12 +188,18 @@ namespace TaskLayer
 
         auto tt3 = new mzIdentML110::PersonType::cvParam_sequence();
         tt3->push_back(*tempVar2);
+        delete tempVar2;
+        
         tt3->push_back(*tempVar3);
+        delete tempVar3;
+        
         tempVar->cvParam(*tt3);
+        delete tt3;
 
         auto t = new mzIdentML110::AuditCollectionType::Person_sequence();
         t->push_back(*tempVar);
         auditCollection->Person(*t);
+        delete t;
         
         mzIdentML110::OrganizationType *tempVar4 = new mzIdentML110::OrganizationType();
         tempVar4->id("UWMadisonSmithGroup");
@@ -212,11 +218,21 @@ namespace TaskLayer
         
         auto tt4 = new  mzIdentML110::OrganizationType::cvParam_sequence();
         tt4->push_back(*tempVar5);
+        delete tempVar5;
+        
         tt4->push_back(*tempVar6);
+        delete tempVar6;
+        
         tempVar4->cvParam(*tt4);
+        delete tt4;
+        
         auto t4 =  new mzIdentML110::AuditCollectionType::Organization_sequence();
         t4->push_back(*tempVar4);
+        delete tempVar4;
+        
         auditCollection->Organization(*t4);
+        delete t4;
+        
         _mzid->AuditCollection(*auditCollection);
 
         //cvlist: URLs of controlled vocabularies used within the file.
@@ -243,12 +259,21 @@ namespace TaskLayer
         tempVar10->uri("http://www.unimod.org/obo/unimod.obo");
         auto t10 = new mzIdentML110::CVListType::cv_sequence();            
         t10->push_back(*tempVar7);
+        delete tempVar7;
+        
         t10->push_back(*tempVar8);
+        delete tempVar8;
+        
         t10->push_back(*tempVar9);
+        delete tempVar9;
+        
         t10->push_back(*tempVar10);
+        delete tempVar10;
+        
         _mzid->cvList(*new  mzIdentML110::CVListType() );
         _mzid->cvList().cv(*t10);
-        
+        delete t10;
+                
         mzIdentML110::AnalysisSoftwareType *tempVar11 = new mzIdentML110::AnalysisSoftwareType();
         tempVar11->id("AS_MetaMorpheus");
         tempVar11->name("MetaMorpheus");
@@ -268,8 +293,11 @@ namespace TaskLayer
         tempVar11->ContactRole().get().Role().cvParam().cvRef("PSI-MS");
         auto t11 = new mzIdentML110::AnalysisSoftwareListType::AnalysisSoftware_sequence ();
         t11->push_back(*tempVar11);
+        delete tempVar11;
+        
         _mzid->AnalysisSoftwareList( *new mzIdentML110::AnalysisSoftwareListType() );
         _mzid->AnalysisSoftwareList().get().AnalysisSoftware(*t11);
+        delete t11;
         
         _mzid->DataCollection(* new mzIdentML110::DataCollectionType()) ;
         _mzid->DataCollection().AnalysisData(*new mzIdentML110::AnalysisDataType());
@@ -279,7 +307,9 @@ namespace TaskLayer
         tempVar12->SpectrumIdentificationResult(* new mzIdentML110::SpectrumIdentificationListType::SpectrumIdentificationResult_sequence(psms.size()));
         auto t12 = new mzIdentML110::AnalysisDataType::SpectrumIdentificationList_sequence();
         t12->push_back(*tempVar12);
+        delete tempVar12;
         _mzid->DataCollection().AnalysisData().SpectrumIdentificationList(*t12);
+        delete t12;
         
         _mzid->DataCollection().Inputs(*new mzIdentML110::InputsType() );
         _mzid->DataCollection().Inputs().SearchDatabase(* new mzIdentML110::InputsType::SearchDatabase_sequence(databases.size()));
@@ -299,7 +329,10 @@ namespace TaskLayer
         tempVar13->SearchDatabaseRef( *new  mzIdentML110::SpectrumIdentificationType::SearchDatabaseRef_sequence(databases.size()));
         auto t13 = new mzIdentML110::AnalysisCollectionType::SpectrumIdentification_sequence();
         t13->push_back(*tempVar13);
+        delete tempVar13;
+        
         _mzid->AnalysisCollection().SpectrumIdentification(*t13);
+        delete t13;
         
         int database_index = 0;
         for (auto database : databases)
@@ -313,11 +346,13 @@ namespace TaskLayer
             tempVar14->DatabaseName().cvParam().get().name("database type amino acid");
             tempVar14->DatabaseName().cvParam().get().cvRef("PSI-MS");
             _mzid->DataCollection().Inputs().SearchDatabase()[database_index] = *tempVar14;            
+            delete tempVar14;
             database_reference.emplace(database, "SDB_" + std::to_string(database_index));
             
             mzIdentML110::SearchDatabaseRefType *tempVar15 = new mzIdentML110::SearchDatabaseRefType();
             tempVar15->searchDatabase_ref("SDB_" + std::to_string(database_index));
             _mzid->AnalysisCollection().SpectrumIdentification()[0].SearchDatabaseRef()[database_index] = *tempVar15;
+            delete tempVar15;
             database_index++;
         }
             
@@ -340,10 +375,14 @@ namespace TaskLayer
             tempVar17->value(protein->getFullDescription() );
             auto t17 = new mzIdentML110::DBSequenceType::cvParam_sequence();
             t17->push_back(*tempVar17);
+            delete tempVar17;
             tempVar16->cvParam(*t17);
+            delete t17;
             
             tempVar16->name(protein->getName());
             _mzid->SequenceCollection().get().DBSequence()[protein_index] = *tempVar16;
+            delete tempVar16;
+
             protein_index++;
         }
         
@@ -359,7 +398,8 @@ namespace TaskLayer
             mzIdentML110::InputSpectraType *tempVar18 = new mzIdentML110::InputSpectraType();
             tempVar18->spectraData_ref(spectral_data_id );
             _mzid->AnalysisCollection().SpectrumIdentification()[0].InputSpectra()[spectra_data_id] = *tempVar18;
-
+            delete tempVar18;
+            
             mzIdentML110::SpectraDataType *tempVar19 = new mzIdentML110::SpectraDataType();
             tempVar19->id(spectral_data_id );
             tempVar19->name(data_filepath.substr(0, data_filepath.find_last_of(".")) );
@@ -375,6 +415,8 @@ namespace TaskLayer
             tempVar19->SpectrumIDFormat().cvParam().name(thermoRawFile ? "Thermo nativeID format" : "mzML unique identifier" );
             tempVar19->SpectrumIDFormat().cvParam().cvRef("PSI-MS");
             _mzid->DataCollection().Inputs().SpectraData()[spectra_data_id] = *tempVar19;
+            delete tempVar19;
+            
             spectra_data_id++;
         }
             
@@ -441,6 +483,8 @@ namespace TaskLayer
                     tempVar20->Modification(*new mzIdentML110::PeptideType::Modification_sequence(peptide->getNumMods()) );
                     //_mzid->SequenceCollection().Peptide[peptide_id->Item1] = tempVar20;
                     _mzid->SequenceCollection().get().Peptide()[this_id] = *tempVar20;
+                    delete tempVar20;
+
                     int mod_id = 0;
                     for (auto mod : peptide->getAllModsOneIsNterminus())
                     {
@@ -455,7 +499,11 @@ namespace TaskLayer
                         auto t21 = new mzIdentML110::ModificationType::cvParam_sequence();
                         t21->push_back(*GetUnimodCvParam(std::get<1>(mod)));
                         tempVar21->cvParam() = *t21;
+                        delete t21;
+                        
                         _mzid->SequenceCollection().get().Peptide()[std::get<0>(peptide_id)].Modification()[mod_id] = *tempVar21;
+                        delete tempVar21;
+
                         mod_id++;
                     }
                     peptide_ids.emplace(peptide->getFullSequence(), peptide_id);
@@ -485,6 +533,8 @@ namespace TaskLayer
                         tempVar22->post().set("-");
                     }
                     _mzid->SequenceCollection().get().PeptideEvidence()[pe_index] = *tempVar22;
+                    delete tempVar22;
+                    
                     peptide_evidence_ids.emplace(peptide, pe_index);
                     pe_index++;
                 }
@@ -505,7 +555,8 @@ namespace TaskLayer
                 //auto t23 = new mzIdentML110::SpectrumIdentificationResultType::SpectrumIdentificationItem_sequence(500);
                 auto t23 = new mzIdentML110::SpectrumIdentificationResultType::SpectrumIdentificationItem_sequence();
                 tempVar23->SpectrumIdentificationItem(*t23 );
-
+                delete t23;
+                
                 mzIdentML110::CVParamType *tempVar24 = new mzIdentML110::CVParamType();
                 tempVar24->name("scan start time" );
                 tempVar24->cvRef("PSI-MS");
@@ -513,9 +564,13 @@ namespace TaskLayer
                 tempVar24->value(std::to_string(psm->getScanRetentionTime()) );
                 auto t24 = new mzIdentML110::SpectrumIdentificationResultType::cvParam_sequence();
                 t24->push_back(*tempVar24);
+                delete tempVar24;
                 tempVar23->cvParam(*t24);
+                delete t24;              
 
                 _mzid->DataCollection().AnalysisData().SpectrumIdentificationList()[0].SpectrumIdentificationResult()[sir_id] = *tempVar23;
+                delete tempVar23;
+                
                 psm_per_scan.emplace(std::make_tuple(psm->getFullFilePath(), psm->getScanNumber()), scan_result_scan_item);
                 sir_id++;
             }
@@ -567,16 +622,24 @@ namespace TaskLayer
 #endif
             auto t26a = new mzIdentML110::SpectrumIdentificationItemType::PeptideEvidenceRef_sequence(bestMatchingPeptides.size());
             t26->PeptideEvidenceRef(*t26a);
+            delete t26a;
+            
             auto t26b = new mzIdentML110::SpectrumIdentificationItemType::cvParam_sequence();
             t26b->push_back(*tempVar25);
+            delete tempVar25;
+            
             t26b->push_back(*tempVar26);
+            delete tempVar26;
+            
             t26->cvParam(*t26b );
-
+            delete t26b;
+            
             int current_elem = std::get<1>(scan_result_scan_item);
             if (  (int)_mzid->DataCollection().AnalysisData().SpectrumIdentificationList()[0].SpectrumIdentificationResult()[std::get<0>(scan_result_scan_item)].SpectrumIdentificationItem().size() < current_elem+1 ) {
                 _mzid->DataCollection().AnalysisData().SpectrumIdentificationList()[0].SpectrumIdentificationResult()[std::get<0>(scan_result_scan_item)].SpectrumIdentificationItem().resize(current_elem+1);
             }
             _mzid->DataCollection().AnalysisData().SpectrumIdentificationList()[0].SpectrumIdentificationResult()[std::get<0>(scan_result_scan_item)].SpectrumIdentificationItem().at(std::get<1>(scan_result_scan_item)) = *t26;
+            delete t26;
             
             if (psm->getPeptideMonisotopicMass().has_value())
             {
@@ -601,6 +664,7 @@ namespace TaskLayer
                 auto at1 = std::get<0>(scan_result_scan_item);
                 auto at2 = std::get<1>(scan_result_scan_item);
                 _mzid->DataCollection().AnalysisData().SpectrumIdentificationList()[0].SpectrumIdentificationResult()[at1].SpectrumIdentificationItem().at(at2).PeptideEvidenceRef()[pe] = *tempVar27;
+                delete tempVar27;
                 pe++;
             }
         }
@@ -627,12 +691,19 @@ namespace TaskLayer
         tempVar30->cvRef("PSI-MS");
         auto t30 = new mzIdentML110::ParamListType::cvParam_sequence();
         t30->push_back(*tempVar29);
+        delete tempVar29;
+        
         t30->push_back(*tempVar30);
+        delete tempVar30;
+        
         tempVar28->AdditionalSearchParams().get().cvParam(*t30);
+        delete t30;
+        
         auto t28 = new mzIdentML110::ModificationParamsType::SearchModification_sequence(fixedMods.size() + variableMods.size());
         tempVar28->ModificationParams(*new mzIdentML110::ModificationParamsType());
         tempVar28->ModificationParams().get().SearchModification(*t28);
-        
+        delete t28;
+            
         tempVar28->Enzymes(* new mzIdentML110::EnzymesType());
         tempVar28->Enzymes().get().Enzyme(* new mzIdentML110::EnzymesType::Enzyme_sequence(proteases.size()));
         
@@ -655,9 +726,14 @@ namespace TaskLayer
         tempVar32->unitCvRef("UO");
         auto t32 = new mzIdentML110::ToleranceType::cvParam_sequence();
         t32->push_back(*tempVar31);
+        delete tempVar31;
+        
         t32->push_back(*tempVar32);
+        delete tempVar32;
+        
         tempVar28->FragmentTolerance ( *new mzIdentML110::ToleranceType() );
         tempVar28->FragmentTolerance().get().cvParam(*t32);
+        delete t32;
         
         mzIdentML110::CVParamType *tempVar33 = new mzIdentML110::CVParamType();
         tempVar33->accession("MS:1001412");
@@ -679,9 +755,15 @@ namespace TaskLayer
 
         auto t33 = new mzIdentML110::ToleranceType::cvParam_sequence();
         t33->push_back(*tempVar33);
+        delete tempVar33;
+        
         t33->push_back(*tempVar34);
+        delete tempVar34;
+        
         tempVar28->ParentTolerance(*new mzIdentML110::ToleranceType() );
         tempVar28->ParentTolerance().get().cvParam(*t33);
+        delete t33;
+        
         tempVar28->Threshold(*new mzIdentML110::ParamListType() );
         
         mzIdentML110::CVParamType *tempVar35 = new mzIdentML110::CVParamType();
@@ -692,10 +774,17 @@ namespace TaskLayer
         //tempVar28->Threshold()->Items = {tempVar35};
         auto t35a = new mzIdentML110::ParamListType::cvParam_sequence();
         t35a->push_back(*tempVar35);
+        delete tempVar35;
+        
         tempVar28->Threshold().cvParam(*t35a);
+        delete t35a;
+        
         auto t35 = new mzIdentML110::AnalysisProtocolCollectionType::SpectrumIdentificationProtocol_sequence();
         t35->push_back(*tempVar28);
+        delete tempVar28;
+        
         _mzid->AnalysisProtocolCollection().SpectrumIdentificationProtocol(*t35);
+        delete t35;
         
         int protease_index = 0;
         for (auto protease : proteases)
@@ -714,8 +803,14 @@ namespace TaskLayer
             tempVar37->cvRef("PSI-MS");
             auto t37 = new mzIdentML110::ParamListType::cvParam_sequence();
             t37->push_back(*tempVar37);
+            delete tempVar37;
+            
             tempVar36->EnzymeName().get().cvParam(*t37);
+            delete t37;
+            
             _mzid->AnalysisProtocolCollection().SpectrumIdentificationProtocol()[0].Enzymes().get().Enzyme()[protease_index] = *tempVar36;
+            delete tempVar36;
+
             protease_index++;
         }
         
@@ -730,7 +825,11 @@ namespace TaskLayer
             auto t38 = new mzIdentML110::SearchModificationType::cvParam_sequence();
             t38->push_back(*GetUnimodCvParam(mod));
             tempVar38->cvParam(*t38);
+            delete t38;
+            
             _mzid->AnalysisProtocolCollection().SpectrumIdentificationProtocol()[0].ModificationParams().get().SearchModification()[mod_index] = *tempVar38;
+            delete tempVar38;
+            
             mod_index++;
         }
         
@@ -743,7 +842,11 @@ namespace TaskLayer
             auto t39 = new mzIdentML110::SearchModificationType::cvParam_sequence();
             t39->push_back(*GetUnimodCvParam(mod));
             tempVar39->cvParam(*t39 );
+            delete t39;
+            
             _mzid->AnalysisProtocolCollection().SpectrumIdentificationProtocol()[0].ModificationParams().get().SearchModification()[mod_index] = *tempVar39;
+            delete tempVar39;
+            
             mod_index++;
         }
         
@@ -760,7 +863,10 @@ namespace TaskLayer
         tempVar40->value("0.01");
         auto t40 = new mzIdentML110::ParamListType::cvParam_sequence();
         t40->push_back(*tempVar40);
+        delete tempVar40;
+        
         _mzid->AnalysisProtocolCollection().ProteinDetectionProtocol().get().Threshold().cvParam(*t40);
+        delete t40;
         
         if (groups.size() > 0)
         {
@@ -776,6 +882,8 @@ namespace TaskLayer
                 tempVar41->id("PAG_" + std::to_string(group_id));
                 tempVar41->ProteinDetectionHypothesis( *new mzIdentML110::ProteinAmbiguityGroupType::ProteinDetectionHypothesis_sequence(proteinGroup->getProteins().size()) );
                 _mzid->DataCollection().AnalysisData().ProteinDetectionList().get().ProteinAmbiguityGroup()[group_id] = *tempVar41;
+                delete tempVar41;
+                
                 int pag_protein_index = 0;
                 for (auto protein : proteinGroup->getProteins())
                 {
@@ -814,11 +922,22 @@ namespace TaskLayer
                     tempVar46->value(std::to_string(proteinGroup->getUniquePeptides().size()) );
                     auto t46 = new mzIdentML110::ProteinDetectionHypothesisType::cvParam_sequence();
                     t46->push_back(*tempVar43);
+                    delete tempVar43;
+                    
                     t46->push_back(*tempVar44);
+                    delete tempVar44;
+                    
                     t46->push_back(*tempVar45);
+                    delete tempVar45;
+                    
                     t46->push_back(*tempVar46);
+                    delete tempVar46;
+                    
                     tempVar42->cvParam(*t46);
+                    delete t46;
+                    
                     _mzid->DataCollection().AnalysisData().ProteinDetectionList().get().ProteinAmbiguityGroup()[group_id].ProteinDetectionHypothesis()[pag_protein_index] = *tempVar42;
+                    delete tempVar42;
                     
                     int peptide_id = 0;
                     for (auto peptide : proteinGroup->getAllPeptides())
@@ -831,6 +950,7 @@ namespace TaskLayer
                                 tempVar47->peptideEvidence_ref("PE_" + std::to_string(peptide_evidence_ids[peptide]) );
                                 tempVar47->SpectrumIdentificationItemRef(* new  mzIdentML110::PeptideHypothesisType::SpectrumIdentificationItemRef_sequence(std::get<1>(peptide_ids[peptide->getFullSequence()]).size()));
                                 _mzid->DataCollection().AnalysisData().ProteinDetectionList().get().ProteinAmbiguityGroup()[group_id].ProteinDetectionHypothesis()[pag_protein_index].PeptideHypothesis()[peptide_id] = *tempVar47;
+                                delete tempVar47;
                                 
                                 int i = 0;
                                 for (std::string sii : std::get<1>(peptide_ids[peptide->getFullSequence()]))
@@ -838,6 +958,8 @@ namespace TaskLayer
                                     mzIdentML110::SpectrumIdentificationItemRefType *tempVar48 = new mzIdentML110::SpectrumIdentificationItemRefType();
                                     tempVar48->spectrumIdentificationItem_ref(sii );
                                     _mzid->DataCollection().AnalysisData().ProteinDetectionList().get().ProteinAmbiguityGroup()[group_id].ProteinDetectionHypothesis()[pag_protein_index].PeptideHypothesis()[peptide_id].SpectrumIdentificationItemRef()[i] = *tempVar48;
+                                    delete tempVar48;
+                                    
                                     i++;
                                 }
                                 peptide_id++;
@@ -850,12 +972,7 @@ namespace TaskLayer
                 group_id++;
             }
         }
-        //XmlWriter *writer = XmlWriter::Create(outputPath, settings);
-        //_indexedSerializer->Serialize(writer, _mzid);
-        //writer->Close();
-        //delete _indexedSerializer;
 
-        //.SpectrumIdentificationList()[0].SpectrumIdentificationResult()[].SpectrumIdentificationItem()[] 
         // Serialize the object model to XML.
         //
         xml_schema::namespace_infomap map;
