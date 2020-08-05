@@ -6,6 +6,7 @@
 #include "../EngineLayer/GlobalVariables.h"
 
 #include "pepXML/pepXML_v120.h"
+#include <sstream>
 
 using namespace EngineLayer;
 using namespace Proteomics;
@@ -259,9 +260,13 @@ namespace TaskLayer
                 auto searchHit = new pepXML::search_hit();
                 searchHit->hit_rank(1);
                 searchHit->peptide(((psm->getBaseSequence() != "") ? psm->getBaseSequence() : "Ambiguous"));
-                
-                searchHit->peptide_prev_aa(std::to_string(peptide->getPreviousAminoAcid()));                
-                searchHit->peptide_next_aa(std::to_string(peptide->getNextAminoAcid()));
+
+                std::stringstream ss;
+                ss << peptide->getPreviousAminoAcid();
+                searchHit->peptide_prev_aa(ss.str() );
+                ss.str("");
+                ss << peptide->getNextAminoAcid();
+                searchHit->peptide_next_aa(ss.str() );
                 searchHit->protein(((peptide->getProtein()->getAccession() != "") ? peptide->getProtein()->getAccession() : proteinAccessionsString));
                 searchHit->num_tot_proteins(static_cast<unsigned int>(proteinAccessions.size()));
                 searchHit->calc_neutral_pep_mass(static_cast<float>((psm->getPeptideMonisotopicMass().has_value()) ?

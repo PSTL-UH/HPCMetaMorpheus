@@ -11,6 +11,8 @@
 #include "../../EngineLayer/PeptideSpectralMatch.h"
 #include "../../EngineLayer/CrosslinkSearch/PsmCrossType.h"
 
+#include <sstream>
+
 #include "MassSpectrometry/Enums/DissociationType.h"
 #include "UsefulProteomicsDatabases/DecoyType.h"
 
@@ -1198,9 +1200,16 @@ namespace TaskLayer
                 searchHit->hit_rank(1);
                 searchHit->peptide(alphaPeptide->getBaseSequence());
 
-                searchHit->peptide_prev_aa(std::to_string(alphaPeptide->getPreviousAminoAcid()));
+                //searchHit->peptide_prev_aa(std::to_string(alphaPeptide->getPreviousAminoAcid()));
+                //searchHit->peptide_next_aa(std::to_string(alphaPeptide->getNextAminoAcid()));
 
-                searchHit->peptide_next_aa(std::to_string(alphaPeptide->getNextAminoAcid()));
+                std::stringstream ss;
+                ss << alphaPeptide->getPreviousAminoAcid();
+                searchHit->peptide_prev_aa(ss.str());
+                ss.str("");
+                ss << alphaPeptide->getNextAminoAcid();
+                searchHit->peptide_next_aa(ss.str());
+                
                 searchHit->protein(alphaPeptide->getProtein()->getAccession());
                 searchHit->num_tot_proteins(1);
                 searchHit->calc_neutral_pep_mass(static_cast<float>(items[i]->getScanPrecursorMass()));
@@ -1256,9 +1265,13 @@ namespace TaskLayer
                 searchHit->hit_rank(1);
                 searchHit->peptide(alphaPeptide->getBaseSequence());
 
-                searchHit->peptide_prev_aa(std::to_string(alphaPeptide->getPreviousAminoAcid()));
+                std::stringstream ss;
+                ss << alphaPeptide->getPreviousAminoAcid();
+                searchHit->peptide_prev_aa(ss.str());
+                ss.str("");
+                ss << alphaPeptide->getNextAminoAcid();
+                searchHit->peptide_next_aa(ss.str());
 
-                searchHit->peptide_next_aa(std::to_string(alphaPeptide->getNextAminoAcid()));
                 searchHit->protein(alphaPeptide->getProtein()->getAccession());
                 searchHit->num_tot_proteins(1);
                 searchHit->calc_neutral_pep_mass(static_cast<float>(items[i]->getScanPrecursorMass()));
@@ -1308,8 +1321,13 @@ namespace TaskLayer
                 
                 auto alpha = new pepXML::linked_peptide();
                 alpha->peptide(alphaPeptide->getBaseSequence());
-                alpha->peptide_prev_aa(std::to_string(alphaPeptide->getPreviousAminoAcid()));
-                alpha->peptide_next_aa(std::to_string(alphaPeptide->getNextAminoAcid()));
+                std::stringstream ss;
+                ss << alphaPeptide->getPreviousAminoAcid();
+                alpha->peptide_prev_aa(ss.str());
+                ss.str("");
+                ss << alphaPeptide->getNextAminoAcid();
+                alpha->peptide_next_aa(ss.str() );
+
                 alpha->protein(alphaPeptide->getProtein()->getAccession());
                 alpha->num_tot_proteins(1);
                 alpha->calc_neutral_pep_mass(static_cast<float>(items[i]->getPeptideMonisotopicMass().value()));
@@ -1332,8 +1350,12 @@ namespace TaskLayer
 
                 auto beta = new pepXML::linked_peptide();
                 beta->peptide(betaPeptide->getBaseSequence());
-                beta->peptide_prev_aa(std::to_string(betaPeptide->getPreviousAminoAcid()));
-                beta->peptide_next_aa(std::to_string(betaPeptide->getNextAminoAcid()));
+                ss.str("");
+                ss << betaPeptide->getPreviousAminoAcid();
+                beta->peptide_prev_aa(ss.str());
+                ss.str("");
+                ss << betaPeptide->getNextAminoAcid();
+                beta->peptide_next_aa(ss.str());
                 beta->protein(betaPeptide->getProtein()->getAccession());
                 beta->num_tot_proteins(1);
                 beta->calc_neutral_pep_mass(static_cast<float>(betaPeptide->getMonoisotopicMass()));
@@ -1428,8 +1450,12 @@ namespace TaskLayer
                 searchHit->hit_rank(1);
                 searchHit->peptide(alphaPeptide->getBaseSequence());
 
-                searchHit->peptide_prev_aa(std::to_string(alphaPeptide->getPreviousAminoAcid()));
-                searchHit->peptide_next_aa(std::to_string(alphaPeptide->getNextAminoAcid()));
+                std::stringstream ss;
+                ss << alphaPeptide->getPreviousAminoAcid();
+                searchHit->peptide_prev_aa(ss.str());
+                ss.str("");
+                ss << alphaPeptide->getNextAminoAcid();
+                searchHit->peptide_next_aa(ss.str() );
                 searchHit->protein(alphaPeptide->getProtein()->getAccession());
                 searchHit->num_tot_proteins(1);
                 searchHit->calc_neutral_pep_mass(static_cast<float>(items[i]->getScanPrecursorMass()));
