@@ -35,7 +35,7 @@ namespace EngineLayer
 	{
 	protected:
 
-		CommonParameters *const commonParameters;
+		CommonParameters * commonParameters;
 
 		const std::vector<std::string> nestedIds;
 

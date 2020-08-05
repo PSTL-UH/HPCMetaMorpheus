@@ -40,7 +40,7 @@ int main ( int argc, char **argv )
 
     std::cout << ++i << ". XlTestGenerateIntensityRanks" << std::endl;
     Test::XLTest::XlTestGenerateIntensityRanks();
-
+    
     std::cout << ++i << ". XlTest_BSA_DSSO" << std::endl;
     Test::XLTest::XlTest_BSA_DSSO();
 
@@ -378,6 +378,7 @@ namespace Test
         std::vector<std::string> nIds;
         auto pvar = indexResults->getPeptideIndex();
         auto pvar2 = indexResults->getFragmentIndex();
+
         CrosslinkSearchEngine tempVar5(possiblePsms, listOfSortedms2Scans, pvar,
                                        pvar2, 0, commonParameters,
                                        crosslinker, xlSearchParameters->getRestrictToTopNHits(),
@@ -387,7 +388,6 @@ namespace Test
                                        xlSearchParameters->getXlQuench_Tris(),
                                        nIds);
         (&tempVar5)->Run();
-        
 #ifdef ORIG
         auto newPsms = possiblePsms.Where([&] (std::any p)     {
                 return p != nullptr;
@@ -429,9 +429,9 @@ namespace Test
         //Assert.AreEqual(productMassesAlphaList.First().Value.Count, 50); //TO DO: The number here should be manually verified.
         // EDGAR: END of commented out section
 
-        std::experimental::filesystem::remove("singlePsms.tsv");
-        std::experimental::filesystem::remove("pep.XML.pep.xml");
-        std::experimental::filesystem::remove("allPsms.tsv");
+        //std::experimental::filesystem::remove("singlePsms.tsv");
+        //std::experimental::filesystem::remove("pep.XML.pep.xml");
+        //std::experimental::filesystem::remove("allPsms.tsv");
         
         delete task;
         //C# TO C++ CONVERTER TODO TASK: A 'delete myMsDataFile' statement was not added since myMsDataFile was

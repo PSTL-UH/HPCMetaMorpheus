@@ -25,8 +25,9 @@ namespace EngineLayer
     };
 
     
-    MetaMorpheusEngine::MetaMorpheusEngine(CommonParameters *commonParameters, std::vector<std::string> &nestedIds) : commonParameters(commonParameters), nestedIds(nestedIds)
+    MetaMorpheusEngine::MetaMorpheusEngine(CommonParameters *cmnParameters, std::vector<std::string> &nestedIds) : nestedIds(nestedIds)
     {
+        commonParameters = new CommonParameters(cmnParameters);
         StartingSingleEngineHandler = new EventHandler<SingleEngineEventArgs>();        
         FinishedSingleEngineHandler = new EventHandler<SingleEngineFinishedEventArgs>();        
         OutLabelStatusHandler = new EventHandler<StringEventArgs>();        

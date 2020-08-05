@@ -62,10 +62,18 @@ namespace EngineLayer
             std::vector<char> vs2 (s2.begin(), s2.end() );
             
             AllCrosslinkerSites = vs1;
-            AllCrosslinkerSites.insert(AllCrosslinkerSites.end(), vs2.begin(), vs2.end() );
-            std::sort ( AllCrosslinkerSites.begin(), AllCrosslinkerSites.end() );
-            auto last = std::unique(AllCrosslinkerSites.begin(), AllCrosslinkerSites.end() );
-            AllCrosslinkerSites.erase(last, AllCrosslinkerSites.end() );
+            for ( auto c : vs2 ) {
+                bool found = false;
+                for ( auto c2 : AllCrosslinkerSites ) {
+                    if ( c == c2 ) {
+                        found = true;
+                        break;
+                    }
+                }
+                if ( !found ) {
+                    AllCrosslinkerSites.push_back(c);
+                }
+            }
             
             if (dynamic_cast<PpmTolerance*>(commonParameters->getPrecursorMassTolerance()) != nullptr)
             {

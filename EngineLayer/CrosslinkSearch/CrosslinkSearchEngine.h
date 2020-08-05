@@ -34,8 +34,9 @@ namespace EngineLayer
     {
         class CrosslinkSearchEngine : public ModernSearchEngine
         {
-        protected:
-            std::vector<CrosslinkSpectralMatch*> GlobalCsms;
+            //protected:
+        public:
+            std::vector<CrosslinkSpectralMatch*> &GlobalCsms;
             
             // crosslinker molecule
         private:
@@ -46,11 +47,11 @@ namespace EngineLayer
             const bool QuenchH2O;
             const bool QuenchNH2;
             const bool QuenchTris;
-            MassDiffAcceptor *XLPrecusorSearchMode;
-            Modification *TrisDeadEnd;
-            Modification *H2ODeadEnd;
-            Modification *NH2DeadEnd;
-            Modification *Loop;
+            MassDiffAcceptor *XLPrecusorSearchMode=nullptr;
+            Modification *TrisDeadEnd=nullptr;
+            Modification *H2ODeadEnd=nullptr;
+            Modification *NH2DeadEnd=nullptr;
+            Modification *Loop=nullptr;
             std::vector<char> AllCrosslinkerSites;
             
         public:
@@ -61,7 +62,9 @@ namespace EngineLayer
                     //delete TrisDeadEnd;
                     //delete H2ODeadEnd;
                     //delete NH2DeadEnd;
-                    delete Loop;
+                    if ( Loop != nullptr ) {
+                        delete Loop;
+                    }
                 }
             
             CrosslinkSearchEngine(std::vector<CrosslinkSpectralMatch*> &globalCsms,
