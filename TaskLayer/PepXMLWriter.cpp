@@ -92,46 +92,61 @@ namespace TaskLayer
                 tempVar->name("threads");
                 tempVar->value(std::to_string(CommonParameters->getMaxThreadsToUsePerFile()));
                 para->push_back(*tempVar);
+                delete tempVar;
+                
                 pepXML::nameValueType *tempVar2 = new pepXML::nameValueType();
                 tempVar2->name("database");
                 tempVar2->value(database.front()->getFilePath());
                 para->push_back(*tempVar2);
+                delete tempVar2;
+                
                 pepXML::nameValueType *tempVar3 = new pepXML::nameValueType();
                 tempVar3->name("MS_data_file");
                 tempVar3->value(psms[0]->getFullFilePath());
                 para->push_back(*tempVar3);
+                delete tempVar3;
                 
                 pepXML::nameValueType *tempVar4 = new pepXML::nameValueType();
                 tempVar4->name("MaxMissed Cleavages");                
                 tempVar4->value(std::to_string(CommonParameters->getDigestionParams()->getMaxMissedCleavages()));
                 para->push_back(*tempVar4);
+                delete tempVar4;
+                
                 pepXML::nameValueType *tempVar5 = new pepXML::nameValueType();
                 tempVar5->name("Protease");
                 tempVar5->value(CommonParameters->getDigestionParams()->getProtease()->getName());
                 para->push_back(*tempVar5);
+                delete tempVar5;
+                
                 pepXML::nameValueType *tempVar6 = new pepXML::nameValueType();
                 tempVar6->name("Initiator Methionine");
                 tempVar6->value(std::to_string((int)(CommonParameters->getDigestionParams()->getInitiatorMethionineBehavior())));
                 para->push_back(*tempVar6);
-
+                delete tempVar6;
+                
                 pepXML::nameValueType *tempVar7 = new pepXML::nameValueType();
                 tempVar7->name("Max Modification Isoforms");
                 tempVar7->value(std::to_string(CommonParameters->getDigestionParams()->getMaxModificationIsoforms()));
                 para->push_back(*tempVar7);
+                delete tempVar7;
+                
                 pepXML::nameValueType *tempVar8 = new pepXML::nameValueType();
                 tempVar8->name("Min Peptide Len");
-                
                 tempVar8->value(std::to_string(CommonParameters->getDigestionParams()->getMinPeptideLength()));
                 para->push_back(*tempVar8);
+                delete tempVar8;
+                
                 pepXML::nameValueType *tempVar9 = new pepXML::nameValueType();
                 tempVar9->name("Max Peptide Len");
-
                 tempVar9->value(std::to_string(CommonParameters->getDigestionParams()->getMaxPeptideLength()));
                 para->push_back(*tempVar9);
+                delete tempVar9;
+                
                 pepXML::nameValueType *tempVar10 = new pepXML::nameValueType();
                 tempVar10->name("Product Mass Tolerance");
                 tempVar10->value(std::to_string(CommonParameters->getProductMassTolerance()->getValue()));
                 para->push_back(*tempVar10);
+                delete tempVar10;
 
                 // TODO: check this
                 pepXML::nameValueType *tempVar11 = new pepXML::nameValueType();
@@ -143,10 +158,13 @@ namespace TaskLayer
                 }
                 tempVar11->value(tmps2);
                 para->push_back(*tempVar11);
+                delete tempVar11;
+                
                 pepXML::nameValueType *tempVar12 = new pepXML::nameValueType();
                 tempVar12->name("Q-value Filter");
                 tempVar12->value(std::to_string(CommonParameters->getQValueOutputFilter()));
                 para->push_back(*tempVar12);
+                delete tempVar12;               
 
                 for (auto item : fixedModifications)
                 {
@@ -154,19 +172,23 @@ namespace TaskLayer
                     tempVar13->name("Fixed Modifications: " + item->getIdWithMotif());                    
                     tempVar13->value(std::to_string(item->getMonoisotopicMass().value()));
                     para->push_back(*tempVar13);
+                    delete tempVar13;
                 }
+
                 for (auto item : variableModifications)
                 {
                     pepXML::nameValueType *tempVar14 = new pepXML::nameValueType();
                     tempVar14->name("Variable Modifications: " + item->getIdWithMotif());                    
                     tempVar14->value(std::to_string(item->getMonoisotopicMass().value()));
                     para->push_back(*tempVar14);
+                    delete tempVar14;
                 }
                 
                 pepXML::nameValueType *tempVar15 = new pepXML::nameValueType();
                 tempVar15->name("Localize All Modifications");
                 tempVar15->value("true");
                 para->push_back(*tempVar15);
+                delete tempVar15;
             }
             
             pepXML::msms_run_summary *tempVar16 = new pepXML::msms_run_summary();
@@ -183,7 +205,10 @@ namespace TaskLayer
 
             auto t17 = new pepXML::sample_enzyme::specificity_sequence();
             t17->push_back(*tempVar17);
+            delete tempVar17;
+            
             tempVar16->sample_enzyme()->specificity(*t17);
+            delete t17;            
 
             pepXML::search_summary *tempVar18 = new pepXML::search_summary();
             tempVar18->base_name(filePathNoExtension);
@@ -203,14 +228,21 @@ namespace TaskLayer
             tempVar18->parameter(*para);
             auto t18 = new pepXML::msms_run_summary::search_summary_sequence();
             t18->push_back(*tempVar18);
+            delete tempVar18;
+            
             tempVar16->search_summary(*t18);
+            delete t18;
 
             auto tt18 = new pepXML::msms_pipeline_analysis::msms_run_summary_sequence();
             tt18->push_back(*tempVar16);
+            delete tempVar16;
+            
             _pepxml->msms_run_summary(*tt18);
-
+            delete tt18;
+            
             auto ttt18 = new pepXML::msms_run_summary::spectrum_query_sequence(psms.size());
             _pepxml->msms_run_summary()[0].spectrum_query(*ttt18);
+            delete ttt18;
             
             auto searchHits = std::vector<pepXML::search_hit*>();
             
@@ -227,9 +259,7 @@ namespace TaskLayer
                     
                     pepXmlMod->position(std::get<0>(mod) - 1);
                     mods->push_back(*pepXmlMod);
-                    
-                    //C# TO C++ CONVERTER TODO TASK: A 'delete pepXmlMod' statement was not added since pepXmlMod was
-                    //passed to a method or constructor. Handle memory management manually.
+                    delete pepXmlMod;
                 }
                 
 #ifdef ORIG
@@ -289,13 +319,17 @@ namespace TaskLayer
                 if ( mods->empty () ) {
                     searchHit->modification_info(*tempVar19);
                 }
+
                 pepXML::nameValueType *tempVar20 = new pepXML::nameValueType();
                 tempVar20->name("Score");
                 tempVar20->value(std::to_string(psm->getScore()));
+
                 pepXML::nameValueType *tempVar21 = new pepXML::nameValueType();
                 tempVar21->name("Qvalue");
                 tempVar21->value(std::to_string(psm->getFdrInfo()->getQValue()));
 
+                //delete tempVar20;
+                //delete tempVar21;
                 searchHit->search_score() = {tempVar20, tempVar21};
                 searchHits.push_back(searchHit);
                 
@@ -318,18 +352,21 @@ namespace TaskLayer
                 pepXML::search_result *tempVar23 = new pepXML::search_result();
                 auto tt23  = new pepXML::search_result::search_hit_sequence();
                 tt23->push_back(*searchHits[i]);
+                delete searchHits[i];
+                
                 tempVar23->search_hit(*tt23);
+                delete tt23;
+                
                 auto t23 = new pepXML::spectrum_query::search_result_sequence();
                 t23->push_back(*tempVar23);
+                delete tempVar23;
+                
                 tempVar22->search_result(*t23);
+                delete t23;
+                
                 _pepxml->msms_run_summary()[0].spectrum_query()[i] = *tempVar22;
+                delete tempVar22;
             }
-            
-            //TextWriter *writer = new StreamWriter(FileSystem::combine(outputPath));
-            //_indexedSerializer->Serialize(writer, _pepxml);
-            //writer->Close();
-            // delete _indexedSerializer;
-
             // Serialize the object model to XML.
             //
             xml_schema::namespace_infomap map;
@@ -348,8 +385,6 @@ namespace TaskLayer
                 std::cerr << e << std::endl;
             }
 
-            
-            // C# TO C++ CONVERTER TODO TASK: A 'delete _pepxml' statement was not added since _pepxml was passed
-            // to a method or constructor. Handle memory management manually.
+            delete _pepxml;
 	}
 }
