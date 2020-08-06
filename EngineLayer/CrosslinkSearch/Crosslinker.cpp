@@ -5,7 +5,10 @@ namespace EngineLayer
 	namespace CrosslinkSearch
 	{
 
-		Crosslinker::Crosslinker(const std::string &crosslinkerModSites, const std::string &crosslinkerModSites2, const std::string &crosslinkerName, bool cleavable, double totalMass, double cleaveMassShort, double cleaveMassLong, double loopMass, double deadendMassH2O, double deadendMassNH2, double deadendMassTris)
+		Crosslinker::Crosslinker(const std::string &crosslinkerModSites, const std::string &crosslinkerModSites2,
+                                         const std::string &crosslinkerName, bool cleavable, double totalMass,
+                                         double cleaveMassShort, double cleaveMassLong, double loopMass,
+                                         double deadendMassH2O, double deadendMassNH2, double deadendMassTris)
 		{
 			setCrosslinkerModSites(crosslinkerModSites);
 			setCrosslinkerModSites2(crosslinkerModSites2);
@@ -24,6 +27,23 @@ namespace EngineLayer
 		{
 		}
 
+                Crosslinker::Crosslinker(Crosslinker *cp)
+		{
+                        setCrosslinkerModSites(cp->getCrosslinkerModSites());
+			setCrosslinkerModSites2(cp->getCrosslinkerModSites2());
+			setCrosslinkerName(cp->getCrosslinkerName());
+			setCleavable(cp->getCleavable());
+			setTotalMass(cp->getTotalMass());
+			setCleaveMassShort(cp->getCleaveMassShort());
+			setCleaveMassLong(cp->getCleaveMassLong());
+			setLoopMass(cp->getLoopMass());
+			setDeadendMassH2O(cp->getDeadendMassH2O());
+			setDeadendMassNH2(cp->getDeadendMassNH2());
+                        setDeadendMassTris(cp->getDeadendMassTris());
+                }
+		
+
+            
 		std::string Crosslinker::getCrosslinkerModSites() const
 		{
 			return privateCrosslinkerModSites;

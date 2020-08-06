@@ -40,7 +40,7 @@ namespace EngineLayer
             
             // crosslinker molecule
         private:
-            Crosslinker *const privateCrosslinker;
+            Crosslinker* privateCrosslinker=nullptr;
             
             const bool CrosslinkSearchTopN;
             const int TopN;
@@ -56,16 +56,26 @@ namespace EngineLayer
             
         public:
             virtual ~CrosslinkSearchEngine()
-                {
-                    //delete Crosslinker;
-                    //delete XLPrecusorSearchMode;
-                    //delete TrisDeadEnd;
-                    //delete H2ODeadEnd;
-                    //delete NH2DeadEnd;
-                    if ( Loop != nullptr ) {
-                        delete Loop;
-                    }
+            {
+                if ( privateCrosslinker != nullptr ) {
+                    delete privateCrosslinker;
                 }
+                if ( XLPrecusorSearchMode != nullptr ) {
+                    delete XLPrecusorSearchMode;
+                }
+                if ( TrisDeadEnd != nullptr ) {
+                    delete TrisDeadEnd;
+                }
+                if ( H2ODeadEnd != nullptr ) {
+                    delete H2ODeadEnd;
+                }
+                if ( NH2DeadEnd != nullptr ) {
+                    delete NH2DeadEnd;
+                }
+                if ( Loop != nullptr ) {
+                    delete Loop;
+                }
+            }
             
             CrosslinkSearchEngine(std::vector<CrosslinkSpectralMatch*> &globalCsms,
                                   std::vector<Ms2ScanWithSpecificMass*> &listOfSortedms2Scans,

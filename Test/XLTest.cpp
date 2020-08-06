@@ -6,6 +6,7 @@
 #include "../TaskLayer/DbForTask.h"
 #include "../TaskLayer/EverythingRunnerEngine.h"
 #include "../EngineLayer/Ms2ScanWithSpecificMass.h"
+#include "../EngineLayer/CrosslinkSearch/CrosslinkedPeptides.h"
 
 using namespace Chemistry;
 using namespace EngineLayer;
@@ -47,13 +48,15 @@ int main ( int argc, char **argv )
 #ifdef LATER
     std::cout << ++i << ". XlTest_BSA_DSS_file" << std::endl;
     Test::XLTest::XlTest_BSA_DSS_file();
-
+#endif
+    
     std::cout << ++i << ". XlTest_GenerateUserDefinedCrosslinker" << std::endl;
     Test::XLTest::XlTest_GenerateUserDefinedCrosslinker();
 
     std::cout << ++i << ". XlTest_DiffCrosslinkSites" << std::endl;
     Test::XLTest::XlTest_DiffCrosslinkSites();
 
+#ifdef LATER
     std::cout << ++i << ". CrosslinkCreateTest" << std::endl;
     Test::XLTest::CrosslinkCreateTest();
 
@@ -65,10 +68,12 @@ int main ( int argc, char **argv )
 
     std::cout << ++i << ". TestGetPossibleCrosslinkerSites" << std::endl;
     Test::XLTest::TestGetPossibleCrosslinkerSites();
-
+#endif
+    
     std::cout << ++i << ". TestTheoreticalFragmentsLoop" << std::endl;
     Test::XLTest::TestTheoreticalFragmentsLoop();
 
+#ifdef LATER
     std::cout << ++i << ". TestTheoreticalLoopFragmentsWithMod" << std::endl;
     Test::XLTest::TestTheoreticalLoopFragmentsWithMod();
 
@@ -87,6 +92,7 @@ int main ( int argc, char **argv )
     std::cout << ++i << ". TestWriteNonSingleCross" << std::endl;
     Test::XLTest::TestWriteNonSingleCross();
 #endif        
+
     return 0;
 }
 
@@ -260,8 +266,7 @@ namespace Test
         delete crosslinker2;
         delete protSTC;
         delete crosslinker;
-        //C# TO C++ CONVERTER TODO TASK: A 'delete digestionParams' statement was not added since
-        //digestionParams was passed to a method or constructor. Handle memory management manually.
+        delete digestionParams;
         //C# TO C++ CONVERTER TODO TASK: A 'delete protease' statement was not added since protease
         //was passed to a method or constructor. Handle memory management manually.
         delete prot;
@@ -434,14 +439,12 @@ namespace Test
         //std::experimental::filesystem::remove("allPsms.tsv");
         
         delete task;
-        //C# TO C++ CONVERTER TODO TASK: A 'delete myMsDataFile' statement was not added since myMsDataFile was
-        //passed to a method or constructor. Handle memory management manually.
+        delete myMsDataFile;
         delete indexEngine;
         delete mod2;
         delete mod1;
         delete xlSearchParameters;
-        //C# TO C++ CONVERTER TODO TASK: A 'delete commonParameters' statement was not added since commonParameters was
-        //passed to a method or constructor. Handle memory management manually.
+        delete commonParameters;
     }
     
 #ifdef LATER    
@@ -461,6 +464,7 @@ namespace Test
         //C# TO C++ CONVERTER TODO TASK: A 'delete db' statement was not added since db was passed to a
         //method or constructor. Handle memory management manually.
     }
+#endif
     
     void XLTest::XlTest_GenerateUserDefinedCrosslinker()
     {
@@ -472,15 +476,21 @@ namespace Test
         xlSearchParameters->setCrosslinkerTotalMass(std::make_optional(-18.01056));
         auto crosslinker = XLSearchTask::GenerateUserDefinedCrosslinker(xlSearchParameters);
         
-        //C# TO C++ CONVERTER TODO TASK: A 'delete xlSearchParameters' statement was not added since
-        //xlSearchParameters was passed to a method or constructor. Handle memory management manually.
+        delete xlSearchParameters;
     }
     
     void XLTest::XlTest_DiffCrosslinkSites()
     {
+        std::string testdir=std::experimental::filesystem::current_path().string();
         //Generate parameters
-        DigestionParams tempVar(minPeptideLength: 4);
+#ifdef ORIG
+        DigestionParams *tempVar = new DigestionParams (minPeptideLength: 4);
         auto commonParameters = new CommonParameters(, , false, , , , , , , 1, , , , , , , , , , , &tempVar);
+#endif
+        DigestionParams *tempVar = new DigestionParams ("trypsin", 2, 4);        
+        auto commonParameters = new CommonParameters("", DissociationType::HCD, false, true, 3, 12, true, false, 1, 1,
+                                                     200, 0.01, false, true, false, false, nullptr,
+                                                     nullptr,  nullptr, -1, tempVar);
         
         auto xlSearchParameters = new XlSearchParameters();
         xlSearchParameters->setCrosslinkerType(CrosslinkerType::UserDefined);
@@ -498,11 +508,16 @@ namespace Test
         
         ModificationMotif *motif1;
         ModificationMotif::TryGetMotif("M", &motif1);
+#ifdef ORIG
         Modification *mod1 = new Modification(_originalId: "Oxidation of M", _modificationType: "Common Variable", _target: motif1,
                                               _locationRestriction: "Anywhere.", _monoisotopicMass: 15.99491461957);
-        auto variableModifications = std::vector<Modification*> {mod1};
-        auto fixedModifications = std::vector<Modification*>();
-        auto localizeableModifications = std::vector<Modification*>();
+#endif
+        Modification *mod1 = new Modification("Oxidation of M", "", "Common Variable", "", motif1,
+                                              "Anywhere.", nullptr, std::make_optional((double)15.99491461957));
+        
+        std::vector<Modification*> variableModifications = {mod1};
+        std::vector<Modification*> fixedModifications;
+        std::vector<Modification*> localizeableModifications;
         
         std::unordered_map<Modification*, unsigned short> modsDictionary;
         
@@ -522,54 +537,71 @@ namespace Test
         std::vector<PeptideWithSetModifications*> digestedList;
         for (auto item : proteinList)
         {
-            auto digested = item->Digest(commonParameters->getDigestionParams(), fixedModifications, variableModifications).ToList();
+            auto digested = item->Digest(commonParameters->getDigestionParams(), fixedModifications, variableModifications);
             digestedList.insert(digestedList.end(), digested.begin(), digested.end());
         }
         
         //Run index engine
+        std::vector<std::string>pDbs, nestedIds;
         auto indexEngine = new IndexingEngine(proteinList, variableModifications, fixedModifications, 1, DecoyType::Reverse,
-                                              commonParameters, 30000, false, std::vector<FileInfo*>(), std::vector<std::string>());
+                                              commonParameters, 30000, false, pDbs, nestedIds );
         
         auto indexResults = static_cast<IndexingResults*>(indexEngine->Run());
         
         //Get MS2 scans.
         auto myMsDataFile = new XLTestDataFileDiffSite();
-        CommonParameters tempVar2();
+        CommonParameters tempVar2;
+#ifdef ORIG
         auto listOfSortedms2Scans = MetaMorpheusTask::GetMs2Scans(myMsDataFile, "", &tempVar2).OrderBy([&] (std::any b)  {
                 b::PrecursorMass;
             })->ToArray();
+#endif
+        std::vector<Ms2ScanWithSpecificMass*>listOfSortedms2Scans = MetaMorpheusTask::GetMs2Scans(myMsDataFile, "", &tempVar2);
+        std::sort (listOfSortedms2Scans.begin(), listOfSortedms2Scans.end(), [&]
+                   (Ms2ScanWithSpecificMass*l, Ms2ScanWithSpecificMass*r) {
+                       return l->getPrecursorMass() < r->getPrecursorMass(); });
         
         //Generate crosslinker, which is UserDefined here.
         auto crosslinker = XLSearchTask::GenerateUserDefinedCrosslinker(xlSearchParameters);
         
         //TwoPassCrosslinkSearchEngine.Run().
         std::vector<CrosslinkSpectralMatch*> possiblePsms(listOfSortedms2Scans.size());
-        CrosslinkSearchEngine tempVar3(possiblePsms, listOfSortedms2Scans, indexResults->getPeptideIndex(),
-                                       indexResults->getFragmentIndex(), 0, commonParameters, crosslinker,
+        std::vector<std::string> nIds;
+        auto pvar = indexResults->getPeptideIndex();
+        auto pvar2 = indexResults->getFragmentIndex();
+        CrosslinkSearchEngine tempVar3(possiblePsms, listOfSortedms2Scans, pvar,
+                                       pvar2, 0, commonParameters, crosslinker,
                                        xlSearchParameters->getRestrictToTopNHits(), xlSearchParameters->getCrosslinkSearchTopNum(),
                                        xlSearchParameters->getXlQuench_H2O(), xlSearchParameters->getXlQuench_NH2(),
-                                       xlSearchParameters->getXlQuench_Tris(), new std::vector<std::string> { });
+                                       xlSearchParameters->getXlQuench_Tris(), nIds);
         (&tempVar3)->Run();
         
+#ifdef ORIG
         auto newPsms = possiblePsms.Where([&] (std::any p)    {
                 return p != nullptr;
             }).ToList();
-        Assert::AreEqual(1, newPsms.size());
+#endif
+        std::vector<CrosslinkSpectralMatch*> newPsms;
+        for ( auto p:  possiblePsms ) {
+            if ( p != nullptr ) {
+                newPsms.push_back(p);
+            }
+        }
         
-        //C# TO C++ CONVERTER TODO TASK: A 'delete myMsDataFile' statement was not added since myMsDataFile was
-        //passed to a method or constructor. Handle memory management manually.
+        Assert::AreEqual(1, (int)newPsms.size());
+        
+        delete myMsDataFile;
         delete indexEngine;
         delete mod1;
-        //C# TO C++ CONVERTER TODO TASK: A 'delete xlSearchParameters' statement was not added since
-        //xlSearchParameters was passed to a method or constructor. Handle memory management manually.
-        //C# TO C++ CONVERTER TODO TASK: A 'delete commonParameters' statement was not added since
-        //commonParameters was passed to a method or constructor. Handle memory management manually.
+        delete xlSearchParameters;
+        delete commonParameters;
     }
     
+#ifdef LATER    
     void XLTest::CrosslinkCreateTest()
     {
         XlSearchParameters tempVar();
-        Assert::That((XLSearchTask::GenerateUserDefinedCrosslinker(&tempVar))->GetType()->Equals(Crosslinker::typeid));
+        Assert::IsTrue((XLSearchTask::GenerateUserDefinedCrosslinker(&tempVar))->GetType()->Equals(Crosslinker::typeid));
     }
     
     void XLTest::DeadendPeptideTest()
@@ -639,7 +671,7 @@ namespace Test
         xlSearchTask->RunTask(folderPath, {db}, {myFile}, "normal");
         
         auto lines = File::ReadAllLines(folderPath, "(XL_Intralinks.tsv)"));
-        Assert::That(lines.size() == 2);
+        Assert::IsTrue(lines.size() == 2);
         Directory::Delete(folderPath, true);
         Directory::Delete(testdir + "/Task Settings", true);
         
@@ -654,54 +686,85 @@ namespace Test
     {
         PeptideWithSetModifications *peptide = new PeptideWithSetModifications("PEPTIDE", nullptr);
         std::vector<int> sites = CrosslinkSpectralMatch::GetPossibleCrosslinkerModSites({L'P'}, peptide);
-        Assert::That(sites.SequenceEqual(std::vector<int> {1, 3}));
+        Assert::IsTrue(sites.SequenceEqual(std::vector<int> {1, 3}));
         
         //C# TO C++ CONVERTER TODO TASK: A 'delete peptide' statement was not added since peptide was
         //passed to a method or constructor. Handle memory management manually.
     }
-    
+#endif
+
     void XLTest::TestTheoreticalFragmentsLoop()
     {
         Protein *p = new Protein("PEPTIDE", "");
-        DigestionParams tempVar();
-        auto peptide = p->Digest(&tempVar, std::vector<Modification*>(), std::vector<Modification*>()).First();
+        DigestionParams tempVar("trypsin");
+        
+        std::vector<Modification*> vm1, vm2;
+        auto peptide = p->Digest(&tempVar, vm1, vm2).front();
         
         ModificationMotif *motif;
         ModificationMotif::TryGetMotif("X", &motif);
+#ifdef ORIG
         auto loopMod = new Modification("Loop", _modificationType: "XLTest", _target: motif, _locationRestriction: "Anywhere.",
                                         _monoisotopicMass: 10000);
-        
+#endif
+        auto loopMod = new Modification("Loop", "", "XLTest", "", motif, "Anywhere.",nullptr, 
+                                        std::make_optional((double)10000));
+        std::vector<int> tVec = {3, 5};
         auto loopLocationsWithFragments = CrosslinkedPeptide::XlLoopGetTheoreticalFragments(DissociationType::HCD, loopMod,
-                                                                                            std::vector<int> {3, 5}, peptide);
+                                                                                            tVec, peptide);
         
-        Assert::That(loopLocationsWithFragments.size() == 1);
-        auto loopLocationWithFragments = loopLocationsWithFragments.First();
+        Assert::IsTrue((int)loopLocationsWithFragments.size() == 1);
+        auto loopLocationWithFragments = *(loopLocationsWithFragments.begin());
         
-        Assert::That(loopLocationWithFragments->Key->Item1 == 3);
-        Assert::That(loopLocationWithFragments->Key->Item2 == 5);
+#ifdef ORIG
+        Assert::IsTrue(loopLocationWithFragments->Key->Item1 == 3);
+        Assert::IsTrue(loopLocationWithFragments->Key->Item2 == 5);
+#endif
+        Assert::IsTrue(std::get<0>(std::get<0>(loopLocationWithFragments)) == 3);
+        Assert::IsTrue(std::get<1>(std::get<0>(loopLocationWithFragments)) == 5);
         
-        auto fragments = loopLocationWithFragments->Value;
+        auto fragments = std::get<1>(loopLocationWithFragments);
         
+#ifdef ORIG
         auto bIons = fragments->Where([&] (std::any v)  {
                 return v->ProductType == ProductType::b;
             }).ToList();
-        Assert::That(bIons.Select([&] (std::any v)   {
+        Assert::IsTrue(bIons.Select([&] (std::any v)   {
                     (int)v.NeutralMass;
                 }).SequenceEqual(std::vector<int> {97, 226, 10537, 10652}));
+#endif
+        std::vector<int> bIons;
+        for ( auto v : fragments) {
+            if ( v->productType == ProductType::b ) {
+                bIons.push_back((int)v->NeutralMass);
+            }
+        }
+        std::vector<int> iVec = {97, 226, 10537, 10652};
+        Assert::SequenceEqual(bIons, iVec);
         
+#ifdef ORIG
         auto yIons = fragments->Where([&] (std::any v)   {
                 return v->ProductType == ProductType::y;
             }).ToList();
-        Assert::That(yIons.Select([&] (std::any v)      {
+        Assert::IsTrue(yIons.Select([&] (std::any v)      {
                     (int)v.NeutralMass;
                 }).SequenceEqual(std::vector<int> {147, 262, 10573, 10702}));
+#endif
+        std::vector<int> yIons;
+        for ( auto v: fragments  ) {
+            if ( v->productType == ProductType::y ) {
+                yIons.push_back((int)v->NeutralMass);
+            }
+        }
+        std::vector<int> iVec2 = {147, 262, 10573, 10702};
+        Assert::SequenceEqual(yIons, iVec2);
         
-        //C# TO C++ CONVERTER TODO TASK: A 'delete loopMod' statement was not added since loopMod 
-        //was passed to a method or constructor. Handle memory management manually.
+        delete loopMod;
         delete p;
     }
     
-    void XLTest::TestTheoreticalLoopFragmentsWithMod()
+#ifdef LATER
+void XLTest::TestTheoreticalLoopFragmentsWithMod()
     {
         ModificationMotif *tMotif;
         ModificationMotif::TryGetMotif("T", &tMotif);
@@ -731,11 +794,11 @@ namespace Test
             auto loopLocationsWithFragments = CrosslinkedPeptide::XlLoopGetTheoreticalFragments(DissociationType::HCD, loopMod,
                                                                                                 std::vector<int> {3, 5}, peptide);
             
-            Assert::That(loopLocationsWithFragments.size() == 1);
+            Assert::IsTrue(loopLocationsWithFragments.size() == 1);
             auto loopLocationWithFragments = loopLocationsWithFragments.First();
             
-            Assert::That(loopLocationWithFragments->Key->Item1 == 3);
-            Assert::That(loopLocationWithFragments->Key->Item2 == 5);
+            Assert::IsTrue(loopLocationWithFragments->Key->Item1 == 3);
+            Assert::IsTrue(loopLocationWithFragments->Key->Item2 == 5);
             
             auto fragments = loopLocationWithFragments->Value;
             
@@ -751,10 +814,10 @@ namespace Test
                 //             _
                 //            | |
                 // PT[Phospho]TTTTE
-                Assert::That(bIons.Select([&] (std::any v) {
+                Assert::IsTrue(bIons.Select([&] (std::any v) {
                             (int)v.NeutralMass;
                         }).SequenceEqual(std::vector<int> {97, 278, 10581, 10682}));
-                Assert::That(yIons.Select([&] (std::any v) {
+                Assert::IsTrue(yIons.Select([&] (std::any v) {
                             (int)v.NeutralMass;
                         }).SequenceEqual(std::vector<int> {147, 248, 10551, 10732}));
             }
@@ -763,10 +826,10 @@ namespace Test
                 //    __________
                 //   |          |
                 // PTT[Phospho]TTTE
-                Assert::That(bIons.Select([&] (std::any v) {
+                Assert::IsTrue(bIons.Select([&] (std::any v) {
                             (int)v.NeutralMass;
                         }).SequenceEqual(std::vector<int> {97, 198, 10581, 10682}));
-                Assert::That(yIons.Select([&] (std::any v) {
+                Assert::IsTrue(yIons.Select([&] (std::any v) {
                             (int)v.NeutralMass;
                         }).SequenceEqual(std::vector<int> {147, 248, 10631, 10732}));
             }
@@ -775,10 +838,10 @@ namespace Test
                 //    __________
                 //   |          |
                 // PTTT[Phospho]TTE
-                Assert::That(bIons.Select([&] (std::any v) {
+                Assert::IsTrue(bIons.Select([&] (std::any v) {
                             (int)v.NeutralMass;
                         }).SequenceEqual(std::vector<int> {97, 198, 10581, 10682}));
-                Assert::That(yIons.Select([&] (std::any v) {
+                Assert::IsTrue(yIons.Select([&] (std::any v) {
                             (int)v.NeutralMass;
                         }).SequenceEqual(std::vector<int> {147, 248, 10631, 10732}));
             }
@@ -787,10 +850,10 @@ namespace Test
                 //    _
                 //   | |
                 // PTTTT[Phospho]TE
-                Assert::That(bIons.Select([&] (std::any v) {
+                Assert::IsTrue(bIons.Select([&] (std::any v) {
                             (int)v.NeutralMass;
                         }).SequenceEqual(std::vector<int> {97, 198, 10581, 10682}));
-                Assert::That(yIons.Select([&] (std::any v) {
+                Assert::IsTrue(yIons.Select([&] (std::any v) {
                             (int)v.NeutralMass;
                         }).SequenceEqual(std::vector<int> {147, 248, 10631, 10732}));
             }
@@ -799,10 +862,10 @@ namespace Test
                 //    _
                 //   | |
                 // PTTTTT[Phospho]E
-                Assert::That(bIons.Select([&] (std::any v) {
+                Assert::IsTrue(bIons.Select([&] (std::any v) {
                             (int)v.NeutralMass;
                         }).SequenceEqual(std::vector<int> {97, 198, 10501, 10682}));
-                Assert::That(yIons.Select([&] (std::any v) {
+                Assert::IsTrue(yIons.Select([&] (std::any v) {
                             (int)v.NeutralMass;
                         }).SequenceEqual(std::vector<int> {147, 328, 10631, 10732}));
             }
@@ -855,8 +918,8 @@ namespace Test
         (&tempVar4)->Run();
         
         CrosslinkSpectralMatch *csm = csms.First();
-        Assert::That(csm->getCrossType() == PsmCrossType::DeadEndTris);
-        Assert::That(csm->MatchedFragmentIons->Count == 12);
+        Assert::IsTrue(csm->getCrossType() == PsmCrossType::DeadEndTris);
+        Assert::IsTrue(csm->MatchedFragmentIons->Count == 12);
         
         //C# TO C++ CONVERTER TODO TASK: A 'delete sc' statement was not added since sc was
         //passed to a method or constructor. Handle memory management manually.
@@ -887,24 +950,24 @@ namespace Test
         auto theoreticalCrosslinkFragments = CrosslinkedPeptide::XlGetTheoreticalFragments(DissociationType::HCD, c, std::vector<int> {3},
                                                                                            betaPeptide->MonoisotopicMass, alphaPeptide).ToList();
         
-        Assert::That(theoreticalCrosslinkFragments.size() == 1);
+        Assert::IsTrue(theoreticalCrosslinkFragments.size() == 1);
         auto loopLocationWithFragments = theoreticalCrosslinkFragments.front();
         
-        Assert::That(loopLocationWithFragments->Item1 == 3);
+        Assert::IsTrue(loopLocationWithFragments->Item1 == 3);
         
         auto fragments = loopLocationWithFragments->Item2;
         
         auto bIons = fragments->Where([&] (std::any v)  {
                 return v->ProductType == ProductType::b;
             }).ToList();
-        Assert::That(bIons.Select([&] (std::any v)  {
+        Assert::IsTrue(bIons.Select([&] (std::any v)  {
                     (int)v.NeutralMass;
                 }).SequenceEqual(std::vector<int> {97, 226, 2164, 2265, 2378, 2493}));
         
         auto yIons = fragments->Where([&] (std::any v)  {
                 return v->ProductType == ProductType::y;
             }).ToList();
-        Assert::That(yIons.Select([&] (std::any v) {
+        Assert::IsTrue(yIons.Select([&] (std::any v) {
                     (int)v.NeutralMass;
                 }).SequenceEqual(std::vector<int> {147, 262, 375, 476, 2414, 2543}));
         
@@ -931,33 +994,33 @@ namespace Test
         auto theoreticalCrosslinkFragments = CrosslinkedPeptide::XlGetTheoreticalFragments(DissociationType::HCD, c, std::vector<int> {3},
                                                                                            10000, alphaPeptide).ToList();
         
-        Assert::That(theoreticalCrosslinkFragments.size() == 1);
+        Assert::IsTrue(theoreticalCrosslinkFragments.size() == 1);
         
         // cleaved fragments
         auto linkLocationWithFragments = theoreticalCrosslinkFragments[0];
         
-        Assert::That(linkLocationWithFragments.Item1 == 3);
+        Assert::IsTrue(linkLocationWithFragments.Item1 == 3);
         auto fragmentsWithCleavedXlPieces = linkLocationWithFragments.Item2;
         
         auto bIons = fragmentsWithCleavedXlPieces->Where([&] (std::any v) {
                 return v->ProductType == ProductType::b;
             }).ToList();
-        Assert::That(bIons.Select([&] (std::any v) {
+        Assert::IsTrue(bIons.Select([&] (std::any v) {
                     (int)v.NeutralMass;
                 }).SequenceEqual(std::vector<int> {97, 226, 338, 439, 552, 667, 348, 449, 562, 677}));
         
         auto yIons = fragmentsWithCleavedXlPieces->Where([&] (std::any v) {
                 return v->ProductType == ProductType::y;
             }).ToList();
-        Assert::That(yIons.Select([&] (std::any v)  {
+        Assert::IsTrue(yIons.Select([&] (std::any v)  {
                     (int)v.NeutralMass;
                 }).SequenceEqual(std::vector<int> {147, 262, 375, 476, 588, 717, 598, 727}));
         
         auto signatureIons = fragmentsWithCleavedXlPieces->Where([&] (std::any v)  {
                 return v->ProductType == ProductType::M;
             }).ToList();
-        Assert::That(signatureIons.size() == 2);
-        Assert::That(signatureIons.Select([&] (std::any v) {
+        Assert::IsTrue(signatureIons.size() == 2);
+        Assert::IsTrue(signatureIons.Select([&] (std::any v) {
                     (int)v.NeutralMass;
                 }).SequenceEqual(std::vector<int> {814, 824}));
         
@@ -988,8 +1051,8 @@ namespace Test
         
         auto results = outputFolder, "(TestPercolator\XL_Intralinks_Percolator.txt)");
         auto lines = File::ReadAllLines(results);
-        Assert::That(lines[0] == "SpecId\tLabel\tScannr\tScore\tdScore\tNormRank\tCharge\tMass\tPPM\tLenShort\tLenLong\tLenSum\tPeptide\tProtein");
-        Assert::That(lines[1] == "T-1-30.6190992666667\t1\t1\t20.0641008915522\t0\t7\t3\t1994.05202313843\t0.664979354397676\t7\t9\t16\t-.EKVLTSSAR2--LSQKFPK4.-\t3336842(211)\t3336842(245)");
+        Assert::IsTrue(lines[0] == "SpecId\tLabel\tScannr\tScore\tdScore\tNormRank\tCharge\tMass\tPPM\tLenShort\tLenLong\tLenSum\tPeptide\tProtein");
+        Assert::IsTrue(lines[1] == "T-1-30.6190992666667\t1\t1\t20.0641008915522\t0\t7\t3\t1994.05202313843\t0.664979354397676\t7\t9\t16\t-.EKVLTSSAR2--LSQKFPK4.-\t3336842(211)\t3336842(245)");
         Directory::Delete(outputFolder, true);
         
         delete engine;

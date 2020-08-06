@@ -47,13 +47,13 @@ namespace EngineLayer
                                new OpenSearchMode(), 0.0,
                                nestedIds ),
             GlobalCsms(globalCsms),
-            privateCrosslinker(crosslinker),
             CrosslinkSearchTopN(CrosslinkSearchTop),
             TopN(CrosslinkSearchTopNum),
             QuenchH2O(quench_H2O),
             QuenchNH2(quench_NH2),
             QuenchTris(quench_Tris)
         {
+            privateCrosslinker = new Crosslinker(crosslinker);
             GenerateCrosslinkModifications(crosslinker);
             //AllCrosslinkerSites = privateCrosslinker->getCrosslinkerModSites().ToCharArray().Concat(privateCrosslinker->getCrosslinkerModSites2().ToCharArray())->Distinct()->ToArray();
             std::string s1 = privateCrosslinker->getCrosslinkerModSites();
