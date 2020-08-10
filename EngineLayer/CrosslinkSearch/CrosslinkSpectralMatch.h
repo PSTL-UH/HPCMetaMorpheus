@@ -63,19 +63,19 @@ namespace EngineLayer
                                                                    PeptideWithSetModifications *peptide);
             
             /// <summary>
-			/// Rank experimental mass spectral peaks by intensity
-			/// </summary>
-			static std::vector<int> GenerateIntensityRanks(std::vector<double> &experimental_intensities);
-
-			static std::string GetTabSepHeaderCross();
-
-			static std::string GetTabSepHeaderSingle();
-
-			static std::string GetTabSepHeaderGlyco();
-
-			std::string ToString();
-
-			static std::vector<std::tuple<std::string, std::string>> MatchedIonDataDictionary(PeptideSpectralMatch *psm);
+            /// Rank experimental mass spectral peaks by intensity
+            /// </summary>
+            static std::vector<int> GenerateIntensityRanks(std::vector<double> &experimental_intensities);
+            
+            static std::string GetTabSepHeaderCross();
+            
+            static std::string GetTabSepHeaderSingle();
+            
+            static std::string GetTabSepHeaderGlyco();
+            
+            std::string ToString();
+            
+            static std::vector<std::tuple<std::string, std::string>> MatchedIonDataDictionary(PeptideSpectralMatch *psm);
 		};
 	}
 }

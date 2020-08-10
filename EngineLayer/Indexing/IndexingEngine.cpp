@@ -55,20 +55,25 @@ namespace EngineLayer
             
             sb->appendLine("Partitions: " + std::to_string(CurrentPartition) + "/" + std::to_string(commonParameters->getTotalPartitions()));
             sb->appendLine("Precursor Index: " + StringHelper::toString(GeneratePrecursorIndex));
-            sb->appendLine("Search Decoys: " + std::to_string(static_cast<int>(decoyType)));
+            auto var1 = decoyType;
+            sb->appendLine("Search Decoys: " + DecoyTypeToString(var1));
             sb->appendLine("Number of proteins: " + std::to_string(ProteinList.size()));
             sb->appendLine("Number of fixed mods: " + std::to_string(FixedModifications.size()));
             sb->appendLine("Number of variable mods: " + std::to_string(VariableModifications.size()));
-            sb->appendLine("Dissociation Type: " + std::to_string(static_cast<int>(commonParameters->getDissociationType())));
+            auto var2 = commonParameters->getDissociationType();
+            sb->appendLine("Dissociation Type: " + GetDissocationType::GetDissocationTypeAsString(var2));
             sb->appendLine("protease: " + commonParameters->getDigestionParams()->getProtease()->ToString());
-            sb->appendLine("initiatorMethionineBehavior: " + std::to_string(static_cast<int>(commonParameters->getDigestionParams()->getInitiatorMethionineBehavior())));
-            sb->appendLine("maximumMissedCleavages: " + commonParameters->getDigestionParams()->getMaxMissedCleavages());
-            sb->appendLine("minPeptideLength: " + commonParameters->getDigestionParams()->getMinPeptideLength());
-            sb->appendLine("maxPeptideLength: " + commonParameters->getDigestionParams()->getMaxPeptideLength());
-            sb->appendLine("maximumVariableModificationIsoforms: " + commonParameters->getDigestionParams()->getMaxModificationIsoforms());
-            sb->appendLine("digestionTerminus: " + std::to_string(static_cast<int>(commonParameters->getDigestionParams()->getFragmentationTerminus())));
-            sb->appendLine("maxModsForEachPeptide: " + commonParameters->getDigestionParams()->getMaxModsForPeptide());
-            sb->appendLine("cleavageSpecificity: " + std::to_string(static_cast<int>(commonParameters->getDigestionParams()->getSearchModeType())));
+            auto var3 = commonParameters->getDigestionParams()->getInitiatorMethionineBehavior();
+            sb->appendLine("initiatorMethionineBehavior: " + InitiatorMethionineBehaviorToString(var3));
+            sb->appendLine("maximumMissedCleavages: " + std::to_string(commonParameters->getDigestionParams()->getMaxMissedCleavages()));
+            sb->appendLine("minPeptideLength: " + std::to_string(commonParameters->getDigestionParams()->getMinPeptideLength()));
+            sb->appendLine("maxPeptideLength: " + std::to_string(commonParameters->getDigestionParams()->getMaxPeptideLength()));
+            sb->appendLine("maximumVariableModificationIsoforms: " + std::to_string(commonParameters->getDigestionParams()->getMaxModificationIsoforms()));
+            auto var4 = commonParameters->getDigestionParams()->getFragmentationTerminus();
+            sb->appendLine("digestionTerminus: " + FragmentationTerminusToString(var4));
+            sb->appendLine("maxModsForEachPeptide: " + std::to_string(commonParameters->getDigestionParams()->getMaxModsForPeptide()));
+            auto var5 = commonParameters->getDigestionParams()->getSearchModeType();
+            sb->appendLine("cleavageSpecificity: " + CleavageSpecificityExtension::GetCleavageSpecificityAsString(var5));
             sb->appendLine("specificProtease: " + commonParameters->getDigestionParams()->getSpecificProtease()->ToString());
             
 #ifdef ORIG

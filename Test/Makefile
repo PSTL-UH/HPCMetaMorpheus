@@ -50,4 +50,5 @@ clean:
 
 	rm -f TestToml BinGenerationTest CalibrationTests XLTest XLSearchOutputTest
 	rm -f TestProteinSplitAcrossFiles.xml TestProteinSplitAcrossFiles1.ind
+	rm -f TestProteinSplitAcrossFiles1.mzML TestProteinSplitAcrossFiles2.mzML
 	rm -f pep.XML.pep.XM BinGenerationTest.xml BinGenerationTest.mzML

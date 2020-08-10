@@ -28,6 +28,7 @@
 
 #include <ctime>
 #include <experimental/filesystem>
+#include <filesystem>
 #include <exception>
 #include <string>
 #include <locale>
@@ -748,13 +749,13 @@ namespace TaskLayer
 #endif
         std::vector<std::string> unknownMods;
         for ( auto p: *(getCommonParameters()->getListOfModsVariable()) ) {
-            if ( std::find(recognizedVariable.begin(),recognizedVariable.end(), std::get<1>(p)) !=
+            if ( std::find(recognizedVariable.begin(),recognizedVariable.end(), std::get<1>(p)) ==
                  recognizedVariable.end() ) {
                 unknownMods.push_back(std::get<1>(p));
             }
         }
         for ( auto p: *(getCommonParameters()->getListOfModsFixed()) )  {
-            if ( std::find(recognizedFixed.begin(),recognizedFixed.end(), std::get<1>(p)) !=
+            if ( std::find(recognizedFixed.begin(),recognizedFixed.end(), std::get<1>(p)) ==
                  recognizedFixed.end() ) {
                 unknownMods.push_back(std::get<1>(p));
             }
@@ -990,19 +991,19 @@ namespace TaskLayer
     {
         for (auto database : dbFilenameList)
         {
-            std::experimental::filesystem::path dp = database->getFilePath();
+            std::filesystem::path dp = database->getFilePath();
             std::string baseDir = dp.parent_path();
             std::string indexDirectory = baseDir + "/" + IndexFolderName;
             
-            if (! std::experimental::filesystem::exists(indexDirectory) )
+            if (! std::filesystem::exists(indexDirectory) )
             {
                 return "";
             }
             
             // all directories in the same directory as the protein database
             std::vector<std::string> directories;
-            for ( auto p : std::experimental::filesystem::recursive_directory_iterator( indexDirectory) ){
-                if ( std::experimental::filesystem::is_directory(p) ) {
+            for ( auto p : std::filesystem::recursive_directory_iterator( indexDirectory) ){
+                if ( std::filesystem::is_directory(p) ) {
                     directories.push_back(p.path().string() );
                 }
             }
@@ -1041,15 +1042,17 @@ namespace TaskLayer
     void MetaMorpheusTask::WriteIndexEngineParams(IndexingEngine *indexEngine, const std::string &fileName)
     {
         std::ofstream output(fileName);
-        output << indexEngine ;
+        output << indexEngine->ToString() ;
+        output.close();
     }
     
     std::string MetaMorpheusTask::GenerateOutputFolderForIndices(std::vector<DbForTask*> &dbFilenameList)
     {
-        std::string pathToIndexes = dbFilenameList.front()->getFilePath() +  IndexFolderName;
-        if (!std::experimental::filesystem::exists(pathToIndexes))
+        std::filesystem::path dp = dbFilenameList.front()->getFilePath();
+        std::string pathToIndexes = dp.parent_path().string() +  "/" + IndexFolderName;
+        if (!std::filesystem::exists(pathToIndexes))
         {
-            std::experimental::filesystem::create_directory(pathToIndexes);
+            std::filesystem::create_directory(pathToIndexes);
         }
         char dates[100];
         time_t curr_time;
@@ -1059,8 +1062,8 @@ namespace TaskLayer
         curr_tm = localtime(&curr_time);
         strftime(dates, 100, "%Y-%m-%d-%H-%M-%S", curr_tm);
         std::string date_string(dates);
-        std::string folder = pathToIndexes + date_string;
-        std::experimental::filesystem::create_directory(folder);
+        std::string folder = pathToIndexes + "/" + date_string;
+        std::filesystem::create_directory(folder);
         return folder;
     }
     

@@ -1,5 +1,6 @@
 ﻿#include "CrosslinkSpectralMatch.h"
 #include "../Ms2ScanWithSpecificMass.h"
+#include "Crosslinker.h"
 #include "Sort.h"
 
 #include <numeric>
@@ -327,12 +328,18 @@ namespace EngineLayer
             auto sb = new StringBuilder();
             sb->append(getFullFilePath() + "\t");
             sb->append(std::to_string(getScanNumber()) + "\t");
-            sb->append(std::to_string(getPrecursorScanNumber().value()) + "\t");
+            if ( getPrecursorScanNumber().has_value() ) {
+                sb->append(std::to_string(getPrecursorScanNumber().value()) + "\t");
+            }
+            else {
+                std::string s = "-\t";
+                sb->append(s);
+            }
             sb->append(std::to_string(getScanPrecursorMonoisotopicPeakMz()) + "\t");
             sb->append(std::to_string(getScanPrecursorCharge()) + "\t");
             sb->append(std::to_string(getScanPrecursorMass()) + "\t");
-            //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
-            sb->append(std::to_string(static_cast<int>(getCrossType())) + "\t");
+            auto crosslinktype = getCrossType();
+            sb->append(PsmCrossTypeToString(crosslinktype) + "\t");
             
             if (getLinkPositions().size() > 0)
             {

@@ -23,7 +23,7 @@ using namespace UsefulProteomicsDatabases;
 
 
 #include "Assert.h"
-#include <experimental/filesystem>
+#include <filesystem>
 #include <iostream>
 #include <fstream>
 
@@ -49,7 +49,6 @@ int main ( int argc, char **argv )
     std::cout << ++i << ". XlTest_BSA_DSS_file" << std::endl;
     Test::XLTest::XlTest_BSA_DSS_file();
 #endif
-    
     std::cout << ++i << ". XlTest_GenerateUserDefinedCrosslinker" << std::endl;
     Test::XLTest::XlTest_GenerateUserDefinedCrosslinker();
 
@@ -62,21 +61,25 @@ int main ( int argc, char **argv )
 
     std::cout << ++i << ". DeadendPeptideTest" << std::endl;
     Test::XLTest::DeadendPeptideTest();
+#endif
 
+#ifdef NOT_NOW
+    // This test compiles correctly, and runs to large extent, however, we segfault
+    // because the peptideindex is not yet written correctly, this is an
+    // issue with the cereal interfaces for this class. To be revisited.
     std::cout << ++i << ". XLSearchWithGeneratedIndices" << std::endl;
     Test::XLTest::XLSearchWithGeneratedIndices();
-
+#endif
     std::cout << ++i << ". TestGetPossibleCrosslinkerSites" << std::endl;
     Test::XLTest::TestGetPossibleCrosslinkerSites();
-#endif
     
     std::cout << ++i << ". TestTheoreticalFragmentsLoop" << std::endl;
     Test::XLTest::TestTheoreticalFragmentsLoop();
 
-#ifdef LATER
     std::cout << ++i << ". TestTheoreticalLoopFragmentsWithMod" << std::endl;
     Test::XLTest::TestTheoreticalLoopFragmentsWithMod();
 
+#ifdef LATER
     std::cout << ++i << ". TestDeadendTris" << std::endl;
     Test::XLTest::TestDeadendTris();
 
@@ -288,7 +291,7 @@ namespace Test
     
     void XLTest::XlTest_BSA_DSSO()
     {
-        std::string testdir=std::experimental::filesystem::current_path().string();
+        std::string testdir=std::filesystem::current_path().string();
 
         //Generate parameters
         PpmTolerance tempVar(10);
@@ -434,9 +437,9 @@ namespace Test
         //Assert.AreEqual(productMassesAlphaList.First().Value.Count, 50); //TO DO: The number here should be manually verified.
         // EDGAR: END of commented out section
 
-        //std::experimental::filesystem::remove("singlePsms.tsv");
-        //std::experimental::filesystem::remove("pep.XML.pep.xml");
-        //std::experimental::filesystem::remove("allPsms.tsv");
+        //std::filesystem::remove("singlePsms.tsv");
+        //std::filesystem::remove("pep.XML.pep.xml");
+        //std::filesystem::remove("allPsms.tsv");
         
         delete task;
         delete myMsDataFile;
@@ -450,7 +453,7 @@ namespace Test
 #ifdef LATER    
     void XLTest::XlTest_BSA_DSS_file()
     {
-        std::string testdir=std::experimental::filesystem::current_path().string();
+        std::string testdir=std::filesystem::current_path().string();
 
         auto task = Toml::ReadFile<XLSearchTask*>(testdir + "/XlTestData/XLSearchTaskconfig_BSA_DSS_23747.toml",
                                                   MetaMorpheusTask::tomlConfig);
@@ -606,7 +609,7 @@ namespace Test
     
     void XLTest::DeadendPeptideTest()
     {
-        std::string testdir=std::experimental::filesystem::current_path().string();
+        std::string testdir=std::filesystem::current_path().string();
 
         std::string myFileXl = testdir + "/XlTestData/BSA_DSSO_ETchD6010.mgf";
         std::string myDatabaseXl = testdir+ "/XlTestData/BSA.fasta";
@@ -636,62 +639,89 @@ namespace Test
         delete xLSearchTask2;
         delete xLSearchTask;
     }
+#endif
     
     void XLTest::XLSearchWithGeneratedIndices()
     {
-        std::string testdir=std::experimental::filesystem::current_path().string();
-
+        std::string testdir=std::filesystem::current_path().string();
+        
         XLSearchTask *xlSearchTask = new XLSearchTask();
-        CommonParameters tempVar();
+        CommonParameters tempVar;
         xlSearchTask->setCommonParameters(&tempVar);
         std::string myFile = testdir + "/XlTestData/BSA_DSSO_ETchD6010.mgf";
         std::string myDatabase = testdir + "/XlTestData/BSA.fasta";
         std::string folderPath = testdir+ "/TestXLSearch";
-
+        
         DbForTask *db = new DbForTask(myDatabase, false);
-        std::vector<(std::string, MetaMorpheusTask)*> taskList = {("TestXLSearch", xlSearchTask)};
+        std::vector<std::tuple<std::string, MetaMorpheusTask *>> taskList = {std::make_tuple("TestXLSearch", xlSearchTask)};
+
         FileSystem::createDirectory(folderPath);
         
         //creates .params files if they do not exist
-        xlSearchTask->RunTask(folderPath, {db}, {myFile}, "normal");
+        std::vector<DbForTask *> dbVec = {db};
+        std::vector<std::string> FileVec = {myFile};
+        xlSearchTask->RunTask(folderPath, dbVec, FileVec, "normal");
         //tests .params files
-        xlSearchTask->RunTask(folderPath, {db}, {myFile}, "normal");
+        xlSearchTask->RunTask(folderPath, dbVec, FileVec, "normal");
         
         auto baseDir = FileSystem::getDirectoryName(db->getFilePath());
+#ifdef ORIG
         auto directory = new DirectoryInfo(baseDir);
         std::vector<DirectoryInfo*> directories = directory->GetDirectories();
         for (auto possibleFolder : directories)
         {
-            if (FileSystem::fileExists(possibleFolder->FullName, "indexEngine.params")))
+            if (FileSystem::fileExists(possibleFolder->FullName, "indexEngine.params"))
             {
                 File::Delete(possibleFolder->GetFiles().ElementAt(0)->FullName);
             }
         }
+#endif
+        for ( auto entry: std::filesystem::directory_iterator(baseDir) ) {
+            if ( entry.is_directory() ) {
+                if ( std::filesystem::exists(entry.path().string() + "/indexEngine.params") ) {
+                    std::filesystem::remove(entry.path().string() + "/indexEngine.params");
+                }
+            }
+        }
+        
         //tests without .params files
-        xlSearchTask->RunTask(folderPath, {db}, {myFile}, "normal");
+        xlSearchTask->RunTask(folderPath, dbVec, FileVec, "normal");
         
-        auto lines = File::ReadAllLines(folderPath, "(XL_Intralinks.tsv)"));
-        Assert::IsTrue(lines.size() == 2);
-        Directory::Delete(folderPath, true);
-        Directory::Delete(testdir + "/Task Settings", true);
+        //auto lines = File::ReadAllLines(folderPath + "/XL_Intralinks.tsv");
+        std::ifstream input(folderPath + "/XL_Intralinks.tsv");
+        int lines=0;
+        if ( input.is_open() ) {
+            std::string line;
+            while ( getline(input, line ) ) {
+                lines++;
+            }
+        }
+        else {
+            std::cout << "Could not open file " << folderPath << "/XL_Intralinks.tsv" << std::endl;
+        }
         
-        delete directory;
-        //C# TO C++ CONVERTER TODO TASK: A 'delete db' statement was not added since db was passed to
-        //a method or constructor. Handle memory management manually.
-        //C# TO C++ CONVERTER TODO TASK: A 'delete xlSearchTask' statement was not added since xlSearchTask
-        //was passed to a method or constructor. Handle memory management manually.
+        Assert::IsTrue(lines == 2);
+
+        std::filesystem::remove_all(folderPath);
+        std::filesystem::remove_all(testdir+"/Task Settings");
+        
+        delete db;
+        delete xlSearchTask;
     }
     
     void XLTest::TestGetPossibleCrosslinkerSites()
     {
-        PeptideWithSetModifications *peptide = new PeptideWithSetModifications("PEPTIDE", nullptr);
-        std::vector<int> sites = CrosslinkSpectralMatch::GetPossibleCrosslinkerModSites({L'P'}, peptide);
-        Assert::IsTrue(sites.SequenceEqual(std::vector<int> {1, 3}));
+        std::unordered_map<std::string, Modification*> mMods;
+        PeptideWithSetModifications *peptide = new PeptideWithSetModifications("PEPTIDE", mMods);
+        std::vector<char> vChar = {'P'};
+        std::vector<int> sites = CrosslinkSpectralMatch::GetPossibleCrosslinkerModSites( vChar, peptide);
+
+        std::vector<int> vInt = {1, 3};
+        Assert::SequenceEqual(sites, vInt );
         
         //C# TO C++ CONVERTER TODO TASK: A 'delete peptide' statement was not added since peptide was
         //passed to a method or constructor. Handle memory management manually.
     }
-#endif
 
     void XLTest::TestTheoreticalFragmentsLoop()
     {
@@ -763,13 +793,19 @@ namespace Test
         delete p;
     }
     
-#ifdef LATER
 void XLTest::TestTheoreticalLoopFragmentsWithMod()
     {
         ModificationMotif *tMotif;
         ModificationMotif::TryGetMotif("T", &tMotif);
+
+#ifdef ORIG
         Modification *phospho = new Modification(_originalId: "Phospho", _modificationType: "Mod", _locationRestriction: "Anywhere.",
                                                  _monoisotopicMass: 79.98, _target: tMotif);
+#endif
+        
+        Modification *phospho = new Modification("Phospho", "", "Mod", "", tMotif, "Anywhere.", nullptr,
+                                                 std::make_optional(79.98) );
+        
         std::vector<int> modPositions = {2, 3, 4, 5, 6};
         
         for (auto modPosition : modPositions)
@@ -780,104 +816,169 @@ void XLTest::TestTheoreticalLoopFragmentsWithMod()
                         modPosition, {phospho}
                     }
                 };
+            DigestionParams tempVar("trypsin");
+#ifdef ORIG
             Protein *p = new Protein("PTTTTTE", "", oneBasedModifications: oneBasedMods);
-            DigestionParams tempVar();
             auto peptide = p->Digest(&tempVar, std::vector<Modification*>(), std::vector<Modification*>()).Where([&] (std::any v){
                     return v::AllModsOneIsNterminus->Count == 1;
                 }).First();
+#endif
+            std::vector<std::tuple<std::string, std::string>> geneNames;
+            Protein *p = new Protein("PTTTTTE", "", "", geneNames, oneBasedMods);
+
+            std::vector<Modification*> vm1, vm2;
+            auto peptideVec =  p->Digest(&tempVar, vm1, vm2 );
+            PeptideWithSetModifications *peptide;
+            for ( auto v : peptideVec ) {
+                if ( (int) (v->getAllModsOneIsNterminus().size()) == 1 ){
+                    peptide = v;
+                    break;
+                }
+            }
             
             ModificationMotif *motif;
             ModificationMotif::TryGetMotif("X", &motif);
+#ifdef ORIG
             auto loopMod = new Modification("Loop", _modificationType: "XLTest", _target: motif, _locationRestriction: "Anywhere.",
                                             _monoisotopicMass: 10000);
-            
+#endif
+            auto loopMod = new Modification("Loop", "", "XLTest", "", motif, "Anywhere.", nullptr, 
+                                            std::make_optional((double)10000));
+
+            std::vector<int> tVec = {3, 5};
             auto loopLocationsWithFragments = CrosslinkedPeptide::XlLoopGetTheoreticalFragments(DissociationType::HCD, loopMod,
-                                                                                                std::vector<int> {3, 5}, peptide);
+                                                                                                tVec, peptide);
             
-            Assert::IsTrue(loopLocationsWithFragments.size() == 1);
-            auto loopLocationWithFragments = loopLocationsWithFragments.First();
+            Assert::IsTrue((int) loopLocationsWithFragments.size() == 1);
+            auto loopLocationWithFragments = *(loopLocationsWithFragments.begin());
             
-            Assert::IsTrue(loopLocationWithFragments->Key->Item1 == 3);
-            Assert::IsTrue(loopLocationWithFragments->Key->Item2 == 5);
+            Assert::IsTrue(std::get<0>(std::get<0>(loopLocationWithFragments)) == 3);
+            Assert::IsTrue(std::get<1>(std::get<0>(loopLocationWithFragments)) == 5);
             
-            auto fragments = loopLocationWithFragments->Value;
+            auto fragments = std::get<1>(loopLocationWithFragments);
             
+#ifdef ORIG
             auto bIons = fragments->Where([&] (std::any v)   {
                     return v->ProductType == ProductType::b;
                 }).ToList();
             auto yIons = fragments->Where([&] (std::any v)   {
                     return v->ProductType == ProductType::y;
                 }).ToList();
+#endif
+            std::vector<int> bIons;
+            for ( auto v : fragments) {
+                if ( v->productType == ProductType::b ) {
+                    bIons.push_back((int)v->NeutralMass);
+                }
+            }
+            
+            std::vector<int> yIons;
+            for ( auto v: fragments  ) {
+                if ( v->productType == ProductType::y ) {
+                    yIons.push_back((int)v->NeutralMass);
+                }
+            }
             
             if (modPosition == 2)
             {
                 //             _
                 //            | |
                 // PT[Phospho]TTTTE
+#ifdef ORIG
                 Assert::IsTrue(bIons.Select([&] (std::any v) {
                             (int)v.NeutralMass;
                         }).SequenceEqual(std::vector<int> {97, 278, 10581, 10682}));
                 Assert::IsTrue(yIons.Select([&] (std::any v) {
                             (int)v.NeutralMass;
                         }).SequenceEqual(std::vector<int> {147, 248, 10551, 10732}));
+#endif
+                std::vector<int> vInt1 = {97, 278, 10581, 10682};
+                std::vector<int> vInt2 = {147, 248, 10551, 10732};
+                Assert::SequenceEqual(bIons, vInt1);
+                Assert::SequenceEqual(yIons, vInt2);
+                
             }
             else if (modPosition == 3)
             {
                 //    __________
                 //   |          |
                 // PTT[Phospho]TTTE
+#ifdef ORIG
                 Assert::IsTrue(bIons.Select([&] (std::any v) {
                             (int)v.NeutralMass;
                         }).SequenceEqual(std::vector<int> {97, 198, 10581, 10682}));
                 Assert::IsTrue(yIons.Select([&] (std::any v) {
                             (int)v.NeutralMass;
                         }).SequenceEqual(std::vector<int> {147, 248, 10631, 10732}));
+#endif
+                std::vector<int> vInt1 = {97, 198, 10581, 10682};
+                std::vector<int> vInt2 = {147, 248, 10631, 10732};
+                Assert::SequenceEqual(bIons, vInt1);
+                Assert::SequenceEqual(yIons, vInt2);
             }
             else if (modPosition == 4)
             {
                 //    __________
                 //   |          |
                 // PTTT[Phospho]TTE
+#ifdef ORIG
                 Assert::IsTrue(bIons.Select([&] (std::any v) {
                             (int)v.NeutralMass;
                         }).SequenceEqual(std::vector<int> {97, 198, 10581, 10682}));
                 Assert::IsTrue(yIons.Select([&] (std::any v) {
                             (int)v.NeutralMass;
                         }).SequenceEqual(std::vector<int> {147, 248, 10631, 10732}));
+#endif
+                std::vector<int> vInt1 = {97, 198, 10581, 10682};
+                std::vector<int> vInt2 = {147, 248, 10631, 10732};
+                Assert::SequenceEqual(bIons, vInt1);
+                Assert::SequenceEqual(yIons, vInt2);
             }
             else if (modPosition == 5)
             {
                 //    _
                 //   | |
                 // PTTTT[Phospho]TE
+#ifdef ORIG
                 Assert::IsTrue(bIons.Select([&] (std::any v) {
                             (int)v.NeutralMass;
                         }).SequenceEqual(std::vector<int> {97, 198, 10581, 10682}));
                 Assert::IsTrue(yIons.Select([&] (std::any v) {
                             (int)v.NeutralMass;
                         }).SequenceEqual(std::vector<int> {147, 248, 10631, 10732}));
+#endif
+                std::vector<int> vInt1 = {97, 198, 10581, 10682};
+                std::vector<int> vInt2 = {147, 248, 10631, 10732};
+                Assert::SequenceEqual(bIons, vInt1);
+                Assert::SequenceEqual(yIons, vInt2);
             }
             else if (modPosition == 6)
             {
                 //    _
                 //   | |
                 // PTTTTT[Phospho]E
+#ifdef ORIG
                 Assert::IsTrue(bIons.Select([&] (std::any v) {
                             (int)v.NeutralMass;
                         }).SequenceEqual(std::vector<int> {97, 198, 10501, 10682}));
                 Assert::IsTrue(yIons.Select([&] (std::any v) {
                             (int)v.NeutralMass;
                         }).SequenceEqual(std::vector<int> {147, 328, 10631, 10732}));
+#endif
+                std::vector<int> vInt1 = {97, 198, 10501, 10682};
+                std::vector<int> vInt2 = {147, 328, 10631, 10732};
+                Assert::SequenceEqual(bIons, vInt1);
+                Assert::SequenceEqual(yIons, vInt2);
             }
             
-            //C# TO C++ CONVERTER TODO TASK: A 'delete loopMod' statement was not added since loopMod
-            //was passed to a method or constructor. Handle memory management manually.
+            delete loopMod;
             delete p;
         }
         
         delete phospho;
     }
     
+#ifdef LATER
     void XLTest::TestDeadendTris()
     {
         Protein *protein = new Protein("PEPTIDE", "");
@@ -1032,7 +1133,7 @@ void XLTest::TestTheoreticalLoopFragmentsWithMod()
     
     void XLTest::TestWriteToPercolator()
     {
-        std::string testdir=std::experimental::filesystem::current_path().string();
+        std::string testdir=std::filesystem::current_path().string();
 
         XLSearchTask *xlst = new XLSearchTask();
         XlSearchParameters tempVar();
@@ -1064,7 +1165,7 @@ void XLTest::TestTheoreticalLoopFragmentsWithMod()
     
     void XLTest::TestWriteNonSingleCross()
     {
-        std::string testdir=std::experimental::filesystem::current_path().string();
+        std::string testdir=std::filesystem::current_path().string();
 
         XLSearchTask *xlst = new XLSearchTask();
         Protein *protein = new Protein("PEPTIDE", "");

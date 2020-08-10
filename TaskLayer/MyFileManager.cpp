@@ -6,8 +6,11 @@
 #include "MzML/Mzml.h"
 using namespace IO::MzML;
 
+#include "Mgf/Mgf.h"
+using namespace IO::Mgf;
+
 using namespace EngineLayer;
-//using namespace IO::Mgf;
+
 #if defined(NETFRAMEWORK)
 using namespace IO::Thermo;
 #endif
@@ -97,13 +100,10 @@ const std::string MyFileManager::DesiredXRawFileVersion = "3.0.29.0";
             MyMsDataFiles[origDataFile] = Mzml::LoadAllStaticData(origDataFile, filter,
                                                                   commonParameters->getMaxThreadsToUsePerFile());
         }
-#ifdef ORIG
-        // MGF files are not support right now.
         else if ( extension == ".mgf" )
         {
             MyMsDataFiles[origDataFile] = Mgf::LoadAllStaticData(origDataFile, filter);
         }
-#endif
         else
         {
 #if defined(NETFRAMEWORK)
