@@ -59,6 +59,69 @@ namespace TaskLayer
         setXlSearchParameters(tempVar2);
     }
 
+    XLSearchTask::XLSearchTask(std::string tomlFile ) : MetaMorpheusTask(MyTask::XLSearch)
+    {
+        //Check ending that it is a toml file.
+        
+        Toml trw;
+        toml::Value toml_value = trw.tomlReadFile(tomlFile);
+        toml::Value* fileParameters = trw.getValue(toml_value, "XlSearchParameters");
+        toml::Table tomlTable = fileParameters->as<toml::Table>();              
+
+        auto xlParams = new TaskLayer::XlSearchParameters();
+
+        // parse toml file and set the values
+        for (auto const& keyValuePair : tomlTable)
+        {
+            // we're using the name of the variable here and not a fixed string
+            // in case the variable name changes at some point
+            if (keyValuePair.first == "DecoyType") {
+                auto val = keyValuePair.second.as<std::string>();
+                xlParams->setDecoyType(DecoyTypeFromString(val ));
+            }
+            else if ( keyValuePair.first == "CrosslinkerType") {
+                auto val = keyValuePair.second.as<std::string>();
+                xlParams->setCrosslinkerType(CrosslinkerTypeFromString(val));
+            }
+            else if ( keyValuePair.first == "CrosslinkSearchTopNum") {
+                xlParams->setCrosslinkSearchTopNum(keyValuePair.second.as<int>() );
+            }
+            else if  ( keyValuePair.first == "CrosslinkerResidues" ) {
+                xlParams->setCrosslinkerResidues(keyValuePair.second.as<std::string>() );
+            }
+            else if ( keyValuePair.first == "CrosslinkerResidues2" ) {
+                xlParams->setCrosslinkerResidues2(keyValuePair.second.as<std::string>() );
+            }
+            else if ( keyValuePair.first == "IsCleavable" ) {
+                xlParams->setIsCleavable ( keyValuePair.second.as<bool>() );
+            }
+            else if ( keyValuePair.first == "RestrictToTopNHits" ) {
+                xlParams->setRestrictToTopNHits(keyValuePair.second.as<bool>() ); 
+            }
+            else if ( keyValuePair.first == "WriteOutputForPercolator" ) {
+                xlParams->setWriteOutputForPercolator(keyValuePair.second.as<bool>() ) ;
+            }
+            else if ( keyValuePair.first == "WritePepXml") {
+                xlParams->setWritePepXml( keyValuePair.second.as<bool>() );
+            }
+            else if ( keyValuePair.first == "XlQuench_H2O") {
+                xlParams->setXlQuench_H2O(keyValuePair.second.as<bool>() );
+            }
+            else if ( keyValuePair.first == "XlQuench_Tris") {
+                xlParams->setXlQuench_Tris(keyValuePair.second.as<bool>() );
+            }
+            else if ( keyValuePair.first == "XlQuench_NH2") {
+                xlParams->setXlQuench_NH2(keyValuePair.second.as<bool>() );
+            }
+        }
+        setXlSearchParameters(xlParams);
+
+        // Do we need to read the common parameters as well? Probably yes.
+        std::string taskDescr = "";
+        auto tempVar = new EngineLayer::CommonParameters( tomlFile, taskDescr );
+        setCommonParameters(tempVar);                
+    }
+
     void XLSearchTask::writeTomlConfig(std::string &filename, std::ofstream &tomlFd )
     {
         if ( !tomlFd.is_open() ) {

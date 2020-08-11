@@ -1,4 +1,5 @@
 ﻿#include "CommonParameters.h"
+#include "Proteomics/ProteolyticDigestion/CleavageSpecificity.h"
 
 using namespace MassSpectrometry;
 using namespace MzLibUtil;
@@ -153,6 +154,160 @@ namespace EngineLayer
 		setMinVariantDepth(minVariantDepth);
 	}
 
+        CommonParameters::CommonParameters(std::string  &tomlFile, const std::string &taskDescriptor)
+        {
+            CommonParameters();
+            
+            setTaskDescriptor(taskDescriptor);            
+            Toml trw;
+            toml::Value toml_value = trw.tomlReadFile(tomlFile);
+            toml::Value* fileParameters = trw.getValue(toml_value, "CommonParameters");
+            toml::Table tomlTable = fileParameters->as<toml::Table>();
+
+            // parse toml file and set the values
+            for (auto const& keyValuePair : tomlTable)
+            {
+                // we're using the name of the variable here and not a fixed string
+                // in case the variable name changes at some point
+                if (keyValuePair.first == "MaxThreadsToUsePerFile") {
+                    setMaxThreadsToUsePerFile (keyValuePair.second.as<int>() );
+                }
+                else if (keyValuePair.first == "ListOfModsFixed" ) {
+                    //tbd                    
+                }
+                else if (keyValuePair.first == "ListOfModsVaraible" ) {
+                    //tbd
+                }
+                else if (keyValuePair.first == "DoPrecursorDeconvolution" ) {
+                    setDoPrecursorDeconvolution(keyValuePair.second.as<bool>() );
+                }
+                else if (keyValuePair.first == "UseProvidedPrecursorInfo" ) {
+                    setUseProvidedPrecursorInfo(keyValuePair.second.as<bool>() );
+                }
+                else if (keyValuePair.first == "DeconvolutionIntensityRatio" ) {
+                    setDeconvolutionIntensityRatio(keyValuePair.second.as<double>() );
+                }
+                else if (keyValuePair.first == "DeconvolutionMaxAssumedChargeState" ) {
+                    setDeconvolutionMaxAssumedChargeState(keyValuePair.second.as<int>() );
+                }
+                else if (keyValuePair.first == "DeconvolutionMassTolerance" ) {
+                    Tolerance* t = Tolerance::ParseToleranceString(keyValuePair.second.as<std::string>());
+                    setDeconvolutionMassTolerance(t);
+                }
+                else if (keyValuePair.first == "TotalPartitions" ) {
+                    setTotalPartitions(keyValuePair.second.as<int>() );
+                }
+                else if (keyValuePair.first == "ProductMassTolerance") {
+                    Tolerance* t = Tolerance::ParseToleranceString(keyValuePair.second.as<std::string>());
+                    setProductMassTolerance(t);
+                }
+                else if (keyValuePair.first == "PrecursorMassTolerance") {
+                    Tolerance* t = Tolerance::ParseToleranceString(keyValuePair.second.as<std::string>());
+                    setPrecursorMassTolerance(t);
+                }
+                else if (keyValuePair.first == "AddCompIons" ) {
+                    setAddCompIons(keyValuePair.second.as<bool>() );
+                }
+                else if (keyValuePair.first == "ScoreCutoff" ) {
+                    setScoreCutoff(keyValuePair.second.as<double>() );
+                }
+                else if (keyValuePair.first == "ReportAllAmbiguity" ) {
+                    setReportAllAmbiguity(keyValuePair.second.as<bool>() );
+                }
+                else if (keyValuePair.first == "TopNpeaks" ) {
+                    setTopNpeaks(keyValuePair.second.as<int>() );
+                }
+                else if (keyValuePair.first == "MinRatio" ) {
+                    setMinRatio(keyValuePair.second.as<double>() );
+                }
+                else if (keyValuePair.first == "TrimMs1Peaks" ) {
+                    setTrimMs1Peaks(keyValuePair.second.as<bool>() );
+                }
+                else if (keyValuePair.first == "TrimMsMsPeaks" ) {
+                    setTrimMsMsPeaks(keyValuePair.second.as<bool>() );
+                }
+                else if (keyValuePair.first == "UseDeltaScore" ) {
+                    setUseDeltaScore(keyValuePair.second.as<bool>() );
+                }
+                else if (keyValuePair.first == "CalculateEValue" ) {
+                    setCalculateEValue(keyValuePair.second.as<bool>() );
+                }
+                else if (keyValuePair.first == "QValueOutputFilter" ) {
+                    setQValueOutputFilter(keyValuePair.second.as<double>() );
+                }                
+                else if (keyValuePair.first == "DissociationType") {
+                    std::string type = keyValuePair.second.as<std::string>();
+                    auto d = MassSpectrometry::GetDissocationType::GetDissocationTypeFromString(type);
+                    setDissociationType(d);
+                }
+                else if (keyValuePair.first == "AssumeOrphanPeaksAreZ1Fragments" ) {
+                    setAssumeOrphanPeaksAreZ1Fragments(keyValuePair.second.as<bool>() );
+                }
+                else if (keyValuePair.first == "MaxHeterozygousVariants" ) {
+                    setMaxHeterozygousVariants(keyValuePair.second.as<int>() );
+                }
+                else if (keyValuePair.first == "MinVariantDepth" ) {
+                    setMinVariantDepth(keyValuePair.second.as<int>() );
+                }
+                
+            }
+
+            //And now DigestionParams
+            toml::Value* fileParameters2 = trw.getValue(toml_value, "CommonParameters.DigestionParams");
+            toml::Table tomlTable2 = fileParameters2->as<toml::Table>();
+            DigestionParams *dp = new DigestionParams("trypsin");
+            
+            // parse toml file and set the values
+            for (auto const& keyValuePair : tomlTable)
+            {
+                if ( keyValuePair.first == "MaxMissedCleavages" ) {
+                    dp->setMaxMissedCleavages(keyValuePair.second.as<int>());
+                }
+                else if (keyValuePair.first == "InitiatorMethionineBehavior" ) {
+                    auto var = keyValuePair.second.as<std::string>();
+                    dp->setInitiatorMethionineBehavior(InitiatorMethionineBehaviorFromString(var));
+                }
+                else if (keyValuePair.first == "MinPeptideLength" ) {
+                    dp->setMinPeptideLength(keyValuePair.second.as<int>());
+                }
+                else if (keyValuePair.first == "MaxPeptideLength" ) {
+                    dp->setMaxPeptideLength(keyValuePair.second.as<int>());
+                }
+                else if (keyValuePair.first == "MaxModificationIsoforms" ) {
+                    dp->setMaxModificationIsoforms(keyValuePair.second.as<int>());
+                }
+                else if (keyValuePair.first == "MaxModsForPeptide") {
+                    dp->setMaxModsForPeptide(keyValuePair.second.as<int>());
+                }
+                else if (keyValuePair.first == "Protease" ) {
+                    std::string name = keyValuePair.second.as<std::string>();
+                    std::vector<DigestionMotif*> dm;
+                    //create Protease instance
+                    auto p = new Protease(name, Proteomics::ProteolyticDigestion::CleavageSpecificity::Unknown,
+                                          "", "", dm);
+                    dp->setProtease(p);
+                }
+                else if (keyValuePair.first == "SearchModeType" ) {
+                    auto val = keyValuePair.second.as<std::string>();
+                    dp->setSearchModeType( ProteolyticDigestion::CleavageSpecificityExtension::ParseString(val));
+                }
+                else if (keyValuePair.first == "FragmentationTerminus" ) {
+                    auto val = keyValuePair.second.as<std::string>();
+                    dp->setFragmentationTerminus(FragmentationTerminusFromString(val));
+                }
+                else if (keyValuePair.first == "SpecificProtease" ) {
+                    std::string name = keyValuePair.second.as<std::string>();
+                    std::vector<DigestionMotif*> dm;
+
+                    //create Protease instance
+                    auto p = new Protease(name, Proteomics::ProteolyticDigestion::CleavageSpecificity::Unknown,
+                                          "", "", dm);
+                    dp->setSpecificProtease(p);
+                }
+            }
+
+            setDigestionParams(dp);
+        }
 	std::string CommonParameters::getTaskDescriptor() const
 	{
 		return privateTaskDescriptor;
@@ -282,6 +437,9 @@ namespace EngineLayer
         }
         void CommonParameters::setDigestionParams(DigestionParams *value)
         {
+            if ( privateDigestionParams != nullptr ) {
+                free ( privateDigestionParams);
+            }
             privateDigestionParams = value;
         }
 

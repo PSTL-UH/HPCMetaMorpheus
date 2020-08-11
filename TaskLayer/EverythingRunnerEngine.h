@@ -32,13 +32,13 @@ namespace TaskLayer
                                std::vector<DbForTask*> &startingXmlDbFilenameList,
                                const std::string &outputFolder);
         
-        static EventHandler<StringEventArgs> *StartingAllTasksEngineHandler;
-        static EventHandler<StringEventArgs> *FinishedAllTasksEngineHandler;
-        static EventHandler<XmlForTaskListEventArgs> *NewDbsHandler;
-        static EventHandler<StringListEventArgs> *NewSpectrasHandler;
-        static EventHandler<StringListEventArgs> *NewFileSpecificTomlHandler;
-        static EventHandler<StringEventArgs> *WarnHandler;
-        static EventHandler<StringEventArgs> *FinishedWritingAllResultsFileHandler;
+        EventHandler<StringEventArgs> *StartingAllTasksEngineHandler=nullptr;
+        EventHandler<StringEventArgs> *FinishedAllTasksEngineHandler=nullptr;
+        EventHandler<XmlForTaskListEventArgs> *NewDbsHandler=nullptr;
+        EventHandler<StringListEventArgs> *NewSpectrasHandler=nullptr;
+        EventHandler<StringListEventArgs> *NewFileSpecificTomlHandler=nullptr;
+        EventHandler<StringEventArgs> *WarnHandler=nullptr;
+        EventHandler<StringEventArgs> *FinishedWritingAllResultsFileHandler=nullptr;
             
         void Run();
         

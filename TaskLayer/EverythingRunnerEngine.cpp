@@ -8,7 +8,7 @@
 #include "EventArgs/XmlForTaskListEventArgs.h"
 #include "CalibrationTask/CalibrationTask.h"
 
-#include <experimental/filesystem>
+#include <filesystem>
 #include <ctime>
 
 using namespace EngineLayer;
@@ -64,7 +64,7 @@ namespace TaskLayer
         
         for (int i = 0; i < (int)TaskList.size(); i++)
         {
-            if (!CurrentRawDataFilenameList.empty())
+            if (CurrentRawDataFilenameList.empty())
             {
                 Warn("Cannot proceed. No spectra files selected.");
                 FinishedAllTasks(OutputFolder);
@@ -72,7 +72,7 @@ namespace TaskLayer
                 delete allResultsText;
                 return;
             }
-            if (!CurrentXmlDbFilenameList.empty())
+            if (CurrentXmlDbFilenameList.empty())
             {
                 Warn("Cannot proceed. No protein database files selected.");
                 FinishedAllTasks(OutputFolder);
@@ -84,9 +84,9 @@ namespace TaskLayer
             
             auto outputFolderForThisTask = OutputFolder + std::get<0>(ok);
             
-            if (!std::experimental::filesystem::exists(outputFolderForThisTask))
+            if (!std::filesystem::exists(outputFolderForThisTask))
             {
-                std::experimental::filesystem::create_directory(outputFolderForThisTask);
+                std::filesystem::create_directory(outputFolderForThisTask);
             }
             
             // Actual task running code
@@ -201,6 +201,9 @@ namespace TaskLayer
         StringEventArgs tempVar(v, tmpvec);
         if ( WarnHandler != nullptr ) {
             WarnHandler->Invoke(tempVar);
+        }
+        else {
+            std::cout << "Warn : " << v << std::endl;
         }
     }
     

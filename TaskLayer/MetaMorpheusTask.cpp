@@ -27,7 +27,6 @@
 #include "cereal/types/vector.hpp"
 
 #include <ctime>
-#include <experimental/filesystem>
 #include <filesystem>
 #include <exception>
 #include <string>
@@ -103,7 +102,7 @@ namespace TaskLayer
         common_params["ReportAllAmbiguity"] = cparams->getReportAllAmbiguity();
         common_params["TopNpeaks"] = cparams->getTopNpeaks();
         common_params["MinRatio"] = cparams->getMinRatio();
-        common_params["TrimMs1Peaks"] = cparams->getTrimMsMsPeaks();
+        common_params["TrimMs1Peaks"] = cparams->getTrimMs1Peaks();
         common_params["TrimMsMsPeaks"] = cparams->getTrimMsMsPeaks();
         common_params["UseDeltaScore"] = cparams->getUseDeltaScore();
         common_params["CalculateEValue"] =  cparams->getCalculateEValue();
@@ -384,9 +383,7 @@ namespace TaskLayer
                                                                            commonParams->getQValueOutputFilter(),
                                                                            commonParams->getAssumeOrphanPeaksAreZ1Fragments());
 
-        //C# TO C++ CONVERTER TODO TASK: A 'delete returnParams' statement was not added since returnParams
-        //was used in a 'return' or 'throw' statement.
-        delete fileSpecificDigestionParams;
+        //delete fileSpecificDigestionParams;
         return returnParams;
     }
 
@@ -404,10 +401,10 @@ namespace TaskLayer
 #endif
         GlobalVariables::GlobalVariables_init();
         
-        std::experimental::filesystem::path output_directory = output_folder;
+        std::filesystem::path output_directory = output_folder;
         std::string output_dir = output_directory.parent_path().string() + "/Task Settings";
-        if ( !std::experimental::filesystem::exists(output_dir ) ){
-            std::experimental::filesystem::create_directory(output_dir);
+        if ( !std::filesystem::exists(output_dir ) ){
+            std::filesystem::create_directory(output_dir);
         }       
         
         std::string output_path = output_dir + "/config.toml";
@@ -428,12 +425,12 @@ namespace TaskLayer
                     break;
                 }
                 std::string rawFilePath = currentRawDataFilepathList[i];
-                std::experimental::filesystem::path rdpath = rawFilePath;
+                std::filesystem::path rdpath = rawFilePath;
                 std::string directory = rdpath.parent_path();
                 std::string basename = rawFilePath.substr(rawFilePath.find_last_of("/"));
                 std::string fname = basename.substr(1, basename.find_last_of(".")-1);
                 std::string fileSpecificTomlPath = directory + "/" + fname + ".toml";
-                if (std::experimental::filesystem::exists(fileSpecificTomlPath))
+                if (std::filesystem::exists(fileSpecificTomlPath))
                 {
 #ifdef ORIG
                     //In the Nett package the second parameter for ReadFile are the settings used to process the toml content
@@ -1027,10 +1024,10 @@ namespace TaskLayer
     std::string MetaMorpheusTask::CheckFiles(IndexingEngine *indexEngine, std::string &folder)
     {
         std::string ret;
-        if ( std::experimental::filesystem::exists(folder + "/indexEngine.params")    &&
-             std::experimental::filesystem::exists(folder + "/peptideIndex.ind")      &&
-             std::experimental::filesystem::exists(folder + "/fragmentIndex.ind")     &&
-             (std::experimental::filesystem::exists(folder + "/precursorIndex.ind") ||
+        if ( std::filesystem::exists(folder + "/indexEngine.params")    &&
+             std::filesystem::exists(folder + "/peptideIndex.ind")      &&
+             std::filesystem::exists(folder + "/fragmentIndex.ind")     &&
+             (std::filesystem::exists(folder + "/precursorIndex.ind") ||
               !indexEngine->GeneratePrecursorIndex)                                    &&
              SameSettings(folder + "/indexEngine.params", indexEngine) )
         {

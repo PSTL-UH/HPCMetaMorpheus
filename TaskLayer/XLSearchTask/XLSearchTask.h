@@ -50,6 +50,7 @@ namespace TaskLayer
         
     public:
         XLSearchTask();
+        XLSearchTask(std::string tomlFile );
         ~XLSearchTask() {
             delete privateXlSearchParameters;
         }

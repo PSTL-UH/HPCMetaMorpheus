@@ -12,6 +12,8 @@ using namespace MzLibUtil;
 #include "Proteomics/Proteomics.h"
 using namespace Proteomics;
 
+#include "TomlReadWrite.h"
+
 namespace EngineLayer
 {
     class CommonParameters
@@ -29,7 +31,7 @@ namespace EngineLayer
         Tolerance *privatePrecursorMassTolerance;
         bool privateAddCompIons = false;
         double privateScoreCutoff = 0;
-        DigestionParams *privateDigestionParams;
+        DigestionParams *privateDigestionParams=nullptr;
         bool privateReportAllAmbiguity = false;
         int privateToppeaks = 0;
         double privateMinRatio = 0;
@@ -84,6 +86,8 @@ namespace EngineLayer
         //Replacement for CloneWithNewTerminus(Nullable<FragmentationTerminus> terminus = nullptr, Nullable<bool> addCompIons = nullptr)
         CommonParameters (CommonParameters *cp, std::optional<FragmentationTerminus> terminus, std::optional<bool> addCompIons );
         
+        //Set Values of CommonParameters based on Toml file
+        CommonParameters (std::string &tomlFile, const std::string &taskDescriptor );
         
         // Notes:
         // 1) Any new property must not be nullable (such as int?) or else if it is null,

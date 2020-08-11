@@ -45,10 +45,9 @@ int main ( int argc, char **argv )
     std::cout << ++i << ". XlTest_BSA_DSSO" << std::endl;
     Test::XLTest::XlTest_BSA_DSSO();
 
-#ifdef LATER
     std::cout << ++i << ". XlTest_BSA_DSS_file" << std::endl;
     Test::XLTest::XlTest_BSA_DSS_file();
-#endif
+
     std::cout << ++i << ". XlTest_GenerateUserDefinedCrosslinker" << std::endl;
     Test::XLTest::XlTest_GenerateUserDefinedCrosslinker();
 
@@ -219,7 +218,6 @@ namespace Test
         Assert::AreEqual((int)c.size(), 4);
         Assert::AreEqual(c.front()->NeutralMass, 146.10552769899999, 1e-6);
 
-        //auto x = CrosslinkSpectralMatch::GetPossibleCrosslinkerModSites(crosslinker->getCrosslinkerModSites().ToCharArray(), pep);//.ToArray();
         std::string s = crosslinker->getCrosslinkerModSites();
         std::vector<char> cvec(s.begin(), s.end() );
         auto x = CrosslinkSpectralMatch::GetPossibleCrosslinkerModSites(cvec, pep);        
@@ -232,7 +230,6 @@ namespace Test
         Assert::AreEqual((int)n2.size(), 8);
         Assert::AreEqual((int)c2.size(), 8);
 
-        //auto x2 = CrosslinkSpectralMatch::GetPossibleCrosslinkerModSites(crosslinker->getCrosslinkerModSites().ToCharArray(), pep2);//.ToArray();
         auto x2 = CrosslinkSpectralMatch::GetPossibleCrosslinkerModSites(cvec, pep2);//.ToArray();
         Assert::AreEqual(x2[0], 5);
         
@@ -245,7 +242,6 @@ namespace Test
 
         Crosslinker *crosslinker2 = new Crosslinker("ST", "C", "crosslinkerSTC", false, -18.01056, 0, 0, 0, 0, 0, 0);
 
-        //std::string crosslinkerModSitesAll = std::string((crosslinker2->getCrosslinkerModSites() + crosslinker2->getCrosslinkerModSites2()).ToCharArray().Distinct()->ToArray());
         std::string s1 = crosslinker2->getCrosslinkerModSites();
         std::string s2 = crosslinker2->getCrosslinkerModSites2();
         std::vector<char> cvec2( s1.begin(), s1.end() );
@@ -450,24 +446,26 @@ namespace Test
         delete commonParameters;
     }
     
-#ifdef LATER    
+
     void XLTest::XlTest_BSA_DSS_file()
     {
         std::string testdir=std::filesystem::current_path().string();
-
-        auto task = Toml::ReadFile<XLSearchTask*>(testdir + "/XlTestData/XLSearchTaskconfig_BSA_DSS_23747.toml",
-                                                  MetaMorpheusTask::tomlConfig);
+        
+        auto task = new XLSearchTask(testdir + "/XlTestData/XLSearchTaskconfig_BSA_DSS_23747.toml");
+        
         FileSystem::createDirectory(testdir + "/TESTXlTestData");
         DbForTask *db = new DbForTask(testdir + "/XlTestData/BSA.fasta", false);
         std::string raw = testdir + "/XlTestData/BSA_DSS_23747.mzML";
-        EverythingRunnerEngine tempVar({("Task", task)}, {raw}, {db}, testdir + "/TESTXlTestData");
+        std::vector<std::tuple<std::string, TaskLayer::MetaMorpheusTask*>> vec1 = {std::make_tuple("Task", task)};
+        std::vector<std::string> svec = {raw};
+        std::vector<DbForTask*> dbvec =  {db};
+        EverythingRunnerEngine tempVar(vec1, svec, dbvec, testdir + "/TESTXlTestData");
         (&tempVar)->Run();
-        Directory::Delete(testdir +  "/TESTXlTestData", true);
+        //std::filesystem::remove(testdir +  "/TESTXlTestData");
         
-        //C# TO C++ CONVERTER TODO TASK: A 'delete db' statement was not added since db was passed to a
-        //method or constructor. Handle memory management manually.
+        delete db;
     }
-#endif
+
     
     void XLTest::XlTest_GenerateUserDefinedCrosslinker()
     {
