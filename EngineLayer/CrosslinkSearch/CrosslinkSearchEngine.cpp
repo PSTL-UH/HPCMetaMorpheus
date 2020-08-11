@@ -339,9 +339,12 @@ namespace EngineLayer
                     return v == nullptr;
                 });
 #endif
-            for ( auto v = possibleMatches.begin(); v != possibleMatches.end(); v++ ) {
+            for ( auto v = possibleMatches.begin(); v != possibleMatches.end(); ) {
                 if ( *v == nullptr ) {
                     possibleMatches.erase(v);
+                }
+                else {
+                    v++;
                 }
             }
             
@@ -376,7 +379,8 @@ namespace EngineLayer
             return bestPsmCross;
         }
         
-        CrosslinkSpectralMatch *CrosslinkSearchEngine::LocalizeCrosslinkSites(Ms2ScanWithSpecificMass *theScan, BestPeptideScoreNotch *alphaPeptide, BestPeptideScoreNotch *betaPeptide, Crosslinker *crosslinker, int ind, int inx)
+        CrosslinkSpectralMatch *CrosslinkSearchEngine::LocalizeCrosslinkSites(Ms2ScanWithSpecificMass *theScan, BestPeptideScoreNotch *alphaPeptide,
+                                                                              BestPeptideScoreNotch *betaPeptide, Crosslinker *crosslinker, int ind, int inx)
         {
             CrosslinkSpectralMatch *localizedCrosslinkedSpectralMatch = nullptr;
             
@@ -493,11 +497,15 @@ namespace EngineLayer
                                     std::find(alphaMz.begin(), alphaMz.end(), p::Mz) != alphaMz.end();
                                 });
 #endif
-                            for ( auto p= matchedIons.begin(); p != matchedIons.end(); p++ ) {
+                            for ( auto p= matchedIons.begin(); p != matchedIons.end(); ) {
                                 if ( std::find(alphaMz.begin(), alphaMz.end(), (*p)->Mz) != alphaMz.end() ) {
                                     matchedIons.erase(p);
                                 }
+                                else {
+                                    p++;
+                                }
                             }
+
                             double score = CalculatePeptideScore(theScan->getTheScan(), matchedIons, 0);
                             
                             if (score > bestBetaLocalizedScore)

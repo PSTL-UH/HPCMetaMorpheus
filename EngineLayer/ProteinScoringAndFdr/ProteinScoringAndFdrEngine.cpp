@@ -221,9 +221,12 @@ namespace EngineLayer
                 return p->ProteinGroupScore == 0;
             });
 #endif
-        for ( auto  p=0; p < (int)proteinGroups.size(); p++ ) {
+        for ( auto  p=0; p < (int)proteinGroups.size(); ) {
             if ( proteinGroups[p]->getProteinGroupScore() == 0 ) {
                 proteinGroups.erase(proteinGroups.begin() + p);
+            }
+            else {
+                p++;
             }
         }
         
@@ -363,9 +366,12 @@ namespace EngineLayer
                 proteinGroups = proteinGroups.Except(pgList).ToList();
 #endif
                 for ( auto q: pgList ) {
-                    for ( auto p=0; p < (int)proteinGroups.size(); p++ ) {
+                    for ( auto p=0; p < (int)proteinGroups.size(); ) {
                         if ( proteinGroups[p] == q ) {
                             proteinGroups.erase (proteinGroups.begin() + p);
+                        }
+                        else {
+                            p++;
                         }
                     }
                 }

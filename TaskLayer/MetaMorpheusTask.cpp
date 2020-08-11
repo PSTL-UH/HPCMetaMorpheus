@@ -1073,6 +1073,30 @@ namespace TaskLayer
                                            std::vector<Modification*> &allKnownModifications,
                                            const std::string &taskId)
     {
+        std::vector<std::string> svec1 = {taskId};        
+        Status("Running Index Engine...", svec1);
+        
+        auto indexResults = static_cast<IndexingResults*>(indexEngine->Run());
+        peptideIndex = indexResults->getPeptideIndex();
+        fragmentIndex = indexResults->getFragmentIndex();
+        precursorIndex = indexResults->getPrecursorIndex();
+
+        std::cout << "peptideIndex.size() is " << peptideIndex.size() << std::endl;
+        if ( peptideIndex.size() > 0 ) {
+            std::cout << "   peptideIndex[0] " <<  peptideIndex[0]->ToString() << std::endl;
+        }
+        std::cout << "fragmentIndex.size() is " << fragmentIndex.size() << std::endl;
+        if ( fragmentIndex.size() > 0 ) {
+            std::cout << "   fragmentIndex[0].size() " <<  fragmentIndex[0].size() << std::endl;
+        }
+        std::cout << "precursorIndex.size() is " << precursorIndex.size() << std::endl;
+        if ( precursorIndex.size() > 0 ) {
+            std::cout << "   precursorIndex[0].size() " <<  precursorIndex[0].size() << std::endl;
+        }
+
+#ifdef WRITE_INDEXES_TO_FILE
+        // Commenting out for now. It works mostly, except for the peptide indeces. However, the current solution
+        // in C++ using Cereal is sooooo slow, its actually much faster recalculate the index.
         std::string pathToFolderWithIndices = GetExistingFolderWithIndices(indexEngine, dbFilenameList);
         std::vector<std::string> svec1 = {taskId};
             
@@ -1111,69 +1135,6 @@ namespace TaskLayer
         }
         else
         {
-            Status("Reading peptide index...", svec1 );
-            //auto messageTypes = GetSubclassesAndItself(std::vector<PeptideWithSetModifications*>::typeid);
-
-
-            // auto ser = new NetSerializer::Serializer(messageTypes);
-            // auto file = File::OpenRead(pathToFolderWithIndices + "/peptideIndex.ind");
-            // peptideIndex = static_cast<std::vector<PeptideWithSetModifications*>>(ser->Deserialize(file));
-
-            std::string file = pathToFolderWithIndices + "/peptideIndex.ind";
-
-            //------------------------------------------------------
-            //DESERIALIZE FILE INDEXFILE TO OBJECT
-
-            //open ifstream for indexPath
-            std::ifstream is(file.c_str());
-            cereal::XMLInputArchive archive_read(is);
-
-            //Cereal only has functionality for smart pointers.  Must deserialize data from file to vector
-            //of vecotrs of unique pointers
-            std::vector<std::unique_ptr<PeptideWithSetModifications>> unique_vec;
-
-            //deserialize xml file to unique_vec structure
-            archive_read(unique_vec);
-
-            //now must convert unique pointers to raw pointers.  This requires traversing the structure
-            std::vector<PeptideWithSetModifications*> raw_vec;
-
-            for (int i=0; i < (int)unique_vec.size(); i++){
-
-                std::unordered_map<std::string, Modification*> allModsOneIsNterminus;
-                PeptideWithSetModifications* p = new PeptideWithSetModifications(unique_vec[i]->getFullSequence(), allModsOneIsNterminus);
-                raw_vec.push_back(p);
-            }
-
-            //set peptideIndex to equal the vector of vectors of raw pointers.
-            peptideIndex = raw_vec;
-            //------------------------------------------------------
-            is.close();
-
-
-            
-            // populate dictionaries of known proteins for deserialization
-            std::unordered_map<std::string, Protein*> proteinDictionary;
-            
-            for (auto protein : allKnownProteins)
-            {
-                if (proteinDictionary.find(protein->getAccession()) == proteinDictionary.end())
-                {
-                    proteinDictionary.emplace(protein->getAccession(), protein);
-                }
-                else if (proteinDictionary[protein->getAccession()]->getBaseSequence() != protein->getBaseSequence())
-                {
-                    throw MetaMorpheusException(StringHelper::formatSimple("The protein database contained multiple proteins with accession {0} ! This is not allowed for index-based searches (modern, non-specific, crosslink searches)", protein->getAccession()));
-                }
-            }
-            
-            // get non-serialized information for the peptides (proteins, mod info)
-            for (auto peptide : peptideIndex)
-            {
-                auto tmp = GlobalVariables::getAllModsKnownDictionary();
-                peptide->SetNonSerializedPeptideInfo( tmp, proteinDictionary);
-            }
-            
             Status("Reading fragment index...", svec1 );
             //messageTypes = GetSubclassesAndItself(std::vector<std::vector<int>>::typeid);
 
@@ -1182,7 +1143,7 @@ namespace TaskLayer
             // fragmentIndex = static_cast<std::vector<std::vector<int>>>(ser->Deserialize(file));
 
 
-            file = pathToFolderWithIndices + "/fragmentIndex.ind";
+            std::string file = pathToFolderWithIndices + "/fragmentIndex.ind";
             //------------------------------------------------------
             //DESERIALIZE FILE INDEXFILE TO OBJECT
 
@@ -1262,6 +1223,70 @@ namespace TaskLayer
                 //------------------------------------------------------
                 is3.close(); 
             }
+            Status("Reading peptide index...", svec1 );
+            //auto messageTypes = GetSubclassesAndItself(std::vector<PeptideWithSetModifications*>::typeid);
+
+
+            // auto ser = new NetSerializer::Serializer(messageTypes);
+            // auto file = File::OpenRead(pathToFolderWithIndices + "/peptideIndex.ind");
+            // peptideIndex = static_cast<std::vector<PeptideWithSetModifications*>>(ser->Deserialize(file));
+
+            file = pathToFolderWithIndices + "/peptideIndex.ind";
+
+            //------------------------------------------------------
+            //DESERIALIZE FILE INDEXFILE TO OBJECT
+
+            //open ifstream for indexPath
+            std::ifstream is(file.c_str());
+            cereal::XMLInputArchive archive_read(is);
+
+            //Cereal only has functionality for smart pointers.  Must deserialize data from file to vector
+            //of vecotrs of unique pointers
+            std::vector<std::unique_ptr<PeptideWithSetModifications>> unique_vec;
+
+            //deserialize xml file to unique_vec structure
+            archive_read(unique_vec);
+
+            //now must convert unique pointers to raw pointers.  This requires traversing the structure
+            std::vector<PeptideWithSetModifications*> raw_vec;
+
+            for (int i=0; i < (int)unique_vec.size(); i++){
+
+                std::unordered_map<std::string, Modification*> allModsOneIsNterminus;
+                PeptideWithSetModifications* p = new PeptideWithSetModifications(unique_vec[i]->getFullSequence(), allModsOneIsNterminus);
+                raw_vec.push_back(p);
+            }
+
+            //set peptideIndex to equal the vector of vectors of raw pointers.
+            peptideIndex = raw_vec;
+            //------------------------------------------------------
+            is.close();
+
+
+            
+            // populate dictionaries of known proteins for deserialization
+            std::unordered_map<std::string, Protein*> proteinDictionary;
+            
+            for (auto protein : allKnownProteins)
+            {
+                if (proteinDictionary.find(protein->getAccession()) == proteinDictionary.end())
+                {
+                    proteinDictionary.emplace(protein->getAccession(), protein);
+                }
+                else if (proteinDictionary[protein->getAccession()]->getBaseSequence() != protein->getBaseSequence())
+                {
+                    throw MetaMorpheusException(StringHelper::formatSimple("The protein database contained multiple proteins with accession {0} ! This is not allowed for index-based searches (modern, non-specific, crosslink searches)", protein->getAccession()));
+                }
+            }
+            
+            // get non-serialized information for the peptides (proteins, mod info)
+            for (auto peptide : peptideIndex)
+            {
+                auto tmp = GlobalVariables::getAllModsKnownDictionary();
+                peptide->SetNonSerializedPeptideInfo( tmp, proteinDictionary);
+            }
+            
         }
+#endif
     }
 }

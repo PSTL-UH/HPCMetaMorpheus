@@ -54,13 +54,11 @@ int main ( int argc, char **argv )
     std::cout << ++i << ". XlTest_DiffCrosslinkSites" << std::endl;
     Test::XLTest::XlTest_DiffCrosslinkSites();
 
-#ifdef LATER
     std::cout << ++i << ". CrosslinkCreateTest" << std::endl;
     Test::XLTest::CrosslinkCreateTest();
-
+    
     std::cout << ++i << ". DeadendPeptideTest" << std::endl;
     Test::XLTest::DeadendPeptideTest();
-#endif
 
 #ifdef NOT_NOW
     // This test compiles correctly, and runs to large extent, however, we segfault
@@ -433,9 +431,9 @@ namespace Test
         //Assert.AreEqual(productMassesAlphaList.First().Value.Count, 50); //TO DO: The number here should be manually verified.
         // EDGAR: END of commented out section
 
-        //std::filesystem::remove("singlePsms.tsv");
-        //std::filesystem::remove("pep.XML.pep.xml");
-        //std::filesystem::remove("allPsms.tsv");
+        std::filesystem::remove("singlePsms.tsv");
+        std::filesystem::remove("pep.XML.pep.xml");
+        std::filesystem::remove("allPsms.tsv");
         
         delete task;
         delete myMsDataFile;
@@ -461,8 +459,9 @@ namespace Test
         std::vector<DbForTask*> dbvec =  {db};
         EverythingRunnerEngine tempVar(vec1, svec, dbvec, testdir + "/TESTXlTestData");
         (&tempVar)->Run();
-        //std::filesystem::remove(testdir +  "/TESTXlTestData");
-        
+        std::filesystem::remove(testdir +  "/TESTXlTestData");
+
+        delete task;
         delete db;
     }
 
@@ -598,11 +597,12 @@ namespace Test
         delete commonParameters;
     }
     
-#ifdef LATER    
     void XLTest::CrosslinkCreateTest()
     {
-        XlSearchParameters tempVar();
-        Assert::IsTrue((XLSearchTask::GenerateUserDefinedCrosslinker(&tempVar))->GetType()->Equals(Crosslinker::typeid));
+        XlSearchParameters tempVar;
+        auto var = XLSearchTask::GenerateUserDefinedCrosslinker(&tempVar);
+        // slight change from the C# version of the test
+        Assert::IsTrue( dynamic_cast<Crosslinker*>(var) != nullptr );
     }
     
     void XLTest::DeadendPeptideTest()
@@ -614,30 +614,34 @@ namespace Test
         std::string outputFolder = testdir+ "/TestDeadendPeptide";
         
         XLSearchTask *xLSearchTask = new XLSearchTask();
-        CommonParameters tempVar(, = DissociationType::HCD, = true, = true, = 3, = 12, = true, = false, = 1, = 5, = 200, = 0.01, = false,
-                                 = true, = false, = false, = nullptr, new PpmTolerance(51000));
-        xLSearchTask->setCommonParameters(&tempVar);
+        auto tempVar = new CommonParameters( "", DissociationType::HCD, true, true, 3, 12, true, false, 1, 5, 200, 0.01, false,
+                                  true, false, false, nullptr, new PpmTolerance(51000));        
+        xLSearchTask->setCommonParameters(tempVar);
         
         XLSearchTask *xLSearchTask2 = new XLSearchTask();
-        CommonParameters tempVar2(, = DissociationType::HCD, = true, = true, = 3, = 12, = true, = false, = 1, = 5, = 200, = 0.01, = false,
-                                  = true, = false, = false, = nullptr, new PpmTolerance(112000));
-        xLSearchTask2->setCommonParameters(&tempVar2);
-        XlSearchParameters tempVar3();
-        xLSearchTask2->setXlSearchParameters(&tempVar3);
+        auto tempVar2 = new CommonParameters ( "", DissociationType::HCD, true, true, 3, 12, true, false, 1, 5, 200, 0.01, false,
+                                               true, false, false, nullptr, new PpmTolerance(112000));
+        xLSearchTask2->setCommonParameters(tempVar2);
+
+        XlSearchParameters* tempVar3 = new XlSearchParameters();
+        xLSearchTask2->setXlSearchParameters(tempVar3);
         xLSearchTask2->getXlSearchParameters()->setXlQuench_Tris(false);
         xLSearchTask2->getXlSearchParameters()->setXlQuench_H2O(false);
         xLSearchTask2->getXlSearchParameters()->setXlQuench_NH2(true);
         FileSystem::createDirectory(outputFolder);
-        
-        xLSearchTask->RunTask(outputFolder, {new DbForTask(myDatabaseXl, false)}, {myFileXl}, "test");
-        xLSearchTask2->RunTask(outputFolder, {new DbForTask(myDatabaseXl, false)}, {myFileXl}, "test");
-        Directory::Delete(outputFolder, true);
-        Directory::Delete(testdir + "/Task Settings", true);
-        
+
+        DbForTask *db = new DbForTask(myDatabaseXl, false);
+        std::vector<DbForTask *> dbvec = {db};
+        std::vector<std::string> filevec = {myFileXl};
+        xLSearchTask->RunTask(outputFolder, dbvec, filevec, "test");
+        xLSearchTask2->RunTask(outputFolder, dbvec, filevec, "test");
+
+        //std::filesystem::remove_all(testdir +  "/Task Settings");
+        //std::filesystem::remove_all(outputFolder);
+
         delete xLSearchTask2;
         delete xLSearchTask;
     }
-#endif
     
     void XLTest::XLSearchWithGeneratedIndices()
     {
