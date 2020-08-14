@@ -15,6 +15,8 @@
 #include <iomanip>
 #include <sstream>
 
+#include "Group.h"
+
 using namespace Chemistry;
 using namespace EngineLayer::FdrAnalysis;
 using namespace Proteomics;
@@ -641,29 +643,11 @@ namespace EngineLayer
                     p::Pwsm::FullSequence;
                 });
 #endif     
-            std::sort(_bestMatchingPeptides.begin(), _bestMatchingPeptides.end(), [&]
-                      ( std::tuple<int, PeptideWithSetModifications*> l,
-                        std::tuple<int, PeptideWithSetModifications*> r ) {
-                          return std::get<1>(l)->getFullSequence() < std::get<1>(r)->getFullSequence();
-                      });
-            std::vector<std::vector<std::tuple<int, PeptideWithSetModifications*>>> hits;
-            int current=0;
-            for ( auto p = _bestMatchingPeptides.begin(); p!= _bestMatchingPeptides.end(); p++ ){
-                if ( p == _bestMatchingPeptides.begin() ) {
-                    std::vector<std::tuple<int, PeptideWithSetModifications*>> *v = new std::vector<std::tuple<int, PeptideWithSetModifications*>>;
-                    hits.push_back(*v);
-                }
-                else {
-                    auto j = p - 1;
-                    if ( std::get<1>(*p)->getFullSequence() != std::get<1>(*j)->getFullSequence() ) {
-                        std::vector<std::tuple<int, PeptideWithSetModifications*>> *v = new std::vector<std::tuple<int, PeptideWithSetModifications*>>;
-                        hits.push_back(*v);
-                        current++;
-                    }
-                }
-                hits[current].push_back(*p);
-            }
-            
+            std::function<bool(std::tuple<int, PeptideWithSetModifications*>,std::tuple<int, PeptideWithSetModifications*>)> f1 = [&](std::tuple<int, PeptideWithSetModifications*>l, std::tuple<int, PeptideWithSetModifications*>r) {
+                return  std::get<1>(l)->getFullSequence() < std::get<1>(r)->getFullSequence(); };
+            std::function<bool(std::tuple<int, PeptideWithSetModifications*>,std::tuple<int, PeptideWithSetModifications*>)> f2 = [&](std::tuple<int, PeptideWithSetModifications*>l, std::tuple<int, PeptideWithSetModifications*>r) {
+                return  std::get<1>(l)->getFullSequence() != std::get<1>(r)->getFullSequence(); } ;
+            std::vector<std::vector<std::tuple<int, PeptideWithSetModifications*>>> hits = Group::GroupBy(_bestMatchingPeptides, f1, f2);
             
             for (auto hit : hits)
             {
@@ -1332,7 +1316,6 @@ namespace EngineLayer
             {
                 matchedIons = psm->getPeptidesToMatchingFragments().begin()->second;
             }
-            
             // using ", " instead of "," improves human readability
             const std::string delimiter = ", ";
             
@@ -1343,26 +1326,11 @@ namespace EngineLayer
                         i::Key;
                     }).ToList();
 #endif
-            std::sort(matchedIons.begin(), matchedIons.end(), [&] (MatchedFragmentIon *l, MatchedFragmentIon *r) {
-                    return l->NeutralTheoreticalProduct->productType < r->NeutralTheoreticalProduct->productType;
-                });
-            std::vector<std::vector<MatchedFragmentIon*>> matchedIonsGroupedByProductType;
-            int current=0;
-            for ( auto i = matchedIons.begin(); i!= matchedIons.end(); i++ ) {
-                if ( i == matchedIons.begin() ) {
-                    std::vector<MatchedFragmentIon *> *v = new std::vector<MatchedFragmentIon *>;
-                    matchedIonsGroupedByProductType.push_back(*v);
-                }
-                else {
-                    auto j = i - 1;
-                    if ( (*i)->NeutralTheoreticalProduct->productType != (*j)->NeutralTheoreticalProduct->productType ) {
-                        std::vector<MatchedFragmentIon *> *v = new std::vector<MatchedFragmentIon *>;
-                        matchedIonsGroupedByProductType.push_back(*v);
-                        current++;
-                    }
-                }
-                matchedIonsGroupedByProductType[current].push_back(*i);
-            }
+            std::function<bool(MatchedFragmentIon *,MatchedFragmentIon *)> f1 = [&](MatchedFragmentIon *l, MatchedFragmentIon *r) {
+                return  l->NeutralTheoreticalProduct->productType < r->NeutralTheoreticalProduct->productType; };
+            std::function<bool(MatchedFragmentIon *,MatchedFragmentIon *)> f2 = [&](MatchedFragmentIon *l, MatchedFragmentIon *r) {
+                return  l->NeutralTheoreticalProduct->productType != r->NeutralTheoreticalProduct->productType; } ;
+            std::vector<std::vector<MatchedFragmentIon*>> matchedIonsGroupedByProductType = Group::GroupBy(matchedIons, f1, f2);
             
             
             for (auto productType : matchedIonsGroupedByProductType)
@@ -1434,7 +1402,7 @@ namespace EngineLayer
                 
                 // append product type delimiter                           
                 std::for_each (stringBuilders.begin(), stringBuilders.end(), [&] (StringBuilder *p)  {
-                        p->append("]");
+                        p->append("];");
                     });
             }
         }

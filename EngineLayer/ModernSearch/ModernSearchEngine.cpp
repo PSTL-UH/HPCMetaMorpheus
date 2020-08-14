@@ -194,7 +194,7 @@ namespace EngineLayer
         {
             int obsPreviousFragmentCeilingMz = 0;
             std::vector<int> binsToSearch;
-            
+
             for (auto envelope : scan->getExperimentalFragments())
             {
                 // assume charge state 1 to calculate mass tolerance

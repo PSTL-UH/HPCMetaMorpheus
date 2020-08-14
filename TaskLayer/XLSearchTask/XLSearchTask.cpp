@@ -428,7 +428,6 @@ namespace TaskLayer
                 allPsmsXL.push_back(p);
             }
         }
-                
         
         // inter-crosslinks; different proteins are linked
 #ifdef ORIG
@@ -913,6 +912,7 @@ namespace TaskLayer
         {
             output << heh->ToString() << std::endl;
         }
+        output.close();
     }
     
     void XLSearchTask::WriteCrosslinkToTxtForPercolator(std::vector<CrosslinkSpectralMatch*> &items, const std::string &outputFolder,
@@ -970,6 +970,7 @@ namespace TaskLayer
                         "(" + std::to_string(item->getBetaPeptide()->getXlProteinPos()) + ")" << std::endl;
                 }
             }
+            output.close();
         }
         FinishedWritingFile(writtenFile, nestedIds);
     }

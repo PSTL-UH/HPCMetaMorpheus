@@ -5,7 +5,7 @@
 
 #include <numeric>
 #include <algorithm>
-
+#include <sstream>
 using namespace Proteomics::Fragmentation;
 using namespace Proteomics::ProteolyticDigestion;
 namespace EngineLayer
@@ -13,7 +13,10 @@ namespace EngineLayer
     namespace CrosslinkSearch
     {
         
-        CrosslinkSpectralMatch::CrosslinkSpectralMatch(PeptideWithSetModifications *theBestPeptide, int notch, double score, int scanIndex, Ms2ScanWithSpecificMass *scan, DigestionParams *digestionParams, std::vector<MatchedFragmentIon*> &matchedFragmentIons) : PeptideSpectralMatch(theBestPeptide, notch, score, scanIndex, scan, digestionParams, matchedFragmentIons)
+        CrosslinkSpectralMatch::CrosslinkSpectralMatch(PeptideWithSetModifications *theBestPeptide, int notch, double score, int scanIndex,
+                                                       Ms2ScanWithSpecificMass *scan, DigestionParams *digestionParams,
+                                                       std::vector<MatchedFragmentIon*> &matchedFragmentIons) :
+            PeptideSpectralMatch(theBestPeptide, notch, score, scanIndex, scan, digestionParams, matchedFragmentIons)
         {
             this->setXLTotalScore(score);
         }
@@ -345,18 +348,24 @@ namespace EngineLayer
             {
                 if (getCrossType() == PsmCrossType::Loop)
                 {
-                    sb->append(getBaseSequence()[getLinkPositions()[0] - 1] + ';' +
-                               getBaseSequence()[getLinkPositions()[1] - 1] + '\t');
+                    std::stringstream ss;
+                    ss << getBaseSequence()[getLinkPositions()[0] - 1] << ';' <<
+                        getBaseSequence()[getLinkPositions()[1] - 1] << '\t';
+                    sb->append(ss.str() );
                 }
                 else if (getCrossType() == PsmCrossType::Inter || getCrossType() == PsmCrossType::Intra)
                 {
-                    sb->append(getBaseSequence()[getLinkPositions()[0] - 1] + ';' +
-                               getBetaPeptide()->getBaseSequence()[getBetaPeptide()->getLinkPositions()[0] - 1] + '\t');
+                    std::stringstream ss;
+                    ss << getBaseSequence()[getLinkPositions()[0] - 1] << ';' <<
+                        getBetaPeptide()->getBaseSequence()[getBetaPeptide()->getLinkPositions()[0] - 1] << '\t';
+                    sb->append(ss.str());
                 }
                 else
                 {
                     // deadend
-                    sb->append(getBaseSequence()[getLinkPositions()[0] - 1] + "\t");
+                    std::stringstream ss;
+                    ss << getBaseSequence()[getLinkPositions()[0] - 1] << "\t";
+                    sb->append(ss.str() );
                 }
             }
             else
@@ -388,7 +397,6 @@ namespace EngineLayer
                 sb->append(getBetaPeptide()->getBaseSequence() + "\t");
                 sb->append(getBetaPeptide()->getFullSequence() + "(" + std::to_string(getBetaPeptide()->getLinkPositions()[0]) +
                            ")" + "\t");
-                //C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
                 sb->append(std::to_string(getBetaPeptide()->getPeptideMonisotopicMass().value()) + "\t");
                 sb->append(std::to_string(getBetaPeptide()->getScore()) + "\t");
                 sb->append(std::to_string(getXlRank()[1]) + "\t");
@@ -404,7 +412,7 @@ namespace EngineLayer
                 
                 // mass of crosslinker
                 sb->append(((getPeptideMonisotopicMass().has_value()) ? std::to_string(getScanPrecursorMass() -
-                                                                                       getBetaPeptide()->getPeptideMonisotopicMass().value() - getPeptideMonisotopicMass().value()) : "---"));
+                            getBetaPeptide()->getPeptideMonisotopicMass().value() - getPeptideMonisotopicMass().value()) : "---"));
                 sb->append("\t");
                 
 #ifdef ORIG

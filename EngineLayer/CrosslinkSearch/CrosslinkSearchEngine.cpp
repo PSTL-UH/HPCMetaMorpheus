@@ -127,7 +127,7 @@ namespace EngineLayer
                 IndexedScoring(allBinsToSearch, scoringTable, byteScoreCutoff, idsOfPeptidesPossiblyObserved, scan->getPrecursorMass(),
                                -std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity(),
                                PeptideIndex, massDiffAcceptor, 0);
-                
+
                 // done with indexed scoring; refine scores and create PSMs
                 if (!idsOfPeptidesPossiblyObserved.empty())
                 {
@@ -225,10 +225,11 @@ namespace EngineLayer
             
         }
         
-        CrosslinkSpectralMatch *CrosslinkSearchEngine::FindCrosslinkedPeptide(Ms2ScanWithSpecificMass *theScan, std::vector<BestPeptideScoreNotch*> &theScanBestPeptide, int scanIndex)
+        CrosslinkSpectralMatch *CrosslinkSearchEngine::FindCrosslinkedPeptide(Ms2ScanWithSpecificMass *theScan,
+                                                                              std::vector<BestPeptideScoreNotch*> &theScanBestPeptide,
+                                                                              int scanIndex)
         {
             std::vector<CrosslinkSpectralMatch*> possibleMatches;
-            
             for (int alphaIndex = 0; alphaIndex < (int)theScanBestPeptide.size(); alphaIndex++)
             {
                 PeptideWithSetModifications *bestPeptide = theScanBestPeptide[alphaIndex]->getBestPeptide();
@@ -247,10 +248,7 @@ namespace EngineLayer
                     psmCrossSingle->setCrossType(PsmCrossType::Single);
                     psmCrossSingle->setXlRank(std::vector<int> {alphaIndex});
                     
-                    possibleMatches.push_back(psmCrossSingle);
-                    
-                    //C# TO C++ CONVERTER TODO TASK: A 'delete psmCrossSingle' statement was not added since
-                    //psmCrossSingle was passed to a method or constructor. Handle memory management manually.
+                    possibleMatches.push_back(psmCrossSingle);                    
                 }
                 // Deadend Peptide
                 else if (QuenchTris && XLPrecusorSearchMode->Accepts(theScan->getPrecursorMass(), bestPeptide->getMonoisotopicMass() +
@@ -261,7 +259,9 @@ namespace EngineLayer
                     if (!possibleCrosslinkLocations.empty())
                     {
                         // tris deadend
-                        possibleMatches.push_back(LocalizeDeadEndSite(bestPeptide, theScan, commonParameters, possibleCrosslinkLocations, TrisDeadEnd, theScanBestPeptide[alphaIndex]->getBestNotch(), scanIndex, alphaIndex));
+                        auto csm = LocalizeDeadEndSite(bestPeptide, theScan, commonParameters, possibleCrosslinkLocations, TrisDeadEnd,
+                                                       theScanBestPeptide[alphaIndex]->getBestNotch(), scanIndex, alphaIndex);
+                        possibleMatches.push_back(csm);
                     }
                 }
                 else if (QuenchH2O && XLPrecusorSearchMode->Accepts(theScan->getPrecursorMass(), bestPeptide->getMonoisotopicMass() +
@@ -272,7 +272,9 @@ namespace EngineLayer
                     if (!possibleCrosslinkLocations.empty())
                     {
                         // H2O deadend
-                        possibleMatches.push_back(LocalizeDeadEndSite(bestPeptide, theScan, commonParameters, possibleCrosslinkLocations, H2ODeadEnd, theScanBestPeptide[alphaIndex]->getBestNotch(), scanIndex, alphaIndex));
+                        auto csm = LocalizeDeadEndSite(bestPeptide, theScan, commonParameters, possibleCrosslinkLocations, H2ODeadEnd,
+                                                       theScanBestPeptide[alphaIndex]->getBestNotch(), scanIndex, alphaIndex);
+                        possibleMatches.push_back(csm);
                     }
                 }
                 else if (QuenchNH2 && XLPrecusorSearchMode->Accepts(theScan->getPrecursorMass(), bestPeptide->getMonoisotopicMass() +
@@ -283,7 +285,9 @@ namespace EngineLayer
                     if (!possibleCrosslinkLocations.empty())
                     {
                         // NH2 deadend
-                        possibleMatches.push_back(LocalizeDeadEndSite(bestPeptide, theScan, commonParameters, possibleCrosslinkLocations, NH2DeadEnd, theScanBestPeptide[alphaIndex]->getBestNotch(), scanIndex, alphaIndex));
+                        auto csm = LocalizeDeadEndSite(bestPeptide, theScan, commonParameters, possibleCrosslinkLocations, NH2DeadEnd,
+                                                       theScanBestPeptide[alphaIndex]->getBestNotch(), scanIndex, alphaIndex);
+                        possibleMatches.push_back(csm);
                     }
                 }
                 // loop peptide
@@ -294,7 +298,8 @@ namespace EngineLayer
                     
                     if (possibleCrosslinkLocations.size() >= 2)
                     {
-                        possibleMatches.push_back(LocalizeLoopSites(bestPeptide, theScan, commonParameters, possibleCrosslinkLocations, Loop, theScanBestPeptide[alphaIndex]->getBestNotch(), scanIndex, alphaIndex));
+                        possibleMatches.push_back(LocalizeLoopSites(bestPeptide, theScan, commonParameters, possibleCrosslinkLocations, Loop,
+                                                                    theScanBestPeptide[alphaIndex]->getBestNotch(), scanIndex, alphaIndex));
                     }
                 }
                 // Cross-linked peptide
@@ -374,6 +379,12 @@ namespace EngineLayer
             if (possibleMatches.size() > 1)
             {
                 bestPsmCross->setDeltaScore( possibleMatches[0]->getXLTotalScore() - possibleMatches[1]->getXLTotalScore());
+            }
+            //Some memory management to reduce the leaks
+            for ( auto pM : possibleMatches ) {
+                if ( pM != nullptr && pM != bestPsmCross ) {
+                    delete pM;
+                }
             }
             
             return bestPsmCross;
@@ -561,7 +572,12 @@ namespace EngineLayer
             return localizedCrosslinkedSpectralMatch;
         }
         
-        CrosslinkSpectralMatch *CrosslinkSearchEngine::LocalizeDeadEndSite(PeptideWithSetModifications *originalPeptide, Ms2ScanWithSpecificMass *theScan, CommonParameters *commonParameters, std::vector<int> &possiblePositions, Modification *deadEndMod, int notch, int scanIndex, int peptideIndex)
+        CrosslinkSpectralMatch *CrosslinkSearchEngine::LocalizeDeadEndSite(PeptideWithSetModifications *originalPeptide,
+                                                                           Ms2ScanWithSpecificMass *theScan,
+                                                                           CommonParameters *commonParameters,
+                                                                           std::vector<int> &possiblePositions,
+                                                                           Modification *deadEndMod,
+                                                                           int notch, int scanIndex, int peptideIndex)
         {
             double bestScore = 0;
             std::vector<MatchedFragmentIon*> bestMatchingFragments;
@@ -601,9 +617,7 @@ namespace EngineLayer
                     Modification *combinedMod = new Modification(alreadyAnnotatedMod->getOriginalId() + "+" + deadEndMod->getOriginalId(),
                                                                  acc, "Crosslink", feaType, alreadyAnnotatedMod->getTarget(),
                                                                  "Anywhere.", chemForm, combinedMass);
-                    mods[location + 1] = combinedMod;
-                    
-                    delete combinedMod;
+                    mods[location + 1] = combinedMod;                    
                 }
                 else
                 {
@@ -629,12 +643,12 @@ namespace EngineLayer
                 {
                     bestMatchingFragments = matchedFragmentIons;
                     bestScore = score;
+                    if (  bestLocalizedPeptide != nullptr ) {
+                        delete  bestLocalizedPeptide;
+                    }
                     bestLocalizedPeptide = localizedPeptide;
                     bestPosition = location;
                 }
-                
-                //C# TO C++ CONVERTER TODO TASK: A 'delete localizedPeptide' statement was not added since
-                //localizedPeptide was assigned to an outer scope variable. Handle memory management manually.
             }
             
             if (bestScore < commonParameters->getScoreCutoff())
@@ -661,8 +675,6 @@ namespace EngineLayer
             csm->setLinkPositions(std::vector<int> {bestPosition});
             csm->setXlRank(std::vector<int> {peptideIndex});
             
-            //C# TO C++ CONVERTER TODO TASK: A 'delete csm' statement was not added since
-            //csm was used in a 'return' or 'throw' statement.
             return csm;
         }
 
@@ -700,7 +712,6 @@ namespace EngineLayer
             csm->setXlRank(std::vector<int> {peptideIndex});
             csm->setLinkPositions(std::vector<int> {std::get<0>(bestModPositionSites), std::get<1>(bestModPositionSites)});
             
-            //C# TO C++ CONVERTER TODO TASK: A 'delete csm' statement was not added since csm was used in a 'return' or 'throw' statement.
             return csm;
         }
     }

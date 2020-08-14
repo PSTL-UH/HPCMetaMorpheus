@@ -56,7 +56,7 @@ int main ( int argc, char **argv )
 
     std::cout << ++i << ". CrosslinkCreateTest" << std::endl;
     Test::XLTest::CrosslinkCreateTest();
-    
+
     std::cout << ++i << ". DeadendPeptideTest" << std::endl;
     Test::XLTest::DeadendPeptideTest();
 
@@ -67,6 +67,7 @@ int main ( int argc, char **argv )
     std::cout << ++i << ". XLSearchWithGeneratedIndices" << std::endl;
     Test::XLTest::XLSearchWithGeneratedIndices();
 #endif
+
     std::cout << ++i << ". TestGetPossibleCrosslinkerSites" << std::endl;
     Test::XLTest::TestGetPossibleCrosslinkerSites();
     
@@ -76,6 +77,7 @@ int main ( int argc, char **argv )
     std::cout << ++i << ". TestTheoreticalLoopFragmentsWithMod" << std::endl;
     Test::XLTest::TestTheoreticalLoopFragmentsWithMod();
 
+    
 #ifdef LATER
     std::cout << ++i << ". TestDeadendTris" << std::endl;
     Test::XLTest::TestDeadendTris();
@@ -636,8 +638,8 @@ namespace Test
         xLSearchTask->RunTask(outputFolder, dbvec, filevec, "test");
         xLSearchTask2->RunTask(outputFolder, dbvec, filevec, "test");
 
-        //std::filesystem::remove_all(testdir +  "/Task Settings");
-        //std::filesystem::remove_all(outputFolder);
+        std::filesystem::remove_all(testdir +  "/Task Settings");
+        std::filesystem::remove_all(outputFolder);
 
         delete xLSearchTask2;
         delete xLSearchTask;

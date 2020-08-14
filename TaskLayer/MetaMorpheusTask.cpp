@@ -1081,18 +1081,6 @@ namespace TaskLayer
         fragmentIndex = indexResults->getFragmentIndex();
         precursorIndex = indexResults->getPrecursorIndex();
 
-        std::cout << "peptideIndex.size() is " << peptideIndex.size() << std::endl;
-        if ( peptideIndex.size() > 0 ) {
-            std::cout << "   peptideIndex[0] " <<  peptideIndex[0]->ToString() << std::endl;
-        }
-        std::cout << "fragmentIndex.size() is " << fragmentIndex.size() << std::endl;
-        if ( fragmentIndex.size() > 0 ) {
-            std::cout << "   fragmentIndex[0].size() " <<  fragmentIndex[0].size() << std::endl;
-        }
-        std::cout << "precursorIndex.size() is " << precursorIndex.size() << std::endl;
-        if ( precursorIndex.size() > 0 ) {
-            std::cout << "   precursorIndex[0].size() " <<  precursorIndex[0].size() << std::endl;
-        }
 
 #ifdef WRITE_INDEXES_TO_FILE
         // Commenting out for now. It works mostly, except for the peptide indeces. However, the current solution
