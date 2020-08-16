@@ -688,9 +688,7 @@ namespace EngineLayer
                             removedPeptides = true;
                         }
                     }
-                }
-                
-                
+                }                                
             }
             
             if (removedPeptides)
@@ -698,6 +696,10 @@ namespace EngineLayer
                 ResolveAllAmbiguities();
             }
         }
+        // TODO: technically, different peptide options for this PSM can have different matched ions
+        // we can write a Resolve method for this if we want...
+        //MatchedFragmentIons = PeptidesToMatchingFragments.First().Value;
+        privateMatchedFragmentIons = std::get<1>(*privatePeptidesToMatchingFragments.begin());
     }
     
     void PeptideSpectralMatch::TrimProteinMatches(std::vector<Protein*> parsimoniousProteins)

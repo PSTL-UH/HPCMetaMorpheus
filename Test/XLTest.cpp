@@ -76,12 +76,11 @@ int main ( int argc, char **argv )
 
     std::cout << ++i << ". TestTheoreticalLoopFragmentsWithMod" << std::endl;
     Test::XLTest::TestTheoreticalLoopFragmentsWithMod();
-
     
-#ifdef LATER
     std::cout << ++i << ". TestDeadendTris" << std::endl;
     Test::XLTest::TestDeadendTris();
 
+#ifdef LATER
     std::cout << ++i << ". TestTheoreticalFragmentsNonCleavableCrosslink" << std::endl;
     Test::XLTest::TestTheoreticalFragmentsNonCleavableCrosslink();
 
@@ -982,62 +981,82 @@ void XLTest::TestTheoreticalLoopFragmentsWithMod()
         delete phospho;
     }
     
-#ifdef LATER
     void XLTest::TestDeadendTris()
     {
         Protein *protein = new Protein("PEPTIDE", "");
-        auto csms = std::vector<CrosslinkSpectralMatch*>(1);
+        std::vector<CrosslinkSpectralMatch*> csms(1);
         
         // generate the scan with the deadend mod peptide's fragments
-        auto scans = std::vector<Ms2ScanWithSpecificMass*>(1);
+        std::vector<Ms2ScanWithSpecificMass*> scans(1);
         ModificationMotif *motif;
         ModificationMotif::TryGetMotif("T", &motif);
         auto crosslinker = new Crosslinker("T", "T", "test", false, 100, 0, 0, 0, 0, 0, 50);
-        Modification *deadend = new Modification("TestId", _target: motif, _locationRestriction: "Anywhere.",
-                                                 _monoisotopicMass: crosslinker->getDeadendMassTris(), _modificationType: "Test");
+        Modification *deadend = new Modification("TestId", "", "Test", "", motif, "Anywhere.",
+                                                 nullptr, std::make_optional(crosslinker->getDeadendMassTris()));
         
-        DigestionParams tempVar();
-        auto deadendPeptide = protein->Digest(&tempVar, std::vector<Modification*> {deadend}, std::vector<Modification*>()).First();
+        auto  tempVar = new DigestionParams("trypsin");
+        std::vector<Modification*> vec1 = {deadend};
+        std::vector<Modification*> vec2;
+        auto deadendPeptide = protein->Digest(tempVar, vec1, vec2).front();
         
+#ifdef ORIG
         std::vector<double> mz = deadendPeptide->Fragment(DissociationType::HCD, FragmentationTerminus::Both)->Select([&] (std::any p) {
                 p::NeutralMass::ToMz(1);
             }).OrderBy([&] (std::any v) {
                     return v;
                 })->ToArray();
+#endif
+        auto tmpvec = deadendPeptide->Fragment(DissociationType::HCD, FragmentationTerminus::Both);
+        std::vector<double> mz;
+        for (auto p: tmpvec ) {
+            mz.push_back(Chemistry::ClassExtensions::ToMz(p->NeutralMass, 1));
+        }
+        
         std::vector<double> intensities = {1.0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
         
         MzSpectrum *spectrum = new MzSpectrum(mz, intensities, false);
-        MsDataScan *sc = new MsDataScan(spectrum, 1, 2, true, Polarity::Positive, 1, spectrum->Range, "", MZAnalyzerType::Orbitrap,
-                                        12, 1.0, nullptr, nullptr);
-        CommonParameters tempVar2();
-        scans[0] = new Ms2ScanWithSpecificMass(sc, Chemistry::ClassExtensions::ToMz(deadendPeptide->MonoisotopicMass,2), 2, "", &tempVar2);
+        std::vector<std::vector<double>> dvvec;
+        MsDataScan *sc = new MsDataScan(spectrum, 1, 2, true, Polarity::Positive, 1, spectrum->getRange(), "",
+                                        MZAnalyzerType::Orbitrap,
+                                        12, 1.0, dvvec, "");
+        auto tempVar2 = new CommonParameters();
+        std::vector<MassSpectrometry::IsotopicEnvelope*> ievec;
+        scans[0] = new Ms2ScanWithSpecificMass(sc, Chemistry::ClassExtensions::ToMz(deadendPeptide->getMonoisotopicMass(),2),
+                                               2, "", tempVar2, ievec);
         
         // search the data with the peptide WITHOUT the deadend mod annotated in the search database.
         // the search engine should be able to correctly identify the deadend mod on T
-        IndexingEngine tempVar3({protein}, new std::vector<Modification*>(), new std::vector<Modification*>(), 0, DecoyType::None,
-                                new CommonParameters(), 1000, false, new std::vector<FileInfo*>(), new std::vector<std::string>());
+        std::vector<Modification*> vec3, vec4;
+        std::vector<std::string> fvec;
+        std::vector<std::string> svec, svec2;
+        std::vector<Proteomics::Protein*> pvec = {protein};
+        IndexingEngine tempVar3(pvec, vec3, vec4 , 0, DecoyType::None,
+                                new CommonParameters(), 1000, false, fvec, svec );
+                                
         auto indexingResults = static_cast<IndexingResults*>((&tempVar3)->Run());
-        
-        CrosslinkSearchEngine tempVar4(csms, scans, indexingResults->getPeptideIndex(), indexingResults->getFragmentIndex(), 0,
-                                       new CommonParameters(), crosslinker, false, 0, false, false, true, new std::vector<std::string>());
+
+        auto tvec = indexingResults->getPeptideIndex();
+        auto tvec2 = indexingResults->getFragmentIndex();
+        CrosslinkSearchEngine tempVar4(csms, scans, tvec, tvec2, 0,
+                                       new CommonParameters(), crosslinker, false, 0, false,
+                                       false, true, svec2);
         (&tempVar4)->Run();
         
-        CrosslinkSpectralMatch *csm = csms.First();
+        CrosslinkSpectralMatch *csm = csms.front();
         Assert::IsTrue(csm->getCrossType() == PsmCrossType::DeadEndTris);
-        Assert::IsTrue(csm->MatchedFragmentIons->Count == 12);
+        Assert::IsTrue((int)csm->getMatchedFragmentIons().size() == 12);
+
+        delete sc;
+        delete spectrum;
         
-        //C# TO C++ CONVERTER TODO TASK: A 'delete sc' statement was not added since sc was
-        //passed to a method or constructor. Handle memory management manually.
-        //C# TO C++ CONVERTER TODO TASK: A 'delete spectrum' statement was not added since
-        //spectrum was passed to a method or constructor. Handle memory management manually.
-        //C# TO C++ CONVERTER TODO TASK: A 'delete deadend' statement was not added since
-        //deadend was passed to a method or constructor. Handle memory management manually.
-        //C# TO C++ CONVERTER TODO TASK: A 'delete crosslinker' statement was not added since
-        //crosslinker was passed to a method or constructor. Handle memory management manually.
-        //C# TO C++ CONVERTER TODO TASK: A 'delete protein' statement was not added since
-        //protein was passed to a method or constructor. Handle memory management manually.
+        delete deadend;
+        delete crosslinker;
+        delete protein;
+        delete tempVar;
+        delete tempVar2;
     }
     
+#ifdef LATER
     void XLTest::TestTheoreticalFragmentsNonCleavableCrosslink()
     {
         Crosslinker *c = new Crosslinker("P", "R", "Test", false, 1000, 0, 0, 1000, 5, 5, 5);
