@@ -158,6 +158,16 @@ namespace TaskLayer
     {
         return privateCommonParameters;
     }
+
+    bool MetaMorpheusTask::getVerbose() const
+    {
+        return privateVerbose;
+    }
+
+    void MetaMorpheusTask::setVerbose( bool verbose )
+    {
+        privateVerbose = verbose;
+    }
     
     void MetaMorpheusTask::setCommonParameters(EngineLayer::CommonParameters *value)
     {
@@ -812,7 +822,9 @@ namespace TaskLayer
             OutLabelStatusHandler->Invoke(tempVar);
         }
         else {
-            std::cout << v << " " << id << std::endl;
+            if ( privateVerbose ) {
+                std::cout << v << " " << id << std::endl;
+            }
         }
         
     }
@@ -824,11 +836,13 @@ namespace TaskLayer
             OutLabelStatusHandler->Invoke(tempVar);
         }
         else {
-            std::cout << v << " " ;
-            for ( auto p : nestedIds ) {
-                std::cout << p << " ";
+            if ( privateVerbose ) {
+                std::cout << v << " " ;
+                for ( auto p : nestedIds ) {
+                    std::cout << p << " ";
+                }
+                std::cout << std::endl;
             }
-            std::cout << std::endl;
         }
     }
     
@@ -839,6 +853,7 @@ namespace TaskLayer
             WarnHandler->Invoke(tempVar);
         }
         else {
+            
             std::cout << "Warn : " << v << std::endl;
         }
     }

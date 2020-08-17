@@ -63,6 +63,7 @@ namespace TaskLayer
 	private:
             MyTask privateTaskType = static_cast<MyTask>(0);
             EngineLayer::CommonParameters *privateCommonParameters = nullptr;
+            bool privateVerbose = false;
             
 	public:
             //static TomlSettings *const tomlConfig;
@@ -122,6 +123,9 @@ namespace TaskLayer
             
             EngineLayer::CommonParameters *getCommonParameters() const;
             void setCommonParameters(EngineLayer::CommonParameters *value);
+
+            bool getVerbose() const;
+            void setVerbose ( bool verbose );
             
             static const std::string IndexFolderName;
             
