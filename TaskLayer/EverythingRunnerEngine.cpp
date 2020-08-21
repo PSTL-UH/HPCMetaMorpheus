@@ -44,7 +44,7 @@ namespace TaskLayer
         struct tm *tmi_start = localtime(&timer);
         clock_t begin = clock();
         
-        if (!CurrentRawDataFilenameList.empty())
+        if (CurrentRawDataFilenameList.empty())
         {
             Warn("No spectra files selected");
             FinishedAllTasks("");
@@ -82,7 +82,7 @@ namespace TaskLayer
             }
             auto ok = TaskList[i];
             
-            auto outputFolderForThisTask = OutputFolder + std::get<0>(ok);
+            auto outputFolderForThisTask = OutputFolder + "/" + std::get<0>(ok);
             
             if (!std::filesystem::exists(outputFolderForThisTask))
             {

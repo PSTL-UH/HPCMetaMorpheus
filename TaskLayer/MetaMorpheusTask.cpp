@@ -62,23 +62,27 @@ namespace TaskLayer
         common_params["MaxThreadsToUsePerFile"] = cparams->getMaxThreadsToUsePerFile();
 
         auto var1 = cparams->getListOfModsFixed();
-        std::vector<std::string> vecvar1;
-        for ( auto v : *var1 ) {
-            std::string s = std::get<0>(v) + "\t" + std::get<1>(v);
-            vecvar1.push_back(s);
-        }
         std::string del  = "\t\t";
-        std::string res1 = StringHelper::join(vecvar1, del);
-        common_params["ListOfModsFixed"] = res1;
+        std::vector<std::string> vecvar1;
+        if ( var1 != nullptr ) {
+            for ( auto v : *var1 ) {
+                std::string s = std::get<0>(v) + "\t" + std::get<1>(v);
+                vecvar1.push_back(s);
+            }
+            std::string res1 = StringHelper::join(vecvar1, del);
+            common_params["ListOfModsFixed"] = res1;
+        }
 
         auto var2 = cparams->getListOfModsVariable();
         std::vector<std::string> vecvar2;
-        for ( auto v : *var2 ) {
-            std::string s = std::get<0>(v) + "\t" + std::get<1>(v);
-            vecvar2.push_back(s);
+        if ( var2 != nullptr ) {
+            for ( auto v : *var2 ) {
+                std::string s = std::get<0>(v) + "\t" + std::get<1>(v);
+                vecvar2.push_back(s);
+            }
+            std::string res2 = StringHelper::join(vecvar2, del);            
+            common_params["ListOfModsVariable"] = res2;
         }
-        std::string res2 = StringHelper::join(vecvar2, del);
-        common_params["ListOfModsVariable"] = res2;
 
         common_params["DoPrecursorDeconvolution"] = cparams->getDoPrecursorDeconvolution();
         common_params["UseProvidedPrecursorInfo"] = cparams->getUseProvidedPrecursorInfo();

@@ -1,5 +1,6 @@
 ﻿#include "CommonParameters.h"
 #include "Proteomics/ProteolyticDigestion/CleavageSpecificity.h"
+#include "stringhelper.h"
 
 using namespace MassSpectrometry;
 using namespace MzLibUtil;
@@ -173,10 +174,29 @@ namespace EngineLayer
                     setMaxThreadsToUsePerFile (keyValuePair.second.as<int>() );
                 }
                 else if (keyValuePair.first == "ListOfModsFixed" ) {
-                    //tbd                    
+                    // private static List<(string, string)> GetModsFromString(string value)
+                    // {
+                    //      return value.Split(new string[] { "\t\t" }, StringSplitOptions.RemoveEmptyEntries).Select(
+                    //                                    b => (b.Split('\t').First(), b.Split('\t').Last())).ToList();
+                    //}
+                    std::string tempstr = keyValuePair.second.as<std::string>();
+                    std::vector<std::string> svec = StringHelper::split (tempstr, "\t\t" );
+                    auto vs= new std::vector<std::tuple<std::string, std::string>>();
+                    for ( auto s: svec ) {
+                        std::vector<std::string> st = StringHelper::split(s, '\t' );
+                        vs->push_back(std::make_tuple(st[0], st[1]));
+                    }
+                    privateListOfModsFixed = vs;                    
                 }
                 else if (keyValuePair.first == "ListOfModsVaraible" ) {
-                    //tbd
+                    std::string tempstr = keyValuePair.second.as<std::string>();
+                    std::vector<std::string> svec = StringHelper::split (tempstr, "\t\t" );
+                    auto vs= new std::vector<std::tuple<std::string, std::string>>();
+                    for ( auto s: svec ) {
+                        std::vector<std::string> st = StringHelper::split(s, '\t' );
+                        vs->push_back(std::make_tuple(st[0], st[1]));
+                    }
+                    privateListOfModsVariable = vs;                    
                 }
                 else if (keyValuePair.first == "DoPrecursorDeconvolution" ) {
                     setDoPrecursorDeconvolution(keyValuePair.second.as<bool>() );
@@ -252,6 +272,21 @@ namespace EngineLayer
                 
             }
 
+
+            if ( privateListOfModsVariable == nullptr ) {
+                auto vs= new std::vector<std::tuple<std::string, std::string>>();
+                vs->push_back(std::make_tuple("Common Variable", "Oxidation on M"));
+                privateListOfModsVariable = vs;
+            }
+            
+            if ( privateListOfModsFixed == nullptr ) {
+                auto vs = new std::vector<std::tuple<std::string, std::string>>();
+                vs->push_back(std::make_tuple("Common Fixed", "Carbamidomethyl on C"));
+                vs->push_back(std::make_tuple("Common Fixed", "Carbamidomethyl on U"));
+                privateListOfModsFixed = vs;
+            }
+            
+            
             //And now DigestionParams
             toml::Value* fileParameters2 = trw.getValue(toml_value, "CommonParameters.DigestionParams");
             toml::Table tomlTable2 = fileParameters2->as<toml::Table>();

@@ -362,7 +362,10 @@ namespace EngineLayer
                     return l->getXLTotalScore() > r->getXLTotalScore(); }
                 );
             //auto bestPsmCross = possibleMatches.FirstOrDefault();
-            auto bestPsmCross = possibleMatches.front();
+            CrosslinkSpectralMatch* bestPsmCross = nullptr;
+            if ( possibleMatches.size() > 0 ) {
+                bestPsmCross = possibleMatches.front();
+            }
             
             // resolve ambiguities
             if (bestPsmCross != nullptr)
