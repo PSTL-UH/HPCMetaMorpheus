@@ -13,7 +13,7 @@ CEXECS = BinGenerationTest  \
 	 XLTest             \
 	 XLSearchOutputTest \
 	 SearchEngineTests  \
-	 IndexEngineTests   \
+	 IndexEngineTest   \
 	 TestToml
 
 .SUFFIXES: .cxx .h  
@@ -43,7 +43,7 @@ XLSearchOutputTest: XLSearchOutputTest.o
 SearchEngineTests: SearchEngineTests.o 
 	$(CXX) $^ -o $@ $(LDFLAGS)
 
-IndexEngineTests: IndexEngineTests.o 
+IndexEngineTest: IndexEngineTest.o 
 	$(CXX) $^ -o $@ $(LDFLAGS)
 
 BinGenerationTest: BinGenerationTest.o ../lib/libmmorpheus.a

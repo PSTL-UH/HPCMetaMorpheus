@@ -1,8 +1,12 @@
 ﻿#include "IndexEngineTest.h"
 #include "../EngineLayer/CommonParameters.h"
 #include "../EngineLayer/Indexing/IndexingEngine.h"
+#include "../EngineLayer/Indexing/IndexingResults.h"
 #include "Proteomics/Proteomics.h"
 #include "MassSpectrometry/MassSpectrometry.h"
+#include "UsefulProteomicsDatabases/UsefulProteomicsDatabases.h"
+#include "MzLibUtil.h"
+#include "Chemistry/Chemistry.h"
 
 using namespace EngineLayer;
 using namespace EngineLayer::Indexing;
@@ -23,16 +27,14 @@ int main ( int argc, char **argv )
     std::cout << i << ". PeriodicTableLoader" << std::endl;
     const std::string elfile="elements.dat";
     const std::string &elr=elfile;
-    //Chemistry::PeriodicTable::Load (elr);
-    UsefulProteomicsDatabases::PeriodicTableLoader::Load (elr);
+    Chemistry::PeriodicTable::Load (elr);
+    //UsefulProteomicsDatabases::PeriodicTableLoader::Load (elr);
 
     std::cout << ++i << ". TestIndexEngine" << std::endl;
     Test::IndexEngineTest::TestIndexEngine();
 
-#ifdef LATER
     std::cout << ++i << ". TestIndexEngineWithWeirdSeq" << std::endl;
     Test::IndexEngineTest::TestIndexEngineWithWeirdSeq();
-#endif
 
     return 0;
 }
@@ -41,10 +43,10 @@ namespace Test
 { 
     void IndexEngineTest::TestIndexEngine()
     {
-        auto proteinList = std::vector<Protein*> {new Protein("MNNNKQQQ", nullptr)};
-        auto variableModifications = std::vector<Modification*>();
-        auto fixedModifications = std::vector<Modification*>();
-        auto localizeableModifications = std::vector<Modification*>();
+        auto proteinList = std::vector<Protein*> {new Protein("MNNNKQQQ", "")};
+        std::vector<Modification*> variableModifications;
+        std::vector<Modification*>fixedModifications;
+        std::vector<Modification*> localizeableModifications;
         
         std::unordered_map<Modification*, unsigned short> modsDictionary;
         for (auto mod : fixedModifications)
@@ -63,44 +65,54 @@ namespace Test
             i++;
         }
         
-        std::vector<DigestionMotif*> motifs = {new DigestionMotif("K", nullptr, 1, nullptr)};
-        Protease *p = new Protease("Custom Protease2",CleavageSpecificity::Full, nullptr, nullptr, motifs);
-        ProteaseDictionary::Dictionary->Add(p->Name, p);
-
-        DigestionParams tempVar(protease: p->Name, minPeptideLength: 1);
-        CommonParameters *CommonParameters = new CommonParameters(scoreCutoff: 1, digestionParams: &tempVar);
+        std::vector<DigestionMotif*> motifs = {new DigestionMotif("K", "", 1, "")};
+        Protease *p = new Protease("Custom Protease2",CleavageSpecificity::Full, "", "", motifs);
+        //ProteaseDictionary::Dictionary->Add(p->Name, p);
+        ProteaseDictionary::insert(p->getName(), p);
+        
+        auto tempVar = new DigestionParams(p->getName(), 2, 1);
+        //CommonParameters *CommonParameters = new CommonParameters(scoreCutoff: 1, digestionParams: &tempVar);
+        auto cp = new CommonParameters("",  DissociationType::HCD, true, true, 3, 12, true, false, 1, 1);
+        cp->setDigestionParams(tempVar);
 
         std::vector<std::string> vs1, vs2;
         auto engine = new IndexingEngine(proteinList, variableModifications, fixedModifications, 1, DecoyType::Reverse,
-                                         CommonParameters, 30000, false, vs1, vs2);
+                                         cp, 30000, false, vs1, vs2);
         
         auto results = static_cast<IndexingResults*>(engine->Run());
         
         Assert::AreEqual(5, (int)results->getPeptideIndex().size());
-        
-        auto digestedList = proteinList[0]->Digest(CommonParameters->getDigestionParams(), std::vector<Modification*>(),
+        std::vector<Modification*> vm1;
+        auto digestedList = proteinList[0]->Digest(cp->getDigestionParams(), vm1,
                                                    variableModifications);//.ToList();
         
         Assert::AreEqual(5, (int)digestedList.size());
+        auto pepIndex = results->getPeptideIndex();
         for (auto fdfd : digestedList)
         {
-            Assert->Contains(fdfd, results->getPeptideIndex());
+            //Assert->Contains(fdfd, results->getPeptideIndex());
+            bool found = false;
+            for ( auto p : pepIndex ) {
+                if ( p->Equals(fdfd ) ){
+                    found = true;
+                }
+            }
+            Assert::IsTrue( found );
         }
         
         delete engine;
-        //C# TO C++ CONVERTER TODO TASK: A 'delete CommonParameters' statement
-        //was not added since CommonParameters was passed to a method or constructor. Handle memory management manually.
-        //C# TO C++ CONVERTER TODO TASK: A 'delete p' statement
-        //was not added since p was passed to a method or constructor. Handle memory management manually.
+        delete cp;
+        delete tempVar;
+        delete p;
     }
 
-#ifdef LATER    
+
     void IndexEngineTest::TestIndexEngineWithWeirdSeq()
     {
-        auto proteinList = std::vector<Protein*> {new Protein("MQXQ", nullptr)};
-        auto variableModifications = std::vector<Modification*>();
-        auto fixedModifications = std::vector<Modification*>();
-        auto localizeableModifications = std::vector<Modification*>();
+        auto proteinList = std::vector<Protein*> {new Protein("MQXQ", "")};
+        std::vector<Modification*> variableModifications;
+        std::vector<Modification*> fixedModifications;
+        std::vector<Modification*> localizeableModifications;
         
         std::unordered_map<Modification*, unsigned short> modsDictionary;
         for (auto mod : fixedModifications)
@@ -119,30 +131,32 @@ namespace Test
             i++;
         }
         
-        std::vector<DigestionMotif*> motifs = {new DigestionMotif("K", nullptr, 1, nullptr)};
-        Protease *protease = new Protease("Custom Protease", CleavageSpecificity::Full, nullptr, nullptr, motifs);
-        ProteaseDictionary::Dictionary->Add(protease->Name, protease);
-        DigestionParams tempVar(protease: protease->Name, minPeptideLength: 1,
-                                initiatorMethionineBehavior: InitiatorMethionineBehavior::Retain);
-        CommonParameters *CommonParameters = new CommonParameters(digestionParams: &tempVar, scoreCutoff: 1);
+        std::vector<DigestionMotif*> motifs = {new DigestionMotif("K", "", 1, "")};
+        Protease *protease = new Protease("Custom Protease", CleavageSpecificity::Full, "", "", motifs);
+        ProteaseDictionary::insert(protease->getName(), protease);
+        auto tempVar = new DigestionParams(protease->getName(), 2, 1, std::numeric_limits<int>::max(), 1024,
+                                           InitiatorMethionineBehavior::Retain);
+        //CommonParameters *CommonParameters = new CommonParameters(digestionParams: &tempVar, scoreCutoff: 1);
+        auto cp = new CommonParameters("",  DissociationType::HCD, true, true, 3, 12, true, false, 1, 1);
+        cp->setDigestionParams(tempVar);
         
         std::vector<std::string> vs1, vs2;
         auto engine = new IndexingEngine(proteinList, variableModifications, fixedModifications, 1,
-                                         DecoyType::Reverse, CommonParameters, 30000, false, vs1, vs2 );
+                                         DecoyType::Reverse, cp, 30000, false, vs1, vs2 );
                                          
         
         auto results = static_cast<IndexingResults*>(engine->Run());
         
         Assert::AreEqual(1, (int)results->getPeptideIndex().size());
         
-        Assert::IsNaN(results->getPeptideIndex()[0]->MonoisotopicMass);
+        //Assert::IsNaN(results->getPeptideIndex()[0]->MonoisotopicMass);
+        Assert::IsTrue(std::isnan(results->getPeptideIndex()[0]->getMonoisotopicMass()));
         Assert::AreEqual(30000000 + 1, (int)results->getFragmentIndex().size());
         
         delete engine;
-        //C# TO C++ CONVERTER TODO TASK: A 'delete CommonParameters' statement
-        //was not added since CommonParameters was passed to a method or constructor. Handle memory management manually.
-        //C# TO C++ CONVERTER TODO TASK: A 'delete protease' statement
-        //was not added since protease was passed to a method or constructor. Handle memory management manually.
+        delete cp;
+        delete protease;
+        delete tempVar;
     }
-#endif
+
 }
