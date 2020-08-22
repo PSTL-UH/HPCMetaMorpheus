@@ -7,7 +7,10 @@ Test/BinGenerationTest
 Test/BinGenerationTest.xml
 Test/BinGenerationTest.mzML
 Test/CalibrationTests
+Test/SearchEngineTests
+Test/IndexEngineTest
 Test/XLTest
+Test/XLSearchOutputTest
 Test/TestData
 Test/TestProteinSplitAcrossFiles/
 Test/TestProteinSplitAcrossFiles1.mzML
