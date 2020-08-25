@@ -60,13 +60,8 @@ int main ( int argc, char **argv )
     std::cout << ++i << ". DeadendPeptideTest" << std::endl;
     Test::XLTest::DeadendPeptideTest();
     
-#ifdef NOT_NOW
-    // This test compiles correctly, and runs to large extent, however, we segfault
-    // because the peptideindex is not yet written correctly, this is an
-    // issue with the cereal interfaces for this class. To be revisited.
     std::cout << ++i << ". XLSearchWithGeneratedIndices" << std::endl;
     Test::XLTest::XLSearchWithGeneratedIndices();
-#endif
 
     std::cout << ++i << ". TestGetPossibleCrosslinkerSites" << std::endl;
     Test::XLTest::TestGetPossibleCrosslinkerSites();
@@ -647,8 +642,8 @@ namespace Test
         std::string testdir=std::filesystem::current_path().string();
         
         XLSearchTask *xlSearchTask = new XLSearchTask();
-        CommonParameters tempVar;
-        xlSearchTask->setCommonParameters(&tempVar);
+        auto tempVar = new CommonParameters();
+        xlSearchTask->setCommonParameters(tempVar);
         std::string myFile = testdir + "/XlTestData/BSA_DSSO_ETchD6010.mgf";
         std::string myDatabase = testdir + "/XlTestData/BSA.fasta";
         std::string folderPath = testdir+ "/TestXLSearch";

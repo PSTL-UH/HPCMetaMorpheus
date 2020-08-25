@@ -205,10 +205,12 @@ namespace TaskLayer
             static bool SameSettings(const std::string &pathToOldParamsFile, IndexingEngine *indexEngine);
             
             static void WritePeptideIndex(std::vector<PeptideWithSetModifications*> &peptideIndex,
-                                          const std::string &peptideIndexFile);
+                                          std::string &peptideIndexFile);
             
-            static void WriteFragmentIndexNetSerializer(std::vector<std::vector<int>> &fragmentIndex,
-                                                        const std::string &fragmentIndexFile);
+            static void WriteFragmentIndexSerializer(std::vector<std::vector<int>> &fragmentIndex,
+                                                     const std::string &fragmentIndexFile);
+            static void ReadFragmentIndexDeserializer(std::vector<std::vector<int>> &fragmentIndex,
+                                                      const std::string &fragmentIndexFile);
             
             static std::string GetExistingFolderWithIndices(IndexingEngine *indexEngine, std::vector<DbForTask*> &dbFilenameList);
             
