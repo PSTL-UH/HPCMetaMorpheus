@@ -220,11 +220,11 @@ namespace Test
         
         Assert::SequenceEqual(xlResults, xlResultsToml);
         
-        //std::filesystem::remove_all(outputFolder);
+        std::filesystem::remove_all(outputFolder);
         //std::filesystem::remove(testdir + "/GptmdTask.toml");
-        //std::filesystem::remove(testdir + "/XLSearchTask.toml");
-        //std::filesystem::remove(testdir + "/SearchTask.toml");
-        //std::filesystem::remove(testdir + "/CalibrationTask.toml");
+        std::filesystem::remove(testdir + "/XLSearchTask.toml");
+        std::filesystem::remove(testdir + "/SearchTask.toml");
+        std::filesystem::remove(testdir + "/CalibrationTask.toml");
         
         delete xlEngineToml;
         delete xlEngine;
