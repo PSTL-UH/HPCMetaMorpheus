@@ -36,6 +36,138 @@ namespace TaskLayer
         setSearchParameters(tempVar2);
     }
     
+    SearchTask::SearchTask(std::string tomlFile ) : MetaMorpheusTask(MyTask::Search)
+    {
+        //Check ending that it is a toml file.
+
+        Toml trw;
+        toml::Value toml_value = trw.tomlReadFile(tomlFile);
+        toml::Value* fileParameters = trw.getValue(toml_value, "SearchParameters");
+        toml::Table tomlTable = fileParameters->as<toml::Table>();
+
+        auto sParams = new TaskLayer::SearchParameters();
+
+        // parse toml file and set the values
+        for (auto const& keyValuePair : tomlTable)
+        {
+            if ( keyValuePair.first == "DisposeOfFileWhenDone" ) {
+                auto val = keyValuePair.second.as<bool>();
+                sParams->setDisposeOfFileWhenDone (val);
+            }
+            else if ( keyValuePair.first == "DoParsimony" ) {
+                auto val = keyValuePair.second.as<bool>();
+                sParams->setDoParsimony (val);
+            }
+            else if ( keyValuePair.first == "ModPeptidesAreDifferent" ) {
+                auto val = keyValuePair.second.as<bool>();
+                sParams->setModPeptidesAreDifferent (val);
+            }
+            else if ( keyValuePair.first == "NoOneHitWonders" ) {
+                auto val = keyValuePair.second.as<bool>();
+                sParams->setNoOneHitWonders(val);
+            }
+            else if ( keyValuePair.first == "MatchBetweenRuns" ) {
+                auto val = keyValuePair.second.as<bool>();
+                sParams->setMatchBetweenRuns(val);
+            }
+            else if ( keyValuePair.first == "Normalize" ) {
+                auto val = keyValuePair.second.as<bool>();
+                sParams->setNormalize(val);
+            }
+            else if ( keyValuePair.first == "QuantifyPpmTol" ) {
+                auto val = keyValuePair.second.as<double>();
+                sParams->setQuantifyPpmTol(val);
+            }
+            else if ( keyValuePair.first == "DoHistogramAnalysis" ) {
+                auto val = keyValuePair.second.as<bool>();
+                sParams->setDoHistogramAnalysis(val);
+            }
+            else if ( keyValuePair.first == "SearchTarget" ) {
+                auto val = keyValuePair.second.as<bool>();
+                sParams->setSearchTarget(val);
+            }
+            else if (keyValuePair.first == "DecoyType") {
+                auto val = keyValuePair.second.as<std::string>();
+                sParams->setDecoyType(DecoyTypeFromString(val ));
+            }
+            else if (keyValuePair.first == "MassDiffAcceptorType") {
+                auto val = keyValuePair.second.as<std::string>();
+                sParams->setMassDiffAcceptorType(TaskLayer::MassDiffAcceptorTypeFromString(val));
+            }
+            else if (keyValuePair.first == "WritePrunedDatabase") {
+                auto val = keyValuePair.second.as<bool>();
+                sParams->setWritePrunedDatabase(val);
+            }
+            else if (keyValuePair.first == "KeepAllUniprotMods") {
+                auto val = keyValuePair.second.as<bool>();
+                sParams->setKeepAllUniprotMods(val);
+            }
+            else if (keyValuePair.first == "DoLocalizationAnalysis") {
+                auto val = keyValuePair.second.as<bool>();
+                sParams->setDoLocalizationAnalysis(val);
+            }
+            else if (keyValuePair.first == "DoQuantification") {
+                auto val = keyValuePair.second.as<bool>();
+                sParams->setDoQuantification(val);
+            }
+            else if (keyValuePair.first == "SearchType") {
+                auto val = keyValuePair.second.as<std::string>();
+                sParams->setSearchType(TaskLayer::SearchTypeFromString(val));
+            }
+            else if (keyValuePair.first == "LocalFdrCategories") {
+                std::vector<FdrCategory> vec;
+                auto val = keyValuePair.second.as<toml::Array>();
+                for ( auto v : val ) {
+                    vec.push_back (EngineLayer::FdrCategoryFromString(v.as<std::string>()));
+                }
+                sParams->setLocalFdrCategories(vec);
+            }
+            else if (keyValuePair.first == "MaxFragmentSize") {
+                auto val = keyValuePair.second.as<double>();
+                sParams->setMaxFragmentSize(val);
+            }
+            else if (keyValuePair.first == "HistogramBinTolInDaltons") {
+                auto val = keyValuePair.second.as<double>();
+                sParams->setHistogramBinTolInDaltons(val);
+            }
+            else if (keyValuePair.first == "MaximumMassThatFragmentIonScoreIsDoubled") {
+                auto val = keyValuePair.second.as<double>();
+                sParams->setMaximumMassThatFragmentIonScoreIsDoubled(val);
+            }
+            else if (keyValuePair.first == "WriteMzId") {
+                auto val = keyValuePair.second.as<bool>();
+                sParams->setWriteMzId(val);
+            }
+            else if (keyValuePair.first == "WritePepXml") {
+                auto val = keyValuePair.second.as<bool>();
+                sParams->setWritePepXml(val);
+            }
+            else if (keyValuePair.first == "WriteDecoys") {
+                auto val = keyValuePair.second.as<bool>();
+                sParams->setWriteDecoys(val);
+            }
+            else if (keyValuePair.first == "WriteContaminants") {
+                auto val = keyValuePair.second.as<bool>();
+                sParams->setWriteContaminants(val);
+            }
+        }
+        
+        toml::Value* fileParameters2 = trw.getValue(toml_value, "SearchParameters.ModsToWriteSelection");
+        toml::Table tomlTable2 = fileParameters2->as<toml::Table>();
+        std::unordered_map<std::string, int> modsmap;
+        for (auto b = tomlTable2.begin(); b != tomlTable2.end(); b++ ) {
+            std::string key = (*b).first;
+            int value = (*b).second.as<int>();
+            modsmap.insert ({key,value});
+        }
+        sParams->setModsToWriteSelection(modsmap);
+        setSearchParameters (sParams);
+        
+        std::string taskDescr = "";
+        auto tempVar = new EngineLayer::CommonParameters( tomlFile, taskDescr );
+        setCommonParameters(tempVar);
+    }
+    
     void  SearchTask::writeTomlConfig(std::string &filename, std::ofstream &tomlFd )
     {
         if ( !tomlFd.is_open() ) {
@@ -55,7 +187,7 @@ namespace TaskLayer
         toml::Table search_params;
 
         search_params["DisposeOfFileWhenDone"] = sparams->getDisposeOfFileWhenDone();
-        search_params["DoParsimony"] = sparams-> getDoParsimony();
+        search_params["DoParsimony"] = sparams->getDoParsimony();
         search_params["ModPeptidesAreDifferent"] = sparams->getModPeptidesAreDifferent();
         search_params["NoOneHitWonders"] = sparams->getNoOneHitWonders();
         search_params["MatchBetweenRuns"] = sparams->getMatchBetweenRuns();

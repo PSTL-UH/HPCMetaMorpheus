@@ -80,7 +80,7 @@ namespace TaskLayer
 		TaskLayer::SearchType getSearchType() const;
 		void setSearchType(TaskLayer::SearchType value);
 		std::vector<FdrCategory> getLocalFdrCategories() const;
-		void setLocalFdrCategories(const std::vector<FdrCategory> &value);
+		void setLocalFdrCategories(const std::vector<FdrCategory> value);
 		std::string getCustomMdac() const;
 		void setCustomMdac(const std::string &value);
 		double getMaxFragmentSize() const;
@@ -88,7 +88,7 @@ namespace TaskLayer
 		double getHistogramBinTolInDaltons() const;
 		void setHistogramBinTolInDaltons(double value);
 		std::unordered_map<std::string, int> getModsToWriteSelection() const;
-		void setModsToWriteSelection(const std::unordered_map<std::string, int> &value);
+		void setModsToWriteSelection(const std::unordered_map<std::string, int> value);
 		double getMaximumMassThatFragmentIonScoreIsDoubled() const;
 		void setMaximumMassThatFragmentIonScoreIsDoubled(double value);
 		bool getWriteMzId() const;

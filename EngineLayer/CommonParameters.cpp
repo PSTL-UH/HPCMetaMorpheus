@@ -188,7 +188,7 @@ namespace EngineLayer
                     }
                     privateListOfModsFixed = vs;                    
                 }
-                else if (keyValuePair.first == "ListOfModsVaraible" ) {
+                else if (keyValuePair.first == "ListOfModsVariable" ) {
                     std::string tempstr = keyValuePair.second.as<std::string>();
                     std::vector<std::string> svec = StringHelper::split (tempstr, "\t\t" );
                     auto vs= new std::vector<std::tuple<std::string, std::string>>();
@@ -293,7 +293,7 @@ namespace EngineLayer
             DigestionParams *dp = new DigestionParams("trypsin");
             
             // parse toml file and set the values
-            for (auto const& keyValuePair : tomlTable)
+            for (auto const& keyValuePair : tomlTable2)
             {
                 if ( keyValuePair.first == "MaxMissedCleavages" ) {
                     dp->setMaxMissedCleavages(keyValuePair.second.as<int>());

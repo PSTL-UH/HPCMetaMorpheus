@@ -47,7 +47,8 @@ namespace Test
         std::ofstream output(filePath);
         output << "FileName\tCondition\tBiorep\tFraction\tTechrep \n";
         output << "SmallCalibratible_Yeast" << "\t" << "condition" << "\t" << "1" << "\t" << "1" << "\t" << "1";
-
+        output.close();
+        
         auto tobj = new DbForTask(myDatabase, false);
         std::vector<DbForTask*> tvec = {tobj};
         std::vector<std::string> svec = {myFile};

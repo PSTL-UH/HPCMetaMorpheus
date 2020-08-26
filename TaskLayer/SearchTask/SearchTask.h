@@ -58,6 +58,7 @@ namespace TaskLayer
         
     public:
         SearchTask();
+        SearchTask(std::string tomlFile);
         ~SearchTask() {
             delete privateSearchParameters;
         }

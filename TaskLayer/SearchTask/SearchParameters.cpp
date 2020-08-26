@@ -212,7 +212,7 @@ namespace TaskLayer
 		return privateLocalFdrCategories;
 	}
 
-	void SearchParameters::setLocalFdrCategories(const std::vector<FdrCategory> &value)
+	void SearchParameters::setLocalFdrCategories(const std::vector<FdrCategory> value)
 	{
 		privateLocalFdrCategories = value;
 	}
@@ -252,7 +252,7 @@ namespace TaskLayer
 		return privateModsToWriteSelection;
 	}
 
-	void SearchParameters::setModsToWriteSelection(const std::unordered_map<std::string, int> &value)
+	void SearchParameters::setModsToWriteSelection(const std::unordered_map<std::string, int> value)
 	{
 		privateModsToWriteSelection = value;
 	}

@@ -5,11 +5,11 @@
 #include "../TaskLayer/EverythingRunnerEngine.h"
 #include "../TaskLayer/CalibrationTask/CalibrationTask.h"
 //#include "../TaskLayer/GPTMDTask/GPTMDTask.h"
-#include "../TaskLayer/XLSearchTask/TaskLayer.XLSearchTask.h"
+#include "../TaskLayer/XLSearchTask/XLSearchTask.h"
 #include "../TaskLayer/FileSpecificParameters.h"
 #include "../EngineLayer/CommonParameters.h"
 
-#include <experimental/filesystem>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include "Assert.h"
@@ -44,30 +44,37 @@ namespace Test
 
     void TestToml::TestTomlFunction()
     {
-        std::string testdir=std::experimental::filesystem::current_path().string();        
+        std::string testdir=std::filesystem::current_path().string();        
         
+        std::cout << "  SearchTask" << std::endl;
         SearchTask *searchTask = new SearchTask();
         std::vector<std::tuple<std::string, std::string>> v1 = {std::make_tuple("e", "f"), std::make_tuple("g", "h")};
         std::vector<std::tuple<std::string, std::string>> v2 = {std::make_tuple("a", "b"), std::make_tuple("c", "d")};
-        CommonParameters tempVar ("", DissociationType::HCD, true, true, 3, 12, true, false, 1, 5, 200, 0.01,
+        auto tempVar = new CommonParameters ("", DissociationType::HCD, true, true, 3, 12, true, false, 1, 5, 200, 0.01,
                                   false, true, false, false, new PpmTolerance(666), nullptr, nullptr, -1, nullptr,
                                   &v1, &v2);
-        searchTask->setCommonParameters(&tempVar);
+        searchTask->setCommonParameters(tempVar);
+        // EDGAR: set searchtype to MODERN, since classic search is not yet working properly,
+        //        and disbale protein quantification
+        searchTask->getSearchParameters()->setSearchType(SearchType::Modern);
+        searchTask->getSearchParameters()->setDoQuantification(false);
         
-        Toml::WriteFile(searchTask, "SearchTask.toml", MetaMorpheusTask::tomlConfig);
+        std::ofstream tomlFile;
+        std::string filename  = "SearchTask.toml";
+        searchTask->writeTomlConfig( filename, tomlFile);
 
-        SearchTask* searchTaskLoaded = Toml::ReadFile<SearchTask*>("SearchTask.toml", MetaMorpheusTask::tomlConfig);
-        //Toml trw;
-        //toml::Value uhum = trw.tomlReadFile("SearchTask.toml");
-        //MetaMorpheusTask::tomlConfig.push(uhum);
-        //SearchTask* searchTaskLoaded = trw.tomlReadFile("SearchTask.toml")
-        
-        Assert::AreEqual(searchTask->getCommonParameters()->getDeconvolutionMassTolerance(),
-                         searchTaskLoaded->getCommonParameters()->getDeconvolutionMassTolerance());
-        Assert::AreEqual(searchTask->getCommonParameters()->getProductMassTolerance(),
-                         searchTaskLoaded->getCommonParameters()->getProductMassTolerance());
-        Assert::AreEqual(searchTask->getCommonParameters()->getPrecursorMassTolerance(),
-                         searchTaskLoaded->getCommonParameters()->getPrecursorMassTolerance());
+        std::string outputFolder = testdir + "/TestConsistency";
+        std::filesystem::create_directory(outputFolder);
+
+        SearchTask* searchTaskLoaded = new SearchTask("SearchTask.toml");
+
+
+        Assert::AreEqual(searchTask->getCommonParameters()->getDeconvolutionMassTolerance()->getValue(),
+                         searchTaskLoaded->getCommonParameters()->getDeconvolutionMassTolerance()->getValue());
+        Assert::AreEqual(searchTask->getCommonParameters()->getProductMassTolerance()->getValue(),
+                         searchTaskLoaded->getCommonParameters()->getProductMassTolerance()->getValue());
+        Assert::AreEqual(searchTask->getCommonParameters()->getPrecursorMassTolerance()->getValue(),
+                         searchTaskLoaded->getCommonParameters()->getPrecursorMassTolerance()->getValue());
         
         Assert::AreEqual(searchTask->getCommonParameters()->getListOfModsFixed()->size(),
                          searchTaskLoaded->getCommonParameters()->getListOfModsFixed()->size());
@@ -78,14 +85,12 @@ namespace Test
         
         Assert::AreEqual(searchTask->getCommonParameters()->getListOfModsVariable()->size(),
                          searchTaskLoaded->getCommonParameters()->getListOfModsVariable()->size());
-#ifdef LATER        
-        Assert::AreEqual(searchTask->getSearchParameters()->getMassDiffAcceptorType(),
-                         searchTaskLoaded->getSearchParameters()->getMassDiffAcceptorType());
-#endif
+        Assert::IsTrue(searchTask->getSearchParameters()->getMassDiffAcceptorType() ==
+                       searchTaskLoaded->getSearchParameters()->getMassDiffAcceptorType());
         Assert::AreEqual(searchTask->getSearchParameters()->getCustomMdac(),
                          searchTaskLoaded->getSearchParameters()->getCustomMdac());
         
-        std::string outputFolder = testdir + "/TestConsistency";
+#ifdef NOT_NOW
         std::string myFile = testdir + "/TestData/PrunedDbSpectra.mzml";
         std::string myDatabase = testdir + "/TestData/DbForPrunedDb.fasta";
 
@@ -122,13 +127,17 @@ namespace Test
         if2.close();
         
         Assert::SequenceEqual(results, resultsToml);
-
+#endif
+        
+        std::cout << "  CalibrationTask" << std::endl;
         CalibrationTask *calibrationTask = new CalibrationTask();
-        Toml::WriteFile(calibrationTask, "CalibrationTask.toml", MetaMorpheusTask::tomlConfig);
-        auto calibrationTaskLoaded = Toml::ReadFile<CalibrationTask*>("CalibrationTask.toml", MetaMorpheusTask::tomlConfig);
+        filename = "CalibrationTask.toml";
+        calibrationTask->writeTomlConfig(filename, tomlFile);
+        //auto calibrationTaskLoaded = new CalibrationTask("CalibrationTask.toml");
 
 #ifdef LATER
         // GptmdTask will be done later
+        std::cout << "  GptmdTask" << std::endl;
         GptmdTask *gptmdTask = new GptmdTask();
         Toml::WriteFile(gptmdTask, "GptmdTask.toml", MetaMorpheusTask::tomlConfig);
         GptmdTask* gptmdTaskLoaded = Toml::ReadFile<GptmdTask*>("GptmdTask.toml", MetaMorpheusTask::tomlConfig);
@@ -164,12 +173,15 @@ namespace Test
             }
         }
         if4.close();
-        
         Assert::SequenceEqual(gptmdResults, gptmdResultsToml);
+#endif
         
+        std::cout << "  XLSearchTask" << std::endl;
         XLSearchTask *xLSearchTask = new XLSearchTask();
-        Toml::WriteFile(xLSearchTask, "XLSearchTask.toml", MetaMorpheusTask::tomlConfig);
-        XLSearchTask* xLSearchTaskLoaded = Toml::ReadFile<XLSearchTask*>("XLSearchTask.toml", MetaMorpheusTask::tomlConfig);
+        filename = "XLSearchTask.toml";
+        xLSearchTask->writeTomlConfig(filename, tomlFile);
+
+        XLSearchTask* xLSearchTaskLoaded = new XLSearchTask("XLSearchTask.toml");
         
         std::string myFileXl = testdir + "/XlTestData/BSA_DSSO_ETchD6010.mgf";
         std::string myDatabaseXl = testdir + "/XlTestData/BSA.fasta";
@@ -207,25 +219,22 @@ namespace Test
         if6.close();
         
         Assert::SequenceEqual(xlResults, xlResultsToml);
-#endif
-
-        std::experimental::filesystem::remove_all(outputFolder);
-        std::experimental::filesystem::remove(testdir + "/GptmdTask.toml");
-        std::experimental::filesystem::remove(testdir + "/XLSearchTask.toml");
-        std::experimental::filesystem::remove(testdir + "/SearchTask.toml");
-        std::experimental::filesystem::remove(testdir + "/CalibrationTask.toml");
         
-#ifdef LATER
+        //std::filesystem::remove_all(outputFolder);
+        //std::filesystem::remove(testdir + "/GptmdTask.toml");
+        //std::filesystem::remove(testdir + "/XLSearchTask.toml");
+        //std::filesystem::remove(testdir + "/SearchTask.toml");
+        //std::filesystem::remove(testdir + "/CalibrationTask.toml");
+        
         delete xlEngineToml;
         delete xlEngine;
         delete xLSearchTask;
-        delete gptmdEngineToml;
-        delete gptmdEngine;
-        delete gptmdTask;
-#endif
+        //delete gptmdEngineToml;
+        //delete gptmdEngine;
+        //delete gptmdTask;
         delete calibrationTask;
-        delete engineToml;
-        delete engine;
+        //delete engineToml;
+        //delete engine;
         delete searchTask;
     }
 

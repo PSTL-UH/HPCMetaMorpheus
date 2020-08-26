@@ -16,6 +16,22 @@ namespace EngineLayer
         //New category here
    };
 
+    static FdrCategory FdrCategoryFromString (std::string s ) {
+        FdrCategory t;
+
+        if ( s == "FullySpecific" ) {
+            t = FdrCategory::FullySpecific;
+        }
+        else if ( s == "SemiSpecific" ) {
+            t = FdrCategory::SemiSpecific;
+        }
+        else if ( s == "NonSpecific" ) {
+            t = FdrCategory::NonSpecific;
+        }
+        
+        return t;
+    }
+    
     static std::string FdrCategoryToString( FdrCategory t ) {
         std::string s ;
         if ( t ==  FdrCategory::FullySpecific ) {

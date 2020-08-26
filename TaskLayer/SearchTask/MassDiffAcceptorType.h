@@ -15,6 +15,34 @@ namespace TaskLayer
 		Custom
 	};
 
+        static MassDiffAcceptorType  MassDiffAcceptorTypeFromString(std::string s) {
+            MassDiffAcceptorType t;
+
+            if ( s == "Exact" ) {
+                t = MassDiffAcceptorType::Exact;
+            }
+            else if ( s == "OneMM" ) {
+                t = MassDiffAcceptorType::OneMM;
+            }
+            else if ( s == "TwoMM" ) {
+                t = MassDiffAcceptorType::TwoMM;                
+            }
+            else if ( s ==  "ThreMM" ) {
+                t =  MassDiffAcceptorType::ThreeMM;
+            }
+            else if ( s == "ModOpen" ) {
+                t = MassDiffAcceptorType::ModOpen;
+            }
+            else if ( s == "Open" ) {
+                t = MassDiffAcceptorType::Open;
+            }
+            else if ( s ==  "Custom" ) {
+                t = MassDiffAcceptorType::Custom;
+            }
+            
+            return t;
+        }
+        
         static std::string  MassDiffAcceptorTypeToString( MassDiffAcceptorType t ) {
             std::string s;
 
