@@ -133,7 +133,7 @@ namespace Test
         CalibrationTask *calibrationTask = new CalibrationTask();
         filename = "CalibrationTask.toml";
         calibrationTask->writeTomlConfig(filename, tomlFile);
-        //auto calibrationTaskLoaded = new CalibrationTask("CalibrationTask.toml");
+        auto calibrationTaskLoaded = new CalibrationTask("CalibrationTask.toml");
 
 #ifdef LATER
         // GptmdTask will be done later

@@ -58,6 +58,7 @@ namespace TaskLayer
         
     public:
         CalibrationTask();
+        CalibrationTask(std::string tomlFile);
         ~CalibrationTask() {
             delete privateCalibrationParameters;
         }

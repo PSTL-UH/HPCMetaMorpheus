@@ -67,6 +67,44 @@ namespace TaskLayer
         setCalibrationParameters(tempVar2);
     }
 
+    CalibrationTask::CalibrationTask(std::string tomlFile) : MetaMorpheusTask(MyTask::Calibrate)
+    {
+        //Check ending that it is a toml file.
+
+        Toml trw;
+        toml::Value toml_value = trw.tomlReadFile(tomlFile);
+        toml::Value* fileParameters = trw.getValue(toml_value, "CalibrationParameters");
+        toml::Table tomlTable = fileParameters->as<toml::Table>();
+
+        auto cParams = new TaskLayer::CalibrationParameters();
+        // parse toml file and set the values
+        for (auto const& keyValuePair : tomlTable)
+        {
+            if ( keyValuePair.first == "WriteIntermediateFiles" ) {
+                auto val = keyValuePair.second.as<bool>();
+                cParams->setWriteIntermediateFiles(val);
+            }
+            else if ( keyValuePair.first == "MinMS1IsotopicPeaksNeededForConfirmedIdentification") {
+                auto val = keyValuePair.second.as<int>();
+                cParams->setMinMS1IsotopicPeaksNeededForConfirmedIdentification(val);
+            }
+            else if ( keyValuePair.first == "MinMS2IsotopicPeaksNeededForConfirmedIdentification") {
+                auto val = keyValuePair.second.as<int>();
+                cParams->setMinMS2IsotopicPeaksNeededForConfirmedIdentification(val);
+            }
+            else if ( keyValuePair.first == "NumFragmentsNeededForEveryIdentification" ) {
+                auto val = keyValuePair.second.as<int>();
+                cParams->setNumFragmentsNeededForEveryIdentification(val);
+            }
+        }
+        setCalibrationParameters (cParams);
+
+        std::string taskDescr = "";
+        auto tempVar = new EngineLayer::CommonParameters( tomlFile, taskDescr );
+        setCommonParameters(tempVar);
+        
+    }
+    
     void CalibrationTask::writeTomlConfig(std::string &filename, std::ofstream &tomlFd )
     {
         if ( !tomlFd.is_open() ) {
