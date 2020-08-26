@@ -3,6 +3,10 @@
 *~
 *\#
 typescript
+autom4te.cache/
+config.log
+config.status
+Makefile.defs
 Test/BinGenerationTest
 Test/BinGenerationTest.xml
 Test/BinGenerationTest.mzML
