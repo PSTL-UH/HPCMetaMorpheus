@@ -36,7 +36,7 @@ namespace EngineLayer
 
         is_init = true;
 
-        privateMetaMorpheusVersion = "0.0.295";
+        privateMetaMorpheusVersion = "HPCMetaMorpheus version 0.0.1 based on MetaMorpheus 0.0.295";
         
         if (privateMetaMorpheusVersion == "1.0.0.0")
         {
