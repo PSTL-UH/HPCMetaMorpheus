@@ -202,7 +202,11 @@ int main( int argc, char *argv[] )
             std::string date_string(dates);
             
             auto pathOfFirstSpectraFile = FileSystem::getDirectoryName(startingRawFilenameList.front());
-            outputFolder = pathOfFirstSpectraFile + date_string;
+            outputFolder = pathOfFirstSpectraFile + "/" + date_string;
+        }
+
+        if (!std::filesystem::exists(outputFolder) ) {
+            std::filesystem::create_directory(outputFolder);
         }
         
         EverythingRunnerEngine *a = new EverythingRunnerEngine(taskList, startingRawFilenameList,

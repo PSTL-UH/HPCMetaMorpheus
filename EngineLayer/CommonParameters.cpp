@@ -272,7 +272,6 @@ namespace EngineLayer
                 
             }
 
-
             if ( privateListOfModsVariable == nullptr ) {
                 auto vs= new std::vector<std::tuple<std::string, std::string>>();
                 vs->push_back(std::make_tuple("Common Variable", "Oxidation on M"));
@@ -316,11 +315,14 @@ namespace EngineLayer
                 }
                 else if (keyValuePair.first == "Protease" ) {
                     std::string name = keyValuePair.second.as<std::string>();
-                    std::vector<DigestionMotif*> dm;
-                    //create Protease instance
-                    auto p = new Protease(name, Proteomics::ProteolyticDigestion::CleavageSpecificity::Unknown,
-                                          "", "", dm);
-                    dp->setProtease(p);
+                    Protease *p = ProteaseDictionary::getDictionary()[name];
+                    if ( p != nullptr ) {
+                        dp->setProtease(p);
+                    }
+                    else {
+                        std::cout << "cound not find Protease " << name << " in dictionary\n";
+                    }
+                        
                 }
                 else if (keyValuePair.first == "SearchModeType" ) {
                     auto val = keyValuePair.second.as<std::string>();
@@ -332,12 +334,13 @@ namespace EngineLayer
                 }
                 else if (keyValuePair.first == "SpecificProtease" ) {
                     std::string name = keyValuePair.second.as<std::string>();
-                    std::vector<DigestionMotif*> dm;
-
-                    //create Protease instance
-                    auto p = new Protease(name, Proteomics::ProteolyticDigestion::CleavageSpecificity::Unknown,
-                                          "", "", dm);
-                    dp->setSpecificProtease(p);
+                    Protease *p = ProteaseDictionary::getDictionary()[name];
+                    if ( p != nullptr ) {
+                        dp->setSpecificProtease(p);
+                    }
+                    else {
+                        std::cout << "cound not find Protease " << name << " in dictionary\n";
+                    }
                 }
             }
 
