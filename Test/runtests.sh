@@ -26,11 +26,15 @@ echo "  IndexEngineTest"
 make -s IndexEngineTest
 ./IndexEngineTest
 
+echo " "
+echo "  FdrTest"
+make -s FdrTest
+./FdrTest
+
 #echo " "
 #echo "  SearchEngineTests"
 #make -s SearchEngineTests
 #./SearchEngineTests
-
 
 echo " "
 echo "  CalibrationTests"

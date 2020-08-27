@@ -13,7 +13,8 @@ CEXECS = BinGenerationTest  \
 	 XLTest             \
 	 XLSearchOutputTest \
 	 SearchEngineTests  \
-	 IndexEngineTest   \
+	 IndexEngineTest    \
+	 FdrTest            \
 	 TestToml
 
 .SUFFIXES: .cxx .h  
@@ -46,6 +47,10 @@ SearchEngineTests: SearchEngineTests.o
 IndexEngineTest: IndexEngineTest.o 
 	$(CXX) $^ -o $@ $(LDFLAGS)
 
+FdrTest: FdrTest.o 
+	$(CXX) $(CXXFLAGS) -c TestDataFile.cpp
+	$(CXX) $^ -o $@ TestDataFile.o $(LDFLAGS)
+
 BinGenerationTest: BinGenerationTest.o ../lib/libmmorpheus.a
 	$(CXX) $(CXXFLAGS) -c TestDataFile.cpp
 	$(CXX) $^ -o $@ TestDataFile.o $(LDFLAGS)
@@ -57,7 +62,7 @@ clean:
 	rm -rf *.o *~
 
 	rm -f TestToml BinGenerationTest CalibrationTests XLTest XLSearchOutputTest
-	rm -f SearchEngineTests IndexEngineTest
+	rm -f SearchEngineTests IndexEngineTest FdrTest
 	rm -f TestProteinSplitAcrossFiles.xml TestProteinSplitAcrossFiles1.ind
 	rm -f TestProteinSplitAcrossFiles1.mzML TestProteinSplitAcrossFiles2.mzML
 	rm -f pep.XML.pep.XM BinGenerationTest.xml BinGenerationTest.mzML
