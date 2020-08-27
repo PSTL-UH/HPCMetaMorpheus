@@ -8,21 +8,15 @@
 #
 include ../Makefile.defs
 
-HEADER = Program.h              
-
 OBJ = 	 Program.o
 
 .SUFFIXES: .o.cpp
 
-all:    
-	make $(MMORPHEUS_LIB) 
 
-$(MMORPHEUS_LIB): $(HEADER) $(OBJ) 
-	$(AR) $(AR_FLAGS) $(MMORPHEUS_LIB_DIR)/$(MMORPHEUS_LIB) $(OBJ)
-
-$(OBJ):	$(HEADER)
-.cpp.o:	$(HEADER)
+$(OBJ):	
+.cpp.o:	
 	$(CXX) $(CXXFLAGS) -c $<
+	$(CXX) $(CXXFLAGS) $^ -o $(MMORPHEUS_BIN_DIR)/HPCMetaMorpheus $(LDFLAGS)
 
 clean:  
-	rm -rf *.o *~
+	rm -rf *.o *~ HPCMetaMorpheus
