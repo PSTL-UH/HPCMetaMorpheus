@@ -5,6 +5,8 @@
 #include "FdrAnalysisResults.h"
 #include "../GlobalVariables.h"
 
+#include <boost/math/special_functions/gamma.hpp>
+
 #include <numeric>
 #include <math.h>
 #include "Math.h"
@@ -345,17 +347,22 @@ namespace EngineLayer
 #endif
                         std::vector<std::vector<std::tuple<int, PeptideWithSetModifications *>>>hits;
                         current =0;
-                        for ( auto p = psm->getBestMatchingPeptides().begin(); p != psm->getBestMatchingPeptides().end(); p++ ) {
-                            if ( p == psm->getBestMatchingPeptides().begin() ) {
+                        std::string currFullSequence, prevFullSequence;
+                        auto tmpsms = psm->getBestMatchingPeptides();
+                        for ( auto p = tmpsms.begin(); p != tmpsms.end(); p++ ) {
+                            if ( p == tmpsms.begin() ) {
                                 std::vector<std::tuple<int, PeptideWithSetModifications *>> *v = new std::vector<std::tuple<int, PeptideWithSetModifications *>>;
                                 hits.push_back(*v);
+                                prevFullSequence = std::get<1>(*p)->getFullSequence();
                             }
                             else {
                                 auto q = p - 1;
-                                if ( std::get<1>(*p)->getFullSequence() != std::get<1>(*q)->getFullSequence() ) {
+                                currFullSequence = std::get<1>(*p)->getFullSequence();
+                                if ( currFullSequence != prevFullSequence ) {
                                     std::vector<std::tuple<int, PeptideWithSetModifications *>> *v = new std::vector<std::tuple<int, PeptideWithSetModifications *>>;
                                     hits.push_back(*v);
                                     current++;
+                                    prevFullSequence = currFullSequence;
                                 }
                             }
                             hits[current].push_back(*p);
@@ -457,7 +464,13 @@ namespace EngineLayer
             // it uses a global mean score (all scores across all PSMs) to generate the null Poisson distribution
             // this will be overriden by the next few lines if there are enough scores in this PSM to estimate a null distribution
             //double preValue = SpecialFunctions::GammaLowerRegularized(globalMeanScore, psm->getScore());
-            double preValue = Math::GammaLowerRegularized(globalMeanScore, psm->getScore());
+            //Edgar Note: the boost gamma lower regularized function gamma_p does not accept the first argument to be 0.
+            //            I verified with the C# version that the result returned by SpecialFunctions::GammaLowerRegularized
+            //            is in that case 1, independent of the second argument. Mimicking the same here.
+            double preValue = 1;
+            if ( globalMeanScore > 0 ) {
+                preValue = boost::math::gamma_p (globalMeanScore, psm->getScore());
+            }
             maximumLikelihood = globalMeanScore;
             
             // calculate single-spectrum evalue if there are enough hits besides the best scoring peptide
@@ -479,7 +492,8 @@ namespace EngineLayer
                 if (maximumLikelihood > 0)
                 {
                     //preValue = SpecialFunctions::GammaLowerRegularized(maximumLikelihood, psm->getScore());
-                    preValue = Math::GammaLowerRegularized(maximumLikelihood, psm->getScore());
+                    //preValue = Math::GammaLowerRegularized(maximumLikelihood, psm->getScore());
+                    preValue = boost::math::gamma_p ( maximumLikelihood, psm->getScore());
                 }
             }
             
