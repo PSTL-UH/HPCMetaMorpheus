@@ -37,7 +37,7 @@ namespace EngineLayer
                                                                      MassDiffAcceptor *massDiffAcceptor,
                                                                      double maximumMassThatFragmentIonScoreIsDoubled,
                                                                      std::vector<std::string> &nestedIds) :
-            ModernSearchEngine(std::vector<EngineLayer::PeptideSpectralMatch*>(),
+            ModernSearchEngine(unusedPsms,
                                listOfSortedms2Scans,
                                peptideIndex,
                                fragmentIndex,

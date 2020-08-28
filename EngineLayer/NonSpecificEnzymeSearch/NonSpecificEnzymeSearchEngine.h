@@ -43,7 +43,8 @@ namespace EngineLayer
             std::vector<std::vector<PeptideSpectralMatch*>> GlobalCategorySpecificPsms;
             CommonParameters *ModifiedParametersNoComp;
             std::vector<ProductType> ProductTypesToSearch;
-            
+            std::vector<PeptideSpectralMatch*> unusedPsms;  // Just to keep the ModernSearchEngine constructor happy
+
         public:
             virtual ~NonSpecificEnzymeSearchEngine()
             {

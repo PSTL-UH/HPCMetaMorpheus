@@ -53,6 +53,8 @@ namespace EngineLayer
             Modification *NH2DeadEnd=nullptr;
             Modification *Loop=nullptr;
             std::vector<char> AllCrosslinkerSites;
+
+            std::vector<PeptideSpectralMatch*> unusedPsms; // just to keep the constructor of ModernSearch happy
             
         public:
             virtual ~CrosslinkSearchEngine()

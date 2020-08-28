@@ -17,7 +17,7 @@ namespace EngineLayer
     namespace ModernSearch
     {
         
-        ModernSearchEngine::ModernSearchEngine(std::vector<PeptideSpectralMatch*> globalPsms,
+        ModernSearchEngine::ModernSearchEngine(std::vector<PeptideSpectralMatch*> &globalPsms,
                                                std::vector<Ms2ScanWithSpecificMass*> &listOfSortedms2Scans,
                                                std::vector<PeptideWithSetModifications*> &peptideIndex,
                                                std::vector<std::vector<int>> &fragmentIndex,
@@ -37,6 +37,7 @@ namespace EngineLayer
             MaxMassThatFragmentIonScoreIsDoubled(maximumMassThatFragmentIonScoreIsDoubled)
         {
         }
+
         
         MetaMorpheusEngineResults *ModernSearchEngine::RunSpecific()
         {
@@ -280,7 +281,8 @@ namespace EngineLayer
             return binsToSearch;
         }
         
-        int ModernSearchEngine::BinarySearchBinForPrecursorIndex(std::vector<int> &peptideIdsInThisBin, double peptideMassToLookFor, std::vector<PeptideWithSetModifications*> &peptideIndex)
+        int ModernSearchEngine::BinarySearchBinForPrecursorIndex(std::vector<int> &peptideIdsInThisBin, double peptideMassToLookFor,
+                                                                 std::vector<PeptideWithSetModifications*> &peptideIndex)
         {
             int m = 0;
             int l = 0;
@@ -311,7 +313,11 @@ namespace EngineLayer
             return m;
         }
         
-        void ModernSearchEngine::IndexedScoring(std::vector<int> &binsToSearch, std::vector<unsigned char> &scoringTable, unsigned char byteScoreCutoff, std::vector<int> &idsOfPeptidesPossiblyObserved, double scanPrecursorMass, double lowestMassPeptideToLookFor, double highestMassPeptideToLookFor, std::vector<PeptideWithSetModifications*> &peptideIndex, MassDiffAcceptor *massDiffAcceptor, double maxMassThatFragmentIonScoreIsDoubled)
+        void ModernSearchEngine::IndexedScoring(std::vector<int> &binsToSearch, std::vector<unsigned char> &scoringTable,
+                                                unsigned char byteScoreCutoff, std::vector<int> &idsOfPeptidesPossiblyObserved,
+                                                double scanPrecursorMass, double lowestMassPeptideToLookFor,
+                                                double highestMassPeptideToLookFor, std::vector<PeptideWithSetModifications*> &peptideIndex,
+                                                MassDiffAcceptor *massDiffAcceptor, double maxMassThatFragmentIonScoreIsDoubled)
         {
             // get all theoretical fragments this experimental fragment could be
             for (int i = 0; i < (int)binsToSearch.size(); i++)

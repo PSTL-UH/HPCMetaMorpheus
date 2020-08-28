@@ -2,6 +2,7 @@
 #include "../EngineLayer/PrecursorSearchModes/DotMassDiffAcceptor.h"
 #include "../EngineLayer/PrecursorSearchModes/MassDiffAcceptor.h"
 #include "TestDataFile.h"
+#include "../EngineLayer/GlobalVariables.h"
 #include "../EngineLayer/CommonParameters.h"
 #include "../EngineLayer/Ms2ScanWithSpecificMass.h"
 #include "../EngineLayer/PeptideSpectralMatch.h"
@@ -23,6 +24,7 @@ using namespace EngineLayer::ClassicSearch;
 using namespace EngineLayer::FdrAnalysis;
 
 #include "../EngineLayer/Indexing/IndexingEngine.h"
+#include "../EngineLayer/Indexing/IndexingResults.h"
 using namespace EngineLayer::Indexing;
 
 #include "../EngineLayer/ModernSearch/ModernSearchEngine.h"
@@ -55,14 +57,14 @@ int main ( int argc, char **argv )
     const std::string &elr=elfile;
     //Chemistry::PeriodicTable::Load (elr);
     UsefulProteomicsDatabases::PeriodicTableLoader::Load (elr);
-
+    GlobalVariables::GlobalVariables_init();
+        
     std::cout << ++i << ". FdrTestMethod" << std::endl;
     Test::FdrTest::FdrTestMethod();
 
-#ifdef LATER
     std::cout << ++i << ". TestDeltaValues" << std::endl;
     Test::FdrTest::TestDeltaValues();
-#endif
+
     return 0;
 }
 
@@ -155,36 +157,51 @@ namespace Test
         delete searchModes;
     }
 
-#ifdef LATER
+
     void FdrTest::TestDeltaValues()
     {
-        DigestionParams tempVar(minPeptideLength: 5);
-        CommonParameters *CommonParameters = new CommonParameters(scoreCutoff: 1, useDeltaScore: true, digestionParams: &tempVar);
+        auto tempVar = new DigestionParams("trypsin", 2, 5);
+        CommonParameters *cp = new CommonParameters("", DissociationType::HCD, true, true, 3, 12, true, false, 1, 1, 200, 0.01, false, true, true,
+                                                    false, nullptr, nullptr, nullptr, -1, tempVar);
         
-        SearchParameters *SearchParameters = new SearchParameters();
-        SearchParameters->setMassDiffAcceptorType(MassDiffAcceptorType::Exact);
-        std::vector<Modification*> variableModifications = GlobalVariables::getAllModsKnown().OfType<Modification*>().Where([&] (std::any b)  {
-                CommonParameters->ListOfModsVariable->Contains((b::ModificationType, b::IdWithMotif));
-            }).ToList();
-        std::vector<Modification*> fixedModifications = GlobalVariables::getAllModsKnown().OfType<Modification*>().Where([&] (std::any b)  {
-                CommonParameters->ListOfModsFixed->Contains((b::ModificationType, b::IdWithMotif));
-            }).ToList();
+        SearchParameters *sp = new SearchParameters();
+        sp->setMassDiffAcceptorType(MassDiffAcceptorType::Exact);
+        auto allmods = GlobalVariables::getAllModsKnown();
+        auto listofmodsvar = cp->getListOfModsVariable();
+        std::vector<Modification*> variableModifications;
+        for ( auto b: allmods ) {
+            if ( std::find(listofmodsvar->begin(), listofmodsvar->end(), std::make_tuple(b->getModificationType(), b->getIdWithMotif())) != listofmodsvar->end() ) {
+                variableModifications.push_back(b);
+            }
+        }
+        std::vector<Modification*> fixedModifications;
+        auto listofmodsfixed =  cp->getListOfModsFixed();
+        for ( auto b: allmods ) {
+            if ( std::find(listofmodsfixed->begin(), listofmodsfixed->end(), std::make_tuple(b->getModificationType(), b->getIdWithMotif())) != listofmodsfixed->end() ) {
+                fixedModifications.push_back(b);
+            }
+        }
         
         // Generate data for files
         Protein *TargetProtein1 = new Protein("TIDEANTHE", "accession1");
         Protein *TargetProtein2 = new Protein("TIDELVE", "accession2");
         Protein *TargetProtein3 = new Protein("TIDENIE", "accession3");
         Protein *TargetProteinLost = new Protein("PEPTIDEANTHE", "accession4");
-        Protein *DecoyProteinFound = new Protein("PETPLEDQGTHE", "accessiond", isDecoy: true);
+        Protein *DecoyProteinFound = new Protein("PETPLEDQGTHE", "accessiond", "",
+                                                 std::vector<std::tuple<std::string, std::string>>(),
+                                                 std::unordered_map<int, std::vector<Modification*>>(),
+                                                 std::vector<ProteolysisProduct*>(),
+                                                 "", "", true);
 
-        auto tp1 = TargetProtein1->Digest(CommonParameters->getDigestionParams(), fixedModifications, variableModifications)[0];
-        auto tp2 = TargetProtein2->Digest(CommonParameters->getDigestionParams(), fixedModifications, variableModifications)[0];
-        auto tp3 = TargetProtein3->Digest(CommonParameters->getDigestionParams(), fixedModifications, variableModifications)[0];
-        auto dpf = DecoyProteinFound->Digest(CommonParameters->getDigestionParams(), fixedModifications, variableModifications)[0];
+        auto tp1 = TargetProtein1->Digest(cp->getDigestionParams(), fixedModifications, variableModifications)[0];
+        auto tp2 = TargetProtein2->Digest(cp->getDigestionParams(), fixedModifications, variableModifications)[0];
+        auto tp3 = TargetProtein3->Digest(cp->getDigestionParams(), fixedModifications, variableModifications)[0];
+        auto dpf = DecoyProteinFound->Digest(cp->getDigestionParams(), fixedModifications, variableModifications)[0];
+
+        std::vector<PeptideWithSetModifications*> vPWSM = {tp1, tp2, tp3, dpf};
+        MsDataFile *myMsDataFile = new TestDataFile( vPWSM );
         
-        MsDataFile *myMsDataFile = new TestDataFile(std::vector<PeptideWithSetModifications*> {tp1, tp2, tp3, dpf});
-        
-        auto proteinList = std::vector<Protein*> {TargetProtein1, TargetProtein2, TargetProtein3, TargetProteinLost, DecoyProteinFound};
+        std::vector<Protein*> proteinList = {TargetProtein1, TargetProtein2, TargetProtein3, TargetProteinLost, DecoyProteinFound};
         
         auto searchModes = new SinglePpmAroundZeroSearchMode(5);
         
@@ -195,121 +212,155 @@ namespace Test
         Tolerance *DeconvolutionMassTolerance = new PpmTolerance(5);
         
         auto tempVar2 = new CommonParameters();
-        auto listOfSortedms2Scans = MetaMorpheusTask::GetMs2Scans(myMsDataFile, "", tempVar2).OrderBy([&] (std::any b) {
-                b::PrecursorMass;
-            })->ToArray();
+        auto listOfSortedms2Scans = MetaMorpheusTask::GetMs2Scans(myMsDataFile, "", tempVar2);
+        std::sort( listOfSortedms2Scans.begin(), listOfSortedms2Scans.end(), [&] (auto l, auto r)  {
+                return l->getPrecursorMass() < r->getPrecursorMass();
+            });
         
         //check better when using delta
         std::vector<PeptideSpectralMatch*> allPsmsArray(listOfSortedms2Scans.size());
-        ClassicSearchEngine tempVar3(allPsmsArray, listOfSortedms2Scans, variableModifications, fixedModifications, proteinList, searchModes,
-                                     CommonParameters, new std::vector<std::string>());
+        std::vector<std::string> vs, vs1, vs2, vs3;
+
+        ClassicSearchEngine tempVar3(allPsmsArray, listOfSortedms2Scans, variableModifications, fixedModifications,
+                                     proteinList, searchModes,  cp, vs);
         (&tempVar3)->Run();
-        
-        auto indexEngine = new IndexingEngine(proteinList, variableModifications, fixedModifications, 1, DecoyType::None, CommonParameters, 30000, false,
-                                              std::vector<FileInfo*>(), std::vector<std::string>());
+
+        auto indexEngine = new IndexingEngine(proteinList, variableModifications, fixedModifications, 1,
+                                              DecoyType::None, cp, 30000, false,     vs1, vs2);
         auto indexResults = static_cast<IndexingResults*>(indexEngine->Run());
-        MassDiffAcceptor *massDiffAcceptor = SearchTask::GetMassDiffAcceptor(CommonParameters->getPrecursorMassTolerance(), SearchParameters->getMassDiffAcceptorType(),
-                                                                             SearchParameters->getCustomMdac());
+        MassDiffAcceptor *massDiffAcceptor = SearchTask::GetMassDiffAcceptor(cp->getPrecursorMassTolerance(),
+                                                                             sp->getMassDiffAcceptorType(),
+                                                                             sp->getCustomMdac());
         
         std::vector<PeptideSpectralMatch*> allPsmsArrayModern(listOfSortedms2Scans.size());
-        ModernSearchEngine tempVar4(allPsmsArrayModern, listOfSortedms2Scans, indexResults->getPeptideIndex(), indexResults->getFragmentIndex(), 0, CommonParameters,
-                                    massDiffAcceptor, 0, new std::vector<std::string>());
+
+        auto v1 = indexResults->getPeptideIndex();
+        auto v2 = indexResults->getFragmentIndex();
+        ModernSearchEngine tempVar4(allPsmsArrayModern, listOfSortedms2Scans, v1, v2, 0, cp,
+                                    massDiffAcceptor, 0, vs3 );
         (&tempVar4)->Run();
-        
-        FdrAnalysisEngine tempVar5(allPsmsArray.ToList(), 1, CommonParameters, new std::vector<std::string>());
+
+        std::vector<std::string> vs4, vs5, vs6, vs7;
+        FdrAnalysisEngine tempVar5(allPsmsArray, 1, cp, vs4);
         FdrAnalysisResults *fdrResultsClassicDelta = static_cast<FdrAnalysisResults*>((&tempVar5)->Run());
-        FdrAnalysisEngine tempVar6(allPsmsArrayModern.ToList(), 1, CommonParameters, new std::vector<std::string>());
+
+        FdrAnalysisEngine tempVar6(allPsmsArrayModern, 1, cp, vs5);
         FdrAnalysisResults *fdrResultsModernDelta = static_cast<FdrAnalysisResults*>((&tempVar6)->Run());
-        Assert::IsTrue(fdrResultsClassicDelta->getPsmsWithin1PercentFdr() == 3);
-        Assert::IsTrue(fdrResultsModernDelta->getPsmsWithin1PercentFdr() == 3);
+        Assert::AreEqual(fdrResultsClassicDelta->getPsmsWithin1PercentFdr(), 3);
+        Assert::AreEqual(fdrResultsModernDelta->getPsmsWithin1PercentFdr(), 3);
         
-        DigestionParams tempVar7(minPeptideLength: 5);
-        CommonParameters = new CommonParameters(digestionParams: &tempVar7);
+        auto tempVar7 = new DigestionParams ("trypsin", 2,  5);
+        cp = new CommonParameters();
+        cp->setDigestionParams(tempVar7);
         
         //check worse when using score
-        FdrAnalysisEngine tempVar8(allPsmsArray.ToList(), 1, CommonParameters, new std::vector<std::string>());
+        FdrAnalysisEngine tempVar8(allPsmsArray, 1, cp, vs6);
         FdrAnalysisResults *fdrResultsClassic = static_cast<FdrAnalysisResults*>((&tempVar8)->Run());
-        FdrAnalysisEngine tempVar9(allPsmsArray.ToList(), 1, CommonParameters, new std::vector<std::string>());
+        FdrAnalysisEngine tempVar9(allPsmsArray, 1, cp, vs7);
         FdrAnalysisResults *fdrResultsModern = static_cast<FdrAnalysisResults*>((&tempVar9)->Run());
-        Assert::IsTrue(fdrResultsClassic->getPsmsWithin1PercentFdr() == 0);
-        Assert::IsTrue(fdrResultsModern->getPsmsWithin1PercentFdr() == 0);
+        Assert::AreEqual(fdrResultsClassic->getPsmsWithin1PercentFdr(), 0);
+        Assert::AreEqual(fdrResultsModern->getPsmsWithin1PercentFdr(), 0);
         
         //check that when delta is bad, we used the score
         // Generate data for files
-        Protein *DecoyProtein1 = new Protein("TLEDAGGTHE", "accession1d", isDecoy: true);
-        Protein *DecoyProtein2 = new Protein("TLEDLVE", "accession2d", isDecoy: true);
-        Protein *DecoyProtein3 = new Protein("TLEDNIE", "accession3d", isDecoy: true);
-        Protein *DecoyProteinShiny = new Protein("GGGGGG", "accessionShinyd", isDecoy: true);
+        Protein *DecoyProtein1 = new Protein("TLEDAGGTHE", "accession1d", "", 
+                                             std::vector<std::tuple<std::string, std::string>>(),
+                                             std::unordered_map<int, std::vector<Modification*>>(),
+                                             std::vector<ProteolysisProduct*>(),
+                                             "", "", true);
+        Protein *DecoyProtein2 = new Protein("TLEDLVE", "accession2d", "", 
+                                             std::vector<std::tuple<std::string, std::string>>(),
+                                             std::unordered_map<int, std::vector<Modification*>>(),
+                                             std::vector<ProteolysisProduct*>(),
+                                             "", "", true);
+        Protein *DecoyProtein3 = new Protein("TLEDNIE", "accession3d", "", 
+                                             std::vector<std::tuple<std::string, std::string>>(),
+                                             std::unordered_map<int, std::vector<Modification*>>(),
+                                             std::vector<ProteolysisProduct*>(),
+                                             "", "", true);
+        Protein *DecoyProteinShiny = new Protein("GGGGGG", "accessionShinyd", "", 
+                                                 std::vector<std::tuple<std::string, std::string>>(),
+                                                 std::unordered_map<int, std::vector<Modification*>>(),
+                                                 std::vector<ProteolysisProduct*>(),
+                                                 "", "", true);
 
-        tp1 = TargetProtein1->Digest(CommonParameters->getDigestionParams(), fixedModifications, variableModifications)[0];
-        tp2 = TargetProtein2->Digest(CommonParameters->getDigestionParams(), fixedModifications, variableModifications)[0];
-        tp3 = TargetProtein3->Digest(CommonParameters->getDigestionParams(), fixedModifications, variableModifications)[0];
-        auto dps = DecoyProteinShiny->Digest(CommonParameters->getDigestionParams(), fixedModifications, variableModifications)[0];
-        
-            myMsDataFile = new TestDataFile(std::vector<PeptideWithSetModifications*> {tp1, tp2, tp3, dps});
+        tp1 = TargetProtein1->Digest(cp->getDigestionParams(), fixedModifications, variableModifications)[0];
+        tp2 = TargetProtein2->Digest(cp->getDigestionParams(), fixedModifications, variableModifications)[0];
+        tp3 = TargetProtein3->Digest(cp->getDigestionParams(), fixedModifications, variableModifications)[0];
+        auto dps = DecoyProteinShiny->Digest(cp->getDigestionParams(), fixedModifications, variableModifications)[0];
+
+        std::vector<PeptideWithSetModifications*> vPWSM2 = {tp1, tp2, tp3, dps};
+        myMsDataFile = new TestDataFile(vPWSM2);
         
         proteinList = {TargetProtein1, DecoyProtein1, TargetProtein2, DecoyProtein2, TargetProtein3, DecoyProtein3, DecoyProteinShiny};
         
-        CommonParameters tempVar10();
-        listOfSortedms2Scans = MetaMorpheusTask::GetMs2Scans(myMsDataFile, "", &tempVar10).OrderBy([&] (std::any b) {
-                b::PrecursorMass;
-            })->ToArray();
+        auto tempVar10 = new CommonParameters();
+        listOfSortedms2Scans = MetaMorpheusTask::GetMs2Scans(myMsDataFile, "", tempVar10);
+        std::sort( listOfSortedms2Scans.begin(), listOfSortedms2Scans.end(), [&] (auto l, auto r)  {
+                return l->getPrecursorMass() < r->getPrecursorMass();
+            });
         
         //check no change when using delta
         allPsmsArray = std::vector<PeptideSpectralMatch*>(listOfSortedms2Scans.size());
+        std::vector<std::string> vs10, vs11, vs12, vs13;
         ClassicSearchEngine tempVar11(allPsmsArray, listOfSortedms2Scans, variableModifications, fixedModifications, proteinList, searchModes,
-                                      CommonParameters, new std::vector<std::string>());
+                                      cp, vs10);
         (&tempVar11)->Run();
         
-        DigestionParams tempVar12(minPeptideLength: 5);
-        CommonParameters = new CommonParameters(useDeltaScore: true, digestionParams: &tempVar12);
-        
-        indexEngine = new IndexingEngine(proteinList, variableModifications, fixedModifications, 1, DecoyType::None, CommonParameters, 30000, false,
-                                         std::vector<FileInfo*>(), std::vector<std::string>());
+        auto tempVar12 = new DigestionParams( "trypsin", 2,  5);
+        cp = new CommonParameters("", DissociationType::HCD, true, true, 3, 12, true, false, 1, 1, 200, 0.01, false, true, true,
+                                  false, nullptr, nullptr, nullptr, -1, tempVar12);
+
+        indexEngine = new IndexingEngine(proteinList, variableModifications, fixedModifications, 1, DecoyType::None, cp, 30000, false,
+                                         vs11, vs12);
         indexResults = static_cast<IndexingResults*>(indexEngine->Run());
-        massDiffAcceptor = SearchTask::GetMassDiffAcceptor(CommonParameters->getPrecursorMassTolerance(), SearchParameters->getMassDiffAcceptorType(),
-                                                           SearchParameters->getCustomMdac());
+        massDiffAcceptor = SearchTask::GetMassDiffAcceptor(cp->getPrecursorMassTolerance(), sp->getMassDiffAcceptorType(),
+                                                           sp->getCustomMdac());
         allPsmsArrayModern = std::vector<PeptideSpectralMatch*>(listOfSortedms2Scans.size());
-        ModernSearchEngine tempVar13(allPsmsArrayModern, listOfSortedms2Scans, indexResults->getPeptideIndex(), indexResults->getFragmentIndex(), 0,
-                                     CommonParameters, massDiffAcceptor, 0, new std::vector<std::string>());
+
+        auto v3 = indexResults->getPeptideIndex();
+        auto v4 = indexResults->getFragmentIndex();
+        ModernSearchEngine tempVar13(allPsmsArrayModern, listOfSortedms2Scans, v3, v4, 0,
+                                     cp, massDiffAcceptor, 0, vs13);
         (&tempVar13)->Run();
         
-        FdrAnalysisEngine tempVar14(allPsmsArray.ToList(), 1, CommonParameters, new std::vector<std::string>());
+        std::vector<std::string> vs14, vs15, vs16, vs17;
+        FdrAnalysisEngine tempVar14(allPsmsArray, 1, cp, vs14);
         fdrResultsClassicDelta = static_cast<FdrAnalysisResults*>((&tempVar14)->Run());
-        FdrAnalysisEngine tempVar15(allPsmsArrayModern.ToList(), 1, CommonParameters, new std::vector<std::string>());
+        FdrAnalysisEngine tempVar15(allPsmsArrayModern, 1, cp, vs15);
         fdrResultsModernDelta = static_cast<FdrAnalysisResults*>((&tempVar15)->Run());
-        Assert::IsTrue(fdrResultsClassicDelta->getPsmsWithin1PercentFdr() == 3);
-        Assert::IsTrue(fdrResultsModernDelta->getPsmsWithin1PercentFdr() == 3);
+        Assert::AreEqual(fdrResultsClassicDelta->getPsmsWithin1PercentFdr(),3);
+        Assert::AreEqual(fdrResultsModernDelta->getPsmsWithin1PercentFdr(), 3);
         
-        DigestionParams tempVar16(minPeptideLength: 5);
-        CommonParameters = new CommonParameters(digestionParams: &tempVar16);
+        auto tempVar16 = new DigestionParams("trypsin", 2, 5);
+        cp = new CommonParameters();
+        cp->setDigestionParams(tempVar16);
         
         //check no change when using score
-        FdrAnalysisEngine tempVar17(allPsmsArray.ToList(), 1, CommonParameters, new std::vector<std::string>());
+        FdrAnalysisEngine tempVar17(allPsmsArray, 1, cp, vs16);
         fdrResultsClassic = static_cast<FdrAnalysisResults*>((&tempVar17)->Run());
-        FdrAnalysisEngine tempVar18(allPsmsArrayModern.ToList(), 1, CommonParameters, new std::vector<std::string>());
+        FdrAnalysisEngine tempVar18(allPsmsArrayModern, 1, cp, vs17);
         fdrResultsModern = static_cast<FdrAnalysisResults*>((&tempVar18)->Run());
-        Assert::IsTrue(fdrResultsClassic->getPsmsWithin1PercentFdr() == 3);
-        Assert::IsTrue(fdrResultsModern->getPsmsWithin1PercentFdr() == 3);
+        Assert::AreEqual(fdrResultsClassic->getPsmsWithin1PercentFdr(), 3);
+        Assert::AreEqual(fdrResultsModern->getPsmsWithin1PercentFdr(), 3);
         
+        delete tempVar;
+        delete tempVar2;
+        delete tempVar7;
+        delete tempVar16;
+        delete sp;
         delete DecoyProteinShiny;
         delete DecoyProtein3;
         delete DecoyProtein2;
         delete DecoyProtein1;
         delete indexEngine;
         delete DeconvolutionMassTolerance;
-        //C# TO C++ CONVERTER TODO TASK: A 'delete searchModes' statement was not added since searchModes
-        //was passed to a method or constructor. Handle memory management manually.
-        //C# TO C++ CONVERTER TODO TASK: A 'delete myMsDataFile' statement was not added since myMsDataFile
-        //was passed to a method or constructor. Handle memory management manually.
+        delete searchModes;
+        delete myMsDataFile;
         delete DecoyProteinFound;
         delete TargetProteinLost;
         delete TargetProtein3;
         delete TargetProtein2;
         delete TargetProtein1;
-        delete SearchParameters;
-        //C# TO C++ CONVERTER TODO TASK: A 'delete CommonParameters' statement was not added since CommonParameters
-        //was passed to a method or constructor. Handle memory management manually.
     }
-#endif
 }

@@ -9,20 +9,11 @@
 #include <tuple>
 #include <optional>
 
-//C# TO C++ CONVERTER NOTE: Forward class declarations:
-//namespace EngineLayer { class PeptideSpectralMatch; }
 #include "../PeptideSpectralMatch.h"
-
-//namespace EngineLayer { class CommonParameters; }
 #include "../CommonParameters.h"
-
-//namespace EngineLayer { class MetaMorpheusEngineResults; }
 #include "../MetaMorpheusEngineResults.h"
-
-//namespace EngineLayer { namespace FdrAnalysis { class FdrAnalysisResults; } }
 #include "FdrAnalysisResults.h"
 
-//using namespace MathNet::Numerics;
 
 namespace EngineLayer
 {

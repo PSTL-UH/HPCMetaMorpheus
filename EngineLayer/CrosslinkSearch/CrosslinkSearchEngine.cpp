@@ -38,7 +38,7 @@ namespace EngineLayer
                                                      bool quench_NH2,
                                                      bool quench_Tris,
                                                      std::vector<std::string> &nestedIds) :
-            ModernSearchEngine(std::vector<EngineLayer::PeptideSpectralMatch*>(),
+            ModernSearchEngine(unusedPsms,
                                listOfSortedms2Scans,
                                peptideIndex,
                                fragmentIndex,

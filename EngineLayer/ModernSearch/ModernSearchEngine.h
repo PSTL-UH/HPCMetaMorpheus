@@ -31,7 +31,7 @@ namespace EngineLayer
         protected:
             static constexpr int FragmentBinsPerDalton = 1000;
             std::vector<std::vector<int>> const FragmentIndex;
-            std::vector<PeptideSpectralMatch*> PeptideSpectralMatches;
+            std::vector<PeptideSpectralMatch*> &PeptideSpectralMatches;
             std::vector<Ms2ScanWithSpecificMass*> const ListOfSortedMs2Scans;
             std::vector<PeptideWithSetModifications*> PeptideIndex;
             const int CurrentPartition;
@@ -47,7 +47,7 @@ namespace EngineLayer
                 //delete dissociationType;
             }
             
-            ModernSearchEngine(std::vector<PeptideSpectralMatch*> globalPsms,
+            ModernSearchEngine(std::vector<PeptideSpectralMatch*> &globalPsms,
                                std::vector<Ms2ScanWithSpecificMass*> &listOfSortedms2Scans,
                                std::vector<PeptideWithSetModifications*> &peptideIndex,
                                std::vector<std::vector<int>> &fragmentIndex,
@@ -56,6 +56,7 @@ namespace EngineLayer
                                MassDiffAcceptor *massDiffAcceptor,
                                double maximumMassThatFragmentIonScoreIsDoubled,
                                std::vector<std::string> &nestedIds);
+
             
         protected:
             MetaMorpheusEngineResults *RunSpecific() override;

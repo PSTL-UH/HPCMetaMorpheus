@@ -9,7 +9,7 @@
 
 #include <numeric>
 #include <math.h>
-#include "Math.h"
+#include "Group.h"
 
 namespace EngineLayer
 {
@@ -61,26 +61,13 @@ namespace EngineLayer
                     p::DigestionParams::Protease;
                 });
 #endif
-            std::sort(AllPsms.begin(), AllPsms.end(), [&] (PeptideSpectralMatch *r, PeptideSpectralMatch *l) {
-                    return r->digestionParams->getProtease() < l->digestionParams->getProtease(); });
-            std::vector<std::vector<PeptideSpectralMatch *>> psmsGroupedByProtease;
-            int current = 0;
-            for ( auto p = AllPsms.begin(); p != AllPsms.end(); p++ ) {
-                if ( p == AllPsms.begin() ) {
-                    std::vector<PeptideSpectralMatch *> *v = new std::vector<PeptideSpectralMatch *>;
-                    psmsGroupedByProtease.push_back(*v);
-                }
-                else {
-                    auto q = p - 1;
-                    if ( (*p)->digestionParams->getProtease() != (*q)->digestionParams->getProtease() ) {
-                        std::vector<PeptideSpectralMatch *> *v = new std::vector<PeptideSpectralMatch *>;
-                        psmsGroupedByProtease.push_back(*v);
-                        current++;
-                    }
-                }
-                psmsGroupedByProtease[current].push_back (*p);
-            }
-            
+            std::function<bool(PeptideSpectralMatch*,PeptideSpectralMatch*)> f1 = [&]
+                (PeptideSpectralMatch *l, PeptideSpectralMatch *r) {
+                return l->digestionParams->getProtease() < r->digestionParams->getProtease(); } ;
+            std::function<bool(PeptideSpectralMatch*,PeptideSpectralMatch*)> f2 = [&]
+                (PeptideSpectralMatch *l, PeptideSpectralMatch *r) {
+                return l->digestionParams->getProtease() != r->digestionParams->getProtease(); } ;
+            std::vector<std::vector<PeptideSpectralMatch *>> psmsGroupedByProtease = Group::GroupBy( AllPsms, f1, f2 );
             
             for (auto psms : psmsGroupedByProtease)
             {
@@ -97,8 +84,9 @@ namespace EngineLayer
                     std::vector<double> combinedScores;
                     for (auto psm : psms)
                     {
-                        std::sort(psm->getAllScores().begin(), psm->getAllScores().end());
-                        combinedScores.insert(combinedScores.end(), psm->getAllScores().begin(), psm->getAllScores().end());
+                        auto allscores = psm->getAllScores();
+                        std::sort(allscores.begin(), allscores.end());
+                        combinedScores.insert(combinedScores.end(), allscores.begin(), allscores.end());
                         
                         //remove top scoring peptide
 #ifdef ORIG
@@ -169,27 +157,36 @@ namespace EngineLayer
                             return rval < lval;
                         });
                     //GroupBy tuple
+                    std::function<bool(PeptideSpectralMatch*,PeptideSpectralMatch*)> f3 = [&]
+                        (PeptideSpectralMatch *l, PeptideSpectralMatch *r) {
+                        return l->getFullFilePath() != r->getFullFilePath() &&
+                        l->getScanNumber() != r->getScanNumber() &&
+                        l->getPeptideMonisotopicMass() != r->getPeptideMonisotopicMass(); } ;
                     std::vector<std::vector<PeptideSpectralMatch *>>tvec;
-                    for ( auto psm : psms ) {
-                        for ( auto t : tvec ) {
-                            if ( t[0]->getFullFilePath() == psm->getFullFilePath()                      &&
-                                 t[0]->getScanNumber()   == psm->getScanNumber()                        &&
-                                 t[0]->getPeptideMonisotopicMass() == psm->getPeptideMonisotopicMass() ) {
-                                t.push_back(psm);                                
+                    //Edgar: Note: cannot use the Group::GroupBy functionality here because of the custom sorting.
+                    for ( auto p : psms ) {
+                        bool found = false;
+                        for ( auto q: tvec ) {
+                            if ( f3 ( p, q[0] ) ) {
+                                found = true;
+                                q.push_back(p);
+                                break;
                             }
-                            else {
-                                std::vector<PeptideSpectralMatch *> *t = new std::vector<PeptideSpectralMatch *>;
-                                t->push_back(psm);
-                                tvec.push_back(*t);                                
-                            }                                 
+                        }
+                        if ( !found ) {
+                            auto vec = new std::vector<PeptideSpectralMatch *>();
+                            vec->push_back(p);
+                            tvec.push_back(*vec);
                         }
                     }
+
+
                     // Select first
                     std::vector<PeptideSpectralMatch*> scoreSorted;
                     for ( auto t: tvec ) {
                         scoreSorted.push_back(t[0]);
                     }
-                    
+            
                     int ScorePSMs = GetNumPSMsAtqValueCutoff(scoreSorted, qValueCutoff);
 #ifdef ORIG
                     scoreSorted = psms.OrderByDescending([&] (std::any b)	{
@@ -219,18 +216,19 @@ namespace EngineLayer
                         });
                     //GroupBy tuple
                     tvec.clear();
-                    for ( auto psm : psms ) {
-                        for ( auto t : tvec ) {
-                            if ( t[0]->getFullFilePath() == psm->getFullFilePath()                      &&
-                                 t[0]->getScanNumber()   == psm->getScanNumber()                        &&
-                                 t[0]->getPeptideMonisotopicMass() == psm->getPeptideMonisotopicMass() ) {
-                                t.push_back(psm);                                
+                    for ( auto p : psms ) {
+                        bool found = false;
+                        for ( auto q: tvec ) {
+                            if ( f3 ( p, q[0] ) ) {
+                                found = true;
+                                q.push_back(p);
+                                break;
                             }
-                            else {
-                                std::vector<PeptideSpectralMatch *> *t = new std::vector<PeptideSpectralMatch *>;
-                                t->push_back(psm);
-                                tvec.push_back(*t);                                
-                            }                                 
+                        }
+                        if ( !found ) {
+                            auto vec = new std::vector<PeptideSpectralMatch *>();
+                            vec->push_back(p);
+                            tvec.push_back(*vec);
                         }
                     }
                     // Select first
@@ -346,7 +344,7 @@ namespace EngineLayer
                             });
 #endif
                         std::vector<std::vector<std::tuple<int, PeptideWithSetModifications *>>>hits;
-                        current =0;
+                        int current =0;
                         std::string currFullSequence, prevFullSequence;
                         auto tmpsms = psm->getBestMatchingPeptides();
                         for ( auto p = tmpsms.begin(); p != tmpsms.end(); p++ ) {
