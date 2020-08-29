@@ -1,6 +1,7 @@
 ﻿#include <tuple>
 #include <algorithm>
 
+
 #include "Ms2ScanWithSpecificMass.h"
 #include "CommonParameters.h"
 
@@ -8,6 +9,7 @@
 
 using namespace Chemistry;
 using namespace MassSpectrometry;
+
 
 namespace EngineLayer
 {
@@ -78,61 +80,54 @@ namespace EngineLayer
     
     int Ms2ScanWithSpecificMass::getOneBasedScanNumber() const
     {
-        return getTheScan()->getOneBasedScanNumber();
+        return privateTheScan->getOneBasedScanNumber();
     }
     
     std::optional<int> Ms2ScanWithSpecificMass::getOneBasedPrecursorScanNumber() const
     {
-        return getTheScan()->getOneBasedPrecursorScanNumber();
+        return privateTheScan->getOneBasedPrecursorScanNumber();
     }
     
     double Ms2ScanWithSpecificMass::getRetentionTime() const
     {
-        return getTheScan()->getRetentionTime();
+        return privateTheScan->getRetentionTime();
     }
     
     int Ms2ScanWithSpecificMass::getNumPeaks() const
     {
-        return getTheScan()->getMassSpectrum()->getSize();
+        return privateTheScan->getMassSpectrum()->getSize();
     }
     
     double Ms2ScanWithSpecificMass::getTotalIonCurrent() const
     {
-        return getTheScan()->getTotalIonCurrent();
+        return privateTheScan->getTotalIonCurrent();
     }
     
     std::vector<IsotopicEnvelope*> Ms2ScanWithSpecificMass::GetNeutralExperimentalFragments(MsDataScan *scan, CommonParameters *commonParam)
     {
         int minZ = 1;
         int maxZ = 10;
-        
-        auto neutralExperimentalFragmentMasses = scan->getMassSpectrum()->Deconvolute(scan->getMassSpectrum()->getRange(),
-                                                              minZ, maxZ,
-                                                              commonParam->getDeconvolutionMassTolerance()->getValue(),
-                                                              commonParam->getDeconvolutionIntensityRatio());
+        auto thisScanMassSpec = scan->getMassSpectrum();
+        auto neutralExperimentalFragmentMasses = thisScanMassSpec->Deconvolute(scan->getMassSpectrum()->getRange(),
+                                                                               minZ, maxZ,
+                                                                               commonParam->getDeconvolutionMassTolerance()->getValue(),
+                                                                               commonParam->getDeconvolutionIntensityRatio());
         
         if (commonParam->getAssumeOrphanPeaksAreZ1Fragments())
         {
-#ifdef ORIG
-            std::unordered_set<double> alreadyClaimedMzs = std::unordered_set<double>(neutralExperimentalFragmentMasses.SelectMany([&] (std::any p)
-            {
-                p::peaks->Select([&] (std::any v)
-            {
-                Chemistry::ClassExtensions::RoundedDouble(v::mz)->value();
-            });
-            }));
-#endif
-            std::unordered_set<double> alreadyClaimedMzs;
+            std::unordered_set<double> aCMzs;
             for ( IsotopicEnvelope* p: neutralExperimentalFragmentMasses ) {
                 for ( auto v: p->peaks ) {
-                    alreadyClaimedMzs.insert(Chemistry::ClassExtensions::RoundedDouble(std::get<0>(v)) );
+                    aCMzs.insert(Chemistry::ClassExtensions::RoundedDouble(std::get<0>(v)) );
                 }
             }
-            
-            for (int i = 0; i < (int) scan->getMassSpectrum()->getXArray().size(); i++)
+            std::vector<double> alreadyClaimedMzs (aCMzs.begin(), aCMzs.end() );
+            auto XArray = thisScanMassSpec->getXArray();
+            auto YArray = thisScanMassSpec->getYArray();
+            for (int i = 0; i < (int) XArray.size(); i++)
             {
-                double mz = scan->getMassSpectrum()->getXArray()[i];
-                double intensity = scan->getMassSpectrum()->getYArray()[i];
+                double mz = XArray[i];
+                double intensity = YArray[i];
                 
                 if ( std::find(alreadyClaimedMzs.begin(), alreadyClaimedMzs.end(), Chemistry::ClassExtensions::RoundedDouble(mz)) == alreadyClaimedMzs.end() )
                 {
@@ -143,11 +138,7 @@ namespace EngineLayer
             }
     
         }
-#ifdef ORIG
-        return neutralExperimentalFragmentMasses.OrderBy([&] (std::any p)  {
-                p::monoisotopicMass;
-            })->ToArray();
-#endif
+
         std::sort ( neutralExperimentalFragmentMasses.begin(), neutralExperimentalFragmentMasses.end(), [&] (IsotopicEnvelope *e1, IsotopicEnvelope *e2 ) {
                 return e1->monoisotopicMass < e2->monoisotopicMass;
             });
