@@ -4579,8 +4579,8 @@ $as_echo "yes" >&6; }
 elif test "$enable_debug" = no ; then
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
-   CXXFLAGS="-O2"
-   CFLAGS="-O2"
+   CXXFLAGS="-O3"
+   CFLAGS="-O3"
 else
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: not set (implicit yes)" >&5
 $as_echo "not set (implicit yes)" >&6; }

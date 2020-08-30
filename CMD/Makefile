@@ -22,7 +22,7 @@ $(OBJ):
 	$(CXX) $(CXXFLAGS) -c $<
 
 HPCMetaMorpheus: $(OBJ) $(LINKLIBS)
-	$(CXX) $(CXXFLAGS) $^ -o $(MMORPHEUS_BIN_DIR)/HPCMetaMorpheus $(LDFLAGS)
+	$(CXX) $(CXXFLAGS) $^ -o $(MMORPHEUS_BIN_DIR)/$(MMORPHEUS_EXEC) $(LDFLAGS)
 
 
 clean:  

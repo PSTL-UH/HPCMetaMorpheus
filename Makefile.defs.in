@@ -12,7 +12,7 @@ MMORPHEUS_INC_DIR  = $(MMORPHEUS_DIR)/include
 MMORPHEUS_LIB_DIR  = $(MMORPHEUS_DIR)/lib
 MMORPHEUS_BIN_DIR  = $(MMORPHEUS_DIR)/bin
 MMORPHEUS_LIB      = libmmorpheus.a
-
+MMORPHEUS_EXEC     = HPCMetaMorpheus
 
 MZLIB_DIR      = @mzlib_dir@
 MZLIB_INC_DIR  = $(MZLIB_DIR)/include 
