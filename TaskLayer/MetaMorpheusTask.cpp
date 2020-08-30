@@ -31,6 +31,8 @@
 #include <fstream>
 #include <typeinfo>
 
+#include <sys/time.h>
+
 using namespace Chemistry;
 using namespace EngineLayer;
 using namespace EngineLayer::Indexing;
@@ -39,6 +41,21 @@ using namespace MzLibUtil;
 using namespace Proteomics;
 using namespace Proteomics::ProteolyticDigestion;
 using namespace UsefulProteomicsDatabases;
+
+#ifdef TIMING_INFO
+double deconvtime=0.0;
+double sorttime = 0.0;
+double looptime = 0.0;
+
+static double timediff (struct timeval t1, struct timeval t2)
+{
+    double elapsedtime;
+    elapsedtime = (t2.tv_sec - t1.tv_sec) * 1000.0;      // sec to ms
+    elapsedtime += (t2.tv_usec - t1.tv_usec) / 1000.0;   // us to ms
+
+    return elapsedtime/1000;                            //ms to sec
+}
+#endif
 
 namespace TaskLayer
 {
@@ -182,10 +199,11 @@ namespace TaskLayer
                                                                         const std::string &fullFilePath,
                                                                         EngineLayer::CommonParameters *commonParameters)
     {
-#ifdef ORIG
-        auto ms2Scans = myMSDataFile->GetAllScansList().Where([&] (std::any x)		{
-                return x::MsnOrder > 1;
-            })->ToArray();
+#ifdef TIMING_INFO
+        struct timeval t1, t1e;
+        double tgobs=0.0, tgobs2=0.0, tgnef=0.0, tgnef2=0.0;
+        int tgobscount=0, tgobscount2=0, tgnefcount=0, tgnefcount2=0;
+        gettimeofday (&t1, NULL);
 #endif
         std::vector<MsDataScan*> ms2Scans;
         for ( auto x : myMSDataFile->GetAllScansList() ) {
@@ -193,8 +211,7 @@ namespace TaskLayer
                 ms2Scans.push_back(x);
             }
         }
-                
-
+        
         std::vector<std::vector<Ms2ScanWithSpecificMass*>> scansWithPrecursors(ms2Scans.size());
         
 #ifdef ORIG
@@ -204,16 +221,16 @@ namespace TaskLayer
         //        for (int i = partitionRange::Item1; i < partitionRange::Item2; i++)
 #endif
         for ( int i = 0; i < (int)ms2Scans.size(); i++ ) {
-            if (GlobalVariables::getStopLoops())
-            {
-                break;
-            }
             
             MsDataScan *ms2scan = ms2Scans[i];
             
             std::vector<std::pair<double, int>> precursors;
             if (ms2scan->getOneBasedPrecursorScanNumber().has_value())
             {
+#ifdef TIMING_INFO
+                struct timeval tx, txe;
+                gettimeofday (&tx, NULL);
+#endif
                 auto precursorSpectrum = myMSDataFile->GetOneBasedScan(ms2scan->getOneBasedPrecursorScanNumber().value());
                 
                 try
@@ -229,7 +246,6 @@ namespace TaskLayer
                     std::cout << s << std::endl;
                     continue;
                 }
-                
                 if (ms2scan->getSelectedIonMonoisotopicGuessMz().has_value())
                 {
                     ms2scan->ComputeMonoisotopicPeakIntensity(precursorSpectrum->getMassSpectrum());
@@ -246,21 +262,24 @@ namespace TaskLayer
                         precursors.push_back(std::make_pair(monoPeakMz, envelope->charge));
                     }
                 }
+#ifdef TIMING_INFO
+                gettimeofday (&txe, NULL);
+                tgobs += timediff (tx, txe);
+                tgobscount++;
+#endif
             }
             
             if (commonParameters->getUseProvidedPrecursorInfo()      &&
                 ms2scan->getSelectedIonChargeStateGuess().has_value() )
             {
+#ifdef TIMING_INFO
+                struct timeval tx, txe;
+                gettimeofday (&tx, NULL);
+#endif
                 auto precursorCharge = ms2scan->getSelectedIonChargeStateGuess().value();
                 if (ms2scan->getSelectedIonMonoisotopicGuessMz().has_value())
                 {
                     double precursorMZ = ms2scan->getSelectedIonMonoisotopicGuessMz().value();
-#ifdef ORIG
-                    //if (!precursors.Any([&] (std::any b)   {
-                    //            commonParameters->getDeconvolutionMassTolerance()->Within(precursorMZ.ToMass(precursorCharge),
-                    //                                                                      b::Item1->ToMass(b::Item2));
-                    //        }))
-#endif
                     bool found = false;
                     auto tol = commonParameters->getDeconvolutionMassTolerance();
                     for ( auto b: precursors ) {
@@ -277,12 +296,6 @@ namespace TaskLayer
                 else
                 {
                     double precursorMZ = ms2scan->getSelectedIonMZ().value();
-#ifdef ORIG
-                    if (!precursors.Any([&] (std::any b){
-                                commonParameters->getDeconvolutionMassTolerance()->Within(precursorMZ.ToMass(precursorCharge),
-                                                                                          b::Item1->ToMass(b::Item2));
-                            }))
-#endif
                     bool found = false;
                     auto tol = commonParameters->getDeconvolutionMassTolerance();
                     for ( auto b: precursors ) {
@@ -296,32 +309,62 @@ namespace TaskLayer
                         precursors.push_back(std::make_pair(precursorMZ, precursorCharge));
                     }
                 }
+#ifdef TIMING_INFO
+                gettimeofday (&txe, NULL);
+                tgobs2 += timediff (tx, txe);
+                tgobscount2++;
+#endif
             }
             
             scansWithPrecursors[i] = std::vector<Ms2ScanWithSpecificMass*>();
+
+#ifdef TIMING_INFO
+            struct timeval t2, t2e;
+            gettimeofday (&t2, NULL);
+#endif
             std::vector<IsotopicEnvelope*> neutralExperimentalFragments = Ms2ScanWithSpecificMass::GetNeutralExperimentalFragments(ms2scan,
                                                                                                                                    commonParameters);
+#ifdef TIMING_INFO
+            gettimeofday (&t2e, NULL);
+            tgnef += timediff (t2, t2e);
+            tgnefcount++;
+            struct timeval t3, t3e;
+            gettimeofday (&t3, NULL);
+#endif
             
             for (auto precursor : precursors)
             {
                 auto  tempVar2 = new Ms2ScanWithSpecificMass(ms2scan, precursor.first, precursor.second, fullFilePath,
                                                              commonParameters, neutralExperimentalFragments);
                 scansWithPrecursors[i].push_back(tempVar2);
+#ifdef TIMING_INFO
+                tgnefcount2++;
+#endif
             }
+#ifdef TIMING_INFO
+            gettimeofday (&t3e, NULL);
+            tgnef2 += timediff (t3, t3e);
+#endif
         } 
     
-
-#ifdef ORIG
-        return scansWithPrecursors.SelectMany([&] (std::any p)	{
-                return p;
-            });
-#endif
         std::vector<Ms2ScanWithSpecificMass*> tmpv;
         for ( auto p: scansWithPrecursors ) {
             for ( auto v: p ) {
                 tmpv.push_back(v);
             }
         }
+
+#ifdef TIMING_INFO
+        gettimeofday (&t1e, NULL);
+        std::cout << " Total time spent in GetMs2Scans : " << timediff( t1, t1e ) << std::endl;
+        std::cout << "       time spent in block1      : " << tgobs << " called " << tgobscount << " times" << std::endl;
+        std::cout << "       time spent in block2      : " << tgobs2 << " called " << tgobscount2 << " times" << std::endl;
+        std::cout << "       time spent in GetNeutralExperimentalFragments : " << tgnef << " called " << tgnefcount << " times" << std::endl;
+        std::cout << "            time spent in Deconvolution  : " << deconvtime << std::endl;        
+        std::cout << "            time spent in loop           : " << looptime << std::endl;        
+        std::cout << "            time spent in sort           : " << sorttime << std::endl;        
+        std::cout << "       time spent in Ms2ScanWithSpecificMass constructor : " << tgnef2 << " called " << tgnefcount2 << " times" << std::endl;
+#endif
         return tmpv;
     }
     
@@ -441,18 +484,9 @@ namespace TaskLayer
                 std::string fileSpecificTomlPath = directory + "/" + fname + ".toml";
                 if (std::filesystem::exists(fileSpecificTomlPath))
                 {
-#ifdef ORIG
-                    //In the Nett package the second parameter for ReadFile are the settings used to process the toml content
-                    //public static T ReadFile<T>(string filePath, TomlSettings settings)
-                    TomlTable *fileSpecificSettings = Toml::ReadFile(fileSpecificTomlPath, tomlConfig);
-#endif
                     Toml trw;
                     toml::Value toml_value = trw.tomlReadFile(fileSpecificTomlPath);
                     
-                    //original
-                    // toml::Value* fileParameters = trw.getValue(toml_value, tomlConfig);
-
-                    //need string of header we are looking for in toml file.  is it "CommonParameters"?
                     toml::Value* fileParameters = trw.getValue(toml_value, "CommonParameters");
                     toml::Table fileSpecificSettings = fileParameters->as<toml::Table>();              
                     
@@ -465,8 +499,6 @@ namespace TaskLayer
                         // file-specific toml has already been validated in the GUI when the spectra files were added, so...
                         // probably the only time you can get here is if the user modifies the file-specific parameter
                         // file in the middle of a run...
-                        //Warn("Problem parsing the file-specific toml " + FileSystem::getFileName(fileSpecificTomlPath) + "; "
-                        //     + e->what() +  "; is the toml from an older version of MetaMorpheus?");
                         std::string sw = "Problem parsing the file-specific toml " + fileSpecificTomlPath; 
                         Warn(sw);
                     }
@@ -481,7 +513,7 @@ namespace TaskLayer
 
             std::ofstream file(resultsFileName);
             
-            file << "MetaMorpheus: version " <<  GlobalVariables::getMetaMorpheusVersion() << std::endl;
+            file << "Software: " <<  GlobalVariables::getMetaMorpheusVersion() << std::endl;
             file << myTaskResults->ToString() << std::endl;
 
             std::vector<std::string> svec = {displayName};
@@ -496,10 +528,10 @@ namespace TaskLayer
             std::ofstream file(resultsFileName);
             std::string ver = "1.0.0.0";
             if (  GlobalVariables::getMetaMorpheusVersion() == ver ) {
-                file << "MetaMorpheus: Not a release version"  << std::endl;
+                file << "HPCMorpheus: Not a release version"  << std::endl;
             }
             else {
-                file << "MetaMorpheus: version "  <<  GlobalVariables::getMetaMorpheusVersion() << std::endl;
+                file << "HPCMorpheus: version "  <<  GlobalVariables::getMetaMorpheusVersion() << std::endl;
             }
             //file.WriteLine(SystemInfo::CompleteSystemInfo());
             //OS, OS Version, .Net Version, RAM, processor count, MSFileReader .dll versions X3
@@ -514,7 +546,7 @@ namespace TaskLayer
         
         std::string proseFilePath = output_folder + "/prose.txt";
         std::ofstream file(proseFilePath);
-        file << "The data analysis was performed using MetaMorpheus version " <<
+        file << "The data analysis was performed using HPCMorpheus version" <<
             GlobalVariables::getMetaMorpheusVersion() <<
             ", available at " <<   "https://github.com/smith-chem-wisc/MetaMorpheus.";
         file << ProseCreatedWhileRunning->toString();
@@ -529,11 +561,6 @@ namespace TaskLayer
             "Journal of Proteome Research. 2018, 17 (5), 1844-1851." << std::endl;
         
         file <<"\n Spectra files: " << std::endl;
-#ifdef ORIG
-        //file << std::string::Join("\r\n", currentRawDataFilepathList.Select([&] (std::any b)    {
-        //            return '\t' + b;
-        //            }))) << std::endl;
-#endif
         
         std::string sjoint1;
         for ( auto b: currentRawDataFilepathList ) {
@@ -542,11 +569,7 @@ namespace TaskLayer
         file << sjoint1 << std::endl;
 
         file << "Databases:" << std::endl;
-#ifdef ORIG    
-        //file << std::string::Join("\r\n", currentProteinDbFilenameList.Select([&] (std::any b)		{
-        //        return '\t' + (b::IsContaminant ? "Contaminant " : "") + b::FilePath;
-        //        })) << std::endl;
-#endif
+
         std::string sjoint2;
         for ( auto b: currentProteinDbFilenameList ) {
             sjoint2 += '\t' + (b->getIsContaminant() ? "Contaminant " : "") + b->getFilePath();
@@ -896,15 +919,7 @@ namespace TaskLayer
         if ( StartingSingleTaskHandler != nullptr )
             StartingSingleTaskHandler->Invoke(tempVar);
     }
-
-#ifdef NOT_NOW
-    std::vector<std::type_info> MetaMorpheusTask::GetSubclassesAndItself(std::type_info type)
-    {
-        std::vector<type> tmp;
-        return tmp;
-    }
-#endif
-    
+   
     bool MetaMorpheusTask::SameSettings(const std::string &pathToOldParamsFile, IndexingEngine *indexEngine)
     {
         std::ifstream reader(pathToOldParamsFile);
@@ -1148,7 +1163,6 @@ namespace TaskLayer
                 auto tmp = GlobalVariables::getAllModsKnownDictionary();
                 peptide->SetNonSerializedPeptideInfo( tmp, proteinDictionary);
             }
-            
         }
     }
 }

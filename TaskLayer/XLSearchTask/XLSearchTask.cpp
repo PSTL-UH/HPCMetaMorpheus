@@ -31,15 +31,24 @@ using namespace MzLibUtil;
 using namespace EngineLayer::FdrAnalysis;
 using namespace Proteomics::Fragmentation;
 
+#ifdef TIMING_INFO
+#include <sys/time.h>
+
+static double timediff (struct timeval t1, struct timeval t2)
+{
+    double elapsedtime;
+    elapsedtime = (t2.tv_sec - t1.tv_sec) * 1000.0;      // sec to ms
+    elapsedtime += (t2.tv_usec - t1.tv_usec) / 1000.0;   // us to ms
+
+    return elapsedtime/1000;                            //ms to sec
+}
+#endif
+
 namespace TaskLayer
 {
 
     XLSearchTask::XLSearchTask() : MetaMorpheusTask(MyTask::XLSearch)
     {
-#ifdef ORIG
-        EngineLayer::CommonParameters tempVar( , , = true, = true, = 3, = 12, = true, = false, = 1,
-                                               3, , , , , , , , new PpmTolerance(10));
-#endif
         std::string taskDescr = "";
         DissociationType dissType = DissociationType::HCD;
         int topNpeaks = 200;
@@ -201,13 +210,37 @@ namespace TaskLayer
         std::vector<Modification*> variableModifications;
         std::vector<Modification*> fixedModifications;
         std::vector<std::string> localizeableModificationTypes;
+
+#ifdef TIMING_INFO
+        struct timeval t1, t1e;
+        struct timeval t2, t2e;
+        struct timeval t3, t3e;
+        struct timeval t4, t4e;
+        struct timeval t5, t5e;
+        struct timeval t6, t6e;
+        struct timeval t7, t7e;
+        struct timeval t8, t8e;
+        struct timeval t9, t9e;
+        double t3total=0.0, t4total=0.0, t5total=0.0, t6total=0.0;
+
+        gettimeofday (&t1, NULL);
+#endif
         LoadModifications(taskId, variableModifications, fixedModifications, localizeableModificationTypes);
+#ifdef TIMING_INFO
+        gettimeofday (&t1e, NULL);
+#endif
         
         // load proteins
+#ifdef TIMING_INFO
+        gettimeofday (&t2, NULL);
+#endif
         std::vector<Protein*> proteinList = LoadProteins(taskId, dbFilenameList, true,
                                                          getXlSearchParameters()->getDecoyType(),
                                                          localizeableModificationTypes,
                                                          getCommonParameters());
+#ifdef TIMING_INFO
+        gettimeofday (&t2e, NULL);
+#endif
         
         auto crosslinker = new Crosslinker();
         crosslinker = crosslinker->SelectCrosslinker(getXlSearchParameters()->getCrosslinkerType());
@@ -218,21 +251,11 @@ namespace TaskLayer
         
         MyFileManager *myFileManager = new MyFileManager(true);
         
-#ifdef ORIG
-        auto fileSpecificCommonParams = fileSettingsList.Select([&] (std::any b) {
-                SetAllFileSpecificCommonParams(getCommonParameters(), b);
-            });
-#endif
         std::vector<CommonParameters *> fileSpecificCommonParams;
         for ( auto b : fileSettingsList ) {
             fileSpecificCommonParams.push_back(SetAllFileSpecificCommonParams(getCommonParameters(), b));
         }
         
-#ifdef ORIG
-        std::unordered_set<DigestionParams*> ListOfDigestionParams = std::unordered_set<DigestionParams*>(fileSpecificCommonParams->Select([&] (std::any p) {
-                    p::DigestionParams;
-                }));
-#endif
         std::unordered_set<DigestionParams*> ListOfDigestionParams;
         for ( auto p : fileSpecificCommonParams ) {
             ListOfDigestionParams.emplace(p->getDigestionParams());
@@ -261,24 +284,13 @@ namespace TaskLayer
                                          std::to_string(static_cast<int>(dPar->getInitiatorMethionineBehavior())) + "; ");
         ProseCreatedWhileRunning->append("max modification isoforms = " +
                                          std::to_string(dPar->getMaxModificationIsoforms()) + "; ");
-#ifdef ORIG
-        ProseCreatedWhileRunning->append("fixed modifications = " +
-                                         std::string::Join(", ", fixedModifications->Select([&] (std::any m) {
-                                                     m::IdWithMotif;
-                                                 }) + "; "));
-#endif
         std::vector<std::string> vsv;
         for ( auto m : fixedModifications ) {
             vsv.push_back(m->getIdWithMotif());
         }
         std::string del = ", ";
         ProseCreatedWhileRunning->append("fixed modifications = " + StringHelper::join ( vsv, del) + "; ");
-#ifdef ORIG                
-        ProseCreatedWhileRunning->append("variable modifications = " +
-                                         std::string::Join(", ", variableModifications->Select([&] (std::any m) {
-                                                     m::IdWithMotif;
-                                                 })) + "; ");
-#endif
+
         vsv.clear();
         for ( auto m : variableModifications ) {
             vsv.push_back(m->getIdWithMotif());
@@ -289,12 +301,6 @@ namespace TaskLayer
                                          std::to_string(getCommonParameters()->getPrecursorMassTolerance()->getValue()) + "; ");
         ProseCreatedWhileRunning->append("product mass tolerance = " +
                                          std::to_string(getCommonParameters()->getProductMassTolerance()->getValue()) + "; ");
-#ifdef ORIG
-        ProseCreatedWhileRunning->append("The combined search database contained " + std::to_string(proteinList.size()) +
-                                         " total entries including " + proteinList.Where([&] (std::any p) {
-                                                 p::IsContaminant;
-                                             })->Count() + " contaminant sequences. ");
-#endif
         int c1 = 0;
         for ( auto p: proteinList ) {
             if (p->getIsContaminant()) {
@@ -314,36 +320,38 @@ namespace TaskLayer
             NewCollection(FileSystem::getFileName(origDataFile), thisId);
             
             Status("Loading spectra file...", thisId);
+#ifdef TIMING_INFO
+            gettimeofday (&t3, NULL);
+#endif
             MsDataFile *myMsDataFile = myFileManager->LoadFile(origDataFile,
                                                                std::make_optional(combinedParams->getTopNpeaks()),
                                                                std::make_optional(combinedParams->getMinRatio()),
                                                                combinedParams->getTrimMs1Peaks(),
                                                                combinedParams->getTrimMsMsPeaks(), combinedParams);
+#ifdef TIMING_INFO
+            gettimeofday (&t3e, NULL);
+            t3total += timediff(t3, t3e);
+#endif
             
             Status("Getting ms2 scans...", thisId);
-#ifdef ORIG
-            std::vector<Ms2ScanWithSpecificMass*> arrayOfMs2ScansSortedByMass = GetMs2Scans(myMsDataFile, origDataFile, combinedParams).OrderBy([&] (std::any b)  {
-                    b::PrecursorMass;
-                })->ToArray();
+
+#ifdef TIMING_INFO
+            gettimeofday (&t4, NULL);
 #endif
-            std::vector<Ms2ScanWithSpecificMass*> arrayOfMs2ScansSortedByMass= GetMs2Scans(myMsDataFile, origDataFile, combinedParams);
+            std::vector<Ms2ScanWithSpecificMass*> arrayOfMs2ScansSortedByMass= GetMs2Scans(myMsDataFile, origDataFile, combinedParams);            
             std::sort(arrayOfMs2ScansSortedByMass.begin(), arrayOfMs2ScansSortedByMass.end(), [&]
                       (Ms2ScanWithSpecificMass* l, Ms2ScanWithSpecificMass* r) {
                           return l->getPrecursorMass() < r->getPrecursorMass();
                       });
-            
+#ifdef TIMING_INFO
+            gettimeofday (&t4e, NULL);
+            t4total += timediff (t4, t4e);
+#endif            
             std::vector<CrosslinkSpectralMatch*> newPsms(arrayOfMs2ScansSortedByMass.size());
             for (int currentPartition = 0; currentPartition < getCommonParameters()->getTotalPartitions(); currentPartition++)
             {
                 std::vector<PeptideWithSetModifications*> peptideIndex;
-#ifdef ORIG
-                std::vector<Protein*> proteinListSubset = proteinList.GetRange(currentPartition * proteinList.size() /
-                                                                               combinedParams->getTotalPartitions(),
-                                                                               ((currentPartition + 1) * proteinList.size() /
-                                                                                combinedParams->getTotalPartitions()) -
-                                                                               (currentPartition * proteinList.size() /
-                                                                                combinedParams->getTotalPartitions()));
-#endif
+
                 int start = currentPartition * proteinList.size() / combinedParams->getTotalPartitions();
                 int count = ((currentPartition + 1) * proteinList.size() / combinedParams->getTotalPartitions()) -
                     (currentPartition * proteinList.size() /combinedParams->getTotalPartitions());
@@ -361,6 +369,10 @@ namespace TaskLayer
                     filenameList.push_back(p->getFilePath());
                 }
                 std::vector<std::string> vtaskId = {taskId};
+
+#ifdef TIMING_INFO
+                gettimeofday (&t5, NULL);
+#endif
                 auto indexEngine = new IndexingEngine(proteinListSubset, variableModifications, fixedModifications, currentPartition,
                                                       UsefulProteomicsDatabases::DecoyType::Reverse, combinedParams, 30000.0, false,
                                                       filenameList, vtaskId);
@@ -370,8 +382,17 @@ namespace TaskLayer
                 auto allmods = GlobalVariables::getAllModsKnown();
                 GenerateIndexes(indexEngine, dbFilenameList, peptideIndex, fragmentIndex, precursorIndex, proteinList,
                                 allmods, taskId);
+
+#ifdef TIMING_INFO
+                gettimeofday (&t5e, NULL);
+                t5total += timediff(t5, t5e );
+#endif
                 
                 Status("Searching files...", taskId);
+
+#ifdef TIMING_INFO
+                gettimeofday (&t6, NULL);
+#endif
                 CrosslinkSearchEngine tempVar(newPsms, arrayOfMs2ScansSortedByMass, peptideIndex, fragmentIndex, currentPartition,
                                               combinedParams, crosslinker, getXlSearchParameters()->getRestrictToTopNHits(),
                                               getXlSearchParameters()->getCrosslinkSearchTopNum(),
@@ -379,7 +400,10 @@ namespace TaskLayer
                                               getXlSearchParameters()->getXlQuench_NH2(),
                                               getXlSearchParameters()->getXlQuench_Tris(), thisId);
                 (&tempVar)->Run();
-
+#ifdef TIMING_INFO
+                gettimeofday (&t6e, NULL);
+                t6total += timediff (t6, t6e );
+#endif
                 std::string s1 = "Done with search " + std::to_string(currentPartition + 1) + "/" +
                     std::to_string(getCommonParameters()->getTotalPartitions()) + "!";
                 ProgressEventArgs tempVar2(100, s1, thisId);
@@ -387,11 +411,6 @@ namespace TaskLayer
                 
             }
             
-#ifdef ORIG
-            allPsms.AddRange(newPsms.Where([&] (std::any p) {
-                        return p != nullptr;
-                    }));
-#endif
             for ( auto p : newPsms ) {
                 if ( p != nullptr ) {
                     allPsms.push_back(p);
@@ -408,20 +427,10 @@ namespace TaskLayer
         ProgressEventArgs tempVar4(100, "Done with all searches!", vs3);
         ReportProgress(&tempVar4);
 
-#ifdef ORIG
-        allPsms = allPsms.OrderByDescending([&] (std::any p)  {
-                p::XLTotalScore;
-            }).ToList();
-#endif
         std::sort(allPsms.begin(), allPsms.end(), [&] (CrosslinkSpectralMatch *l, CrosslinkSpectralMatch *r) {
                 return l->getXLTotalScore() > r->getXLTotalScore();
             });
 
-#ifdef ORIG
-        auto allPsmsXL = allPsms.Where([&] (std::any p)    {
-                return p->CrossType == PsmCrossType::Cross;
-            }).ToList();
-#endif
         std::vector<CrosslinkSpectralMatch *> allPsmsXL;
         for ( auto p : allPsms ) {
             if ( p->getCrossType() == PsmCrossType::Cross ){
@@ -430,11 +439,6 @@ namespace TaskLayer
         }
         
         // inter-crosslinks; different proteins are linked
-#ifdef ORIG
-        auto interCsms = allPsmsXL.Where([&] (std::any p) {
-                !p::ProteinAccession->Equals(p::BetaPeptide::ProteinAccession);
-            }).ToList();
-#endif
         std::vector<CrosslinkSpectralMatch *> interCsms;
         for ( auto p: allPsmsXL ) {
             if ( p->getProteinAccession() != p->getBetaPeptide()->getProteinAccession() ) {
@@ -448,11 +452,6 @@ namespace TaskLayer
         }
         
         // intra-crosslinks; crosslinks within a protein
-#ifdef ORIG
-        auto intraCsms = allPsmsXL.Where([&] (std::any p) {
-                p::ProteinAccession->Equals(p::BetaPeptide::ProteinAccession);
-            }).ToList();
-#endif
         std::vector<CrosslinkSpectralMatch *> intraCsms;
         for ( auto p: allPsmsXL ) {
             if ( p->getProteinAccession() == p->getBetaPeptide()->getProteinAccession() ) {
@@ -466,12 +465,21 @@ namespace TaskLayer
         }
         
         // calculate FDR
+#ifdef TIMING_INFO
+        gettimeofday (&t7, NULL);
+#endif
         DoCrosslinkFdrAnalysis(interCsms);
         DoCrosslinkFdrAnalysis(intraCsms);
         std::vector<std::string> sv1 = {taskId};
         SingleFDRAnalysis(allPsms, sv1 );
-        
+#ifdef TIMING_INFO
+        gettimeofday (&t7e, NULL);
+#endif
+
         // calculate protein crosslink residue numbers
+#ifdef TIMING_INFO
+        gettimeofday (&t8, NULL);
+#endif
         for (auto csm : allPsmsXL)
         {
             // alpha peptide crosslink residue in the protein
@@ -481,8 +489,14 @@ namespace TaskLayer
             csm->getBetaPeptide()->setXlProteinPos(csm->getBetaPeptide()->getOneBasedStartResidueInProtein().value() +
                                                    csm->getBetaPeptide()->getLinkPositions()[0] - 1);
         }
-        
+#ifdef TIMING_INFO
+        gettimeofday (&t8e, NULL);
+#endif        
+
         // write interlink CSMs
+#ifdef TIMING_INFO
+        gettimeofday (&t9, NULL);
+#endif        
         if (!interCsms.empty())
         {
             std::string file = OutputFolder + "/XL_Interlinks.tsv";
@@ -491,11 +505,6 @@ namespace TaskLayer
             FinishedWritingFile(file, vs2);
         }
 
-#ifdef ORIG
-        MyTaskResults->AddNiceText("Target inter-crosslinks within 1% FDR: " + interCsms.size()([&] (std::any p)  {
-                    return p::FdrInfo::QValue <= 0.01 && !p::IsDecoy && !p::BetaPeptide::IsDecoy;
-		}));
-#endif
         int interCsms_size=0;
         for ( auto p: interCsms ) {
             if ( p->getFdrInfo()->getQValue() <= 0.01 && !p->getIsDecoy() && !p->getBetaPeptide()->getIsDecoy() ) {
@@ -506,13 +515,6 @@ namespace TaskLayer
         
         if (getXlSearchParameters()->getWriteOutputForPercolator())
         {
-#ifdef ORIG
-            auto interPsmsXLPercolator = interCsms.Where([&] (std::any p) {
-                    return p::Score >= 2 && p::BetaPeptide::Score >= 2;
-                }).OrderBy([&] (std::any p)  {
-                        p::ScanNumber;
-                    }).ToList();
-#endif
             std::vector<CrosslinkSpectralMatch *> interPsmsXLPercolator ;
             for ( auto p: interCsms ) {
                 if (p->getScore() >= 2 && p->getBetaPeptide()->getScore() >= 2 ) {
@@ -538,10 +540,6 @@ namespace TaskLayer
             FinishedWritingFile(file, vs3);
         }
 
-#ifdef ORIG
-        myTaskResults->AddNiceText("Target intra-crosslinks within 1% FDR: " + intraCsms.size()([&] (std::any p) {         			return p::FdrInfo::QValue <= 0.01 && !p::IsDecoy && !p::BetaPeptide::IsDecoy;
-		}));
-#endif
         int intraCsms_size=0;
         for ( auto p: intraCsms ) {
             if ( p->getFdrInfo()->getQValue() <= 0.01 && !p->getIsDecoy() && !p->getBetaPeptide()->getIsDecoy() ) {
@@ -552,13 +550,6 @@ namespace TaskLayer
         
         if (getXlSearchParameters()->getWriteOutputForPercolator())
         {
-#ifdef ORIG
-            auto intraPsmsXLPercolator = intraCsms.Where([&] (std::any p)  {
-                    return p::Score >= 2 && p::BetaPeptide::Score >= 2;
-                }).OrderBy([&] (std::any p)  {
-                        p::ScanNumber;
-                    }).ToList();
-#endif
             std::vector<CrosslinkSpectralMatch *> intraPsmsXLPercolator ;
             for ( auto p: intraCsms ) {
                 if (p->getScore() >= 2 && p->getBetaPeptide()->getScore() >= 2 ) {
@@ -576,11 +567,6 @@ namespace TaskLayer
         }
         
         // write single peptides
-#ifdef ORIG
-        auto singlePsms = allPsms.Where([&] (std::any p)  {
-                return p->CrossType == PsmCrossType::Single;
-            }).ToList();
-#endif
         std::vector<CrosslinkSpectralMatch *> singlePsms;
         for ( auto p: allPsms ) {
             if ( p->getCrossType() == PsmCrossType::Single )  {
@@ -595,10 +581,7 @@ namespace TaskLayer
             std::vector<std::string> vs4 = {taskId};
             FinishedWritingFile(writtenFileSingle, vs4);
         }
-#ifdef ORIG
-        myTaskResults->AddNiceText("Target single peptides within 1% FDR: " + singlePsms.size()([&] (std::any p) {         			return p::FdrInfo::QValue <= 0.01 && !p::IsDecoy;
-		}));
-#endif
+
         int singlePsms_size=0;
         for ( auto p: singlePsms ) {
             if (p->getFdrInfo()->getQValue() <= 0.01 && !p->getIsDecoy()) {
@@ -608,11 +591,6 @@ namespace TaskLayer
         myTaskResults->AddNiceText("Target single peptides within 1% FDR: " + std::to_string(singlePsms_size));
         
         // write loops
-#ifdef ORIG
-        auto loopPsms = allPsms.Where([&] (std::any p) {
-                return p->CrossType == PsmCrossType::Loop;
-            }).ToList();
-#endif
         std::vector<CrosslinkSpectralMatch *> loopPsms;
         for ( auto p : allPsms ) {
             if ( p->getCrossType() == PsmCrossType::Loop ) {
@@ -627,11 +605,7 @@ namespace TaskLayer
             std::vector<std::string> vs4a = {taskId};
             FinishedWritingFile(writtenFileLoop, vs4a);
         }
-#ifdef ORIG
-        myTaskResults->AddNiceText("Target loop-linked peptides within 1% FDR: " + loopPsms.size()([&] (std::any p)  {
-                    return p::FdrInfo::QValue <= 0.01 && !p::IsDecoy;
-		}));
-#endif
+
         int loopPsms_size =0;
         for ( auto p : loopPsms ) {
             if ( p->getFdrInfo()->getQValue() <= 0.01 && !p->getIsDecoy())  {
@@ -641,12 +615,6 @@ namespace TaskLayer
         myTaskResults->AddNiceText("Target loop-linked peptides within 1% FDR: " + std::to_string(loopPsms_size));
         
         // write deadends
-#ifdef ORIG
-        auto deadendPsms = allPsms.Where([&] (std::any p)  {
-			return p->CrossType == PsmCrossType::DeadEnd || p->CrossType == PsmCrossType::DeadEndH2O ||
-                        p->CrossType == PsmCrossType::DeadEndNH2 || p->CrossType == PsmCrossType::DeadEndTris;
-            }).ToList();
-#endif
         std::vector<CrosslinkSpectralMatch *> deadendPsms;
         for ( auto p : allPsms ) {
             if ( p->getCrossType() == PsmCrossType::DeadEnd ||
@@ -664,11 +632,7 @@ namespace TaskLayer
             std::vector<std::string> vs5a = {taskId};
             FinishedWritingFile(writtenFileDeadend, vs5a);
         }
-#ifdef ORIG
-        myTaskResults->AddNiceText("Target deadend peptides within 1% FDR: " + deadendPsms.size()([&] (std::any p)   {
-                    return p::FdrInfo::QValue <= 0.01 && !p::IsDecoy;
-		}));
-#endif
+
         int deadendPsms_size =0;
         for ( auto p : deadendPsms ) {
             if ( p->getFdrInfo()->getQValue() <= 0.01 && !p->getIsDecoy())  {
@@ -682,23 +646,6 @@ namespace TaskLayer
         {
             std::vector<CrosslinkSpectralMatch*> writeToXml;
 
-#ifdef ORIG
-            writeToXml.AddRange(intraCsms.Where([&] (std::any p)		{
-                        return !p::IsDecoy && !p::BetaPeptide::IsDecoy && p::FdrInfo::QValue <= 0.05;
-                    }));
-            writeToXml.AddRange(interCsms.Where([&] (std::any p)  {
-                        return !p::IsDecoy && !p::BetaPeptide::IsDecoy && p::FdrInfo::QValue <= 0.05;
-                    }));
-            writeToXml.AddRange(singlePsms.Where([&] (std::any p){
-                        return !p::IsDecoy && p::FdrInfo::QValue <= 0.05;
-                    }));
-            writeToXml.AddRange(loopPsms.Where([&] (std::any p) {
-                        return !p::IsDecoy && p::FdrInfo::QValue <= 0.05;
-                    }));
-            writeToXml.AddRange(deadendPsms.Where([&] (std::any p) {
-                        return !p::IsDecoy && p::FdrInfo::QValue <= 0.05;
-                    }));
-#endif
             for ( auto p: intraCsms ) {
                 if ( !p->getIsDecoy() && !p->getBetaPeptide()->getIsDecoy() && p->getFdrInfo()->getQValue() <= 0.05) {
                     writeToXml.push_back(p);
@@ -725,11 +672,6 @@ namespace TaskLayer
                 }
             }
 
-#ifdef ORIG
-            writeToXml = writeToXml.OrderBy([&] (std::any p)   {
-                    p::ScanNumber;
-                }).ToList();
-#endif
             std::sort(writeToXml.begin(), writeToXml.end(), [&] (CrosslinkSpectralMatch *l, CrosslinkSpectralMatch *r ) {
                     return l->getScanNumber() < r->getScanNumber();
                 });
@@ -738,13 +680,6 @@ namespace TaskLayer
             {
                 std::string fileNameNoExtension = fullFilePath.substr(0, fullFilePath.find_last_of("."));
 
-#ifdef ORIG
-                WritePepXML_xl(writeToXml.Where([&] (std::any p) {
-                            return p->FullFilePath == fullFilePath;
-                        }).ToList(), proteinList, dbFilenameList[0]->getFilePath(), variableModifications,
-                    fixedModifications, localizeableModificationTypes, OutputFolder, fileNameNoExtension,
-                    std::vector<std::string> {taskId});
-#endif
                 std::vector<std::string> vs6 = {taskId};
                 std::vector<CrosslinkSpectralMatch*> tmpwriteToXml;
                 for ( auto p: writeToXml ) {
@@ -757,7 +692,19 @@ namespace TaskLayer
                                vs6);
             }
         }
+#ifdef TIMING_INFO
+        gettimeofday (&t9e, NULL);
 
+        std::cout << "Load Modifications : " << timediff(t1, t1e ) << " sec \n";
+        std::cout << "Load Proteins : " << timediff(t2, t2e ) << " sec \n";
+        std::cout << "Load Files : " << t3total << " sec \n";
+        std::cout << "GetMs2Scans : " << t4total << " sec \n";
+        std::cout << "GenerateIndixes : " << t5total << " sec \n";
+        std::cout << "CrosslinkSearch : " << t6total << " sec \n";
+        std::cout << "FdrAnalysis : " << timediff(t7, t7e) << " sec \n";
+        std::cout << "Calculate Residue numbers : " << timediff(t8, t8e) << " sec \n";
+        std::cout << "Write results : " << timediff(t9, t9e) << " sec \n";
+#endif        
         delete myFileManager;
         //C# TO C++ CONVERTER TODO TASK: A 'delete crosslinker' statement was not added since crosslinker was
         //passed to a method or constructor. Handle memory management manually.
@@ -768,13 +715,6 @@ namespace TaskLayer
     {
         // calculate single PSM FDR
 
-#ifdef ORIG
-        std::vector<PeptideSpectralMatch*> psms = items.Where([&] (std::any p)	{
-                return p->CrossType == PsmCrossType::Single;
-            })->Select([&] (std::any p)	{
-                    dynamic_cast<PeptideSpectralMatch*>(p);
-		}).ToList();
-#endif
         std::vector<PeptideSpectralMatch*> psms;
         for ( auto p: items ) {
             if ( p->getCrossType() == PsmCrossType::Single ) {
@@ -786,13 +726,6 @@ namespace TaskLayer
         (&tempVar)->Run();
         
         // calculate loop PSM FDR
-#ifdef ORIG
-        psms = items.Where([&] (std::any p)   	{
-                return p->CrossType == PsmCrossType::Loop;
-            })->Select([&] (std::any p)           {
-                    dynamic_cast<PeptideSpectralMatch*>(p);
-		}).ToList();
-#endif
         psms.clear();
         for ( auto p: items ) {
             if ( p->getCrossType() == PsmCrossType::Loop ) {
@@ -804,14 +737,6 @@ namespace TaskLayer
         (&tempVar2)->Run();
 
         // calculate deadend FDR
-#ifdef ORIG
-        psms = items.Where([&] (std::any p)	{
-                return p->CrossType == PsmCrossType::DeadEnd || p->CrossType == PsmCrossType::DeadEndH2O ||
-                p->CrossType == PsmCrossType::DeadEndNH2 || p->CrossType == PsmCrossType::DeadEndTris;
-            })->Select([&] (std::any p)	{
-                    dynamic_cast<PeptideSpectralMatch*>(p);
-		}).ToList();
-#endif
         psms.clear();
         for ( auto p: items ) {
             if ( p->getCrossType() == PsmCrossType::DeadEnd || p->getCrossType() == PsmCrossType::DeadEndH2O ||
@@ -933,7 +858,8 @@ namespace TaskLayer
             
             for (auto item : items)
             {
-                if (item->getBaseSequence() != "" && item->getBetaPeptide()->getBaseSequence() != "" && item->getProteinAccession() != "" && item->getBetaPeptide()->getProteinAccession() != "")
+                if (item->getBaseSequence() != "" && item->getBetaPeptide()->getBaseSequence() != "" &&
+                    item->getProteinAccession() != "" && item->getBetaPeptide()->getProteinAccession() != "")
                 {
                     std::string x = "T";
                     int label = 1;
@@ -1009,20 +935,6 @@ namespace TaskLayer
         _pepxml->summary_xml(items[0]->getFullFilePath() + ".pep.XML");
         
         
-#ifdef ORIG
-        for (auto x : getCommonParameters()->getDigestionParams()->Protease.DigestionMotifs->Select([&] (std::any m) {
-                    m::InducingCleavage;
-                }))
-        {
-            proteaseC += x;
-        }
-        for (auto x : getCommonParameters()->getDigestionParams()->Protease.DigestionMotifs->Select([&] (std::any m)       {
-                    m::PreventingCleavage;
-		}))
-        {
-            proteaseNC += x;
-        }
-#endif
         std::string proteaseC;
         std::string proteaseNC;
         for ( auto m : getCommonParameters()->getDigestionParams()->getProtease()->getDigestionMotifs() ) {
@@ -1044,7 +956,6 @@ namespace TaskLayer
         std::string fileNameNoExtension = temps.substr(0, temps.find_last_of("."));
         std::string filePathNoExtension = temps.substr(0, temps.find_last_of("/"));
 
-        //std::string modSites = crosslinker->getCrosslinkerModSites().ToCharArray().Concat(crosslinker->getCrosslinkerModSites2().ToCharArray())->Distinct().ToString();
         std::string s1 = crosslinker->getCrosslinkerModSites();
         std::string s2 = crosslinker->getCrosslinkerModSites2();
         std::vector<char> vs1 (s1.begin(), s1.end() );

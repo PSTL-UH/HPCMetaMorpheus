@@ -195,7 +195,8 @@ namespace EngineLayer
         {
             int obsPreviousFragmentCeilingMz = 0;
             std::vector<int> binsToSearch;
-
+            auto FragmentIndexsize = FragmentIndex.size();
+            
             for (auto envelope : scan->getExperimentalFragments())
             {
                 // assume charge state 1 to calculate mass tolerance
@@ -214,13 +215,13 @@ namespace EngineLayer
                 
                 // prevent upper-bound index out of bounds errors;
                 // lower-bound is handled by the previous "if (obsFragmentFloorMass < obsPreviousFragmentCeilingMz)" statement
-                if (obsFragmentCeilingMass >= (int)FragmentIndex.size())
+                if (obsFragmentCeilingMass >= FragmentIndexsize)
                 {
-                    obsFragmentCeilingMass = (int)FragmentIndex.size() - 1;
+                    obsFragmentCeilingMass = FragmentIndexsize - 1;
                     
-                    if (obsFragmentFloorMass >= (int)FragmentIndex.size())
+                    if (obsFragmentFloorMass >= FragmentIndexsize)
                     {
-                        obsFragmentFloorMass = FragmentIndex.size() - 1;
+                        obsFragmentFloorMass = FragmentIndexsize - 1;
                     }
                 }
                 
@@ -249,13 +250,13 @@ namespace EngineLayer
                         int compFragmentCeilingMass = static_cast<int>(BankersRounding::round(((scan->getPrecursorMass() + protonMassShift) * FragmentBinsPerDalton))) - obsFragmentFloorMass;
                         
                         // prevent index out of bounds errors
-                        if (compFragmentCeilingMass >= (int)FragmentIndex.size())
+                        if (compFragmentCeilingMass >= FragmentIndexsize)
                         {
-                            compFragmentCeilingMass = FragmentIndex.size() - 1;
+                            compFragmentCeilingMass = FragmentIndexsize - 1;
                             
-                            if (compFragmentFloorMass >= (int)FragmentIndex.size())
+                            if (compFragmentFloorMass >= FragmentIndexsize)
                             {
-                                compFragmentFloorMass = FragmentIndex.size() - 1;
+                                compFragmentFloorMass = FragmentIndexsize - 1;
                             }
                         }
                         if (compFragmentFloorMass < 0)

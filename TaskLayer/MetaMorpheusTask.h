@@ -63,7 +63,7 @@ namespace TaskLayer
 	private:
             MyTask privateTaskType = static_cast<MyTask>(0);
             EngineLayer::CommonParameters *privateCommonParameters = nullptr;
-            bool privateVerbose = false;
+            bool privateVerbose = true;
             
 	public:
             //static TomlSettings *const tomlConfig;
