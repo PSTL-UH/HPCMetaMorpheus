@@ -309,11 +309,6 @@ namespace TaskLayer
                                            std::vector<FileSpecificParameters*> &fileSettingsList)
     {
         // disable quantification if a .mgf is being used
-#ifdef ORIG
-        //if (getSearchParameters()->getDoQuantification() && currentRawFileList.Any([&] (std::any x)   {
-        //            Path::GetExtension(x).Equals(".mgf", StringComparison::OrdinalIgnoreCase);
-        //        }))
-#endif  //
         bool found = false;
         for ( auto x: currentRawFileList ) {
             int pos = x.find_last_of(".")+1;
@@ -361,11 +356,6 @@ namespace TaskLayer
         std::string s6 = "initiator methionine behavior = ";
         ProseCreatedWhileRunning->append( s6 +
                                           InitiatorMethionineBehaviorToString(getCommonParameters()->getDigestionParams()->getInitiatorMethionineBehavior()) + "; ");
-#ifdef ORIG
-        ProseCreatedWhileRunning->append("fixed modifications = " + std::string::Join(", ", fixedModifications->Select([&](std::any m){
-                        m::IdWithMotif;
-                    })) + "; ");
-#endif
         std::vector<std::string> vs;
         for (auto p: fixedModifications ) {
             vs.push_back(p->getIdWithMotif());
@@ -373,12 +363,6 @@ namespace TaskLayer
         std::string comma = ", ";
         ProseCreatedWhileRunning->append("fixed modifications = " + StringHelper::join(vs, comma) + "; ");
         
-#ifdef ORIG
-        ProseCreatedWhileRunning->append("variable modifications = " +
-                                         std::string::Join(", ", variableModifications->Select([&] (std::any m){
-                                                     m::IdWithMotif;
-                                                 })) + "; ");
-#endif
         vs.clear();
         for (auto p: variableModifications ) {
             vs.push_back(p->getIdWithMotif());
@@ -401,13 +385,6 @@ namespace TaskLayer
         std::string s12 = "report PSM ambiguity = ";
         ProseCreatedWhileRunning->append(s12 +
                       StringHelper::toString(getCommonParameters()->getReportAllAmbiguity()) + ". ");
-#ifdef ORIG
-        ProseCreatedWhileRunning->append("The combined search database contained " + proteinList.size()([&] (std::any p) {
-                    !p::IsDecoy;
-		}) + " non-decoy protein entries including " + proteinList.size()([&] (std::any p) {
-			p::IsContaminant;
-                    }) + " contaminant sequences. ");
-#endif
         int pL_iD_count=0, pL_iC_count=0;
         for ( auto p: proteinList ) {
             if ( p->getIsDecoy() ){
@@ -440,11 +417,6 @@ namespace TaskLayer
         
         MyFileManager *myFileManager = new MyFileManager(getSearchParameters()->getDisposeOfFileWhenDone());
         
-#ifdef ORIG
-        auto fileSpecificCommonParams = fileSettingsList.Select([&] (std::any b) {
-                SetAllFileSpecificCommonParams(getCommonParameters(), b);
-            });
-#endif
         std::vector<CommonParameters *> fileSpecificCommonParams;
         for ( auto b: fileSettingsList ) {
             fileSpecificCommonParams.push_back(SetAllFileSpecificCommonParams(getCommonParameters(), b));
@@ -454,23 +426,18 @@ namespace TaskLayer
         //std::any indexLock = std::any();
         //std::any psmLock = std::any();
         
-        Status("Searching files...", taskId);
+        Status("Searching files...", taskId, getVerbose());
         std::vector<std::string> vsx = {taskId, "Individual Spectra Files"};
-        Status("Searching files...", vsx );
+        Status("Searching files...", vsx, getVerbose() );
         
         std::unordered_map<std::string, std::vector<int>> numMs2SpectraPerFile;
         for (int spectraFileIndex = 0; spectraFileIndex < (int)currentRawFileList.size(); spectraFileIndex++)
         {
-            if (GlobalVariables::getStopLoops())
-            {
-                break;
-            }
-            
             auto origDataFile = currentRawFileList[spectraFileIndex];
             
             // mark the file as in-progress
             std::vector<std::string> vs = {taskId, "Individual Spectra Files", origDataFile};
-            StartingDataFile(origDataFile, vs );
+            StartingDataFile(origDataFile, vs, getVerbose() );
             
             EngineLayer::CommonParameters *combinedParams = SetAllFileSpecificCommonParams(getCommonParameters(),
                                                                              fileSettingsList[spectraFileIndex]);
@@ -480,33 +447,23 @@ namespace TaskLayer
                                                                      getSearchParameters()->getCustomMdac());
             
             std::vector<std::string > thisId = {taskId, "Individual Spectra Files", origDataFile};
-            NewCollection(FileSystem::getFileName(origDataFile), thisId);
-            Status("Loading spectra file...", thisId);
+            //NewCollection(FileSystem::getFileName(origDataFile), thisId);
+            Status("Loading spectra file...", thisId, getVerbose());
             MsDataFile *myMsDataFile = myFileManager->LoadFile(origDataFile,
                                                                std::make_optional(combinedParams->getTopNpeaks()),
                                                                std::make_optional(combinedParams->getMinRatio()),
                                                                combinedParams->getTrimMs1Peaks(),
                                                                combinedParams->getTrimMsMsPeaks(), combinedParams);
-            Status("Getting ms2 scans...", thisId);
+            Status("Getting ms2 scans...", thisId, getVerbose());
             std::vector<Ms2ScanWithSpecificMass*> arrayOfMs2ScansSortedByMass = GetMs2Scans(myMsDataFile,
                                                                                             origDataFile,
                                                                                             combinedParams);
-#ifdef ORIG
-            //.OrderBy([&] (std::any b)   {
-            //        b::PrecursorMass;
-            //    })->ToArray();
-#endif
             std::sort(arrayOfMs2ScansSortedByMass.begin(), arrayOfMs2ScansSortedByMass.end(), [&]
                       (Ms2ScanWithSpecificMass *l, Ms2ScanWithSpecificMass *r) {
                           return l->getPrecursorMass() < r->getPrecursorMass();
                       });
 
             std::string fname = origDataFile.substr(0, origDataFile.find_last_of(".")); 
-#ifdef ORIG
-            numMs2SpectraPerFile.emplace(fname, std::vector<int> { myMsDataFile->GetAllScansList()->Count([&] (std::any p) {
-                            return p->MsnOrder == 2;
-			}), arrayOfMs2ScansSortedByMass.size() });
-#endif            
             int count=0;
             for ( auto p: myMsDataFile->GetAllScansList() ) {
                 if ( p->getMsnOrder() == 2 ) {
@@ -526,12 +483,6 @@ namespace TaskLayer
                 for (int currentPartition = 0; currentPartition < combinedParams->getTotalPartitions(); currentPartition++)
                 {
                     std::vector<PeptideWithSetModifications*> peptideIndex;
-#ifdef ORIG
-                    std::vector<Protein*> proteinListSubset = proteinList.GetRange(
-                        currentPartition * proteinList.size() / combinedParams->getTotalPartitions(),
-                        ((currentPartition + 1) * proteinList.size() / combinedParams->getTotalPartitions()) -
-                        (currentPartition * proteinList.size() / combinedParams->getTotalPartitions()));
-#endif
                     int start = currentPartition * proteinList.size() / combinedParams->getTotalPartitions();
                     int count = ((currentPartition + 1) * proteinList.size() / combinedParams->getTotalPartitions()) -
                         (currentPartition * proteinList.size() / combinedParams->getTotalPartitions());
@@ -542,7 +493,7 @@ namespace TaskLayer
                     }
 
                     std::vector<std::string> vs2 = {taskId};
-                    Status("Getting fragment dictionary...", vs2 );
+                    Status("Getting fragment dictionary...", vs2, getVerbose() );
 
                     std::vector<std::string> dbfnames;
                     for ( auto p: dbFilenameList ) {
@@ -555,14 +506,13 @@ namespace TaskLayer
                     
                     std::vector<std::vector<int>> fragmentIndex;
                     std::vector<std::vector<int>> precursorIndex;
-                    {
-                        //std::lock_guard<std::mutex> lock(indexLock);
-                        auto tempmods = GlobalVariables::getAllModsKnown();
-                        GenerateIndexes(indexEngine, dbFilenameList, peptideIndex, fragmentIndex, precursorIndex,
-                                        proteinList, tempmods, taskId);
-                    }
+
+                    //std::lock_guard<std::mutex> lock(indexLock);
+                    auto tempmods = GlobalVariables::getAllModsKnown();
+                    GenerateIndexes(indexEngine, dbFilenameList, peptideIndex, fragmentIndex, precursorIndex,
+                                    proteinList, tempmods, taskId);
                     
-                    Status("Searching files...", taskId);
+                    Status("Searching files...", taskId, getVerbose());
                     
                     auto tempVar = new ModernSearchEngine (fileSpecificPsms, arrayOfMs2ScansSortedByMass, peptideIndex,
                                                fragmentIndex, currentPartition, combinedParams, massDiffAcceptor,
@@ -571,7 +521,7 @@ namespace TaskLayer
                     
                     ProgressEventArgs tempVar2(100, "Done with search " + std::to_string(currentPartition + 1) + "/" +
                                                std::to_string(combinedParams->getTotalPartitions()) + "!", thisId);
-                    ReportProgress(&tempVar2);
+                    ReportProgress(&tempVar2, getVerbose());
                     
                     //C# TO C++ CONVERTER TODO TASK: A 'delete indexEngine' statement was not added since indexEngine
                     //was passed to a method or constructor. Handle memory management manually.
@@ -606,12 +556,6 @@ namespace TaskLayer
                     {
                         std::vector<PeptideWithSetModifications*> peptideIndex;
                         
-#ifdef ORIG
-                        std::vector<Protein*> proteinListSubset = proteinList.GetRange(
-                            currentPartition * proteinList.size() / paramToUse->getTotalPartitions(),
-                            ((currentPartition + 1) * proteinList.size() / paramToUse->getTotalPartitions()) -
-                            (currentPartition * proteinList.size() / paramToUse->getTotalPartitions()));
-#endif
                         int start = currentPartition * proteinList.size() / paramToUse->getTotalPartitions();
                         int count = ((currentPartition + 1) * proteinList.size() / paramToUse->getTotalPartitions()) -
                             (currentPartition * proteinList.size() / paramToUse->getTotalPartitions());
@@ -624,7 +568,7 @@ namespace TaskLayer
                         std::vector<std::vector<int>> precursorIndex(1);
                         
                         std::vector<std::string> vs3 = {taskId};
-                        Status("Getting fragment dictionary...", vs3);
+                        Status("Getting fragment dictionary...", vs3, getVerbose());
                         std::vector<std::string> dbfnames;
                         for ( auto p: dbFilenameList ) {
                             dbfnames.push_back(p->getFilePath() );
@@ -634,14 +578,12 @@ namespace TaskLayer
                                                               currentPartition, getSearchParameters()->getDecoyType(),
                                                               paramToUse, getSearchParameters()->getMaxFragmentSize(), true,
                                                               dbfnames, vs3);
-                        {
-                            //std::lock_guard<std::mutex> lock(indexLock);
-                            auto tempmods = GlobalVariables::getAllModsKnown();
-                            GenerateIndexes(indexEngine, dbFilenameList, peptideIndex, fragmentIndex, precursorIndex,
-                                            proteinList, tempmods, taskId);
-                        }
+                        //std::lock_guard<std::mutex> lock(indexLock);
+                        auto tempmods = GlobalVariables::getAllModsKnown();
+                        GenerateIndexes(indexEngine, dbFilenameList, peptideIndex, fragmentIndex, precursorIndex,
+                                        proteinList, tempmods, taskId);
                         
-                        Status("Searching files...", taskId);
+                        Status("Searching files...", taskId, getVerbose());
                         
                         auto tempVar3 = new NonSpecificEnzymeSearchEngine (fileSpecificPsmsSeparatedByFdrCategory,
                                                                arrayOfMs2ScansSortedByMass, peptideIndex, fragmentIndex,
@@ -652,7 +594,7 @@ namespace TaskLayer
                         
                         ProgressEventArgs tempVar4(100, "Done with search " + std::to_string(currentPartition + 1) + "/" +
                                                    std::to_string(paramToUse->getTotalPartitions()) + "!", thisId);
-                        ReportProgress(&tempVar4);
+                        ReportProgress(&tempVar4, getVerbose());
                          
                         //C# TO C++ CONVERTER TODO TASK: A 'delete indexEngine' statement was not added since indexEngine
                         //was passed to a method or constructor. Handle memory management manually.
@@ -674,31 +616,29 @@ namespace TaskLayer
             // classic search
             else
             {
-                Status("Starting search...", thisId);
+                Status("Starting search...", thisId, getVerbose());
                 auto tempVar5 = new ClassicSearchEngine(fileSpecificPsms, arrayOfMs2ScansSortedByMass, variableModifications,
                                              fixedModifications, proteinList, massDiffAcceptor, combinedParams, thisId);
                 tempVar5->Run();
                 
                 ProgressEventArgs tempVar6(100, "Done with search!", thisId);
-                ReportProgress(&tempVar6);
+                ReportProgress(&tempVar6, getVerbose());
             }
             
-            {
-                //std::lock_guard<std::mutex> lock(psmLock);
-                allPsms.insert(allPsms.end(), fileSpecificPsms.begin(), fileSpecificPsms.end());
-            }
+            //std::lock_guard<std::mutex> lock(psmLock);
+            allPsms.insert(allPsms.end(), fileSpecificPsms.begin(), fileSpecificPsms.end());
             
             completedFiles++;
             std::vector<std::string> vsy= {taskId, "Individual Spectra Files", origDataFile};
-            FinishedDataFile(origDataFile, vsy );
+            FinishedDataFile(origDataFile, vsy, getVerbose() );
             std::vector<std::string> vs4 = {taskId, "Individual Spectra Files"};
             ProgressEventArgs tempVar7(completedFiles / currentRawFileList.size(), "Searching...", vs4);
-            ReportProgress(&tempVar7);
+            ReportProgress(&tempVar7, getVerbose());
         }
 
         std::vector<std::string> vs5 = {taskId, "Individual Spectra Files"};
         ProgressEventArgs tempVar8(100, "Done with all searches!", vs5);
-        ReportProgress(&tempVar8);
+        ReportProgress(&tempVar8, getVerbose());
         
         int numNotches = GetNumNotches(getSearchParameters()->getMassDiffAcceptorType(),
                                        getSearchParameters()->getCustomMdac());
@@ -717,11 +657,7 @@ namespace TaskLayer
         parameters->setAllPsms(allPsms);
         parameters->setFixedModifications(fixedModifications);
         parameters->setVariableModifications(variableModifications);
-#ifdef ORIG
-        parameters->setListOfDigestionParams(std::unordered_set<DigestionParams*>(fileSpecificCommonParams->Select([&] (std::any p)  {
-                        p::DigestionParams;
-                    })));
-#endif
+
         std::unordered_set<DigestionParams*> ptv;
         for ( auto p = fileSpecificCommonParams.begin(); p != fileSpecificCommonParams.end(); p++ ) {
             ptv.insert((*p)->getDigestionParams() );

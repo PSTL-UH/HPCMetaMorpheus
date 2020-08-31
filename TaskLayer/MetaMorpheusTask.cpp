@@ -175,14 +175,14 @@ namespace TaskLayer
         return privateCommonParameters;
     }
 
-    bool MetaMorpheusTask::getVerbose() const
+    int  MetaMorpheusTask::getVerbose() const
     {
-        return privateVerbose;
+        return privateVerbosityLevel;
     }
 
-    void MetaMorpheusTask::setVerbose( bool verbose )
+    void MetaMorpheusTask::setVerbose( int verbosityLevel )
     {
-        privateVerbose = verbose;
+        privateVerbosityLevel = verbosityLevel;
     }
     
     void MetaMorpheusTask::setCommonParameters(EngineLayer::CommonParameters *value)
@@ -242,8 +242,7 @@ namespace TaskLayer
                     //Warn("Could not get precursor ion for MS2 scan #" + ms2scan->getOneBasedScanNumber() + "; " + ex.Message);
                     std::string s = "Could not get precursor ion for MS2 scan #";
                     s += ms2scan->getOneBasedScanNumber() + "; ";
-                    //Warn(s);
-                    std::cout << s << std::endl;
+                    Warn(s);
                     continue;
                 }
                 if (ms2scan->getSelectedIonMonoisotopicGuessMz().has_value())
@@ -446,11 +445,6 @@ namespace TaskLayer
     {
         //StartingSingleTask(displayName);
         
-#ifdef ORIG
-        auto tomlFileName = FileSystem::combine(Directory::GetParent(output_folder)->ToString(), "Task Settings", displayName + "config.toml");
-        Toml::WriteFile(this, tomlFileName, tomlConfig);
-        FinishedWritingFile(tomlFileName, std::vector<std::string> {displayName});
-#endif
         GlobalVariables::GlobalVariables_init();
         
         std::filesystem::path output_directory = output_folder;
@@ -461,10 +455,10 @@ namespace TaskLayer
         
         std::string output_path = output_dir + "/config.toml";
         this->writeTomlConfig(output_path, tomlFile);
+#ifdef ORIG
+        FinishedWritingFile(tomlFileName, std::vector<std::string> {displayName}, privateVerbosityLevel );
+#endif
 
-        
-        //MetaMorpheusEngine::FinishedSingleEngineHandler->addListener("SingleEngineHandlerInTask",
-        //                                                             SingleEngineHandlerInTask);
         try
         {
             clock_t begin = clock();
@@ -517,12 +511,11 @@ namespace TaskLayer
             file << myTaskResults->ToString() << std::endl;
 
             std::vector<std::string> svec = {displayName};
-            FinishedWritingFile(resultsFileName, svec );
-            FinishedSingleTask(displayName);
+            FinishedWritingFile(resultsFileName, svec,  privateVerbosityLevel );
+            //FinishedSingleTask(displayName,  privateVerbosityLevel);
         }
         catch (const std::runtime_error &e)
         {
-            //MetaMorpheusEngine::FinishedSingleEngineHandler->removeListener("SingleEngineHandlerInTask");
             std::string resultsFileName = output_folder + "/results.txt";
             //e.Data->Add("folder", output_folder);
             std::ofstream file(resultsFileName);
@@ -575,9 +568,8 @@ namespace TaskLayer
             sjoint2 += '\t' + (b->getIsContaminant() ? "Contaminant " : "") + b->getFilePath();
         }
         std::vector<std::string> svec2 = {displayName};
-        FinishedWritingFile(proseFilePath, svec2);
+        FinishedWritingFile(proseFilePath, svec2,  privateVerbosityLevel);
         
-        //MetaMorpheusEngine::FinishedSingleEngineHandler->removeListener("SingleEngineHandlerInTask");
         return myTaskResults;
     }
     
@@ -589,7 +581,7 @@ namespace TaskLayer
                                                          EngineLayer::CommonParameters *commonParameters)
     {
         std::vector<std::string> svec = {taskId};
-        Status("Loading proteins...", svec);
+        Status("Loading proteins...", svec,  privateVerbosityLevel);
         int emptyProteinEntries = 0;
         std::vector<Protein*> proteinList;
         for (auto db : dbFilenameList)
@@ -652,13 +644,6 @@ namespace TaskLayer
         }
         else
         {
-#ifdef ORIG
-            std::vector<std::string> modTypesToExclude = GlobalVariables::getAllModTypesKnown().Where([&] (
-                                                                                             std::any b)  {
-                    std::find(localizeableModificationTypes.begin(), localizeableModificationTypes.end(), b) ==
-                    localizeableModificationTypes.end();
-                }).ToList();
-#endif
             std::vector<std::string> modTypesToExclude;
             for ( auto b: GlobalVariables::getAllModTypesKnown() ) {
                 if (std::find(localizeableModificationTypes.begin(), localizeableModificationTypes.end(), b) ==
@@ -677,11 +662,6 @@ namespace TaskLayer
                                                           commonParameters->getMinVariantDepth());
         }
 
-#ifdef ORIG
-        emptyEntriesCount = proteinList.size()([&] (std::any p)	{
-                return p::BaseSequence->Length == 0;
-            });
-#endif
         emptyEntriesCount=0;
         for ( auto p: proteinList ) {
             if ( p->getBaseSequence().length() == 0 ) {
@@ -689,11 +669,6 @@ namespace TaskLayer
             }
         }
         
-#ifdef ORIG
-        return proteinList.Where([&] (std::any p){
-                return p::BaseSequence->Length > 0;
-            }).ToList();
-#endif
         std::vector<Proteomics::Protein*> tmpvec;
         for ( auto p: proteinList ) {
             if ( p->getBaseSequence().length() > 0 ) {
@@ -710,12 +685,8 @@ namespace TaskLayer
                                              std::vector<std::string> &localizableModificationTypes)
     {
         // load modifications
-        Status("Loading modifications...", taskId);
-#ifdef ORIG
-        variableModifications = GlobalVariables::getAllModsKnown().OfType<Modification*>().Where([&] (std::any b)    {
-                getCommonParameters()->ListOfModsVariable->Contains((b::ModificationType, b::IdWithMotif));
-            }).ToList();
-#endif
+        Status("Loading modifications...", taskId,  privateVerbosityLevel);
+
         variableModifications.clear();
         for ( auto b: GlobalVariables::getAllModsKnown() ) {
             auto tmp = getCommonParameters()->getListOfModsVariable();
@@ -726,11 +697,6 @@ namespace TaskLayer
             }
         }
         
-#ifdef ORIG
-        fixedModifications = GlobalVariables::getAllModsKnown().OfType<Modification*>().Where([&] (std::any b)	{
-                getCommonParameters()->ListOfModsFixed->Contains((b::ModificationType, b::IdWithMotif));
-            }).ToList();
-#endif
         fixedModifications.clear();
         for ( auto b: GlobalVariables::getAllModsKnown() ) {
             auto tmp = getCommonParameters()->getListOfModsFixed();
@@ -748,34 +714,16 @@ namespace TaskLayer
             localizableModificationTypes.push_back(*p);
         }
         
-#ifdef ORIG
-        auto recognizedVariable = variableModifications.Select([&] (std::any p)      {
-                p::IdWithMotif;
-            });
-#endif
         std::vector<std::string> recognizedVariable;
         for ( auto p: variableModifications ) {
             recognizedVariable.push_back(p->getIdWithMotif() );
         }
 
-#ifdef ORIG
-        auto recognizedFixed = fixedModifications.Select([&] (std::any p){
-                p::IdWithMotif;
-            });
-#endif
         std::vector<std::string> recognizedFixed;
         for ( auto p: fixedModifications ) {
             recognizedFixed.push_back(p->getIdWithMotif() );
         }
 
-#ifdef ORIG
-        auto unknownMods = getCommonParameters()->ListOfModsVariable->Select([&] (std::any p){
-                p::Item2;
-            }).Except(recognizedVariable).ToList();
-        unknownMods.AddRange(getCommonParameters()->ListOfModsFixed->Select([&] (std::any p){
-                    p::Item2;
-		}).Except(recognizedFixed));
-#endif
         std::vector<std::string> unknownMods;
         for ( auto p: *(getCommonParameters()->getListOfModsVariable()) ) {
             if ( std::find(recognizedVariable.begin(),recognizedVariable.end(), std::get<1>(p)) ==
@@ -789,7 +737,6 @@ namespace TaskLayer
                 unknownMods.push_back(std::get<1>(p));
             }
         }
-
         
         for (auto unrecognizedMod : unknownMods)
         {
@@ -809,117 +756,94 @@ namespace TaskLayer
         }
     }
     
-    void MetaMorpheusTask::ReportProgress(ProgressEventArgs *v)
+    void MetaMorpheusTask::ReportProgress(ProgressEventArgs *v, int verbosityLevel)
     {
-        if ( OutProgressHandler != nullptr )
-            OutProgressHandler->Invoke(*v);
-    }
-    
-    void MetaMorpheusTask::FinishedWritingFile(const std::string &path, std::vector<std::string> &nestedIDs)
-    {
-        SingleFileEventArgs tempVar(path, nestedIDs);
-        if ( FinishedWritingFileHandler != nullptr )
-            FinishedWritingFileHandler->Invoke(tempVar);
-    }
-    
-    void MetaMorpheusTask::StartingDataFile(const std::string &v, std::vector<std::string> &nestedIDs)
-    {
-        StringEventArgs tempVar(v, nestedIDs);
-        if ( StartingDataFileHandler != nullptr )
-            StartingDataFileHandler->Invoke(tempVar);
-    }
-    
-    void MetaMorpheusTask::FinishedDataFile(const std::string &v, std::vector<std::string> &nestedIDs)
-    {
-        StringEventArgs tempVar(v, nestedIDs);
-        if ( FinishedDataFileHandler != nullptr )
-            FinishedDataFileHandler->Invoke(tempVar);
-    }
-    
-    void MetaMorpheusTask::Status(const std::string &v, const std::string &id)
-    {
-        std::vector<std::string> s = {id};
-        StringEventArgs tempVar(v, s);
-        if ( OutLabelStatusHandler != nullptr ) {
-            OutLabelStatusHandler->Invoke(tempVar);
-        }
-        else {
-            if ( privateVerbose ) {
-                std::cout << v << " " << id << std::endl;
+        if ( verbosityLevel >= 3 ) {
+            std::cout << v->V << " " ;
+            for ( auto p : v->NestedIDs ) {
+                std::cout << p << " ";
             }
+            std::cout << std::endl;
         }
-        
     }
     
-    void MetaMorpheusTask::Status(const std::string &v, std::vector<std::string> &nestedIds)
+    void MetaMorpheusTask::FinishedWritingFile(const std::string &v, std::vector<std::string> &nestedIDs, int verbosityLevel)
     {
-        StringEventArgs tempVar(v, nestedIds);
-        if ( OutLabelStatusHandler != nullptr ) {
-            OutLabelStatusHandler->Invoke(tempVar);
-        }
-        else {
-            if ( privateVerbose ) {
-                std::cout << v << " " ;
-                for ( auto p : nestedIds ) {
-                    std::cout << p << " ";
-                }
-                std::cout << std::endl;
+        if ( verbosityLevel >= 4 ) {
+            std::cout << "FinishedWritingFile: " << v << " " ;
+            for ( auto p : nestedIDs ) {
+                std::cout << p << " ";
             }
+            std::cout << std::endl;
+        }
+    }
+    
+    void MetaMorpheusTask::StartingDataFile(const std::string &v, std::vector<std::string> &nestedIDs, int verbosityLevel)
+    {
+        if ( verbosityLevel >= 4) {
+            std::cout << "StartingDataFile " << v << " " ;
+            for ( auto p : nestedIDs ) {
+                std::cout << p << " ";
+            }
+            std::cout << std::endl;
+        }
+    }
+    
+    void MetaMorpheusTask::FinishedDataFile(const std::string &v, std::vector<std::string> &nestedIDs, int verbosityLevel)
+    {
+        if ( verbosityLevel >= 4 ) {
+            std::cout << "FinishedDataFile " << v << " " ;
+            for ( auto p : nestedIDs ) {
+                std::cout << p << " ";
+            }
+            std::cout << std::endl;
+        }
+    }
+    
+    void MetaMorpheusTask::Status(const std::string &v, const std::string &id, int verbosityLevel)
+    {
+        if ( verbosityLevel > 0 ) {
+            std::cout << v << " " << id << std::endl;
+        }
+    }
+    
+    void MetaMorpheusTask::Status(const std::string &v, std::vector<std::string> &nestedIds, int verbosityLevel)
+    {
+        if ( verbosityLevel > 0 ) {
+            std::cout << v << " " ;
+            for ( auto p : nestedIds ) {
+                std::cout << p << " ";
+            }
+            std::cout << std::endl;
         }
     }
     
     void MetaMorpheusTask::Warn(const std::string &v)
     {
-        StringEventArgs tempVar(v, std::vector<std::string>() );
-        if ( WarnHandler != nullptr ) {
-            WarnHandler->Invoke(tempVar);
-        }
-        else {
-            
-            std::cout << "Warn : " << v << std::endl;
+        std::cout << "Warn : " << v << std::endl;
+    }
+    
+    void MetaMorpheusTask::Log(const std::string &v, std::vector<std::string> &nestedIds, int verbosityLevel)
+    {
+        if ( verbosityLevel > 1 ) {
+            std::cout << v << " " ;
+            for ( auto p : nestedIds ) {
+                std::cout << p << " ";
+            }
+            std::cout << std::endl;
         }
     }
     
-    void MetaMorpheusTask::Log(const std::string &v, std::vector<std::string> &nestedIds)
-    {
-        StringEventArgs tempVar(v, nestedIds);
-        if ( LogHandler != nullptr )
-            LogHandler->Invoke(tempVar);
-    }
-    
-    void MetaMorpheusTask::NewCollection(const std::string &displayName, std::vector<std::string> &nestedIds)
-    {
-        StringEventArgs tempVar(displayName, nestedIds);
-        if ( NewCollectionHandler != nullptr )
-            NewCollectionHandler->Invoke(tempVar);
-    }
+    //void MetaMorpheusTask::NewCollection(const std::string &displayName, std::vector<std::string> &nestedIds)
+    //{
+    //    StringEventArgs tempVar(displayName, nestedIds);
+    //}
     
     std::vector<std::string> MetaMorpheusTask::GetModsTypesFromString(const std::string &value)
     {
-        //return value.Split({"\t"}, StringSplitOptions::RemoveEmptyEntries).ToList();
         return StringHelper::split(value, '\t');
     }
     
-    //void MetaMorpheusTask::SingleEngineHandlerInTask(std::any sender, SingleEngineFinishedEventArgs *e)
-    void MetaMorpheusTask::SingleEngineHandlerInTask(SingleEngineFinishedEventArgs e)
-    {
-        myTaskResults->AddResultText(e.ToString());
-    }
-    
-    void MetaMorpheusTask::FinishedSingleTask(const std::string &displayName)
-    {
-        SingleTaskEventArgs tempVar(displayName);
-        if ( FinishedSingleTaskHandler != nullptr )
-            FinishedSingleTaskHandler->Invoke(tempVar);
-    }
-    
-    void MetaMorpheusTask::StartingSingleTask(const std::string &displayName)
-    {
-        SingleTaskEventArgs tempVar(displayName);
-        if ( StartingSingleTaskHandler != nullptr )
-            StartingSingleTaskHandler->Invoke(tempVar);
-    }
-   
     bool MetaMorpheusTask::SameSettings(const std::string &pathToOldParamsFile, IndexingEngine *indexEngine)
     {
         std::ifstream reader(pathToOldParamsFile);
@@ -1088,57 +1012,57 @@ namespace TaskLayer
                                            const std::string &taskId)
     {
         std::vector<std::string> svec1 = {taskId};        
-        Status("Running Index Engine...", svec1);
+        Status("Running Index Engine...", svec1,  privateVerbosityLevel);
         
         std::string pathToFolderWithIndices = GetExistingFolderWithIndices(indexEngine, dbFilenameList);
             
         if (pathToFolderWithIndices == "")
         {
             auto output_folderForIndices = GenerateOutputFolderForIndices(dbFilenameList);
-            Status("Writing params...", svec1);
+            Status("Writing params...", svec1,  privateVerbosityLevel);
 
             std::string paramsFile = output_folderForIndices + "/indexEngine.params";
             WriteIndexEngineParams(indexEngine, paramsFile);
-            FinishedWritingFile(paramsFile, svec1 );
+            FinishedWritingFile(paramsFile, svec1,  privateVerbosityLevel );
             
-            Status("Running Index Engine...", svec1);
+            Status("Running Index Engine...", svec1,  privateVerbosityLevel);
             auto indexResults = static_cast<IndexingResults*>(indexEngine->Run());
             peptideIndex = indexResults->getPeptideIndex();
             fragmentIndex = indexResults->getFragmentIndex();
             precursorIndex = indexResults->getPrecursorIndex();
             
-            Status("Writing peptide index...", svec1);
+            Status("Writing peptide index...", svec1,  privateVerbosityLevel);
             std::string peptideIndexFile = output_folderForIndices + "/peptideIndex.ind";
             WritePeptideIndex(peptideIndex, peptideIndexFile);
-            FinishedWritingFile(peptideIndexFile, svec1);
+            FinishedWritingFile(peptideIndexFile, svec1,  privateVerbosityLevel);
             
-            Status("Writing fragment index...", svec1);
+            Status("Writing fragment index...", svec1,  privateVerbosityLevel);
             std::string fragmentIndexFile = output_folderForIndices + "/fragmentIndex.ind";
             WriteFragmentIndexSerializer(fragmentIndex, fragmentIndexFile);
-            FinishedWritingFile(fragmentIndexFile, svec1 );
+            FinishedWritingFile(fragmentIndexFile, svec1,  privateVerbosityLevel );
             
             if (indexEngine->GeneratePrecursorIndex)
             {
-                Status("Writing precursor index...", svec1 );
+                Status("Writing precursor index...", svec1,  privateVerbosityLevel );
                 std::string precursorIndexFile = output_folderForIndices + "/precursorIndex.ind";
                 WriteFragmentIndexSerializer(precursorIndex, precursorIndexFile);
-                FinishedWritingFile(precursorIndexFile, svec1 );
+                FinishedWritingFile(precursorIndexFile, svec1,  privateVerbosityLevel );
             }
         }
         else
         {
-            Status("Reading fragment index...", svec1 );
+            Status("Reading fragment index...", svec1,  privateVerbosityLevel );
             std::string file = pathToFolderWithIndices + "/fragmentIndex.ind";
             ReadFragmentIndexDeserializer(fragmentIndex, file );
 
             if (indexEngine->GeneratePrecursorIndex)
             {
-                Status("Reading precursor index...", svec1 );
+                Status("Reading precursor index...", svec1,  privateVerbosityLevel );
                 file = pathToFolderWithIndices + "/precursorIndex.ind";
                 ReadFragmentIndexDeserializer(precursorIndex, file );
             }
 
-            Status("Reading peptide index...", svec1 );
+            Status("Reading peptide index...", svec1,  privateVerbosityLevel);
             file = pathToFolderWithIndices + "/peptideIndex.ind";
             PeptideWithSetModifications::Deserialize(file, peptideIndex );
             

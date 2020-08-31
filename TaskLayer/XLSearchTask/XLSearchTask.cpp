@@ -265,7 +265,7 @@ namespace TaskLayer
         //std::any indexLock = std::any();
         //std::any psmLock = std::any();
         
-        Status("Searching files...", taskId);
+        Status("Searching files...", taskId, getVerbose() );
         
         DigestionParams *dPar = getCommonParameters()->getDigestionParams();
         ProseCreatedWhileRunning->append("The following crosslink discovery were used: ");
@@ -317,9 +317,9 @@ namespace TaskLayer
                                                                               fileSettingsList[spectraFileIndex]);
             
             auto thisId = std::vector<std::string> {taskId, "Individual Spectra Files", origDataFile};
-            NewCollection(FileSystem::getFileName(origDataFile), thisId);
+            //NewCollection(FileSystem::getFileName(origDataFile), thisId);
             
-            Status("Loading spectra file...", thisId);
+            Status("Loading spectra file...", thisId,  getVerbose() );
 #ifdef TIMING_INFO
             gettimeofday (&t3, NULL);
 #endif
@@ -333,7 +333,7 @@ namespace TaskLayer
             t3total += timediff(t3, t3e);
 #endif
             
-            Status("Getting ms2 scans...", thisId);
+            Status("Getting ms2 scans...", thisId, getVerbose());
 
 #ifdef TIMING_INFO
             gettimeofday (&t4, NULL);
@@ -361,7 +361,7 @@ namespace TaskLayer
                 }
                 
                 std::vector<std::string> vs = {taskId};
-                Status("Getting fragment dictionary...", vs);
+                Status("Getting fragment dictionary...", vs, getVerbose());
 
                 std::vector<std::string> filenameList;
                 for ( auto p: dbFilenameList )
@@ -388,7 +388,7 @@ namespace TaskLayer
                 t5total += timediff(t5, t5e );
 #endif
                 
-                Status("Searching files...", taskId);
+                Status("Searching files...", taskId, getVerbose());
 
 #ifdef TIMING_INFO
                 gettimeofday (&t6, NULL);
@@ -407,8 +407,7 @@ namespace TaskLayer
                 std::string s1 = "Done with search " + std::to_string(currentPartition + 1) + "/" +
                     std::to_string(getCommonParameters()->getTotalPartitions()) + "!";
                 ProgressEventArgs tempVar2(100, s1, thisId);
-                ReportProgress(&tempVar2);
-                
+                ReportProgress(&tempVar2, getVerbose() );
             }
             
             for ( auto p : newPsms ) {
@@ -420,12 +419,12 @@ namespace TaskLayer
             completedFiles++;
             std::vector<std::string> vs2 = {taskId, "Individual Spectra Files"};
             ProgressEventArgs tempVar3(completedFiles / currentRawFileList.size(), "Searching...", vs2); 
-            ReportProgress(&tempVar3);
+            ReportProgress(&tempVar3, getVerbose());
         }
         
         std::vector<std::string> vs3 = {taskId, "Individual Spectra Files"};
         ProgressEventArgs tempVar4(100, "Done with all searches!", vs3);
-        ReportProgress(&tempVar4);
+        ReportProgress(&tempVar4, getVerbose());
 
         std::sort(allPsms.begin(), allPsms.end(), [&] (CrosslinkSpectralMatch *l, CrosslinkSpectralMatch *r) {
                 return l->getXLTotalScore() > r->getXLTotalScore();
@@ -502,7 +501,7 @@ namespace TaskLayer
             std::string file = OutputFolder + "/XL_Interlinks.tsv";
             WritePsmCrossToTsv(interCsms, file, 2);
             std::vector<std::string> vs2 = {taskId};
-            FinishedWritingFile(file, vs2);
+            FinishedWritingFile(file, vs2, getVerbose());
         }
 
         int interCsms_size=0;
@@ -537,7 +536,7 @@ namespace TaskLayer
             std::string file = OutputFolder + "/XL_Intralinks.tsv";
             WritePsmCrossToTsv(intraCsms, file, 2);
             std::vector<std::string> vs3 = {taskId};
-            FinishedWritingFile(file, vs3);
+            FinishedWritingFile(file, vs3, getVerbose());
         }
 
         int intraCsms_size=0;
@@ -579,7 +578,7 @@ namespace TaskLayer
             std::string writtenFileSingle = OutputFolder + "/SinglePeptides" + ".tsv";
             WritePsmCrossToTsv(singlePsms, writtenFileSingle, 1);
             std::vector<std::string> vs4 = {taskId};
-            FinishedWritingFile(writtenFileSingle, vs4);
+            FinishedWritingFile(writtenFileSingle, vs4, getVerbose());
         }
 
         int singlePsms_size=0;
@@ -603,7 +602,7 @@ namespace TaskLayer
             std::string writtenFileLoop = OutputFolder + "/Looplinks" + ".tsv";
             WritePsmCrossToTsv(loopPsms, writtenFileLoop, 1);
             std::vector<std::string> vs4a = {taskId};
-            FinishedWritingFile(writtenFileLoop, vs4a);
+            FinishedWritingFile(writtenFileLoop, vs4a, getVerbose());
         }
 
         int loopPsms_size =0;
@@ -630,7 +629,7 @@ namespace TaskLayer
             std::string writtenFileDeadend = OutputFolder + "/Deadends" + ".tsv";
             WritePsmCrossToTsv(deadendPsms, writtenFileDeadend, 1);
             std::vector<std::string> vs5a = {taskId};
-            FinishedWritingFile(writtenFileDeadend, vs5a);
+            FinishedWritingFile(writtenFileDeadend, vs5a, getVerbose());
         }
 
         int deadendPsms_size =0;
@@ -898,7 +897,7 @@ namespace TaskLayer
             }
             output.close();
         }
-        FinishedWritingFile(writtenFile, nestedIds);
+        FinishedWritingFile(writtenFile, nestedIds, getVerbose());
     }
 
     void XLSearchTask::WritePepXML_xl(std::vector<CrosslinkSpectralMatch*> &items,
@@ -1573,7 +1572,7 @@ namespace TaskLayer
         {
             std::cerr << e << std::endl;
         }
-        FinishedWritingFile( outFileName, nestedIds);
+        FinishedWritingFile( outFileName, nestedIds, getVerbose());
 
         delete _pepxml;
     }

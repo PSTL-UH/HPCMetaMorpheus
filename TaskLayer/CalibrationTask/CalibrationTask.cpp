@@ -236,7 +236,7 @@ namespace TaskLayer
                 
         // start the calibration task
         std::vector<std::string> vs = {taskId};
-        Status("Calibrating...", vs);
+        Status("Calibrating...", vs, getVerbose());
         myTaskResults = new MyTaskResults(this);
         myTaskResults->NewSpectra = std::vector<std::string>();
         myTaskResults->NewFileSpecificTomls = std::vector<std::string>();
@@ -266,13 +266,13 @@ namespace TaskLayer
             
             // mark the file as in-progress
             std::vector<std::string> vs2 = {taskId, "Individual Spectra Files", originalUncalibratedFilePath};
-            StartingDataFile(originalUncalibratedFilePath, vs2);
+            StartingDataFile(originalUncalibratedFilePath, vs2, getVerbose());
             
             EngineLayer::CommonParameters *combinedParams = SetAllFileSpecificCommonParams(getCommonParameters(), fileSettingsList[spectraFileIndex]);
             
             // load the file
             std::vector<std::string> vs3 = {taskId, "Individual Spectra Files"};
-            Status("Loading spectra file...", vs3);
+            Status("Loading spectra file...", vs3, getVerbose());
             
             auto myMsDataFile = myFileManager->LoadFile(originalUncalibratedFilePath,
                                                         std::make_optional(getCommonParameters()->getTopNpeaks()),
@@ -283,7 +283,7 @@ namespace TaskLayer
             
             // get datapoints to fit calibration function to
             std::vector<std::string> vs4 = {taskId, "Individual Spectra Files"};
-            Status("Acquiring calibration data points...", vs4);
+            Status("Acquiring calibration data points...", vs4, getVerbose());
             DataPointAquisitionResults *acquisitionResults = nullptr;
             
             for (int i = 1; i <= 5; i++)
@@ -342,7 +342,7 @@ namespace TaskLayer
                     
                     couldNotFindEnoughDatapoints = true;
                     std::vector<std::string> vsx = {taskId, "Individual Spectra Files", originalUncalibratedFilePath};
-                    FinishedDataFile(originalUncalibratedFilePath, vsx);
+                    FinishedDataFile(originalUncalibratedFilePath, vsx, getVerbose());
                     break;
                 }
                 
@@ -361,7 +361,7 @@ namespace TaskLayer
                 spectraFilesAfterCalibration.push_back(fname);
                 std::vector<std::string> vs = {taskId, "Individual Spectra Files", originalUncalibratedFilenameWithoutExtension};
                 ProgressEventArgs tempVar7(100, "Failed to calibrate!", vs);
-                ReportProgress(&tempVar7);
+                ReportProgress(&tempVar7, getVerbose());
                 continue;
             }
             
@@ -372,7 +372,7 @@ namespace TaskLayer
             
             // generate calibration function and shift data points
             std::vector<std::string> vs5 = {taskId, "Individual Spectra Files"};
-            Status("Calibrating...", vs5);
+            Status("Calibrating...", vs5, getVerbose());
             std::vector<std::string> vs6 = {taskId, "Individual Spectra Files", originalUncalibratedFilenameWithoutExtension};
             CalibrationEngine *engine = new CalibrationEngine(myMsDataFile, acquisitionResults, getCommonParameters(), vs6);
             engine->Run();
@@ -382,7 +382,7 @@ namespace TaskLayer
             
             // do another search to evaluate calibration results
             std::vector<std::string> vs7 = {taskId, "Individual Spectra Files"};
-            Status("Post-calibration search...", vs7 );
+            Status("Post-calibration search...", vs7, getVerbose() );
             acquisitionResults = GetDataAcquisitionResults(myMsDataFile, originalUncalibratedFilePath, variableModifications,
                                                            fixedModifications, proteinList, taskId, combinedParams,
                                                            combinedParams->getPrecursorMassTolerance(),
@@ -390,7 +390,7 @@ namespace TaskLayer
             
             //generate calibration function and shift data points AGAIN because it's fast and contributes new data
             std::vector<std::string> vs8 = {taskId, "Individual Spectra Files"};
-            Status("Calibrating...", vs8);
+            Status("Calibrating...", vs8, getVerbose());
             std::vector<std::string> vs9 = {taskId, "Individual Spectra Files", originalUncalibratedFilenameWithoutExtension};
             engine = new CalibrationEngine(myMsDataFile, acquisitionResults, getCommonParameters(), vs9);
             engine->Run();
@@ -441,21 +441,21 @@ namespace TaskLayer
 
             
             std::vector<std::string> vs10 = {taskId, "Individual Spectra Files", originalUncalibratedFilenameWithoutExtension};
-            FinishedWritingFile(newTomlFileName, vs10);
+            FinishedWritingFile(newTomlFileName, vs10, getVerbose());
             
             // finished calibrating this file
             size_t lastindex2 = calibratedFilePath.find_last_of(".");
             std::string fname2 = calibratedFilePath.substr(0, lastindex2);
             spectraFilesAfterCalibration.push_back(fname2);
             std::vector<std::string> vs11 = {taskId, "Individual Spectra Files", originalUncalibratedFilenameWithoutExtension};
-            FinishedWritingFile(calibratedFilePath, vs11);
+            FinishedWritingFile(calibratedFilePath, vs11, getVerbose());
             myTaskResults->NewSpectra.push_back(calibratedFilePath);
             myTaskResults->NewFileSpecificTomls.push_back(newTomlFileName);
             std::vector<std::string> vs12 = {taskId, "Individual Spectra Files", originalUncalibratedFilePath};
-            FinishedDataFile(originalUncalibratedFilePath, vs12);
+            FinishedDataFile(originalUncalibratedFilePath, vs12, getVerbose());
             std::vector<std::string> vs13 = {taskId, "Individual Spectra Files", originalUncalibratedFilenameWithoutExtension};
             ProgressEventArgs tempVar10(100, "Done!", vs13);
-            ReportProgress(&tempVar10);
+            ReportProgress(&tempVar10, getVerbose());
             
             //C# TO C++ CONVERTER TODO TASK: A 'delete fileSpecificParams' statement was not added since
             //fileSpecificParams was passed to a method or constructor. Handle memory management manually.
@@ -475,7 +475,7 @@ namespace TaskLayer
         // finished calibrating all files for the task
         std::vector<std::string> vs14 = {taskId, "Individual Spectra Files"};
         ProgressEventArgs tempVar11(100, "Done!", vs14);
-        ReportProgress(&tempVar11);
+        ReportProgress(&tempVar11, getVerbose());
         
         delete myFileManager;
         return myTaskResults;
@@ -502,7 +502,12 @@ namespace TaskLayer
         return countRatio > 0.9 && precRatio + prodRatio < 1.8;
     }
     
-    DataPointAquisitionResults *CalibrationTask::GetDataAcquisitionResults(MsDataFile *myMsDataFile, const std::string &currentDataFile, std::vector<Modification*> &variableModifications, std::vector<Modification*> &fixedModifications, std::vector<Protein*> &proteinList, const std::string &taskId, EngineLayer::CommonParameters *combinedParameters, Tolerance *initPrecTol, Tolerance *initProdTol)
+    DataPointAquisitionResults *CalibrationTask::GetDataAcquisitionResults(MsDataFile *myMsDataFile, const std::string &currentDataFile,
+                                                                           std::vector<Modification*> &variableModifications,
+                                                                           std::vector<Modification*> &fixedModifications,
+                                                                           std::vector<Protein*> &proteinList, const std::string &taskId,
+                                                                           EngineLayer::CommonParameters *combinedParameters,
+                                                                           Tolerance *initPrecTol, Tolerance *initProdTol)
     {
         //std::string fileNameWithoutExtension = Path::GetFileNameWithoutExtension(currentDataFile);
         size_t lastindex = currentDataFile.find_last_of(".");
@@ -522,19 +527,15 @@ namespace TaskLayer
         std::vector<PeptideSpectralMatch*> allPsmsArray(listOfSortedms2Scans.size());
         
         std::vector<std::string> vs1 = {taskId, "Individual Spectra Files", fileNameWithoutExtension};
-        Log("Searching with searchMode: " + searchMode->ToProseString(), vs1);
+        Log("Searching with searchMode: " + searchMode->ToProseString(), vs1, getVerbose());
         std::vector<std::string> vs2 = {taskId, "Individual Spectra Files", fileNameWithoutExtension};
-        Log("Searching with productMassTolerance: " + std::to_string(initProdTol->getValue()), vs2);
+        Log("Searching with productMassTolerance: " + std::to_string(initProdTol->getValue()), vs2, getVerbose());
         
         std::vector<std::string> vs3 = {taskId, "Individual Spectra Files", fileNameWithoutExtension};
         ClassicSearchEngine tempVar2(allPsmsArray, listOfSortedms2Scans, variableModifications, fixedModifications, proteinList,
                                      searchMode, combinedParameters, vs3);
         (&tempVar2)->Run();
-#ifdef ORIG
-        std::vector<PeptideSpectralMatch*> allPsms = allPsmsArray.Where([&] (std::any b) {
-                return b != nullptr;
-            }).ToList();
-#endif
+
         std::vector<PeptideSpectralMatch*> allPsms;
         for ( auto b: allPsmsArray ) {
             if ( b != nullptr ) {
@@ -591,11 +592,6 @@ namespace TaskLayer
         FdrAnalysisEngine tempVar3(allPsms, searchMode->getNumNotches(), getCommonParameters(), vs4);
         (&tempVar3)->Run();
         
-#ifdef ORIG
-        std::vector<PeptideSpectralMatch*> goodIdentifications = allPsms.Where([&] (std::any b) {
-                return b::FdrInfo::QValueNotch < 0.001 && !b::IsDecoy && b::FullSequence != nullptr;
-            }).ToList();
-#endif
         std::vector<PeptideSpectralMatch*> goodIdentifications;
         for ( auto b: allPsms ) {
             if ( b->getFdrInfo()->getQValueNotch() < 0.001 &&

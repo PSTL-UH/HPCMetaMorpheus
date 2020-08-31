@@ -63,11 +63,9 @@ namespace TaskLayer
 	private:
             MyTask privateTaskType = static_cast<MyTask>(0);
             EngineLayer::CommonParameters *privateCommonParameters = nullptr;
-            bool privateVerbose = true;
+            int privateVerbosityLevel = 0;
             
 	public:
-            //static TomlSettings *const tomlConfig;
-            // static toml::Table tomlConfig;
             std::ofstream tomlFile;
             virtual void writeTomlConfig ( std::string &filename, std::ofstream &tomlFd);
             
@@ -91,32 +89,6 @@ namespace TaskLayer
             MetaMorpheusTask(MyTask taskType);
             
 	public:
-            // Keeping one original line for revisiting the item later.
-            //static TangibleEvent<EventHandler<SingleTaskEventArgs>> *FinishedSingleTaskHandler = new TangibleEvent<EventHandler<SingleTaskEventArgs>>();
-            
-#ifdef ORIG
-            static EventHandler<SingleTaskEventArgs> *FinishedSingleTaskHandler = new EventHandler<SingleTaskEventArgs>();
-            static EventHandler<SingleFileEventArgs> *FinishedWritingFileHandler = new EventHandler<SingleFileEventArgs>();
-            static EventHandler<SingleTaskEventArgs> *StartingSingleTaskHandler = new EventHandler<SingleTaskEventArgs>();
-            static EventHandler<StringEventArgs> *StartingDataFileHandler = new EventHandler<StringEventArgs>();
-            static EventHandler<StringEventArgs> *FinishedDataFileHandler = new EventHandler<StringEventArgs>();
-            static EventHandler<StringEventArgs> *OutLabelStatusHandler = new TangibleEvent<EventHandler<StringEventArgs>();
-            static EventHandler<StringEventArgs> *WarnHandler = new EventHandler<StringEventArgs>>();
-            static EventHandler<StringEventArgs> *LogHandler = new EventHandler<StringEventArgs>>();
-            static EventHandler<StringEventArgs> *NewCollectionHandler = new EventHandler<StringEventArgs>();
-            static EventHandler<ProgressEventArgs> *OutProgressHandler = new EventHandler<ProgressEventArgs>();
-#endif
-
-            EventHandler<SingleTaskEventArgs> *FinishedSingleTaskHandler=nullptr;
-            EventHandler<SingleFileEventArgs> *FinishedWritingFileHandler=nullptr;
-            EventHandler<SingleTaskEventArgs> *StartingSingleTaskHandler=nullptr;
-            EventHandler<StringEventArgs> *StartingDataFileHandler=nullptr;
-            EventHandler<StringEventArgs> *FinishedDataFileHandler=nullptr;
-            EventHandler<StringEventArgs> *OutLabelStatusHandler=nullptr;
-            EventHandler<StringEventArgs> *WarnHandler=nullptr;
-            EventHandler<StringEventArgs> *LogHandler=nullptr;
-            EventHandler<StringEventArgs> *NewCollectionHandler=nullptr;
-            EventHandler<ProgressEventArgs> *OutProgressHandler=nullptr;
             
             MyTask getTaskType() const;
             void setTaskType(MyTask value);
@@ -124,8 +96,8 @@ namespace TaskLayer
             EngineLayer::CommonParameters *getCommonParameters() const;
             void setCommonParameters(EngineLayer::CommonParameters *value);
 
-            bool getVerbose() const;
-            void setVerbose ( bool verbose );
+            int getVerbose() const;
+            void setVerbose ( int verbosityLevel );
             
             static const std::string IndexFolderName;
             
@@ -159,27 +131,29 @@ namespace TaskLayer
             static void WritePsmsToTsv(std::vector<PeptideSpectralMatch*> &psms, const std::string &filePath,
                                        std::unordered_map<std::string, int> *modstoWritePruned);
 
-            void ReportProgress(ProgressEventArgs *v);
             
             virtual MyTaskResults *RunSpecific(const std::string &OutputFolder, std::vector<DbForTask*> &dbFilenameList,
                                                std::vector<std::string> &currentRawFileList, const std::string &taskId,
                                                std::vector<FileSpecificParameters*> &fileSettingsList) = 0;
 
-            void FinishedWritingFile(const std::string &path, std::vector<std::string> &nestedIDs);
+        public:
+            static void ReportProgress(ProgressEventArgs *v,  int verbositLevel);
+
+            static void FinishedWritingFile(const std::string &path, std::vector<std::string> &nestedIDs,  int verbositLevel);
             
-            void StartingDataFile(const std::string &v, std::vector<std::string> &nestedIDs);
+            static void StartingDataFile(const std::string &v, std::vector<std::string> &nestedIDs,  int verbositLevel);
             
-            void FinishedDataFile(const std::string &v, std::vector<std::string> &nestedIDs);
+            static void FinishedDataFile(const std::string &v, std::vector<std::string> &nestedIDs,  int verbositLevel);
             
-            void Status(const std::string &v, const std::string &id);
+            static void Status(const std::string &v, const std::string &id,  int verbositLevel);
             
-            void Status(const std::string &v, std::vector<std::string> &nestedIds);
+            static void Status(const std::string &v, std::vector<std::string> &nestedIds,  int verbositLevel);
             
-            void Warn(const std::string &v);
+            static void Warn(const std::string &v);
             
-            void Log(const std::string &v, std::vector<std::string> &nestedIds);
+            static void Log(const std::string &v, std::vector<std::string> &nestedIds,  int verbositLevel);
             
-            void NewCollection(const std::string &displayName, std::vector<std::string> &nestedIds);
+            //static void NewCollection(const std::string &displayName, std::vector<std::string> &nestedIds);
             
 	private:
             static std::vector<std::string> GetModsTypesFromString(const std::string &value);
@@ -191,17 +165,7 @@ namespace TaskLayer
             //                                    b => (b.Split('\t').First(), b.Split('\t').Last())).ToList();
             // }
             static std::pair<std::string, std::string> GetModsFromString (std::string value);
-            
-            //void SingleEngineHandlerInTask(std::any sender, SingleEngineFinishedEventArgs *e);
-            void SingleEngineHandlerInTask(SingleEngineFinishedEventArgs e);
-            
-            void FinishedSingleTask(const std::string &displayName);
-            
-            void StartingSingleTask(const std::string &displayName);
-            
-#ifdef NOT_NOW
-            static std::vector<std::type_info> GetSubclassesAndItself(std::type_info type);
-#endif
+                        
             static bool SameSettings(const std::string &pathToOldParamsFile, IndexingEngine *indexEngine);
             
             static void WritePeptideIndex(std::vector<PeptideWithSetModifications*> &peptideIndex,
