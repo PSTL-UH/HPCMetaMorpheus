@@ -545,16 +545,28 @@ namespace TaskLayer
             ", available at " <<   "https://github.com/smith-chem-wisc/MetaMorpheus.";
         file << ProseCreatedWhileRunning->toString();
         //file << SystemInfo::SystemProse()->Replace("\r\n", "") << " ";
-        file << "The total time to perform the " << static_cast<int>(getTaskType()) << " task on " <<
+
+        std::string tasktype = "";
+        MyTask task = getTaskType();
+        if ( task == MyTask::Search ) 
+            tasktype = "Search";
+        else if ( task == MyTask::Gptmd ) 
+            tasktype = "Gptmd";
+        else if ( task == MyTask::Calibrate ) 
+            tasktype = "Calibrate";
+        else if ( task == MyTask::XLSearch ) 
+            tasktype == "XLSearch";
+            
+        file << "The total time to perform the " << tasktype << " task on " <<
             std::to_string(currentRawDataFilepathList.size()) <<
             " spectra file(s) was " << myTaskResults->Time <<
-            " minutes." << std::endl;
-        file << "\n Published works using MetaMorpheus software are encouraged to cite: " <<
+            " minutes." << std::endl << std::endl;
+        file << "Published works using MetaMorpheus software are encouraged to cite: " <<
             "Solntsev, S. K.; Shortreed, M. R.; Frey, B. L.; Smith, L. M. " <<
             "Enhanced Global Post-translational Modification Discovery with MetaMorpheus. " <<
-            "Journal of Proteome Research. 2018, 17 (5), 1844-1851." << std::endl;
+            "Journal of Proteome Research. 2018, 17 (5), 1844-1851." << std::endl << std::endl;
         
-        file <<"\n Spectra files: " << std::endl;
+        file <<"Spectra files: " << std::endl;
         
         std::string sjoint1;
         for ( auto b: currentRawDataFilepathList ) {
@@ -564,10 +576,17 @@ namespace TaskLayer
 
         file << "Databases:" << std::endl;
 
-        std::string sjoint2;
+        std::string sjoint2="";
         for ( auto b: currentProteinDbFilenameList ) {
-            sjoint2 += '\t' + (b->getIsContaminant() ? "Contaminant " : "") + b->getFilePath();
+            if ( b->getIsContaminant() ) {
+                sjoint2 += '\t' +  "Contaminant "  + b->getFilePath();
+            }
+            else {
+                sjoint2 += '\t' + b->getFilePath();
+            }
         }
+        file << sjoint2 << std::endl;
+        
         std::vector<std::string> svec2 = {displayName};
         FinishedWritingFile(proseFilePath, svec2,  privateVerbosityLevel);
         

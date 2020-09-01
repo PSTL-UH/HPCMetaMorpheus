@@ -270,7 +270,9 @@ namespace TaskLayer
         DigestionParams *dPar = getCommonParameters()->getDigestionParams();
         ProseCreatedWhileRunning->append("The following crosslink discovery were used: ");
         ProseCreatedWhileRunning->append("crosslinker name = " + crosslinker->getCrosslinkerName() + "; ");
-        ProseCreatedWhileRunning->append("crosslinker type = " + StringHelper::toString(crosslinker->getCleavable()) + "; ");
+        std::string ss = "true";
+        if ( !crosslinker->getCleavable() ) ss = "false";
+        ProseCreatedWhileRunning->append("crosslinker type = " + ss + "; ");
         ProseCreatedWhileRunning->append("crosslinker mass = " + std::to_string(crosslinker->getTotalMass()) + "; ");
         ProseCreatedWhileRunning->append("crosslinker modification site(s) = " + crosslinker->getCrosslinkerModSites() + "; ");
         
@@ -281,7 +283,7 @@ namespace TaskLayer
                                          "maximum peptide length = unspecified; " : "maximum peptide length = " +
                                          std::to_string(dPar->getMaxPeptideLength()) + "; ");
         ProseCreatedWhileRunning->append("initiator methionine behavior = " +
-                                         std::to_string(static_cast<int>(dPar->getInitiatorMethionineBehavior())) + "; ");
+                                         ProteolyticDigestion::InitiatorMethionineBehaviorToString(dPar->getInitiatorMethionineBehavior()) + "; ");
         ProseCreatedWhileRunning->append("max modification isoforms = " +
                                          std::to_string(dPar->getMaxModificationIsoforms()) + "; ");
         std::vector<std::string> vsv;
@@ -297,10 +299,10 @@ namespace TaskLayer
         }
         ProseCreatedWhileRunning->append("variable modifications = " + StringHelper::join ( vsv, del) + "; ");
         
-        ProseCreatedWhileRunning->append("parent mass tolerance(s) = " +
-                                         std::to_string(getCommonParameters()->getPrecursorMassTolerance()->getValue()) + "; ");
-        ProseCreatedWhileRunning->append("product mass tolerance = " +
-                                         std::to_string(getCommonParameters()->getProductMassTolerance()->getValue()) + "; ");
+        ProseCreatedWhileRunning->append("parent mass tolerance(s) =  ±" +
+                                         std::to_string(getCommonParameters()->getPrecursorMassTolerance()->getValue()) + " PPM; ");
+        ProseCreatedWhileRunning->append("product mass tolerance = ±" +
+                                         std::to_string(getCommonParameters()->getProductMassTolerance()->getValue()) + " PPM; ");
         int c1 = 0;
         for ( auto p: proteinList ) {
             if (p->getIsContaminant()) {
@@ -678,7 +680,8 @@ namespace TaskLayer
 
             for (auto fullFilePath : currentRawFileList)
             {
-                std::string fileNameNoExtension = fullFilePath.substr(0, fullFilePath.find_last_of("."));
+                std::string fileName =  fullFilePath.substr(0, fullFilePath.find_last_of("."));
+                std::string fileNameNoExtension = fileName.substr(fileName.find_last_of("/"));
 
                 std::vector<std::string> vs6 = {taskId};
                 std::vector<CrosslinkSpectralMatch*> tmpwriteToXml;
@@ -695,15 +698,15 @@ namespace TaskLayer
 #ifdef TIMING_INFO
         gettimeofday (&t9e, NULL);
 
-        std::cout << "Load Modifications : " << timediff(t1, t1e ) << " sec \n";
-        std::cout << "Load Proteins : " << timediff(t2, t2e ) << " sec \n";
-        std::cout << "Load Files : " << t3total << " sec \n";
-        std::cout << "GetMs2Scans : " << t4total << " sec \n";
-        std::cout << "GenerateIndixes : " << t5total << " sec \n";
-        std::cout << "CrosslinkSearch : " << t6total << " sec \n";
-        std::cout << "FdrAnalysis : " << timediff(t7, t7e) << " sec \n";
+        std::cout << "Load Modifications        : " << timediff(t1, t1e ) << " sec \n";
+        std::cout << "Load Proteins             : " << timediff(t2, t2e ) << " sec \n";
+        std::cout << "Load Files                : " << t3total << " sec \n";
+        std::cout << "GetMs2Scans               : " << t4total << " sec \n";
+        std::cout << "GenerateIndixes           : " << t5total << " sec \n";
+        std::cout << "CrosslinkSearch           : " << t6total << " sec \n";
+        std::cout << "FdrAnalysis               : " << timediff(t7, t7e) << " sec \n";
         std::cout << "Calculate Residue numbers : " << timediff(t8, t8e) << " sec \n";
-        std::cout << "Write results : " << timediff(t9, t9e) << " sec \n";
+        std::cout << "Write results             : " << timediff(t9, t9e) << " sec \n";
 #endif        
         delete myFileManager;
         //C# TO C++ CONVERTER TODO TASK: A 'delete crosslinker' statement was not added since crosslinker was
@@ -911,6 +914,8 @@ namespace TaskLayer
                                       const std::string &fileName,
                                       std::vector<std::string> &nestedIds)
     {
+        std::cout << "outputFolder " << outputFolder << std::endl;
+        std::cout << "fileName "<< fileName << std::endl;
         if (items.empty())
         {
             return;
