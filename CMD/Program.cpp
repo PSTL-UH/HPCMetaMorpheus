@@ -27,7 +27,7 @@ using namespace Proteomics;
 static void print_usage ( void )
 {
     std::cout << "Usage: MetaMorpheusC++ -t <Task> -m <MetaTask> -o <OutputFolder> "
-        "-s <Spectra> -d <Databases>" << std::endl;
+        "-s <Spectra> -d <Databases> -v <verbositLevel> "<< std::endl;
     
     return;
 }
@@ -93,7 +93,8 @@ int main( int argc, char *argv[] )
     
     std::cout << "Welcome to HPCMetaMorpheus" << std::endl;
     std::cout << GlobalVariables::getMetaMorpheusVersion() << std::endl;
-    
+
+    int verbosity=1; // Setting the default to provide Status updates
     int opt=0;
     static struct option long_options[] = {
         {"tasks", required_argument, 0, 't'},
@@ -101,11 +102,12 @@ int main( int argc, char *argv[] )
         {"meta-task", required_argument, 0, 'm'},
         {"spectra", required_argument, 0, 's'},
         {"databases", required_argument, 0, 'd'},
+        {"verbosity", required_argument, 0, 'v'},
         {0, 0, 0, 0}
     };
     
     int long_index=0;
-    while ((opt = getopt_long (argc, argv, "t:o:m:s:d:",
+    while ((opt = getopt_long (argc, argv, "t:o:m:s:d:v:",
                                long_options, &long_index)) != -1 ) {
         switch (opt) {
             case 't':
@@ -123,6 +125,8 @@ int main( int argc, char *argv[] )
             case 'd':
                 Databases.push_back (std::string(optarg));
                 break;
+            case 'v':
+                verbosity = std::stoi(optarg);
             default:
                 print_usage();
                 exit ( -1);
@@ -151,19 +155,23 @@ int main( int argc, char *argv[] )
             
             if (uhum.find("TaskType")->as<std::string>() == "Search") {
                 auto ye1 = new SearchTask(filePath);
+                ye1->setVerbose(verbosity);
                 taskList.push_back(std::make_tuple("Task" + std::to_string(i + 1) + "SearchTask", ye1));
             }
             else if (uhum.find("TaskType")->as<std::string>() == "Calibrate") {
                 auto ye2 = new CalibrationTask(filePath);
+                ye2->setVerbose(verbosity);
                 taskList.push_back(std::make_tuple("Task" + std::to_string(i + 1) + "CalibrationTask", ye2));
             }
             else if (uhum.find("TaskType")->as<std::string>() == "Gptmd")  {
                 //auto ye3 = new Gptmd(filePath);
+                //ye3->setVerbose(verbosity);
                 //taskList.push_back(std::make_tuple("Task" + std::to_string(i + 1) + "GptmdTask", ye3));
                 std::cout << "Gptmd tasks are currently not support by HPCMetaMorpheus \n";
             }
             else if (uhum.find("TaskType")->as<std::string>() == "XLSearch")  {
                 auto ye4 = new XLSearchTask(filePath);
+                ye4->setVerbose(verbosity);
                 taskList.push_back(std::make_tuple("Task" + std::to_string(i + 1) + "XLSearchTask", ye4));
             }
             else {
