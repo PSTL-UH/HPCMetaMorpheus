@@ -408,6 +408,7 @@ namespace TaskLayer
                     std::to_string(getCommonParameters()->getTotalPartitions()) + "!";
                 ProgressEventArgs tempVar2(100, s1, thisId);
                 ReportProgress(&tempVar2, getVerbose() );
+                delete indexEngine;
             }
             
             for ( auto p : newPsms ) {

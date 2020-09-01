@@ -524,8 +524,8 @@ namespace TaskLayer
                                                std::to_string(combinedParams->getTotalPartitions()) + "!", thisId);
                     ReportProgress(&tempVar2, getVerbose());
                     
-                    //C# TO C++ CONVERTER TODO TASK: A 'delete indexEngine' statement was not added since indexEngine
-                    //was passed to a method or constructor. Handle memory management manually.
+                    delete indexEngine;
+                    delete tempVar;
                 }
             }
             // nonspecific search
@@ -597,8 +597,8 @@ namespace TaskLayer
                                                    std::to_string(paramToUse->getTotalPartitions()) + "!", thisId);
                         ReportProgress(&tempVar4, getVerbose());
                          
-                        //C# TO C++ CONVERTER TODO TASK: A 'delete indexEngine' statement was not added since indexEngine
-                        //was passed to a method or constructor. Handle memory management manually.
+                        delete indexEngine;
+                        delete tempVar3;
                     }
                 }
                 {
@@ -625,6 +625,7 @@ namespace TaskLayer
                 
                 ProgressEventArgs tempVar6(100, "Done with search!", thisId);
                 ReportProgress(&tempVar6, getVerbose());
+                delete tempVar5;
             }
             
             //std::lock_guard<std::mutex> lock(psmLock);
