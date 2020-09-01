@@ -60,10 +60,10 @@ namespace EngineLayer
 		static std::vector<Modification*> getUniprotDeseralized();
 
 		//static std::unique_ptr<obo> getPsiModDeserialized();
-		static std::vector<Modification*> getAllModsKnown();
+		static std::vector<Modification*>& getAllModsKnown();
 
 		static std::unordered_set<std::string> getAllModTypesKnown();
-		static std::unordered_map<std::string, Modification*> getAllModsKnownDictionary();
+		static std::unordered_map<std::string, Modification*>& getAllModsKnownDictionary();
 		static void setAllModsKnownDictionary(const std::unordered_map<std::string, Modification*> &value);
 		static std::unordered_map<std::string, DissociationType> getAllSupportedDissociationTypes();
 		static void setAllSupportedDissociationTypes(const std::unordered_map<std::string, DissociationType> &value);

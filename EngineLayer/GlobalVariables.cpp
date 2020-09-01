@@ -1,10 +1,9 @@
 ﻿#include "GlobalVariables.h"
 #include "IGlobalSettings.h"
 
-#include <experimental/filesystem>
+#include <filesystem>
 
 using namespace MassSpectrometry;
-//using namespace Nett;
 using namespace Proteomics;
 
 namespace EngineLayer
@@ -36,7 +35,7 @@ namespace EngineLayer
 
         is_init = true;
 
-        privateMetaMorpheusVersion = "HPCMetaMorpheus version 0.0.1 based on MetaMorpheus 0.0.295";
+        privateMetaMorpheusVersion = "HPCMetaMorpheus 0.0.1 based on MetaMorpheus 0.0.295";
         
         if (privateMetaMorpheusVersion == "1.0.0.0")
         {
@@ -71,7 +70,7 @@ namespace EngineLayer
             privateDataDir = AppDomain::CurrentDomain->BaseDirectory;
         }
 #endif
-        privateDataDir = std::experimental::filesystem::current_path();
+        privateDataDir = std::filesystem::current_path();
         
         std::string datadir = getDataDir() + "/Data" ;
         privateElementsLocation = datadir +  "/elements.dat";
@@ -85,8 +84,7 @@ namespace EngineLayer
         auto formalChargesDictionary = UsefulProteomicsDatabases::Loaders::GetFormalChargesDictionary(privatePsiModDeserialized);
         privateUniprotDeseralized = UsefulProteomicsDatabases::Loaders::LoadUniprot(datadir + "/ptmlist.txt", formalChargesDictionary); 
         
-        //for (auto modFile : Directory::GetFiles(FileSystem::combine(getDataDir(), "Mods")))
-        for (auto  modFile : std::experimental::filesystem::directory_iterator(getDataDir() + "/Mods"))
+        for (auto  modFile : std::filesystem::directory_iterator(getDataDir() + "/Mods"))
         {
             std::vector<std::tuple<Modification *, std::string>> errorMods;
             std::vector<Modification *> mods;
@@ -94,32 +92,17 @@ namespace EngineLayer
             AddMods( mods, false);
         }
 
-#ifdef ORIG
-        AddMods(getUniprotDeserialized().OfType<Modification*>(), false);
-        AddMods(getUnimodDeserialized().OfType<Modification*>(), false);
-#endif
         AddMods(privateUniprotDeseralized, false);
         AddMods(privateUnimodDeserialized, false);
         
         // populate dictionaries of known mods/proteins for deserialization
-        setAllModsKnownDictionary(std::unordered_map<std::string, Modification*>());
-        for (auto mod : getAllModsKnown())
+        for (auto mod : _AllModsKnown)
         {
-            if (getAllModsKnownDictionary().find(mod->getIdWithMotif()) == getAllModsKnownDictionary().end())
-            {
-                getAllModsKnownDictionary().emplace(mod->getIdWithMotif(), mod);
-            }
+            privateAllModsKnownDictionary.emplace(mod->getIdWithMotif(), mod);
             // no error thrown if multiple mods with this ID are present - just pick one
         }
         
-#ifdef ORIG
-        // Todo for Nick: Replace the Nett functionality here.
-        GlobalSettings = Toml::ReadFile<getGlobalSettings()*>(FileSystem::combine(getDataDir(), "settings.toml"));
-#endif
-
         Toml trw;
-        // const toml::Value* Global_Variables = trw.tomlReadFile(privateDataDir + "/settings.toml", "WriteExcelCompatibleTSVs");
-
         toml::Value toml_value = trw.tomlReadFile(privateDataDir + "/settings.toml");
         toml::Value* Global_Variables = trw.getValue(toml_value, "WriteExcelCompatibleTSVs");
 
@@ -127,15 +110,6 @@ namespace EngineLayer
         if (Global_Variables && Global_Variables->is<bool>())
             privateGlobalSettings.setWriteExcelCompatibleTSVs(Global_Variables->as<bool>());
 
-#ifdef ORIG
-        setAllSupportedDissociationTypes(std::unordered_map<std::string, DissociationType> {
-                {DissociationType::CID.ToString(), DissociationType::CID},
-                {DissociationType::ECD.ToString(), DissociationType::ECD},
-                {DissociationType::ETD.ToString(), DissociationType::ETD},
-                {DissociationType::HCD.ToString(), DissociationType::HCD},
-                {DissociationType::EThcD.ToString(), DissociationType::EThcD}
-            });
-#endif
         setAllSupportedDissociationTypes(std::unordered_map<std::string, DissociationType> {
                 {"CID", DissociationType::CID},
                 {"ECD", DissociationType::ECD},
@@ -196,20 +170,17 @@ namespace EngineLayer
     //    return privatePsiModDeserialized;
     // }
     
-    std::vector<Modification*> GlobalVariables::getAllModsKnown()
+    std::vector<Modification*>& GlobalVariables::getAllModsKnown()
     {
-        //return _AllModsKnown.AsEnumerable();
         return _AllModsKnown;
     }
     
-    //std::vector<std::string> GlobalVariables::getAllModTypesKnown()
     std::unordered_set<std::string> GlobalVariables::getAllModTypesKnown()
     {
-        //return _AllModTypesKnown.AsEnumerable();
         return _AllModTypesKnown;
     }
     
-    std::unordered_map<std::string, Modification*> GlobalVariables::getAllModsKnownDictionary()
+    std::unordered_map<std::string, Modification*>& GlobalVariables::getAllModsKnownDictionary()
     {
         return privateAllModsKnownDictionary;
     }
@@ -252,7 +223,7 @@ namespace EngineLayer
             bool found = false;
             bool found2 = false;
             bool found3 = false;
-            for  ( auto b: getAllModsKnown() ) {
+            for  ( auto b: _AllModsKnown ) {
                 if ( b->getIdWithMotif() == mod->getIdWithMotif() ) {
                     found3 = true;
                     if ( b->getModificationType() == mod->getModificationType() ) {

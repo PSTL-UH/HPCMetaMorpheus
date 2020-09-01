@@ -31,7 +31,6 @@
 #include <fstream>
 #include <typeinfo>
 
-#include <sys/time.h>
 
 using namespace Chemistry;
 using namespace EngineLayer;
@@ -43,6 +42,8 @@ using namespace Proteomics::ProteolyticDigestion;
 using namespace UsefulProteomicsDatabases;
 
 #ifdef TIMING_INFO
+#include <sys/time.h>
+
 double deconvtime=0.0;
 double sorttime = 0.0;
 double looptime = 0.0;
@@ -1082,9 +1083,9 @@ namespace TaskLayer
             }
             
             // get non-serialized information for the peptides (proteins, mod info)
+            auto tmp = GlobalVariables::getAllModsKnownDictionary();
             for (auto peptide : peptideIndex)
             {
-                auto tmp = GlobalVariables::getAllModsKnownDictionary();
                 peptide->SetNonSerializedPeptideInfo( tmp, proteinDictionary);
             }
         }
