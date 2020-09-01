@@ -502,7 +502,7 @@ namespace TaskLayer
                     auto indexEngine = new IndexingEngine(proteinListSubset, variableModifications, fixedModifications,
                                                           currentPartition, getSearchParameters()->getDecoyType(),
                                                           combinedParams, getSearchParameters()->getMaxFragmentSize(), false,
-                                                          dbfnames, vs2);
+                                                          dbfnames, vs2, getVerbose());
                     
                     std::vector<std::vector<int>> fragmentIndex;
                     std::vector<std::vector<int>> precursorIndex;
@@ -516,7 +516,8 @@ namespace TaskLayer
                     
                     auto tempVar = new ModernSearchEngine (fileSpecificPsms, arrayOfMs2ScansSortedByMass, peptideIndex,
                                                fragmentIndex, currentPartition, combinedParams, massDiffAcceptor,
-                                               getSearchParameters()->getMaximumMassThatFragmentIonScoreIsDoubled(), thisId);
+                                               getSearchParameters()->getMaximumMassThatFragmentIonScoreIsDoubled(),
+                                               thisId, getVerbose());
                     tempVar->Run();
                     
                     ProgressEventArgs tempVar2(100, "Done with search " + std::to_string(currentPartition + 1) + "/" +
@@ -577,7 +578,7 @@ namespace TaskLayer
                         auto indexEngine = new IndexingEngine(proteinListSubset, variableModifications, fixedModifications,
                                                               currentPartition, getSearchParameters()->getDecoyType(),
                                                               paramToUse, getSearchParameters()->getMaxFragmentSize(), true,
-                                                              dbfnames, vs3);
+                                                              dbfnames, vs3, getVerbose());
                         //std::lock_guard<std::mutex> lock(indexLock);
                         auto tempmods = GlobalVariables::getAllModsKnown();
                         GenerateIndexes(indexEngine, dbFilenameList, peptideIndex, fragmentIndex, precursorIndex,
@@ -589,7 +590,7 @@ namespace TaskLayer
                                                                arrayOfMs2ScansSortedByMass, peptideIndex, fragmentIndex,
                                                                precursorIndex, currentPartition, paramToUse, massDiffAcceptor,
                                                                getSearchParameters()->getMaximumMassThatFragmentIonScoreIsDoubled(),
-                                                               thisId);
+                                                               thisId, getVerbose() );
                         tempVar3->Run();
                         
                         ProgressEventArgs tempVar4(100, "Done with search " + std::to_string(currentPartition + 1) + "/" +
@@ -618,7 +619,8 @@ namespace TaskLayer
             {
                 Status("Starting search...", thisId, getVerbose());
                 auto tempVar5 = new ClassicSearchEngine(fileSpecificPsms, arrayOfMs2ScansSortedByMass, variableModifications,
-                                             fixedModifications, proteinList, massDiffAcceptor, combinedParams, thisId);
+                                                        fixedModifications, proteinList, massDiffAcceptor, combinedParams,
+                                                        thisId, getVerbose());
                 tempVar5->Run();
                 
                 ProgressEventArgs tempVar6(100, "Done with search!", thisId);

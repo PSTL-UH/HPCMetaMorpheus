@@ -7,6 +7,8 @@
 #include "EventArgs/SingleEngineEventArgs.h"
 #include "EventArgs/SingleEngineFinishedEventArgs.h"
 
+#include "../TaskLayer/MetaMorpheusTask.h"
+
 #include <ctime>
 
 using namespace Chemistry;
@@ -25,15 +27,11 @@ namespace EngineLayer
     };
 
     
-    MetaMorpheusEngine::MetaMorpheusEngine(CommonParameters *cmnParameters, std::vector<std::string> &nestedIds) : nestedIds(nestedIds)
+    MetaMorpheusEngine::MetaMorpheusEngine(CommonParameters *cmnParameters, std::vector<std::string> &nestedIds,
+        int verbosityLevel ) : nestedIds(nestedIds)
     {
         commonParameters = new CommonParameters(cmnParameters);
-        StartingSingleEngineHandler = new EventHandler<SingleEngineEventArgs>();        
-        FinishedSingleEngineHandler = new EventHandler<SingleEngineFinishedEventArgs>();        
-        OutLabelStatusHandler = new EventHandler<StringEventArgs>();        
-        WarnHandler = new EventHandler<StringEventArgs>();        
-        OutProgressHandler = new EventHandler<ProgressEventArgs>();
-
+        privateVerbosityLevel = verbosityLevel;
     }
 
     double MetaMorpheusEngine::CalculatePeptideScore(MsDataScan *thisScan, std::vector<MatchedFragmentIon*> &matchedFragmentIons,
@@ -156,41 +154,26 @@ namespace EngineLayer
     
     void MetaMorpheusEngine::Warn(const std::string &v)
     {
-        StringEventArgs tempVar(v, nestedIds);
-        //WarnHandler +++ nullptr ? nullptrs : WarnHandler->Invoke(this, &tempVar);
-        if ( WarnHandler != nullptr) {
-            WarnHandler->Invoke(tempVar);
-        }
+        TaskLayer::MetaMorpheusTask::Warn(v);
     }
 
     void MetaMorpheusEngine::Status(const std::string &v)
     {
-        StringEventArgs tempVar(v, nestedIds);
-        if ( OutLabelStatusHandler != nullptr ) {
-            OutLabelStatusHandler->Invoke(tempVar);
-        }
+        TaskLayer::MetaMorpheusTask::Status("", v, privateVerbosityLevel);
     }
     
     void MetaMorpheusEngine::ReportProgress(ProgressEventArgs *v)
     {
-        if ( OutProgressHandler != nullptr ) {
-            OutProgressHandler->Invoke(*v);
-        }
+        TaskLayer::MetaMorpheusTask::ReportProgress(v, privateVerbosityLevel);
     }
     
     void MetaMorpheusEngine::StartingSingleEngine()
     {
-        SingleEngineEventArgs tempVar(this);
-        if ( StartingSingleEngineHandler != nullptr ) {
-            StartingSingleEngineHandler->Invoke(tempVar);
-        }
+        TaskLayer::MetaMorpheusTask::Log("", nestedIds, privateVerbosityLevel);
     }
     
     void MetaMorpheusEngine::FinishedSingleEngine(MetaMorpheusEngineResults *myResults)
     {
-        SingleEngineFinishedEventArgs tempVar(myResults);
-        if ( FinishedSingleEngineHandler != nullptr ) {
-            FinishedSingleEngineHandler->Invoke(tempVar);
-        }
+        TaskLayer::MetaMorpheusTask::Log("", nestedIds, privateVerbosityLevel);
     }
 }

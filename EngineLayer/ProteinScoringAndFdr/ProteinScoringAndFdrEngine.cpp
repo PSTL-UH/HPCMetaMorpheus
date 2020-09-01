@@ -16,8 +16,10 @@ namespace EngineLayer
                                                            bool treatModPeptidesAsDifferentPeptides,
                                                            bool mergeIndistinguishableProteinGroups,
                                                            CommonParameters *commonParameters,
-                                                           std::vector<std::string> &nestedIds) :
-        MetaMorpheusEngine(commonParameters, nestedIds), NewPsms(newPsms),
+                                                           std::vector<std::string> &nestedIds,
+                                                           int verbosityLevel) :
+        MetaMorpheusEngine(commonParameters, nestedIds, verbosityLevel),
+        NewPsms(newPsms),
         NoOneHitWonders(noOneHitWonders),
         TreatModPeptidesAsDifferentPeptides(treatModPeptidesAsDifferentPeptides),
         MergeIndistinguishableProteinGroups(mergeIndistinguishableProteinGroups),

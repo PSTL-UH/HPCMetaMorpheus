@@ -374,7 +374,8 @@ namespace TaskLayer
             std::vector<std::string> vs5 = {taskId, "Individual Spectra Files"};
             Status("Calibrating...", vs5, getVerbose());
             std::vector<std::string> vs6 = {taskId, "Individual Spectra Files", originalUncalibratedFilenameWithoutExtension};
-            CalibrationEngine *engine = new CalibrationEngine(myMsDataFile, acquisitionResults, getCommonParameters(), vs6);
+            CalibrationEngine *engine = new CalibrationEngine(myMsDataFile, acquisitionResults, getCommonParameters(),
+                                                              vs6, getVerbose());
             engine->Run();
             
             //update file
@@ -392,7 +393,9 @@ namespace TaskLayer
             std::vector<std::string> vs8 = {taskId, "Individual Spectra Files"};
             Status("Calibrating...", vs8, getVerbose());
             std::vector<std::string> vs9 = {taskId, "Individual Spectra Files", originalUncalibratedFilenameWithoutExtension};
-            engine = new CalibrationEngine(myMsDataFile, acquisitionResults, getCommonParameters(), vs9);
+            delete engine;
+            
+            engine = new CalibrationEngine(myMsDataFile, acquisitionResults, getCommonParameters(), vs9, getVerbose());
             engine->Run();
             
             //update file
@@ -449,6 +452,7 @@ namespace TaskLayer
             spectraFilesAfterCalibration.push_back(fname2);
             std::vector<std::string> vs11 = {taskId, "Individual Spectra Files", originalUncalibratedFilenameWithoutExtension};
             FinishedWritingFile(calibratedFilePath, vs11, getVerbose());
+
             myTaskResults->NewSpectra.push_back(calibratedFilePath);
             myTaskResults->NewFileSpecificTomls.push_back(newTomlFileName);
             std::vector<std::string> vs12 = {taskId, "Individual Spectra Files", originalUncalibratedFilePath};
@@ -483,7 +487,8 @@ namespace TaskLayer
     
     const std::string CalibrationTask::CalibSuffix = "-calib";
     
-    bool CalibrationTask::ImprovGlobal(double prevPrecTol, double prevProdTol, int prevPsmCount, int thisRoundPsmCount, double thisRoundPrecTol, double thisRoundProdTol)
+    bool CalibrationTask::ImprovGlobal(double prevPrecTol, double prevProdTol, int prevPsmCount,
+                                       int thisRoundPsmCount, double thisRoundPrecTol, double thisRoundProdTol)
     {
         if (thisRoundPsmCount > prevPsmCount)
         {
@@ -533,7 +538,7 @@ namespace TaskLayer
         
         std::vector<std::string> vs3 = {taskId, "Individual Spectra Files", fileNameWithoutExtension};
         ClassicSearchEngine tempVar2(allPsmsArray, listOfSortedms2Scans, variableModifications, fixedModifications, proteinList,
-                                     searchMode, combinedParameters, vs3);
+                                     searchMode, combinedParameters, vs3, getVerbose());
         (&tempVar2)->Run();
 
         std::vector<PeptideSpectralMatch*> allPsms;
@@ -589,7 +594,7 @@ namespace TaskLayer
         }
         
         std::vector<std::string> vs4 = {taskId, "Individual Spectra Files", fileNameWithoutExtension};
-        FdrAnalysisEngine tempVar3(allPsms, searchMode->getNumNotches(), getCommonParameters(), vs4);
+        FdrAnalysisEngine tempVar3(allPsms, searchMode->getNumNotches(), getCommonParameters(), vs4, getVerbose());
         (&tempVar3)->Run();
         
         std::vector<PeptideSpectralMatch*> goodIdentifications;
@@ -612,13 +617,14 @@ namespace TaskLayer
         std::vector<std::string> vs5 = {taskId, "Individual Spectra Files", fileNameWithoutExtension};
         DataPointAcquisitionEngine tempVar4(goodIdentifications, myMsDataFile, initPrecTol,
                                             getCalibrationParameters()->getMinMS1IsotopicPeaksNeededForConfirmedIdentification(),
-                                            getCommonParameters(), vs5);
+                                            getCommonParameters(), vs5, getVerbose() );
         DataPointAquisitionResults *currentResult = static_cast<DataPointAquisitionResults*>((&tempVar4)->Run());
         
         return currentResult;
     }
     
-    void CalibrationTask::WriteNewExperimentalDesignFile(const std::string &assumedPathToExperDesign, const std::string &outputFolder, std::vector<std::string> &spectraFilesAfterCalibration)
+    void CalibrationTask::WriteNewExperimentalDesignFile(const std::string &assumedPathToExperDesign, const std::string &outputFolder,
+                                                         std::vector<std::string> &spectraFilesAfterCalibration)
     {
         //std::vector<std::string> lines = File::ReadAllLines(assumedPathToExperDesign);
         std::vector<std::string> lines;

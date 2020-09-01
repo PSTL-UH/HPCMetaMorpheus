@@ -17,8 +17,8 @@ namespace EngineLayer
         
         LocalizationEngine::LocalizationEngine(std::vector<PeptideSpectralMatch*> &allResultingIdentifications,
                                                MsDataFile *myMsDataFile, CommonParameters *commonParameters,
-                                               std::vector<std::string> &nestedIds) :
-            MetaMorpheusEngine(commonParameters, nestedIds),
+                                               std::vector<std::string> &nestedIds, int verbosityLevel) :
+            MetaMorpheusEngine(commonParameters, nestedIds, verbosityLevel ),
             AllResultingIdentifications(allResultingIdentifications),
             MyMsDataFile(myMsDataFile)
         {

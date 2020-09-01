@@ -20,7 +20,11 @@ namespace EngineLayer
             privateCalibratedDataFile = value;
         }
         
-        CalibrationEngine::CalibrationEngine(MsDataFile *myMSDataFile, DataPointAquisitionResults *datapoints, CommonParameters *commonParameters, std::vector<std::string> &nestedIds) : MetaMorpheusEngine(commonParameters, nestedIds), MyMsDataFile(myMSDataFile), Datapoints(datapoints)
+        CalibrationEngine::CalibrationEngine(MsDataFile *myMSDataFile, DataPointAquisitionResults *datapoints,
+                                             CommonParameters *commonParameters,
+                                             std::vector<std::string> &nestedIds, int verbosityLevel) :
+            MetaMorpheusEngine(commonParameters, nestedIds, verbosityLevel),
+            MyMsDataFile(myMSDataFile), Datapoints(datapoints)
         {
         }
         

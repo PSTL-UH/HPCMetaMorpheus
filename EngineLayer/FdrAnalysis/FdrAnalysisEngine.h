@@ -30,7 +30,8 @@ namespace EngineLayer
             
         public:
             FdrAnalysisEngine(std::vector<PeptideSpectralMatch*> &psms, int massDiffAcceptorNumNotches,
-                              CommonParameters *commonParameters, std::vector<std::string> &nestedIds);
+                              CommonParameters *commonParameters, std::vector<std::string> &nestedIds,
+                              int verbosityLevel=0);
             
         protected:
             MetaMorpheusEngineResults *RunSpecific() override;

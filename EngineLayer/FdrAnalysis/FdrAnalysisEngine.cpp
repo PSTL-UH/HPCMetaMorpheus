@@ -19,11 +19,13 @@ namespace EngineLayer
         FdrAnalysisEngine::FdrAnalysisEngine(std::vector<PeptideSpectralMatch*> &psms,
                                              int massDiffAcceptorNumNotches,
                                              CommonParameters *commonParameters,
-                                             std::vector<std::string> &nestedIds) : MetaMorpheusEngine(commonParameters, nestedIds),
-                                                                       MassDiffAcceptorNumNotches(massDiffAcceptorNumNotches),
-                                                                       UseDeltaScore(commonParameters->getUseDeltaScore()),
-                                                                       CalculateEValue(commonParameters->getCalculateEValue()),
-                                                                       ScoreCutoff(commonParameters->getScoreCutoff())
+                                             std::vector<std::string> &nestedIds,
+                                             int verbosityLevel ) :
+            MetaMorpheusEngine(commonParameters, nestedIds, verbosityLevel),
+            MassDiffAcceptorNumNotches(massDiffAcceptorNumNotches),
+            UseDeltaScore(commonParameters->getUseDeltaScore()),
+            CalculateEValue(commonParameters->getCalculateEValue()),
+            ScoreCutoff(commonParameters->getScoreCutoff())
         {
             AllPsms = psms;
         }

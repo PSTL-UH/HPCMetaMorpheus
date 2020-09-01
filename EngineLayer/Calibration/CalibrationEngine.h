@@ -38,21 +38,23 @@ namespace EngineLayer
             MsDataFile *getCalibratedDataFile() const;
             void setCalibratedDataFile(MsDataFile *value);
             
-            CalibrationEngine(MsDataFile *myMSDataFile, DataPointAquisitionResults *datapoints, CommonParameters *commonParameters, std::vector<std::string> &nestedIds);
+            CalibrationEngine(MsDataFile *myMSDataFile, DataPointAquisitionResults *datapoints,
+                              CommonParameters *commonParameters, std::vector<std::string> &nestedIds,
+                              int verbosityLevel=0);
 
         protected:
             MetaMorpheusEngineResults *RunSpecific() override;
             
         private:
-            static std::vector<double> PopulateErrors(std::vector<LabeledDataPoint*> &datapoints, std::vector<int> &scanNumberToScanPlacement, int arrayLength);
+            static std::vector<double> PopulateErrors(std::vector<LabeledDataPoint*> &datapoints,
+                                                      std::vector<int> &scanNumberToScanPlacement, int arrayLength);
             
-            //static double CalculateAverageRelativeErrors(std::vector<std::tuple<double massError, double logIntensity>> *localRelativeErrors);
             static double CalculateAverageRelativeErrors(std::vector<std::tuple<double, double>> &localRelativeErrors);
             
             static std::vector<double> SmoothErrors(std::vector<double> &relativeErrors);
             
-            //static MsDataScan *CalibrateScan(MsDataScan *oldScan, double smoothedRelativeError, std::optional<double> &precursorSmoothedRelativeError = std::nullopt);
-            static MsDataScan *CalibrateScan(MsDataScan *oldScan, double smoothedRelativeError, std::optional<double> &precursorSmoothedRelativeError);
+            static MsDataScan *CalibrateScan(MsDataScan *oldScan, double smoothedRelativeError,
+                                             std::optional<double> &precursorSmoothedRelativeError);
         };
     }
 }

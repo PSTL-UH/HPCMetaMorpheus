@@ -39,9 +39,12 @@ namespace EngineLayer
                 //delete MzToleranceForMs1Search;
             }
             
-            DataPointAcquisitionEngine(std::vector<PeptideSpectralMatch*> &goodIdentifications, MsDataFile *myMsDataFile, Tolerance *mzToleranceForMs1Search,
-                                       int minMS1isotopicPeaksNeededForConfirmedIdentification, CommonParameters *commonParameters,
-                                       std::vector<std::string> &nestedIds);
+            DataPointAcquisitionEngine(std::vector<PeptideSpectralMatch*> &goodIdentifications,
+                                       MsDataFile *myMsDataFile,
+                                       Tolerance *mzToleranceForMs1Search,
+                                       int minMS1isotopicPeaksNeededForConfirmedIdentification,
+                                       CommonParameters *commonParameters,
+                                       std::vector<std::string> &nestedIds, int verbosityLevel=0);
             
         protected:
             MetaMorpheusEngineResults *RunSpecific() override;

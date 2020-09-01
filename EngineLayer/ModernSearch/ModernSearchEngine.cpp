@@ -25,8 +25,9 @@ namespace EngineLayer
                                                CommonParameters *commonParameters,
                                                MassDiffAcceptor *massDiffAcceptor,
                                                double maximumMassThatFragmentIonScoreIsDoubled,
-                                               std::vector<std::string> &nestedIds) :
-            MetaMorpheusEngine(commonParameters, nestedIds),
+                                               std::vector<std::string> &nestedIds,
+                                               int verbosityLevel ) :
+            MetaMorpheusEngine(commonParameters, nestedIds, verbosityLevel ),
             FragmentIndex(fragmentIndex),
             PeptideSpectralMatches(globalPsms),
             ListOfSortedMs2Scans(listOfSortedms2Scans),

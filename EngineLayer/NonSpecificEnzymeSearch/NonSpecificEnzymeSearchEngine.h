@@ -59,7 +59,8 @@ namespace EngineLayer
                                           CommonParameters *CommonParameters,
                                           MassDiffAcceptor *massDiffAcceptor,
                                           double maximumMassThatFragmentIonScoreIsDoubled,
-                                          std::vector<std::string> &nestedIds);
+                                          std::vector<std::string> &nestedIds,
+                                          int verbosityLevel=0);
             
         protected:
             MetaMorpheusEngineResults *RunSpecific() override;

@@ -205,7 +205,7 @@ namespace TaskLayer
         std::vector<std::string> svec;
         svec.push_back(getParameters()->getSearchTaskId());
         auto tmppsms = getParameters()->getAllPsms();
-        auto tempVar = new FdrAnalysisEngine ( tmppsms, massDiffAcceptorNumNotches, getCommonParameters(), svec);
+        auto tempVar = new FdrAnalysisEngine ( tmppsms, massDiffAcceptorNumNotches, getCommonParameters(), svec, getVerbose());
         tempVar->Run();
         
         // sort by q-value because of group FDR stuff
@@ -249,7 +249,7 @@ namespace TaskLayer
         auto tmppsms = getParameters()->getAllPsms();
         std::vector<std::string> svec = {getParameters()->getSearchTaskId()};
         auto tempVar = new ProteinParsimonyEngine (tmppsms, getParameters()->getSearchParameters()->getModPeptidesAreDifferent(),
-                                       getCommonParameters(), svec );
+                                                   getCommonParameters(), svec, getVerbose() );
         ProteinParsimonyResults *proteinAnalysisResults = static_cast<ProteinParsimonyResults*>(tempVar->Run());
         
         // score protein groups and calculate FDR
@@ -259,7 +259,7 @@ namespace TaskLayer
         auto tempVar2 = new ProteinScoringAndFdrEngine (tmp, tmppsms,
                                             getParameters()->getSearchParameters()->getNoOneHitWonders(),
                                             getParameters()->getSearchParameters()->getModPeptidesAreDifferent(),
-                                            true, getCommonParameters(), svec);
+                                            true, getCommonParameters(), svec, getVerbose() );
         ProteinScoringAndFdrResults *proteinScoringAndFdrResults = static_cast<ProteinScoringAndFdrResults*>(tempVar2->Run());
         
         setProteinGroups(proteinScoringAndFdrResults->SortedAndScoredProteinGroups);
@@ -288,10 +288,10 @@ namespace TaskLayer
                                                  origDataFile};
                 Status("Running mass-difference localization analysis...", svec, getVerbose());
                 MsDataFile *myMsDataFile = getParameters()->getMyFileManager()->LoadFile(origDataFile,
-                                                                                         std::make_optional(combinedParams->getTopNpeaks()),
-                                                                                         std::make_optional(combinedParams->getMinRatio()),
-                                                                                         combinedParams->getTrimMs1Peaks(),
-                                                                                         combinedParams->getTrimMsMsPeaks(), combinedParams);
+                                                                       std::make_optional(combinedParams->getTopNpeaks()),
+                                                                       std::make_optional(combinedParams->getMinRatio()),
+                                                                       combinedParams->getTrimMs1Peaks(),
+                                                                       combinedParams->getTrimMsMsPeaks(), combinedParams);
                 
                 std::vector<std::string> svec2 = {getParameters()->getSearchTaskId(), "Individual Spectra Files",
                                                   origDataFile};
@@ -301,7 +301,7 @@ namespace TaskLayer
                         tmppsms.push_back(b);
                     }
                 }
-                auto tempVar = new LocalizationEngine (tmppsms, myMsDataFile, combinedParams, svec2);
+                auto tempVar = new LocalizationEngine (tmppsms, myMsDataFile, combinedParams, svec2, getVerbose());
                 tempVar->Run();
                 getParameters()->getMyFileManager()->DoneWithFile(origDataFile);
                 std::vector<std::string> svec3 = {getParameters()->getSearchTaskId(), "Individual Spectra Files",
@@ -314,7 +314,7 @@ namespace TaskLayer
         // count different modifications observed
         auto tmppsms2 = getParameters()->getAllPsms();
         std::vector<std::string> svec4 = {getParameters()->getSearchTaskId()};
-        auto tempVar3 = new ModificationAnalysisEngine(tmppsms2, getCommonParameters(), svec4);
+        auto tempVar3 = new ModificationAnalysisEngine(tmppsms2, getCommonParameters(), svec4, getVerbose());
         tempVar3->Run();                 
     }
     
@@ -982,7 +982,7 @@ namespace TaskLayer
                                                        getParameters()->getSearchParameters()->getNoOneHitWonders(),
                                                        getParameters()->getSearchParameters()->getModPeptidesAreDifferent(),
                                                        false, getCommonParameters(),
-                                                       tmpvec );
+                                                       tmpvec , getVerbose());
                     ProteinScoringAndFdrResults *subsetProteinScoringAndFdrResults = static_cast<ProteinScoringAndFdrResults*>(tempVar->Run());
                     
                     subsetProteinGroupsForThisFile = subsetProteinScoringAndFdrResults->SortedAndScoredProteinGroups;

@@ -375,7 +375,7 @@ namespace TaskLayer
 #endif
                 auto indexEngine = new IndexingEngine(proteinListSubset, variableModifications, fixedModifications, currentPartition,
                                                       UsefulProteomicsDatabases::DecoyType::Reverse, combinedParams, 30000.0, false,
-                                                      filenameList, vtaskId);
+                                                      filenameList, vtaskId, getVerbose() );
                 std::vector<std::vector<int>> fragmentIndex;
                 std::vector<std::vector<int>> precursorIndex;
 
@@ -398,7 +398,7 @@ namespace TaskLayer
                                               getXlSearchParameters()->getCrosslinkSearchTopNum(),
                                               getXlSearchParameters()->getXlQuench_H2O(),
                                               getXlSearchParameters()->getXlQuench_NH2(),
-                                              getXlSearchParameters()->getXlQuench_Tris(), thisId);
+                                              getXlSearchParameters()->getXlQuench_Tris(), thisId, getVerbose());
                 (&tempVar)->Run();
 #ifdef TIMING_INFO
                 gettimeofday (&t6e, NULL);

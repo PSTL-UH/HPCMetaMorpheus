@@ -21,8 +21,9 @@ namespace EngineLayer
                                        std::vector<Modification*> &fixedModifications, int currentPartition, DecoyType decoyType,
                                        CommonParameters *commonParams, double maxFragmentSize,
                                        bool generatePrecursorIndex, std::vector<std::string> &proteinDatabases,
-                                       std::vector<std::string> &nestedIds) :
-            MetaMorpheusEngine(commonParams, nestedIds), ProteinList(proteinList), FixedModifications(fixedModifications),
+                                       std::vector<std::string> &nestedIds, int verbosityLevel) :
+            MetaMorpheusEngine(commonParams, nestedIds, verbosityLevel),
+            ProteinList(proteinList), FixedModifications(fixedModifications),
             VariableModifications(variableModifications), CurrentPartition(currentPartition + 1),
             decoyType(decoyType), MaxFragmentSize(maxFragmentSize),
             GeneratePrecursorIndex(generatePrecursorIndex), ProteinDatabases(proteinDatabases)

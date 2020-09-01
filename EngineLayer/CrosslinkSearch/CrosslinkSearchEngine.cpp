@@ -37,7 +37,8 @@ namespace EngineLayer
                                                      bool quench_H2O,
                                                      bool quench_NH2,
                                                      bool quench_Tris,
-                                                     std::vector<std::string> &nestedIds) :
+                                                     std::vector<std::string> &nestedIds,
+                                                     int verbosityLevel) :
             ModernSearchEngine(unusedPsms,
                                listOfSortedms2Scans,
                                peptideIndex,
@@ -45,7 +46,8 @@ namespace EngineLayer
                                currentPartition,
                                commonParameters,
                                new OpenSearchMode(), 0.0,
-                               nestedIds ),
+                               nestedIds,
+                               verbosityLevel ),
             GlobalCsms(globalCsms),
             CrosslinkSearchTopN(CrosslinkSearchTop),
             TopN(CrosslinkSearchTopNum),

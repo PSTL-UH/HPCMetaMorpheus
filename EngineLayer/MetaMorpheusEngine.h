@@ -37,7 +37,7 @@ namespace EngineLayer
 
 		CommonParameters * commonParameters;
 
-		const std::vector<std::string> nestedIds;
+		std::vector<std::string> nestedIds;
 
 	public:
 		virtual ~MetaMorpheusEngine()
@@ -46,24 +46,18 @@ namespace EngineLayer
 		}
 
 	protected:
-		MetaMorpheusEngine(CommonParameters *commonParameters, std::vector<std::string> &nestedIds);
+		MetaMorpheusEngine(CommonParameters *commonParameters, std::vector<std::string> &nestedIds,
+                                   int verbosityLevel=0);
 
 	public:
 		static std::unordered_map<DissociationType, double> complementaryIonConversionDictionary;
 
-		EventHandler<SingleEngineEventArgs> *StartingSingleEngineHandler=nullptr;
+		static double CalculatePeptideScore(MsDataScan *thisScan, std::vector<MatchedFragmentIon*> &matchedFragmentIons,
+                                                    double maximumMassThatFragmentIonScoreIsDoubled);
 
-		EventHandler<SingleEngineFinishedEventArgs> *FinishedSingleEngineHandler=nullptr;
-
-		EventHandler<StringEventArgs> *OutLabelStatusHandler=nullptr;
-
-		EventHandler<StringEventArgs> *WarnHandler=nullptr;
-
-		EventHandler<ProgressEventArgs> *OutProgressHandler=nullptr;
-
-		static double CalculatePeptideScore(MsDataScan *thisScan, std::vector<MatchedFragmentIon*> &matchedFragmentIons, double maximumMassThatFragmentIonScoreIsDoubled);
-
-		static std::vector<MatchedFragmentIon*> MatchFragmentIons(Ms2ScanWithSpecificMass *scan, std::vector<Product*> &theoreticalProducts, CommonParameters *commonParameters);
+		static std::vector<MatchedFragmentIon*> MatchFragmentIons(Ms2ScanWithSpecificMass *scan,
+                                                                          std::vector<Product*> &theoreticalProducts,
+                                                                          CommonParameters *commonParameters);
 
 		MetaMorpheusEngineResults *Run();
 
@@ -79,8 +73,8 @@ namespace EngineLayer
 		virtual MetaMorpheusEngineResults *RunSpecific() = 0;
 
 	private:
+                int privateVerbosityLevel;
 		void StartingSingleEngine();
-
 		void FinishedSingleEngine(MetaMorpheusEngineResults *myResults);
 	};
 }

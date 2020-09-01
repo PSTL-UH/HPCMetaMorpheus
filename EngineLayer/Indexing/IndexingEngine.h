@@ -47,7 +47,7 @@ namespace EngineLayer
                            std::vector<Modification*> &fixedModifications, int currentPartition,
                            DecoyType decoyType, CommonParameters *commonParams, double maxFragmentSize,
                            bool generatePrecursorIndex, std::vector<std::string> &proteinDatabases,
-                           std::vector<std::string> &nestedIds);
+                           std::vector<std::string> &nestedIds, int verbosityLevel=0);
             
             std::string ToString();
             

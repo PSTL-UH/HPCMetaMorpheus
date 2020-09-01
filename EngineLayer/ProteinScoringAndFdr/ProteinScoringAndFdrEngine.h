@@ -27,7 +27,10 @@ namespace EngineLayer
         std::vector<ProteinGroup*> ProteinGroups;
         
     public:
-        ProteinScoringAndFdrEngine(std::vector<ProteinGroup*> &proteinGroups, std::vector<PeptideSpectralMatch*> &newPsms, bool noOneHitWonders, bool treatModPeptidesAsDifferentPeptides, bool mergeIndistinguishableProteinGroups, CommonParameters *commonParameters, std::vector<std::string> &nestedIds);
+        ProteinScoringAndFdrEngine(std::vector<ProteinGroup*> &proteinGroups, std::vector<PeptideSpectralMatch*> &newPsms,
+                                   bool noOneHitWonders, bool treatModPeptidesAsDifferentPeptides,
+                                   bool mergeIndistinguishableProteinGroups, CommonParameters *commonParameters,
+                                   std::vector<std::string> &nestedIds, int verbosityLevel=0);
         
     protected:
         MetaMorpheusEngineResults *RunSpecific() override;

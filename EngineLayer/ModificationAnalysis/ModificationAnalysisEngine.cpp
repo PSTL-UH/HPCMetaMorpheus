@@ -16,8 +16,9 @@ namespace EngineLayer
         
         ModificationAnalysisEngine::ModificationAnalysisEngine(std::vector<PeptideSpectralMatch*> &newPsms,
                                                                CommonParameters *commonParameters,
-                                                               std::vector<std::string> &nestedIds) :
-            MetaMorpheusEngine(commonParameters, nestedIds), NewPsms(newPsms)
+                                                               std::vector<std::string> &nestedIds,
+                                                               int verbosityLevel) :
+            MetaMorpheusEngine(commonParameters, nestedIds, verbosityLevel), NewPsms(newPsms)
         {
         }
         
