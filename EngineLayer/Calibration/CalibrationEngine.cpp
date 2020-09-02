@@ -22,7 +22,7 @@ namespace EngineLayer
         
         CalibrationEngine::CalibrationEngine(MsDataFile *myMSDataFile, DataPointAquisitionResults *datapoints,
                                              CommonParameters *commonParameters,
-                                             std::vector<std::string> &nestedIds, int verbosityLevel) :
+                                             std::vector<std::string> nestedIds, int verbosityLevel) :
             MetaMorpheusEngine(commonParameters, nestedIds, verbosityLevel),
             MyMsDataFile(myMSDataFile), Datapoints(datapoints)
         {

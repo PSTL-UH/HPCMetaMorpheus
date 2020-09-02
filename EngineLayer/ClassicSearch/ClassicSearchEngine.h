@@ -52,7 +52,7 @@ namespace EngineLayer
                                 std::vector<Protein*> &proteinList,
                                 MassDiffAcceptor *searchMode,
                                 CommonParameters *commonParameters,
-                                std::vector<std::string> &nestedIds,
+                                std::vector<std::string> nestedIds,
                                 int verbosityLevel=0);
             
         protected:

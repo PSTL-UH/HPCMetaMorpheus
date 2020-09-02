@@ -138,19 +138,16 @@ namespace TaskLayer
 
         public:
             static void ReportProgress(ProgressEventArgs *v,  int verbositLevel);
-
-            static void FinishedWritingFile(const std::string &path, std::vector<std::string> &nestedIDs,  int verbositLevel);
-            
+            static void FinishedWritingFile(const std::string &path, std::vector<std::string> &nestedIDs,  int verbositLevel);            
             static void StartingDataFile(const std::string &v, std::vector<std::string> &nestedIDs,  int verbositLevel);
-            
             static void FinishedDataFile(const std::string &v, std::vector<std::string> &nestedIDs,  int verbositLevel);
-            
+            static void StartingSingleTask(const std::string &taskName, int verbosityLevel);
+            static void FinishedSingleTask(const std::string &displayName, int verbosityLevel);
+            static void StartingSingleEngine(std::vector<std::string> &nestedIDs, int verbosityLevel);
+            static void FinishedSingleEngine(std::vector<std::string> &nestedIDs, MetaMorpheusEngineResults *myResults, int verbosityLevel);
             static void Status(const std::string &v, const std::string &id,  int verbositLevel);
-            
             static void Status(const std::string &v, std::vector<std::string> &nestedIds,  int verbositLevel);
-            
             static void Warn(const std::string &v);
-            
             static void Log(const std::string &v, std::vector<std::string> &nestedIds,  int verbositLevel);
             
             //static void NewCollection(const std::string &displayName, std::vector<std::string> &nestedIds);

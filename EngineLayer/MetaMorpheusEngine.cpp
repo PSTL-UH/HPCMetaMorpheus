@@ -27,8 +27,8 @@ namespace EngineLayer
     };
 
     
-    MetaMorpheusEngine::MetaMorpheusEngine(CommonParameters *cmnParameters, std::vector<std::string> &nestedIds,
-        int verbosityLevel ) : nestedIds(nestedIds)
+    MetaMorpheusEngine::MetaMorpheusEngine(CommonParameters *cmnParameters, std::vector<std::string> nestedIDs,
+        int verbosityLevel ) : nestedIds(nestedIDs)
     {
         commonParameters = new CommonParameters(cmnParameters);
         privateVerbosityLevel = verbosityLevel;
@@ -169,11 +169,11 @@ namespace EngineLayer
     
     void MetaMorpheusEngine::StartingSingleEngine()
     {
-        TaskLayer::MetaMorpheusTask::Log("", nestedIds, privateVerbosityLevel);
+        TaskLayer::MetaMorpheusTask::StartingSingleEngine(nestedIds, privateVerbosityLevel);
     }
     
     void MetaMorpheusEngine::FinishedSingleEngine(MetaMorpheusEngineResults *myResults)
     {
-        TaskLayer::MetaMorpheusTask::Log("", nestedIds, privateVerbosityLevel);
+        TaskLayer::MetaMorpheusTask::FinishedSingleEngine(nestedIds, myResults, privateVerbosityLevel);
     }
 }

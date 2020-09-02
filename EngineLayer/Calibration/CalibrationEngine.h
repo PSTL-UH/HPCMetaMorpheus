@@ -39,7 +39,7 @@ namespace EngineLayer
             void setCalibratedDataFile(MsDataFile *value);
             
             CalibrationEngine(MsDataFile *myMSDataFile, DataPointAquisitionResults *datapoints,
-                              CommonParameters *commonParameters, std::vector<std::string> &nestedIds,
+                              CommonParameters *commonParameters, std::vector<std::string> nestedIds,
                               int verbosityLevel=0);
 
         protected:

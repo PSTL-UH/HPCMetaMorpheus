@@ -41,6 +41,21 @@ using namespace Proteomics;
 using namespace Proteomics::ProteolyticDigestion;
 using namespace UsefulProteomicsDatabases;
 
+static int MetaMorpheus_offset=0;
+#define MetaMorpheus_OffsetIncrement 4
+#define DISPLAY_OFFSET(_off) {              \
+      if ( MetaMorpheus_offset == 4 )       \
+          std::cout << "    ";              \
+      else if ( MetaMorpheus_offset == 8 )  \
+          std::cout << "        ";          \
+      else if ( MetaMorpheus_offset == 12 ) \
+          std::cout << "            ";      \
+}
+
+#define OFFSET_INCR(_off) {_off+=MetaMorpheus_OffsetIncrement;}
+#define OFFSET_DECR(_off) {_off-=MetaMorpheus_OffsetIncrement;}
+
+
 #ifdef TIMING_INFO
 #include <sys/time.h>
 
@@ -444,7 +459,7 @@ namespace TaskLayer
                                              std::vector<std::string> &currentRawDataFilepathList,
                                              const std::string &displayName)
     {
-        //StartingSingleTask(displayName);
+        StartingSingleTask(displayName, privateVerbosityLevel);
         
         GlobalVariables::GlobalVariables_init();
         
@@ -456,9 +471,8 @@ namespace TaskLayer
         
         std::string output_path = output_dir + "/config.toml";
         this->writeTomlConfig(output_path, tomlFile);
-#ifdef ORIG
-        FinishedWritingFile(tomlFileName, std::vector<std::string> {displayName}, privateVerbosityLevel );
-#endif
+        std::vector<std::string> vtd = {displayName};
+        FinishedWritingFile(output_path, vtd, privateVerbosityLevel );
 
         try
         {
@@ -467,10 +481,6 @@ namespace TaskLayer
             std::vector<FileSpecificParameters*> fileSettingsList(currentRawDataFilepathList.size());
             for (int i = 0; i < (int)currentRawDataFilepathList.size(); i++)
             {
-                if (GlobalVariables::getStopLoops())
-                {
-                    break;
-                }
                 std::string rawFilePath = currentRawDataFilepathList[i];
                 std::filesystem::path rdpath = rawFilePath;
                 std::string directory = rdpath.parent_path();
@@ -513,7 +523,7 @@ namespace TaskLayer
 
             std::vector<std::string> svec = {displayName};
             FinishedWritingFile(resultsFileName, svec,  privateVerbosityLevel );
-            //FinishedSingleTask(displayName,  privateVerbosityLevel);
+            FinishedSingleTask(displayName,  privateVerbosityLevel);
         }
         catch (const std::runtime_error &e)
         {
@@ -556,10 +566,12 @@ namespace TaskLayer
             tasktype = "Calibrate";
         else if ( task == MyTask::XLSearch ) 
             tasktype == "XLSearch";
-            
+
+        int time_min = (int) (myTaskResults->Time/60);
+        int time_sec = myTaskResults->Time - (time_min * 60);
         file << "The total time to perform the " << tasktype << " task on " <<
             std::to_string(currentRawDataFilepathList.size()) <<
-            " spectra file(s) was " << myTaskResults->Time <<
+            " spectra file(s) was " << time_min << ":" << time_sec <<
             " minutes." << std::endl << std::endl;
         file << "Published works using MetaMorpheus software are encouraged to cite: " <<
             "Solntsev, S. K.; Shortreed, M. R.; Frey, B. L.; Smith, L. M. " <<
@@ -775,10 +787,64 @@ namespace TaskLayer
             output << psm->ToString(modstoWritePruned) << std::endl;
         }
     }
+
+    void MetaMorpheusTask::StartingSingleTask(const std::string &taskName, int verbosityLevel)
+    {
+        if ( verbosityLevel >= 1 ) {
+            DISPLAY_OFFSET(MetaMorpheus_offset);
+            std::cout << "Starting task: " << taskName << std::endl;
+        }
+        OFFSET_INCR(MetaMorpheus_offset);
+    }
+
+    void MetaMorpheusTask::FinishedSingleTask(const std::string &taskName, int verbosityLevel)
+    {
+        OFFSET_DECR(MetaMorpheus_offset);
+        if ( verbosityLevel >= 1 ) {
+            DISPLAY_OFFSET(MetaMorpheus_offset);                        
+            std::cout << "Finished task: " << taskName << std::endl;
+        }
+    }
+    void MetaMorpheusTask::StartingSingleEngine(std::vector<std::string> &nestedIDs, int verbosityLevel)
+    {
+        if ( verbosityLevel >= 1 ) {
+            DISPLAY_OFFSET(MetaMorpheus_offset);
+            std::cout << "Starting engine: ";
+            for ( auto p : nestedIDs ) {
+                std::cout << p << " ";
+            }
+            std::cout << std::endl;
+        }
+        OFFSET_INCR(MetaMorpheus_offset);
+    }
+
+    void MetaMorpheusTask::FinishedSingleEngine(std::vector<std::string> &nestedIDs, MetaMorpheusEngineResults *myResults, int verbosityLevel)
+    {
+
+        int time_min = (int) (myResults->Time/60);
+        int time_sec = myResults->Time - (time_min * 60);
+
+        if ( verbosityLevel >= 1 ) {
+            DISPLAY_OFFSET(MetaMorpheus_offset);
+            std::cout << "Engine results: Time to run : " << time_min << ":" << time_sec << std::endl;
+        }
+
+        OFFSET_DECR(MetaMorpheus_offset);
+        if ( verbosityLevel >= 1 ) {
+            DISPLAY_OFFSET(MetaMorpheus_offset);
+            std::cout << "Finished engine: ";
+            for ( auto p : nestedIDs ) {
+                std::cout << p << " ";
+            }
+            std::cout << std::endl;
+        }
+        // ToDO print myResults
+    }
     
     void MetaMorpheusTask::ReportProgress(ProgressEventArgs *v, int verbosityLevel)
     {
-        if ( verbosityLevel >= 3 ) {
+        if ( verbosityLevel >= 2 ) {
+            DISPLAY_OFFSET(MetaMorpheus_offset);            
             std::cout << v->V << " " ;
             for ( auto p : v->NestedIDs ) {
                 std::cout << p << " ";
@@ -789,7 +855,8 @@ namespace TaskLayer
     
     void MetaMorpheusTask::FinishedWritingFile(const std::string &v, std::vector<std::string> &nestedIDs, int verbosityLevel)
     {
-        if ( verbosityLevel >= 4 ) {
+        if ( verbosityLevel >= 1 ) {
+            DISPLAY_OFFSET(MetaMorpheus_offset);
             std::cout << "FinishedWritingFile: " << v << " " ;
             for ( auto p : nestedIDs ) {
                 std::cout << p << " ";
@@ -801,6 +868,7 @@ namespace TaskLayer
     void MetaMorpheusTask::StartingDataFile(const std::string &v, std::vector<std::string> &nestedIDs, int verbosityLevel)
     {
         if ( verbosityLevel >= 4) {
+            DISPLAY_OFFSET(MetaMorpheus_offset);
             std::cout << "StartingDataFile " << v << " " ;
             for ( auto p : nestedIDs ) {
                 std::cout << p << " ";
@@ -812,6 +880,7 @@ namespace TaskLayer
     void MetaMorpheusTask::FinishedDataFile(const std::string &v, std::vector<std::string> &nestedIDs, int verbosityLevel)
     {
         if ( verbosityLevel >= 4 ) {
+            DISPLAY_OFFSET(MetaMorpheus_offset);
             std::cout << "FinishedDataFile " << v << " " ;
             for ( auto p : nestedIDs ) {
                 std::cout << p << " ";
@@ -822,14 +891,16 @@ namespace TaskLayer
     
     void MetaMorpheusTask::Status(const std::string &v, const std::string &id, int verbosityLevel)
     {
-        if ( verbosityLevel > 0 ) {
+        if ( verbosityLevel >= 4 ) {
+            DISPLAY_OFFSET(MetaMorpheus_offset);
             std::cout << v << " " << id << std::endl;
         }
     }
     
     void MetaMorpheusTask::Status(const std::string &v, std::vector<std::string> &nestedIds, int verbosityLevel)
     {
-        if ( verbosityLevel > 0 ) {
+        if ( verbosityLevel >= 4 ) {
+            DISPLAY_OFFSET(MetaMorpheus_offset);
             std::cout << v << " " ;
             for ( auto p : nestedIds ) {
                 std::cout << p << " ";
@@ -845,7 +916,8 @@ namespace TaskLayer
     
     void MetaMorpheusTask::Log(const std::string &v, std::vector<std::string> &nestedIds, int verbosityLevel)
     {
-        if ( verbosityLevel > 1 ) {
+        if ( verbosityLevel >= 5 ) {
+            DISPLAY_OFFSET(MetaMorpheus_offset);  
             std::cout << v << " " ;
             for ( auto p : nestedIds ) {
                 std::cout << p << " ";

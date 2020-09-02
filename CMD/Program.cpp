@@ -127,6 +127,7 @@ int main( int argc, char *argv[] )
                 break;
             case 'v':
                 verbosity = std::stoi(optarg);
+                break;
             default:
                 print_usage();
                 exit ( -1);

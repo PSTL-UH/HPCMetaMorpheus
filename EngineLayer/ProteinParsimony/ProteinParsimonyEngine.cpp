@@ -14,7 +14,7 @@ namespace EngineLayer
 {
 
     ProteinParsimonyEngine::ProteinParsimonyEngine(std::vector<PeptideSpectralMatch*> &allPsms, bool modPeptidesAreDifferent,
-                                                   CommonParameters *commonParameters, std::vector<std::string> &nestedIds,
+                                                   CommonParameters *commonParameters, std::vector<std::string> nestedIds,
                                                    int verbosityLevel ) :
         MetaMorpheusEngine(commonParameters, nestedIds, verbosityLevel ),
         _fdrFilteredPeptides(std::unordered_set<PeptideWithSetModifications*>()), _allPsms(allPsms),

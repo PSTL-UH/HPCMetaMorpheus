@@ -37,7 +37,7 @@ namespace EngineLayer
                                                      bool quench_H2O,
                                                      bool quench_NH2,
                                                      bool quench_Tris,
-                                                     std::vector<std::string> &nestedIds,
+                                                     std::vector<std::string> nestedIds,
                                                      int verbosityLevel) :
             ModernSearchEngine(unusedPsms,
                                listOfSortedms2Scans,

@@ -43,7 +43,7 @@ namespace EngineLayer
     public:
         ProteinParsimonyEngine(std::vector<PeptideSpectralMatch*> &allPsms,
                                bool modPeptidesAreDifferent, CommonParameters *commonParameters,
-                               std::vector<std::string> &nestedIds,
+                               std::vector<std::string> nestedIds,
                                int verbosityLevel=0);
 
 

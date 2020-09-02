@@ -46,7 +46,7 @@ namespace EngineLayer
 		}
 
 	protected:
-		MetaMorpheusEngine(CommonParameters *commonParameters, std::vector<std::string> &nestedIds,
+		MetaMorpheusEngine(CommonParameters *commonParameters, std::vector<std::string> nestedIds,
                                    int verbosityLevel=0);
 
 	public:

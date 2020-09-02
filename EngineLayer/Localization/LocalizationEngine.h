@@ -39,7 +39,7 @@ namespace EngineLayer
             }
             
             LocalizationEngine(std::vector<PeptideSpectralMatch*> &allResultingIdentifications, MsDataFile *myMsDataFile,
-                               CommonParameters *commonParameters, std::vector<std::string> &nestedIds,
+                               CommonParameters *commonParameters, std::vector<std::string> nestedIds,
                                int verbosityLevel=0);
             
         protected:

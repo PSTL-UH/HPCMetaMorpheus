@@ -395,13 +395,14 @@ namespace TaskLayer
 #ifdef TIMING_INFO
                 gettimeofday (&t6, NULL);
 #endif
+                std::vector<std::string> thisId2 = {"CrosslinkSearchEngine", taskId, "Individual Spectra Files", origDataFile};
                 CrosslinkSearchEngine tempVar(newPsms, arrayOfMs2ScansSortedByMass, peptideIndex, fragmentIndex, currentPartition,
                                               combinedParams, crosslinker, getXlSearchParameters()->getRestrictToTopNHits(),
                                               getXlSearchParameters()->getCrosslinkSearchTopNum(),
                                               getXlSearchParameters()->getXlQuench_H2O(),
                                               getXlSearchParameters()->getXlQuench_NH2(),
-                                              getXlSearchParameters()->getXlQuench_Tris(), thisId, getVerbose());
-                (&tempVar)->Run();
+                                              getXlSearchParameters()->getXlQuench_Tris(), thisId2, getVerbose());
+                tempVar.Run();
 #ifdef TIMING_INFO
                 gettimeofday (&t6e, NULL);
                 t6total += timediff (t6, t6e );
@@ -472,7 +473,7 @@ namespace TaskLayer
 #endif
         DoCrosslinkFdrAnalysis(interCsms);
         DoCrosslinkFdrAnalysis(intraCsms);
-        std::vector<std::string> sv1 = {taskId};
+        std::vector<std::string> sv1 = {"FdrAnalysisEngine", taskId};
         SingleFDRAnalysis(allPsms, sv1 );
 #ifdef TIMING_INFO
         gettimeofday (&t7e, NULL);
@@ -725,8 +726,8 @@ namespace TaskLayer
             }
         }
             
-        FdrAnalysisEngine tempVar(psms, 0, getCommonParameters(), taskIds);
-        (&tempVar)->Run();
+        FdrAnalysisEngine tempVar(psms, 0, getCommonParameters(), taskIds, getVerbose());
+        tempVar.Run();
         
         // calculate loop PSM FDR
         psms.clear();
@@ -736,8 +737,8 @@ namespace TaskLayer
             }
         }
         
-        FdrAnalysisEngine tempVar2(psms, 0, getCommonParameters(), taskIds);
-        (&tempVar2)->Run();
+        FdrAnalysisEngine tempVar2(psms, 0, getCommonParameters(), taskIds, getVerbose());
+        tempVar2.Run();
 
         // calculate deadend FDR
         psms.clear();
@@ -748,8 +749,8 @@ namespace TaskLayer
             }
         }
         
-        FdrAnalysisEngine tempVar3(psms, 0, getCommonParameters(), taskIds);
-        (&tempVar3)->Run();
+        FdrAnalysisEngine tempVar3(psms, 0, getCommonParameters(), taskIds, getVerbose() );
+        tempVar3.Run();
     }
 
     void XLSearchTask::DoCrosslinkFdrAnalysis(std::vector<CrosslinkSpectralMatch*> &csms)
@@ -914,8 +915,6 @@ namespace TaskLayer
                                       const std::string &fileName,
                                       std::vector<std::string> &nestedIds)
     {
-        std::cout << "outputFolder " << outputFolder << std::endl;
-        std::cout << "fileName "<< fileName << std::endl;
         if (items.empty())
         {
             return;

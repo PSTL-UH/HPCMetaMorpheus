@@ -23,7 +23,7 @@ namespace EngineLayer
                                                                MsDataFile *myMsDataFile, Tolerance *mzToleranceForMs1Search,
                                                                int minMS1isotopicPeaksNeededForConfirmedIdentification,
                                                                CommonParameters *commonParameters,
-                                                               std::vector<std::string> &nestedIds,
+                                                               std::vector<std::string> nestedIds,
                                                                int verbosityLevel ) :
             MetaMorpheusEngine(commonParameters, nestedIds, verbosityLevel ),
             GoodIdentifications(goodIdentifications),

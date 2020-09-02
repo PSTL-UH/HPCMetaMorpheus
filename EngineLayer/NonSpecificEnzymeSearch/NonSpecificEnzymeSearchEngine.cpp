@@ -36,7 +36,7 @@ namespace EngineLayer
                                                                      CommonParameters *commonParams,
                                                                      MassDiffAcceptor *massDiffAcceptor,
                                                                      double maximumMassThatFragmentIonScoreIsDoubled,
-                                                                     std::vector<std::string> &nestedIds,
+                                                                     std::vector<std::string> nestedIds,
                                                                      int verbosityLevel) :
             ModernSearchEngine(unusedPsms,
                                listOfSortedms2Scans,

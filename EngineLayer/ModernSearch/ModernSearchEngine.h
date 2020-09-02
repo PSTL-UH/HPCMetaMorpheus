@@ -55,7 +55,7 @@ namespace EngineLayer
                                CommonParameters *commonParameters,
                                MassDiffAcceptor *massDiffAcceptor,
                                double maximumMassThatFragmentIonScoreIsDoubled,
-                               std::vector<std::string> &nestedIds,
+                               std::vector<std::string> nestedIds,
                                int verbosityLevel=0);
 
             
