@@ -332,8 +332,6 @@ namespace TaskLayer
 #endif
             }
             
-            scansWithPrecursors[i] = std::vector<Ms2ScanWithSpecificMass*>();
-
 #ifdef TIMING_INFO
             struct timeval t2, t2e;
             gettimeofday (&t2, NULL);
