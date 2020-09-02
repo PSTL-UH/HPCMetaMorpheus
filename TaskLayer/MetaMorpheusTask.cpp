@@ -31,6 +31,7 @@
 #include <fstream>
 #include <typeinfo>
 
+#include <stdio.h>
 
 using namespace Chemistry;
 using namespace EngineLayer;
@@ -338,7 +339,7 @@ namespace TaskLayer
             gettimeofday (&t2, NULL);
 #endif
             std::vector<IsotopicEnvelope*> neutralExperimentalFragments = Ms2ScanWithSpecificMass::GetNeutralExperimentalFragments(ms2scan,
-                                                                                                                                   commonParameters);
+                                                                                                                          commonParameters);
 #ifdef TIMING_INFO
             gettimeofday (&t2e, NULL);
             tgnef += timediff (t2, t2e);
@@ -821,12 +822,14 @@ namespace TaskLayer
     void MetaMorpheusTask::FinishedSingleEngine(std::vector<std::string> &nestedIDs, MetaMorpheusEngineResults *myResults, int verbosityLevel)
     {
 
-        int time_min = (int) (myResults->Time/60);
-        int time_sec = myResults->Time - (time_min * 60);
-
+        int time_hour = (int) (myResults->Time/3600);
+        int time_min = (int) ((myResults->Time - (time_hour*3600))/60);
+        int time_sec = myResults->Time - ((time_min * 60) + (time_hour *3600));
+        char timestr[64];
+        sprintf(timestr, "%02d:%02d:%02d", time_hour, time_min, time_sec);
         if ( verbosityLevel >= 1 ) {
             DISPLAY_OFFSET(MetaMorpheus_offset);
-            std::cout << "Engine results: Time to run : " << time_min << ":" << time_sec << std::endl;
+            std::cout << "Engine results: Time to run : " << timestr << std::endl;
         }
 
         OFFSET_DECR(MetaMorpheus_offset);
