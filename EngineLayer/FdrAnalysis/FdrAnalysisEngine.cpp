@@ -25,9 +25,9 @@ namespace EngineLayer
             MassDiffAcceptorNumNotches(massDiffAcceptorNumNotches),
             UseDeltaScore(commonParameters->getUseDeltaScore()),
             CalculateEValue(commonParameters->getCalculateEValue()),
-            ScoreCutoff(commonParameters->getScoreCutoff())
-        {
-            AllPsms = psms;
+            ScoreCutoff(commonParameters->getScoreCutoff()),
+            AllPsms(psms)
+        {            
         }
         
         MetaMorpheusEngineResults *FdrAnalysisEngine::RunSpecific()

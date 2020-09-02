@@ -22,7 +22,7 @@ namespace EngineLayer
         class FdrAnalysisEngine : public MetaMorpheusEngine
         {
         private:
-            std::vector<PeptideSpectralMatch*> AllPsms;
+            std::vector<PeptideSpectralMatch*>& AllPsms;
             const int MassDiffAcceptorNumNotches;
             const bool UseDeltaScore;
             const bool CalculateEValue;
