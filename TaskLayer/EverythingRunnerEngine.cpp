@@ -165,7 +165,7 @@ namespace TaskLayer
         auto resultsFileName = OutputFolder + "/allResults.txt";
         std::ofstream file(resultsFileName);
         file << "MetaMorpheus: version " << GlobalVariables::getMetaMorpheusVersion() << std::endl;
-        file <<"Total time: " << timestr << std::endl;
+        file <<"Total time: " << timestr << " " << time << std::endl;
         file << allResultsText->toString() << std::endl;
         
         //FinishedAllTasks(OutputFolder);

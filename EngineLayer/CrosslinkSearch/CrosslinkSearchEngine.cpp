@@ -15,6 +15,12 @@
 
 #include "../GlobalVariables.h"
 
+
+#ifdef TIMING_INFO
+#include <chrono>
+#endif
+
+
 using namespace EngineLayer::ModernSearch;
 using namespace MzLibUtil;
 using namespace Proteomics;
@@ -57,7 +63,8 @@ namespace EngineLayer
         {
             privateCrosslinker = new Crosslinker(crosslinker);
             GenerateCrosslinkModifications(crosslinker);
-            //AllCrosslinkerSites = privateCrosslinker->getCrosslinkerModSites().ToCharArray().Concat(privateCrosslinker->getCrosslinkerModSites2().ToCharArray())->Distinct()->ToArray();
+            //AllCrosslinkerSites = privateCrosslinker->getCrosslinkerModSites().ToCharArray().Concat(
+            //    privateCrosslinker->getCrosslinkerModSites2().ToCharArray())->Distinct()->ToArray();
             std::string s1 = privateCrosslinker->getCrosslinkerModSites();
             std::string s2 = privateCrosslinker->getCrosslinkerModSites2();
             std::vector<char> vs1 (s1.begin(), s1.end() );
@@ -91,6 +98,12 @@ namespace EngineLayer
         {
             double progress = 0;
             int oldPercentProgress = 0;
+#ifdef TIMING_INFO
+            long long int indexedScoringTime=0, bestPeptideScoreNotchTime=0, findCrosslinkedPeptideTime=0, binsSearchTime=0;
+            int iteration_count= (int)ListOfSortedMs2Scans.size();
+            auto tx = std::chrono::high_resolution_clock::now();
+#endif
+
             ProgressEventArgs tempVar(oldPercentProgress, "Performing crosslink search... " + std::to_string(CurrentPartition) + "/" +
                                       std::to_string(commonParameters->getTotalPartitions()),
                                       const_cast<std::vector<std::string>&>(nestedIds));
@@ -101,34 +114,37 @@ namespace EngineLayer
             //ParallelOptions *tempVar2 = new ParallelOptions();
             //tempVar2->MaxDegreeOfParallelism = commonParameters->getMaxThreadsToUsePerFile();
             //Parallel::ForEach(Partitioner::Create(0, ListOfSortedMs2Scans.size()), tempVar2, [&] (range, loopState)  {
-            std::vector<unsigned char> scoringTable(PeptideIndex.size());
-            std::vector<int> idsOfPeptidesPossiblyObserved;
-            
             //for (int scanIndex = range::Item1; scanIndex < range::Item2; scanIndex++)
-            for (int scanIndex = 0; scanIndex < (int)ListOfSortedMs2Scans.size(); scanIndex++)
-            {
-                // Stop loop if canceled
-                if (GlobalVariables::getStopLoops())
-                {
-                    //loopState::Stop();
-                    return nullptr;
-                }
-                
-                // empty the scoring table to score the new scan (conserves memory compared to allocating a new array)
-                //Array::Clear(scoringTable, 0, scoringTable.Length);
-                scoringTable.clear();
-                scoringTable.resize(PeptideIndex.size());
-                idsOfPeptidesPossiblyObserved.clear();
+            int ListOfSortedMs2Scanssize = (int) ListOfSortedMs2Scans.size();
+            int PeptideIndexsize = PeptideIndex.size();
+            for (int scanIndex = 0; scanIndex < ListOfSortedMs2Scanssize; scanIndex++)
+            {            
+                std::vector<unsigned char> scoringTable(PeptideIndexsize );
+                std::vector<int> idsOfPeptidesPossiblyObserved;
                 auto scan = ListOfSortedMs2Scans[scanIndex];
                 
+#ifdef TIMING_INFO
+                auto t0 = std::chrono::high_resolution_clock::now();
+#endif
                 // get fragment bins for this scan
                 std::vector<int> allBinsToSearch = GetBinsToSearch(scan);
                 std::vector<BestPeptideScoreNotch*> bestPeptideScoreNotchList;
+#ifdef TIMING_INFO
+                auto t0e = std::chrono::high_resolution_clock::now();
+                binsSearchTime += std::chrono::duration_cast<std::chrono::microseconds>( t0e - t0 ).count();
+#endif
                 
                 // first-pass scoring
+#ifdef TIMING_INFO
+                auto t1 = std::chrono::high_resolution_clock::now();
+#endif
                 IndexedScoring(allBinsToSearch, scoringTable, byteScoreCutoff, idsOfPeptidesPossiblyObserved, scan->getPrecursorMass(),
                                -std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity(),
                                PeptideIndex, massDiffAcceptor, 0);
+#ifdef TIMING_INFO
+                auto t1e = std::chrono::high_resolution_clock::now();
+                indexedScoringTime += std::chrono::duration_cast<std::chrono::microseconds>( t1e - t1 ).count();
+#endif
 
                 // done with indexed scoring; refine scores and create PSMs
                 if (!idsOfPeptidesPossiblyObserved.empty())
@@ -136,11 +152,6 @@ namespace EngineLayer
                     if (CrosslinkSearchTopN)
                     {
                         // take top N hits for this scan
-#ifdef ORIG
-                        idsOfPeptidesPossiblyObserved = idsOfPeptidesPossiblyObserved.OrderByDescending([&] (std::any p) {
-                                scoringTable[p];
-                            }).Take(TopN)->ToList();
-#endif
                         std::sort(idsOfPeptidesPossiblyObserved.begin(), idsOfPeptidesPossiblyObserved.end(), [&] (int l, int r) {
                                 return scoringTable[l] > scoringTable[r];}
                             );
@@ -149,6 +160,9 @@ namespace EngineLayer
                         }
                     }
                        
+#ifdef TIMING_INFO
+                    auto t2 = std::chrono::high_resolution_clock::now();
+#endif
                     for (auto id : idsOfPeptidesPossiblyObserved)
                     {
                         PeptideWithSetModifications *peptide = PeptideIndex[id];
@@ -159,7 +173,16 @@ namespace EngineLayer
                     }
                     
                     // combine individual peptide hits with crosslinker mass to find best crosslink PSM hit
+#ifdef TIMING_INFO
+                    auto t2e = std::chrono::high_resolution_clock::now();
+                    bestPeptideScoreNotchTime += std::chrono::duration_cast<std::chrono::microseconds>( t2e - t2 ).count();
+
+#endif
                     auto csm = FindCrosslinkedPeptide(scan, bestPeptideScoreNotchList, scanIndex);
+#ifdef TIMING_INFO
+                    auto t3e = std::chrono::high_resolution_clock::now();
+                    findCrosslinkedPeptideTime += std::chrono::duration_cast<std::chrono::microseconds>( t3e - t2e ).count();
+#endif
                     
                     if (csm == nullptr)
                     {
@@ -168,8 +191,13 @@ namespace EngineLayer
                     }
                     
                     // this scan might already have a hit from a different database partition; check to see if the score improves
-                    if (GlobalCsms[scanIndex] == nullptr || GlobalCsms[scanIndex]->getXLTotalScore() < csm->getXLTotalScore())
+                    if (GlobalCsms[scanIndex] == nullptr )
                     {
+                        GlobalCsms[scanIndex] = csm;
+                    }
+                    else if ( GlobalCsms[scanIndex]->getXLTotalScore() < csm->getXLTotalScore() )
+                    {
+                        delete GlobalCsms[scanIndex];
                         GlobalCsms[scanIndex] = csm;
                     }
                 }
@@ -181,13 +209,22 @@ namespace EngineLayer
                 if (percentProgress > oldPercentProgress)
                 {
                     oldPercentProgress = percentProgress;
-                    ProgressEventArgs tempVar4(percentProgress, "Performing crosslink search... " + std::to_string(CurrentPartition)
-                                               + "/" + std::to_string(commonParameters->getTotalPartitions()),
+                    ProgressEventArgs tempVar4(percentProgress, "Performing crosslink search... " +
+                                               std::to_string(CurrentPartition) +
+                                               "/" + std::to_string(commonParameters->getTotalPartitions()),
                                                const_cast<std::vector<std::string>&>(nestedIds));
                     ReportProgress(&tempVar4);
                 }
             }
             //    });
+#ifdef TIMING_INFO
+            auto txe = std::chrono::high_resolution_clock::now();
+            std::cout << " CrosslinkedSearchEngine        : " << std::chrono::duration_cast<std::chrono::milliseconds>( txe - tx ).count() << " ms in " << iteration_count << " iterations " << std::endl;
+            std::cout << "     binsSearchTime             : " << ((double)binsSearchTime)/1000 << std::endl;
+            std::cout << "     indexedScoringTime         : " << ((double)indexedScoringTime)/1000 << std::endl;
+            std::cout << "     bestPeptideScoreNotchTime  : " << ((double)bestPeptideScoreNotchTime)/1000 << std::endl;
+            std::cout << "     findCrosslinkedPeptideTime : " << ((double)findCrosslinkedPeptideTime)/1000 << std::endl;
+#endif
             
             return new MetaMorpheusEngineResults(this);
         }
@@ -341,11 +378,6 @@ namespace EngineLayer
             
             // get the best match for this spectrum
             // bestPsmCross will be null if there are no valid hits
-#ifdef ORIG
-            possibleMatches.RemoveAll([&] (std::any v)  {
-                    return v == nullptr;
-                });
-#endif
             for ( auto v = possibleMatches.begin(); v != possibleMatches.end(); ) {
                 if ( *v == nullptr ) {
                     possibleMatches.erase(v);
@@ -355,11 +387,6 @@ namespace EngineLayer
                 }
             }
             
-#ifdef ORIG
-            possibleMatches = possibleMatches.OrderByDescending([&] (std::any p)  {
-                    p::XLTotalScore;
-                }).ToList();
-#endif
             std::sort(possibleMatches.begin(), possibleMatches.end(), [&] (CrosslinkSpectralMatch *l, CrosslinkSpectralMatch *r) {
                     return l->getXLTotalScore() > r->getXLTotalScore(); }
                 );
@@ -385,6 +412,7 @@ namespace EngineLayer
             {
                 bestPsmCross->setDeltaScore( possibleMatches[0]->getXLTotalScore() - possibleMatches[1]->getXLTotalScore());
             }
+
             //Some memory management to reduce the leaks
             for ( auto pM : possibleMatches ) {
                 if ( pM != nullptr && pM != bestPsmCross ) {
@@ -396,7 +424,8 @@ namespace EngineLayer
         }
         
         CrosslinkSpectralMatch *CrosslinkSearchEngine::LocalizeCrosslinkSites(Ms2ScanWithSpecificMass *theScan, BestPeptideScoreNotch *alphaPeptide,
-                                                                              BestPeptideScoreNotch *betaPeptide, Crosslinker *crosslinker, int ind, int inx)
+                                                                              BestPeptideScoreNotch *betaPeptide, Crosslinker *crosslinker,
+                                                                              int ind, int inx)
         {
             CrosslinkSpectralMatch *localizedCrosslinkedSpectralMatch = nullptr;
             
@@ -452,11 +481,6 @@ namespace EngineLayer
                     
                     for (auto possibleSite : possibleAlphaXlSites)
                     {
-#ifdef ORIG
-                        for (auto setOfFragments : fragmentsForEachAlphaLocalizedPossibility.Where([&] (std::any v) {
-                                    return v->Item1 == possibleSite;
-                                }));
-#endif
                         for (auto setOfFragments : fragmentsForEachAlphaLocalizedPossibility )
                         {
                             if ( std::get<0>(setOfFragments) != possibleSite ) {
@@ -478,14 +502,8 @@ namespace EngineLayer
                     std::vector<std::tuple<int, std::vector<Product*>>> fragmentsForEachBetaLocalizedPossibility =
                         CrosslinkedPeptide::XlGetTheoreticalFragments(
                             commonParameters->getDissociationType(), privateCrosslinker, possibleBetaXlSites,
-                            alphaPeptide->getBestPeptide()->getMonoisotopicMass(), betaPeptide->getBestPeptide());//.ToList();
+                            alphaPeptide->getBestPeptide()->getMonoisotopicMass(), betaPeptide->getBestPeptide());
                     
-#ifdef ORIG
-                    auto alphaMz = std::unordered_set<double>(bestMatchedAlphaIons.Select([&] (std::any p)
-                    {
-                        p::Mz;
-                    }));
-#endif
                     std::unordered_set<double> alphaMz;
                     for ( auto p: bestMatchedAlphaIons ) {
                         alphaMz.emplace(p->Mz);
@@ -494,11 +512,6 @@ namespace EngineLayer
                     
                     for (auto possibleSite : possibleBetaXlSites)
                     {
-#ifdef ORIG
-                        //for (auto setOfFragments : fragmentsForEachBetaLocalizedPossibility.Where([&] (std::any v) {
-                        //            return v->Item1 == possibleSite;
-                        //        }));
-#endif
                         for ( auto setOfFragments : fragmentsForEachBetaLocalizedPossibility ) 
                         {
                             if ( std::get<0>(setOfFragments) != possibleSite ) {
@@ -591,14 +604,6 @@ namespace EngineLayer
             
             for (auto location : possiblePositions)
             {
-#ifdef ORIG
-                std::unordered_map<int, Modification*> mods = originalPeptide->AllModsOneIsNterminus.ToDictionary([&] (std::any p) {
-                        p::Key;
-                    }, [&] (std::any p)
-                    {
-                        p->Value;
-                    });
-#endif
                 std::unordered_map<int, Modification*> mods = originalPeptide->getAllModsOneIsNterminus();
                 
                 if (mods.find(location + 1) != mods.end())
@@ -606,14 +611,7 @@ namespace EngineLayer
                     auto alreadyAnnotatedMod = mods[location + 1];
                     double combinedMass = mods[location + 1]->getMonoisotopicMass().value() +
                         deadEndMod->getMonoisotopicMass().value();
-#ifdef ORIG
-                    Modification *combinedMod = new Modification(_originalId: alreadyAnnotatedMod->OriginalId + "+"
-                                                                 + deadEndMod->OriginalId,
-                                                                 _modificationType: "Crosslink",
-                                                                 _target: alreadyAnnotatedMod->Target,
-                                                                 _locationRestriction: "Anywhere.",
-                                                                 _monoisotopicMass: combinedMass);
-#endif
+
                     std::string acc = "";
                     std::string modType = "";
                     std::string feaType = "";
@@ -683,7 +681,9 @@ namespace EngineLayer
             return csm;
         }
 
-        CrosslinkSpectralMatch *CrosslinkSearchEngine::LocalizeLoopSites(PeptideWithSetModifications *originalPeptide, Ms2ScanWithSpecificMass *theScan, CommonParameters *commonParameters, std::vector<int> &possiblePositions, Modification *loopMod, int notch, int scanIndex, int peptideIndex)
+        CrosslinkSpectralMatch *CrosslinkSearchEngine::LocalizeLoopSites(PeptideWithSetModifications *originalPeptide, Ms2ScanWithSpecificMass *theScan,
+                                                                         CommonParameters *commonParameters, std::vector<int> &possiblePositions,
+                                                                         Modification *loopMod, int notch, int scanIndex, int peptideIndex)
         {
             XLumap possibleFragmentSets = CrosslinkedPeptide::XlLoopGetTheoreticalFragments(
                 commonParameters->getDissociationType(),

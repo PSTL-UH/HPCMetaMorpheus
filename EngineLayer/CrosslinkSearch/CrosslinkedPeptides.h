@@ -52,7 +52,9 @@ namespace EngineLayer
         class CrosslinkedPeptide
         {
         public:
-            static std::vector<std::tuple<int, std::vector<Product*>>> XlGetTheoreticalFragments(DissociationType dissociationType, Crosslinker *crosslinker, std::vector<int> &possibleCrosslinkerPositions, double otherPeptideMass, PeptideWithSetModifications *peptide);
+            static std::vector<std::tuple<int, std::vector<Product*>>> XlGetTheoreticalFragments(DissociationType dissociationType, Crosslinker *crosslinker,
+                                                                                                 std::vector<int> &possibleCrosslinkerPositions, double otherPeptideMass,
+                                                                                                 PeptideWithSetModifications *peptide);
             
             static XLumap XlLoopGetTheoreticalFragments(DissociationType dissociationType, Modification *loopMass, std::vector<int> &modPos, PeptideWithSetModifications *peptide);
         };
