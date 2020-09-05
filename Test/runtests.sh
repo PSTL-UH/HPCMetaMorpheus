@@ -39,5 +39,5 @@ make -s FdrTest
 echo " "
 echo "  CalibrationTests"
 make -s CalibrationTests
-./CalibrationTest
+./CalibrationTests
 

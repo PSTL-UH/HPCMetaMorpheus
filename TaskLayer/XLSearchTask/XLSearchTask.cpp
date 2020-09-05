@@ -31,6 +31,11 @@ using namespace MzLibUtil;
 using namespace EngineLayer::FdrAnalysis;
 using namespace Proteomics::Fragmentation;
 
+//Hard coding for now the timing break down of the XLSearchTask, since this
+//is the main area of interest right now.
+
+#define TIMING_INFO 1
+
 #ifdef TIMING_INFO
 #include <sys/time.h>
 
@@ -340,7 +345,7 @@ namespace TaskLayer
 #ifdef TIMING_INFO
             gettimeofday (&t4, NULL);
 #endif
-            std::vector<Ms2ScanWithSpecificMass*> arrayOfMs2ScansSortedByMass= GetMs2Scans(myMsDataFile, origDataFile, combinedParams);            
+            std::vector<Ms2ScanWithSpecificMass*> arrayOfMs2ScansSortedByMass= GetMs2Scans(myMsDataFile, origDataFile, combinedParams);  
             std::sort(arrayOfMs2ScansSortedByMass.begin(), arrayOfMs2ScansSortedByMass.end(), [&]
                       (Ms2ScanWithSpecificMass* l, Ms2ScanWithSpecificMass* r) {
                           return l->getPrecursorMass() < r->getPrecursorMass();
@@ -370,8 +375,7 @@ namespace TaskLayer
                 {
                     filenameList.push_back(p->getFilePath());
                 }
-                std::vector<std::string> vtaskId = {taskId};
-
+                std::vector<std::string> vtaskId = {"IndexingEngine", taskId};
 #ifdef TIMING_INFO
                 gettimeofday (&t5, NULL);
 #endif

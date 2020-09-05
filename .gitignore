@@ -25,4 +25,6 @@ Test/TestToml
 Test/elements.dat
 Test/proteases.tsv
 Test/pep.XML.pep.XM
+Test/XlTestData/DatabaseIndex/
+Test/test.pep.XM
 
