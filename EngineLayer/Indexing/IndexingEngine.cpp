@@ -157,6 +157,7 @@ namespace EngineLayer
                 std::vector<double> fragmentMasses;
                 for ( auto m: t ) {
                     fragmentMasses.push_back(m->NeutralMass);
+                    delete m;
                 }
                 for (auto theoreticalFragmentMass : fragmentMasses)
                 {
