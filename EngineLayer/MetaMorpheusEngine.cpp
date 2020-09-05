@@ -166,6 +166,11 @@ namespace EngineLayer
     {
         TaskLayer::MetaMorpheusTask::ReportProgress(v, privateVerbosityLevel);
     }
+
+    void MetaMorpheusEngine::ReportEngineProgress(std::string key, int value)
+    {
+        TaskLayer::MetaMorpheusTask::ReportEngineProgress(key, value, privateVerbosityLevel);
+    }
     
     void MetaMorpheusEngine::StartingSingleEngine()
     {

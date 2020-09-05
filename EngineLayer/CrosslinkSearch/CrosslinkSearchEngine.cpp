@@ -104,10 +104,8 @@ namespace EngineLayer
             auto tx = std::chrono::high_resolution_clock::now();
 #endif
 
-            ProgressEventArgs tempVar(oldPercentProgress, "Performing crosslink search... " + std::to_string(CurrentPartition) + "/" +
-                                      std::to_string(commonParameters->getTotalPartitions()),
-                                      const_cast<std::vector<std::string>&>(nestedIds));
-            ReportProgress(&tempVar);
+            ReportEngineProgress("Performing crosslink search... " + std::to_string(CurrentPartition) + "/" +
+                                 std::to_string(commonParameters->getTotalPartitions()), oldPercentProgress);
             
             unsigned char byteScoreCutoff = static_cast<unsigned char>(commonParameters->getScoreCutoff());
             
@@ -209,11 +207,8 @@ namespace EngineLayer
                 if (percentProgress > oldPercentProgress)
                 {
                     oldPercentProgress = percentProgress;
-                    ProgressEventArgs tempVar4(percentProgress, "Performing crosslink search... " +
-                                               std::to_string(CurrentPartition) +
-                                               "/" + std::to_string(commonParameters->getTotalPartitions()),
-                                               const_cast<std::vector<std::string>&>(nestedIds));
-                    ReportProgress(&tempVar4);
+                    ReportEngineProgress("Performing crosslink search... " + std::to_string(CurrentPartition) + "/" +
+                                         std::to_string(commonParameters->getTotalPartitions()), percentProgress);
                 }
             }
             //    });

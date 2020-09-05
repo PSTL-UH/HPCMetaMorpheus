@@ -69,6 +69,8 @@ namespace EngineLayer
 		void Status(const std::string &v);
 
 		void ReportProgress(ProgressEventArgs *v);
+                
+		void ReportEngineProgress(std::string key, int value);
 
 		virtual MetaMorpheusEngineResults *RunSpecific() = 0;
 

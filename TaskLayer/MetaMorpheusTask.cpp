@@ -56,6 +56,8 @@ static int MetaMorpheus_offset=0;
 #define OFFSET_INCR(_off) {_off+=MetaMorpheus_OffsetIncrement;}
 #define OFFSET_DECR(_off) {_off-=MetaMorpheus_OffsetIncrement;}
 
+static std::unordered_set<std::string> EngineProgressKeys;
+
 
 #ifdef TIMING_INFO
 #include <sys/time.h>
@@ -826,6 +828,7 @@ namespace TaskLayer
         char timestr[64];
         sprintf(timestr, "%02d:%02d:%02d", time_hour, time_min, time_sec);
         if ( verbosityLevel >= 1 ) {
+            std::cout << std::endl;
             DISPLAY_OFFSET(MetaMorpheus_offset);
             std::cout << "Engine results: Time to run : " << timestr << std::endl;
         }
@@ -853,6 +856,24 @@ namespace TaskLayer
             std::cout << std::endl;
         }
     }
+
+    void MetaMorpheusTask::ReportEngineProgress(std::string id, int value, int verbosityLevel)
+    {
+        if ( EngineProgressKeys.find(id) != EngineProgressKeys.end() ) {
+            if ( verbosityLevel >= 1 ) {
+                std::cout << value << " " << std::flush;
+            }
+        }
+        else {
+            EngineProgressKeys.insert(id);
+            if ( verbosityLevel >= 1 ) {                
+                std::cout << std::endl;
+                DISPLAY_OFFSET(MetaMorpheus_offset);            
+                std::cout << id << " " << value << " " << std::flush;
+            }
+        }
+    }
+    
     
     void MetaMorpheusTask::FinishedWritingFile(const std::string &v, std::vector<std::string> &nestedIDs, int verbosityLevel)
     {

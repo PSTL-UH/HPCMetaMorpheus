@@ -97,7 +97,8 @@ namespace EngineLayer
         {
             double progress = 0;
             int oldPercentProgress = 0;
-            
+            ReportEngineProgress("Digesting proteins...", oldPercentProgress);            
+
             auto result = new IndexingResults(this);
             std::vector<PeptideWithSetModifications*>& peptidesSortedByMass = result->getPeptideIndex();            
 #ifdef ORIG
@@ -120,9 +121,7 @@ namespace EngineLayer
                 if (percentProgress > oldPercentProgress)
                 {
                     oldPercentProgress = percentProgress;
-                    std::vector<std::string> vs(nestedIds.begin(), nestedIds.end() );
-                    ProgressEventArgs tempVar2(percentProgress, "Digesting proteins...", vs);
-                    ReportProgress(&tempVar2);
+                    ReportEngineProgress("Digesting proteins...", percentProgress);
                 }
             }
             //});
@@ -150,6 +149,7 @@ namespace EngineLayer
             // populate fragment index
             progress = 0;
             oldPercentProgress = 0;
+            ReportEngineProgress("Fragmenting peptides...", oldPercentProgress);
             for (int peptideId = 0; peptideId < (int) peptidesSortedByMass.size(); peptideId++)
             {
                 auto t = peptidesSortedByMass[peptideId]->Fragment(commonParameters->getDissociationType(),
@@ -180,9 +180,7 @@ namespace EngineLayer
                 if (percentProgress > oldPercentProgress)
                 {
                     oldPercentProgress = percentProgress;
-                    std::vector<std::string> vs(nestedIds.begin(), nestedIds.end() );
-                    ProgressEventArgs tempVar3(percentProgress, "Fragmenting peptides...", vs);
-                    ReportProgress(&tempVar3);
+                    ReportEngineProgress("Fragmenting peptides...", oldPercentProgress);
                 }
             }
             
@@ -205,10 +203,7 @@ namespace EngineLayer
 
                 progress = 0;
                 oldPercentProgress = 0;
-                std::vector<std::string> vs(nestedIds.begin(), nestedIds.end() );
-                ProgressEventArgs tempVar4(0, "Creating precursor index...", vs);
-                ReportProgress(&tempVar4);
-                
+                ReportEngineProgress ("Creating precursor index...", oldPercentProgress);
                 for (int i = 0; i < (int)peptidesSortedByMass.size(); i++)
                 {
                     double mass = peptidesSortedByMass[i]->getMonoisotopicMass();
@@ -235,9 +230,7 @@ namespace EngineLayer
                     if (percentProgress > oldPercentProgress)
                     {
                         oldPercentProgress = percentProgress;
-                        std::vector<std::string> vs(nestedIds.begin(), nestedIds.end() );
-                        ProgressEventArgs tempVar5(percentProgress, "Creating precursor index...", vs);
-                        ReportProgress(&tempVar5);
+                        ReportEngineProgress ("Creating precursor index...", oldPercentProgress);
                     }
                 }
             }

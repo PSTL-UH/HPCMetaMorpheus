@@ -138,6 +138,7 @@ namespace TaskLayer
 
         public:
             static void ReportProgress(ProgressEventArgs *v,  int verbositLevel);
+            static void ReportEngineProgress(std::string id, int value, int verbosityLevel);
             static void FinishedWritingFile(const std::string &path, std::vector<std::string> &nestedIDs,  int verbositLevel);            
             static void StartingDataFile(const std::string &v, std::vector<std::string> &nestedIDs,  int verbositLevel);
             static void FinishedDataFile(const std::string &v, std::vector<std::string> &nestedIDs,  int verbositLevel);
