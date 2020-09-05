@@ -98,37 +98,25 @@ namespace EngineLayer
             double progress = 0;
             int oldPercentProgress = 0;
             
-            // digest database
-            std::vector<PeptideWithSetModifications*> globalPeptides;
-            
+            auto result = new IndexingResults(this);
+            std::vector<PeptideWithSetModifications*>& peptidesSortedByMass = result->getPeptideIndex();            
 #ifdef ORIG
             //ParallelOptions *tempVar = new ParallelOptions();
             //tempVar->MaxDegreeOfParallelism = commonParameters->getMaxThreadsToUsePerFile();
             //Parallel::ForEach(Partitioner::Create(0, ProteinList.size()), tempVar, [&] (range, loopState)  {
             //        std::vector<PeptideWithSetModifications*> localPeptides;
-            //        
-            //        for (int i = range::Item1; i < range::Item2; i++) {
-            //        //Stop loop if canceled
-            //        if (GlobalVariables::getStopLoops()) {
-            //               loopState::Stop();
-            //               return;
-            //        }
-                        
-            // localPeptides.AddRange(ProteinList[i]->Digest(commonParameters->getDigestionParams(),
-            //                                                          FixedModifications, VariableModifications));
-                                                
 #endif
+            // digest database
             for ( int i = 0; i < (int)ProteinList.size(); i++ ) {
                 progress++;
                 std::vector<Modification*> *fixedmodis = const_cast<std::vector<Modification*>*> (&FixedModifications);
                 std::vector<Modification*> *varmodis = const_cast<std::vector<Modification*>*>(&VariableModifications);
-                std::vector<PeptideWithSetModifications*> t = ProteinList[i]->Digest(commonParameters->getDigestionParams(),
-                                                *fixedmodis, *varmodis);
-                for ( auto p : t ) {
-                    globalPeptides.push_back(p);
-                }
-                auto percentProgress = static_cast<int>((progress / ProteinList.size()) * 100);
-                        
+                auto localPeptides = ProteinList[i]->Digest(commonParameters->getDigestionParams(),
+                                                            *fixedmodis, *varmodis);
+
+                peptidesSortedByMass.insert(peptidesSortedByMass.end(), localPeptides.begin(), localPeptides.end() );
+
+                auto percentProgress = static_cast<int>((progress / ProteinList.size()) * 100);                        
                 if (percentProgress > oldPercentProgress)
                 {
                     oldPercentProgress = percentProgress;
@@ -137,37 +125,26 @@ namespace EngineLayer
                     ReportProgress(&tempVar2);
                 }
             }
-            
-#ifdef ORIG
-            {
-                std::lock_guard<std::mutex> lock(globalPeptides);
-                globalPeptides.AddRange(localPeptides);
-            }
-#endif
             //});
             
             // sort peptides by mass
-#ifdef ORIG
-            auto peptidesSortedByMass = globalPeptides.OrderBy([&] (std::any p)  {
-                    p::MonoisotopicMass;
-                }).ToList();
-#endif
-            std::vector<PeptideWithSetModifications*> peptidesSortedByMass(globalPeptides.begin(), globalPeptides.end());
-            std::sort(peptidesSortedByMass.begin(), peptidesSortedByMass.end(), [&] (PeptideWithSetModifications* l, PeptideWithSetModifications* r) {
-                    return l->getMonoisotopicMass() < r->getMonoisotopicMass();
-                });
-            globalPeptides.clear();
+            std::sort(peptidesSortedByMass.begin(), peptidesSortedByMass.end(), [&]
+                      (PeptideWithSetModifications* l, PeptideWithSetModifications* r) {
+                          return l->getMonoisotopicMass() < r->getMonoisotopicMass();
+                      });
             
             // create fragment index
-            std::vector<std::vector<int>> fragmentIndex;
-            
+            std::vector<std::vector<int>>& fragmentIndex = result->getFragmentIndex();            
             try
             {
-                fragmentIndex = std::vector<std::vector<int>>(static_cast<int>(std::ceil(MaxFragmentSize)) * FragmentBinsPerDalton + 1);
+                fragmentIndex = std::vector<std::vector<int>>(static_cast<int>(std::ceil(MaxFragmentSize)) *
+                                                              FragmentBinsPerDalton + 1);
             }
             catch (int e1)
             {
-                throw MetaMorpheusException("Max fragment mass too large for indexing engine; try \"Classic Search\" mode, or make the maximum fragment mass smaller");
+                std::string s = "Max fragment mass too large for indexing engine; try \"Classic Search\" mode, "
+                    "or make the maximum fragment mass smaller";
+                throw MetaMorpheusException(s);
             }
             
             // populate fragment index
@@ -175,14 +152,8 @@ namespace EngineLayer
             oldPercentProgress = 0;
             for (int peptideId = 0; peptideId < (int) peptidesSortedByMass.size(); peptideId++)
             {
- #ifdef ORIG
-                //auto fragmentMasses = peptidesSortedByMass[peptideId].Fragment(commonParameters->getDissociationType(),
-                //              commonParameters->getDigestionParams()->FragmentationTerminus)->Select([&] (std::any m)   {
-                //                      m::NeutralMass;
-                //                  }).ToList();
-#endif
                 auto t = peptidesSortedByMass[peptideId]->Fragment(commonParameters->getDissociationType(),
-                                                                   commonParameters->getDigestionParams()->getFragmentationTerminus());
+                                        commonParameters->getDigestionParams()->getFragmentationTerminus());
                 std::vector<double> fragmentMasses;
                 for ( auto m: t ) {
                     fragmentMasses.push_back(m->NeutralMass);
@@ -206,7 +177,6 @@ namespace EngineLayer
                 
                 progress++;
                 auto percentProgress = static_cast<int>((progress / peptidesSortedByMass.size()) * 100);
-                
                 if (percentProgress > oldPercentProgress)
                 {
                     oldPercentProgress = percentProgress;
@@ -216,19 +186,23 @@ namespace EngineLayer
                 }
             }
             
-            std::vector<std::vector<int>> precursorIndex;
+            std::vector<std::vector<int>>& precursorIndex = result->getPrecursorIndex();
             
             if (GeneratePrecursorIndex)
             {
                 // create precursor index
                 try
                 {
-                    precursorIndex = std::vector<std::vector<int>>(static_cast<int>(std::ceil(MaxFragmentSize)) * FragmentBinsPerDalton + 1);
+                    precursorIndex = std::vector<std::vector<int>>(static_cast<int>(std::ceil(MaxFragmentSize)) *
+                                                                   FragmentBinsPerDalton + 1);
                 }
                 catch (int e2)
                 {
-                    throw MetaMorpheusException("Max precursor mass too large for indexing engine; try \"Classic Search\" mode, or make the maximum fragment mass smaller");
+                    std::string s = "Max precursor mass too large for indexing engine; try \"Classic Search\" mode,"
+                                                " or make the maximum fragment mass smaller";
+                    throw MetaMorpheusException(s);
                 }
+
                 progress = 0;
                 oldPercentProgress = 0;
                 std::vector<std::string> vs(nestedIds.begin(), nestedIds.end() );
@@ -258,7 +232,6 @@ namespace EngineLayer
                     }
                     progress++;
                     auto percentProgress = static_cast<int>((progress / peptidesSortedByMass.size()) * 100);
-                    
                     if (percentProgress > oldPercentProgress)
                     {
                         oldPercentProgress = percentProgress;
@@ -269,7 +242,7 @@ namespace EngineLayer
                 }
             }
             
-            return new IndexingResults(peptidesSortedByMass, fragmentIndex, precursorIndex, this);
+            return result;
         }
     }
 }

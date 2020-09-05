@@ -17,8 +17,12 @@ namespace EngineLayer
             setFragmentIndex(fragmentIndex);
             setPrecursorIndex(precursorIndex);
         }
+
+        IndexingResults::IndexingResults(IndexingEngine *indexParams) : MetaMorpheusEngineResults(indexParams)
+        {
+        }
         
-        std::vector<std::vector<int>> IndexingResults::getFragmentIndex() const
+        std::vector<std::vector<int>>& IndexingResults::getFragmentIndex()
         {
             return privateFragmentIndex;
         }
@@ -28,7 +32,7 @@ namespace EngineLayer
             privateFragmentIndex = value;
         }
         
-        std::vector<std::vector<int>> IndexingResults::getPrecursorIndex() const
+        std::vector<std::vector<int>>& IndexingResults::getPrecursorIndex()
         {
             return privatePrecursorIndex;
         }
@@ -38,7 +42,7 @@ namespace EngineLayer
             privatePrecursorIndex = value;
         }
         
-        std::vector<PeptideWithSetModifications*> IndexingResults::getPeptideIndex() const
+        std::vector<PeptideWithSetModifications*>& IndexingResults::getPeptideIndex()
         {
             return privatePeptideIndex;
         }

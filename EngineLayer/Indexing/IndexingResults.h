@@ -30,12 +30,15 @@ namespace EngineLayer
                             std::vector<std::vector<int>> &fragmentIndex,
                             std::vector<std::vector<int>> &precursorIndex,
                             IndexingEngine *indexParams);
+
+            IndexingResults(IndexingEngine *indexParams);
+
             
-            std::vector<std::vector<int>> getFragmentIndex() const;
+            std::vector<std::vector<int>> &getFragmentIndex();
             void setFragmentIndex(const std::vector<std::vector<int>> &value);
-            std::vector<std::vector<int>> getPrecursorIndex() const;
+            std::vector<std::vector<int>> &getPrecursorIndex();
             void setPrecursorIndex(const std::vector<std::vector<int>> &value);
-            std::vector<PeptideWithSetModifications*> getPeptideIndex() const;
+            std::vector<PeptideWithSetModifications*> &getPeptideIndex();
             void setPeptideIndex(const std::vector<PeptideWithSetModifications*> &value);
             
             std::string ToString();
