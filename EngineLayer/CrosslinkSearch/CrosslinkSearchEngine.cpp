@@ -109,10 +109,6 @@ namespace EngineLayer
             
             unsigned char byteScoreCutoff = static_cast<unsigned char>(commonParameters->getScoreCutoff());
             
-            //ParallelOptions *tempVar2 = new ParallelOptions();
-            //tempVar2->MaxDegreeOfParallelism = commonParameters->getMaxThreadsToUsePerFile();
-            //Parallel::ForEach(Partitioner::Create(0, ListOfSortedMs2Scans.size()), tempVar2, [&] (range, loopState)  {
-            //for (int scanIndex = range::Item1; scanIndex < range::Item2; scanIndex++)
             int ListOfSortedMs2Scanssize = (int) ListOfSortedMs2Scans.size();
             int PeptideIndexsize = PeptideIndex.size();
             for (int scanIndex = 0; scanIndex < ListOfSortedMs2Scanssize; scanIndex++)
@@ -210,8 +206,11 @@ namespace EngineLayer
                     ReportEngineProgress("Performing crosslink search... " + std::to_string(CurrentPartition) + "/" +
                                          std::to_string(commonParameters->getTotalPartitions()), percentProgress);
                 }
+                for ( auto p:  bestPeptideScoreNotchList ) {
+                    delete p;
+                }                
             }
-            //    });
+
 #ifdef TIMING_INFO
             auto txe = std::chrono::high_resolution_clock::now();
             std::cout << " CrosslinkedSearchEngine        : " << std::chrono::duration_cast<std::chrono::milliseconds>( txe - tx ).count() << " ms in " << iteration_count << " iterations " << std::endl;
