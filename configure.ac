@@ -4,11 +4,10 @@
 AC_PREREQ([2.69])
 AC_INIT([HPCMetaMorpheus], [VERSION], [BUG-REPORT-ADDRESS])
 AC_CONFIG_MACRO_DIR(m4)
+m4_include([config/compiler_checks.m4])
 
 # Checks for programs.
 AC_PROG_CXX
-AX_CXX_COMPILE_STDCXX_17(ext, mandatory)
-AX_CXXFLAGS_WARN_ALL
 AC_PROG_MAKE_SET
 
 AC_MSG_CHECKING([if want developer-level debugging flags])
@@ -30,34 +29,22 @@ fi
 
 
 AC_LANG_PUSH([C++])
-AX_CHECK_COMPILE_FLAG([-Wno-delete-non-virtual-dtor], [CXXFLAGS="$CXXFLAGS -Wno-delete-non-virtual-dtor"],,[$ERROR_ON_UNKNOWN_OPTIONS])
+GET_CXX_COMPILER_VENDOR(compiler_vendor)
+if test "$compiler_vendor" = "gnu" ; then
+  CXXFLAGS="$CXXFLAGS -Wno-delete-non-virtual-dtor -std=gnu++17"
+  CPPFLAGS="$CXXFLAGS"
+elif test "$compiler_vendor" = "intel" ; then
+  CXXFLAGS="$CXXFLAGS -std=c++17"
+  CPPFLAGS="$CXXFLAGS"
+fi
+
+PROG_CXX_CXX17_HELPER([],[have_cxx17_support])
+if test "x$have_cxx17_support" = xno ; then
+   AC_MSG_WARN([HPCMetaMorpheus requires a C++ 2017 (or newer) compiler.])
+   AC_MSG_ERROR([Aborting.])
+fi
 
 # Checks for libraries.
-
-# Checks for header files.
-AC_CHECK_HEADER([zlib.h],
-[],
-[AC_MSG_ERROR(Couldn't find zlib.h)])
-
-AC_CHECK_HEADER([math.h],
-[],
-[AC_MSG_ERROR(Couldn't find math.h)])
-
-
-# Checks for typedefs, structures, and compiler characteristics.
-AC_CHECK_HEADER_STDBOOL
-AC_C_INLINE
-AC_CHECK_TYPES([ptrdiff_t])
-
-# Checks for library functions.
-AC_FUNC_ERROR_AT_LINE
-AC_FUNC_MALLOC
-AC_FUNC_REALLOC
-AC_CHECK_FUNCS([fesetround floor pow sqrt])
-
-AX_XERCESC
-AX_XSDCXX
-
 
 dnl ==================================================
 AC_MSG_CHECKING(for HPCMetaMorpheus main directory)
@@ -93,6 +80,55 @@ AC_CHECK_FILE([${mzlib_dir}/lib/libmzlib.a],
 AC_CHECK_FILE([${mzlib_dir}/lib/libflashlfq.a],
               [],
               [AC_MSG_ERROR(Couldn't find ${mzlib_dir}/lib/libflashlfq.a. MzLib has to be correctly compiled for HPCMetaMorpheus)])
+
+
+# Checks for header files.
+AC_CHECK_HEADER([zlib.h],
+[],
+[AC_MSG_ERROR(Couldn't find zlib.h)])
+
+AC_CHECK_HEADER([math.h],
+[],
+[AC_MSG_ERROR(Couldn't find math.h)])
+AC_CHECK_HEADER([boost/math/special_functions/gamma.hpp],
+[],
+[AC_MSG_ERROR(Couldn't find boost math library)])
+
+# Checks for typedefs, structures, and compiler characteristics.
+AC_CHECK_HEADER_STDBOOL
+AC_C_INLINE
+AC_CHECK_TYPES([ptrdiff_t])
+
+# Checks for library functions.
+AC_FUNC_ERROR_AT_LINE
+AC_FUNC_MALLOC
+AC_FUNC_REALLOC
+AC_CHECK_FUNCS([fesetround floor pow sqrt])
+
+dnl ==================================================
+AC_MSG_CHECKING(for xsdcxx)
+AC_ARG_WITH(xsdcxx_dir,
+ [  --with-xsdcxx-dir=dir          xsdcxx directory (default=/usr/include)],
+      xsdcxx_dir="${withval}", xsdcxx_dir="")
+      if test "x$xsdcxx_dir" = "x" ; then
+                  xsdcxx_dir=/usr/include
+      fi
+      AC_MSG_RESULT(${xsdcxx_dir})
+
+     save_CXXFLAGS="$CXXFLAGS"
+     save_CPPFLAGS="$CPPFLAGS"
+     CXXFLAGS="$save_CXXFLAGS -I$xsdcxx_dir"
+     CPPFLAGS="$save_CPPFLAGS -I$xsdcxx_dir"
+     AC_CHECK_HEADER([xsd/cxx/config.hxx],
+                     [],
+                     [AC_MSG_ERROR(Couldn't find xsd/cxx/config.hxx)])
+
+     CXXFLAGS="$save_CXXFLAGS"
+     CPPFLAGS="$save_CPPFLAGS"
+     AC_SUBST(xsdcxx_dir)
+dnl ==================================================
+
+AX_XERCESC
 
 
 dnl ==================================================
