@@ -417,12 +417,8 @@ namespace TaskLayer
                 ReportProgress(&tempVar2, getVerbose() );
                 delete indexEngine;
             }
-            
-            for ( auto p : newPsms ) {
-                if ( p != nullptr ) {
-                    allPsms.push_back(p);
-                }
-            }
+
+            allPsms.insert(allPsms.end(), newPsms.begin(), newPsms.end() );
             
             completedFiles++;
             std::vector<std::string> vs2 = {taskId, "Individual Spectra Files"};
