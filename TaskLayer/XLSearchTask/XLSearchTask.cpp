@@ -316,8 +316,12 @@ namespace TaskLayer
         }
         ProseCreatedWhileRunning->append("The combined search database contained " + std::to_string(proteinList.size()) +
                                          " total entries including " + std::to_string(c1) + " contaminant sequences. ");
-        
+
+        // The following vectors are only required for memory management at the end of the Task
         std::vector<CrosslinkSearchEngine *> csengines;
+        std::vector<Ms2ScanWithSpecificMass*> Ms2Scans;
+        std::unordered_set<PeptideWithSetModifications*> peptides;
+        
         for (int spectraFileIndex = 0; spectraFileIndex < (int)currentRawFileList.size(); spectraFileIndex++)
         {
             auto origDataFile = currentRawFileList[spectraFileIndex];
@@ -325,7 +329,6 @@ namespace TaskLayer
                                                                               fileSettingsList[spectraFileIndex]);
             
             auto thisId = std::vector<std::string> {taskId, "Individual Spectra Files", origDataFile};
-            //NewCollection(FileSystem::getFileName(origDataFile), thisId);
             
             Status("Loading spectra file...", thisId,  getVerbose() );
 #ifdef TIMING_INFO
@@ -351,6 +354,8 @@ namespace TaskLayer
                       (Ms2ScanWithSpecificMass* l, Ms2ScanWithSpecificMass* r) {
                           return l->getPrecursorMass() < r->getPrecursorMass();
                       });
+
+            Ms2Scans.insert(Ms2Scans.end(), arrayOfMs2ScansSortedByMass.begin(), arrayOfMs2ScansSortedByMass.end() );
 #ifdef TIMING_INFO
             gettimeofday (&t4e, NULL);
             t4total += timediff (t4, t4e);
@@ -417,6 +422,11 @@ namespace TaskLayer
                     std::to_string(getCommonParameters()->getTotalPartitions()) + "!";
                 ProgressEventArgs tempVar2(100, s1, thisId);
                 ReportProgress(&tempVar2, getVerbose() );
+
+                // Store the pointers for later deletion
+                for ( auto p =  peptideIndex.begin(); p != peptideIndex.end(); p++  ){
+                    peptides.emplace(*p);
+                }
                 delete indexEngine;
             }
             
@@ -715,6 +725,19 @@ namespace TaskLayer
         std::cout << "Calculate Residue numbers : " << timediff(t8, t8e) << " sec \n";
         std::cout << "Write results             : " << timediff(t9, t9e) << " sec \n";
 #endif
+        // Memory cleanup.
+        for ( auto p: proteinList ) {
+            delete p;
+        }
+        for ( auto m : Ms2Scans ) {
+            delete m;
+        }
+        for ( auto a: allPsms ) {
+            delete a;
+        }
+        for (auto p = peptides.begin(); p!= peptides.end() ; p++ ) {
+            delete (*p);
+        }
         for ( auto csengine : csengines ) {
             delete csengine;
         }
