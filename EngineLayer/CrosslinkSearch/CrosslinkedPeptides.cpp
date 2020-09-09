@@ -87,6 +87,7 @@ namespace EngineLayer
         {
             XLumap AllTheoreticalFragmentsLists;
             auto originalFragments = peptide->Fragment(dissociationType, FragmentationTerminus::Both);
+            
             for (auto position1 : modPos)
             {
                 for (auto position2 : modPos)
@@ -115,9 +116,9 @@ namespace EngineLayer
                             loopFragments.push_back(p);
                         }
                     }
+                    
                     // add N-terminal fragments containing the loop
                     std::unordered_map<int, Modification*> modDict;
-
                     if (!peptide->getAllModsOneIsNterminus().empty())
                     {
 #ifdef ORIG
@@ -204,7 +205,7 @@ namespace EngineLayer
 #endif
                         double combinedModMass = loopMass->getMonoisotopicMass().value();                        
                         for ( auto v: peptide->getAllModsOneIsNterminus()) {
-                            if ( std::get<0>(v) >= position1+1 ) {
+                            if ( std::get<0>(v) <= position1+1 ) {
                                 combinedModMass += std::get<1>(v)->getMonoisotopicMass().value();
                             }
                         }
@@ -229,7 +230,7 @@ namespace EngineLayer
                         }
 #endif
                         for ( auto mod: peptide->getAllModsOneIsNterminus() ) {
-                            if ( std::get<0>(mod) < position1+1 ) {
+                            if ( std::get<0>(mod) > position1+1 ) {
                                 modDict.emplace(std::get<0>(mod), std::get<1>(mod));
                             }
                         }
@@ -258,8 +259,8 @@ namespace EngineLayer
 #endif
                     auto tmp2 = peptideWithLoop->Fragment(dissociationType, FragmentationTerminus::Both);
                     for ( auto p : tmp2 ) {
-                        if ( p->TerminusFragment->Terminus == FragmentationTerminus::C &&
-                             p->TerminusFragment->AminoAcidPosition <= position1 ) {
+                        if ( p->TerminusFragment->Terminus == FragmentationTerminus::N &&
+                             p->TerminusFragment->AminoAcidPosition >= position2 ) {
                             loopFragments.push_back(p);
                         }
                     }
