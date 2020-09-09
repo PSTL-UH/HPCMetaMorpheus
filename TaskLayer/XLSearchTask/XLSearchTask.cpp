@@ -317,6 +317,7 @@ namespace TaskLayer
         ProseCreatedWhileRunning->append("The combined search database contained " + std::to_string(proteinList.size()) +
                                          " total entries including " + std::to_string(c1) + " contaminant sequences. ");
         
+        std::vector<CrosslinkSearchEngine *> csengines;
         for (int spectraFileIndex = 0; spectraFileIndex < (int)currentRawFileList.size(); spectraFileIndex++)
         {
             auto origDataFile = currentRawFileList[spectraFileIndex];
@@ -400,13 +401,14 @@ namespace TaskLayer
                 gettimeofday (&t6, NULL);
 #endif
                 std::vector<std::string> thisId2 = {"CrosslinkSearchEngine", taskId, "Individual Spectra Files", origDataFile};
-                CrosslinkSearchEngine tempVar(newPsms, arrayOfMs2ScansSortedByMass, peptideIndex, fragmentIndex, currentPartition,
-                                              combinedParams, crosslinker, getXlSearchParameters()->getRestrictToTopNHits(),
-                                              getXlSearchParameters()->getCrosslinkSearchTopNum(),
-                                              getXlSearchParameters()->getXlQuench_H2O(),
-                                              getXlSearchParameters()->getXlQuench_NH2(),
-                                              getXlSearchParameters()->getXlQuench_Tris(), thisId2, getVerbose());
-                tempVar.Run();
+                auto tempVar = new CrosslinkSearchEngine (newPsms, arrayOfMs2ScansSortedByMass, peptideIndex, fragmentIndex, currentPartition,
+                                                          combinedParams, crosslinker, getXlSearchParameters()->getRestrictToTopNHits(),
+                                                          getXlSearchParameters()->getCrosslinkSearchTopNum(),
+                                                          getXlSearchParameters()->getXlQuench_H2O(),
+                                                          getXlSearchParameters()->getXlQuench_NH2(),
+                                                          getXlSearchParameters()->getXlQuench_Tris(), thisId2, getVerbose());
+                csengines.push_back(tempVar);
+                tempVar->Run();
 #ifdef TIMING_INFO
                 gettimeofday (&t6e, NULL);
                 t6total += timediff (t6, t6e );
@@ -712,11 +714,14 @@ namespace TaskLayer
         std::cout << "FdrAnalysis               : " << timediff(t7, t7e) << " sec \n";
         std::cout << "Calculate Residue numbers : " << timediff(t8, t8e) << " sec \n";
         std::cout << "Write results             : " << timediff(t9, t9e) << " sec \n";
-#endif        
+#endif
+        for ( auto csengine : csengines ) {
+            delete csengine;
+        }
         delete myFileManager;
         //C# TO C++ CONVERTER TODO TASK: A 'delete crosslinker' statement was not added since crosslinker was
         //passed to a method or constructor. Handle memory management manually.
-        return myTaskResults;
+        return myTaskResults;        
     }
 
     void XLSearchTask::SingleFDRAnalysis(std::vector<CrosslinkSpectralMatch*> &items, std::vector<std::string> &taskIds)
@@ -1201,7 +1206,8 @@ namespace TaskLayer
             for (auto modification : alphaPeptide->getAllModsOneIsNterminus() )
             {
                 auto mod = new pepXML::mod_aminoacid_mass();
-                mod->mass(std::get<1>(modification)->getMonoisotopicMass().value());
+                auto thismod = std::get<1>(modification);
+                mod->mass(thismod->getMonoisotopicMass().value());
 
                 mod->position(std::get<0>(modification) - 1);
                 mods->push_back(*mod);
