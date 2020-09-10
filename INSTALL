@@ -1,4 +1,4 @@
-Compiling and installing the HPCMorpheus library follows standard Linux software practices, requiring a configure and a make step.
+Compiling and installing the HPCMetaMorpheus library follows standard Linux software practices, requiring a configure and a make step.
 
 The configure step will check for all required dependencies, which are as of right now the following libraries:
 
