@@ -1,4 +1,4 @@
-HPCMorpheus
+HPCMetaMorpheus
 
 This is a C++ version of the MetaMorpheus library, targetting HPC environments. 
 
