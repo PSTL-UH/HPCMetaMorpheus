@@ -14,6 +14,8 @@ SearchTask and CalibrationTasks are work in progress should be available in the 
 
 The syntax used by HPCMetaMorpheus follows closely the syntax of MetaMorpheus on Linux systems. Please refer to https://github.com/smith-chem-wisc/MetaMorpheus/wiki for details. An example for a Crosslink SearchTask would be:
 
+```
 ./HPCMetaMorpheus -t Task1XLSearchTask.toml -s Input.mgf -d database.fasta
+```
 
 HPCMetaMorpheus supports at the moment mgf and mzml Spectra files.  
