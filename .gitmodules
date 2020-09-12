@@ -1,3 +1,3 @@
 [submodule "mzlib"]
 	path = mzlib
-	url = git@github.com:PSTL-UH/HPCmzLib.git
+	url = https@github.com:PSTL-UH/HPCmzLib.git
