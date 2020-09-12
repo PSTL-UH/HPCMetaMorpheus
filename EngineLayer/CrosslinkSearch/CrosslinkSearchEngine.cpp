@@ -20,6 +20,7 @@
 #include <chrono>
 #endif
 
+#include "omp.h"
 
 using namespace EngineLayer::ModernSearch;
 using namespace MzLibUtil;
@@ -96,7 +97,6 @@ namespace EngineLayer
         
         MetaMorpheusEngineResults *CrosslinkSearchEngine::RunSpecific()
         {
-            double progress = 0;
             int oldPercentProgress = 0;
 #ifdef TIMING_INFO
             long long int indexedScoringTime=0, bestPeptideScoreNotchTime=0, findCrosslinkedPeptideTime=0, binsSearchTime=0;
@@ -111,12 +111,21 @@ namespace EngineLayer
             
             int ListOfSortedMs2Scanssize = (int) ListOfSortedMs2Scans.size();
             int PeptideIndexsize = PeptideIndex.size();
+
+#pragma omp parallel
+         {
+             double progress = 0;
+             std::map <int, CrosslinkSpectralMatch *> localinfo; // per thread
+             int tid = omp_get_thread_num();
+             int num_threads = omp_get_num_threads();
+             
+#pragma omp for schedule(guided)
             for (int scanIndex = 0; scanIndex < ListOfSortedMs2Scanssize; scanIndex++)
             {            
                 std::vector<unsigned char> scoringTable(PeptideIndexsize );
                 std::vector<int> idsOfPeptidesPossiblyObserved;
                 auto scan = ListOfSortedMs2Scans[scanIndex];
-                
+
 #ifdef TIMING_INFO
                 auto t0 = std::chrono::high_resolution_clock::now();
 #endif
@@ -187,29 +196,41 @@ namespace EngineLayer
                     // this scan might already have a hit from a different database partition; check to see if the score improves
                     if (GlobalCsms[scanIndex] == nullptr )
                     {
-                        GlobalCsms[scanIndex] = csm;
+                        localinfo[scanIndex] = csm;
                     }
-                    else if ( GlobalCsms[scanIndex]->getXLTotalScore() < csm->getXLTotalScore() )
+                    else if ( localinfo[scanIndex]->getXLTotalScore() < csm->getXLTotalScore() )
                     {
-                        delete GlobalCsms[scanIndex];
-                        GlobalCsms[scanIndex] = csm;
+                        delete localinfo[scanIndex];
+                        localinfo[scanIndex] = csm;
                     }
                 }
                 
-                // report search progress
-                progress++;
-                auto percentProgress = static_cast<int>((progress / ListOfSortedMs2Scans.size()) * 100);
-                
-                if (percentProgress > oldPercentProgress)
+                if ( tid == 0 ) 
                 {
-                    oldPercentProgress = percentProgress;
-                    ReportEngineProgress("Performing crosslink search... " + std::to_string(CurrentPartition) + "/" +
-                                         std::to_string(commonParameters->getTotalPartitions()), percentProgress);
+                    // report search progress
+                    progress++;
+                    auto percentProgress = static_cast<int>(((progress * omp_get_num_threads()) / ListOfSortedMs2Scanssize) * 100);                
+                    if (percentProgress > oldPercentProgress)
+                    {
+                        oldPercentProgress = percentProgress;
+                        ReportEngineProgress("Performing crosslink search... " + std::to_string(CurrentPartition) + "/" +
+                                             std::to_string(commonParameters->getTotalPartitions()), percentProgress);
+                    }
                 }
                 for ( auto p:  bestPeptideScoreNotchList ) {
                     delete p;
                 }                
             }
+#pragma omp critical
+            {
+                for ( auto p = localinfo.begin(); p!= localinfo.end(); p++ ) {
+                    auto key = p->first;
+                    auto value = p->second;
+                    GlobalCsms[key] = value;
+                }
+            }
+
+         } // omp parallel
 
 #ifdef TIMING_INFO
             auto txe = std::chrono::high_resolution_clock::now();
@@ -227,20 +248,6 @@ namespace EngineLayer
         {
             ModificationMotif *motif;
             ModificationMotif::TryGetMotif("X", &motif);
-#ifdef ORIG
-            TrisDeadEnd = new Modification(_originalId: "Tris Dead End", _modificationType: "Crosslink",
-                                           _locationRestriction: "Anywhere.", _target: motif,
-                                           _monoisotopicMass: privateCrosslinker->getDeadendMassTris());
-            H2ODeadEnd = new Modification(_originalId: "H2O Dead End", _modificationType: "Crosslink",
-                                          _locationRestriction: "Anywhere.", _target: motif,
-                                          _monoisotopicMass: privateCrosslinker->getDeadendMassH2O());
-            NH2DeadEnd = new Modification(_originalId: "NH2 Dead End", _modificationType: "Crosslink",
-                                          _locationRestriction: "Anywhere.", _target: motif,
-                                          _monoisotopicMass: privateCrosslinker->getDeadendMassNH2());
-            Loop = new Modification(_originalId: "Loop", _modificationType: "Crosslink",
-                                    _locationRestriction: "Anywhere.", _target: motif,
-                                    _monoisotopicMass: privateCrosslinker->getLoopMass());
-#endif
             std::string oId = "";
             std::string acc = "";
             std::string modType = "";
