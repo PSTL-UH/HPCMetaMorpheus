@@ -642,7 +642,6 @@ LIBOBJS
 EGREP
 GREP
 CXXCPP
-mzlib_dir
 mmorpheus_dir
 SET_MAKE
 OBJEXT
@@ -695,7 +694,6 @@ ac_user_opts='
 enable_option_checking
 enable_debug
 with_metamorpheus_dir
-with_mzlib_dir
 with_xsdcxx_dir
 with_gnu_ld
 enable_rpath
@@ -1335,7 +1333,6 @@ Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
   --with-metamorpheus-dir=dir     Main HPCMetaMorpheus directory (default=$PWD)
-  --with-mzlib-dir=dir            Main HPCmzLib directory (default=$PWD)
   --with-xsdcxx-dir=dir          xsdcxx directory (default=/usr/include)
   --with-gnu-ld           assume the C compiler uses GNU ld [default=no]
   --with-libxerces-c-prefix=DIR  search for libxerces-c in DIR/include and DIR/lib
@@ -2804,6 +2801,8 @@ $as_echo "no" >&6; }
 fi
 
 
+SUBCONFIGURE_FLAGS="CXX='$CXX' "
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking if want developer-level debugging flags" >&5
 $as_echo_n "checking if want developer-level debugging flags... " >&6; }
 # Check whether --enable-debug was given.
@@ -2812,11 +2811,13 @@ if test "${enable_debug+set}" = set; then :
 fi
 
 if test "$enable_debug" = yes ; then
+   SUBCONFIGURE_FLAGS="$SUBCONFIGURE_FLAGS --enable-debug"
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
    CXXFLAGS="-g -O0"
    CFLAGS="-g -O0"
 elif test "$enable_debug" = no ; then
+   SUBCONFIGURE_FLAGS="$SUBCONFIGURE_FLAGS --disable-debug"
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
    CXXFLAGS="-O3"
@@ -3028,93 +3029,6 @@ fi
      { $as_echo "$as_me:${as_lineno-$LINENO}: result: ${mmorpheus_dir}" >&5
 $as_echo "${mmorpheus_dir}" >&6; }
 
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for HPCmzLib main directory" >&5
-$as_echo_n "checking for HPCmzLib main directory... " >&6; }
-
-# Check whether --with-mzlib_dir was given.
-if test "${with_mzlib_dir+set}" = set; then :
-  withval=$with_mzlib_dir; mzlib_dir="${withval}"
-else
-  mzlib_dir=""
-fi
-
-         if test "x$mzlib_dir" = "x" ; then
-                mzlib_dir=$PWD
-         fi
-     { $as_echo "$as_me:${as_lineno-$LINENO}: result: ${mzlib_dir}" >&5
-$as_echo "${mzlib_dir}" >&6; }
-
-as_ac_File=`$as_echo "ac_cv_file_${mzlib_dir}/Proteomics/Proteomics.h" | $as_tr_sh`
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ${mzlib_dir}/Proteomics/Proteomics.h" >&5
-$as_echo_n "checking for ${mzlib_dir}/Proteomics/Proteomics.h... " >&6; }
-if eval \${$as_ac_File+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  test "$cross_compiling" = yes &&
-  as_fn_error $? "cannot check for file existence when cross compiling" "$LINENO" 5
-if test -r "${mzlib_dir}/Proteomics/Proteomics.h"; then
-  eval "$as_ac_File=yes"
-else
-  eval "$as_ac_File=no"
-fi
-fi
-eval ac_res=\$$as_ac_File
-	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
-$as_echo "$ac_res" >&6; }
-if eval test \"x\$"$as_ac_File"\" = x"yes"; then :
-
-else
-  as_fn_error $? "Couldn't find ${mzlib_dir}/Proteomics/Proteomics.h. HPCmzLib source code required to compile HPCMetaMorpheus" "$LINENO" 5
-fi
-
-
-as_ac_File=`$as_echo "ac_cv_file_${mzlib_dir}/lib/libmzlib.a" | $as_tr_sh`
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ${mzlib_dir}/lib/libmzlib.a" >&5
-$as_echo_n "checking for ${mzlib_dir}/lib/libmzlib.a... " >&6; }
-if eval \${$as_ac_File+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  test "$cross_compiling" = yes &&
-  as_fn_error $? "cannot check for file existence when cross compiling" "$LINENO" 5
-if test -r "${mzlib_dir}/lib/libmzlib.a"; then
-  eval "$as_ac_File=yes"
-else
-  eval "$as_ac_File=no"
-fi
-fi
-eval ac_res=\$$as_ac_File
-	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
-$as_echo "$ac_res" >&6; }
-if eval test \"x\$"$as_ac_File"\" = x"yes"; then :
-
-else
-  as_fn_error $? "Couldn't find ${mzlib_dir}/lib/libmzlib.a. MzLib has to be correctly compiled for HPCMetaMorpheus" "$LINENO" 5
-fi
-
-
-as_ac_File=`$as_echo "ac_cv_file_${mzlib_dir}/lib/libflashlfq.a" | $as_tr_sh`
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ${mzlib_dir}/lib/libflashlfq.a" >&5
-$as_echo_n "checking for ${mzlib_dir}/lib/libflashlfq.a... " >&6; }
-if eval \${$as_ac_File+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  test "$cross_compiling" = yes &&
-  as_fn_error $? "cannot check for file existence when cross compiling" "$LINENO" 5
-if test -r "${mzlib_dir}/lib/libflashlfq.a"; then
-  eval "$as_ac_File=yes"
-else
-  eval "$as_ac_File=no"
-fi
-fi
-eval ac_res=\$$as_ac_File
-	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
-$as_echo "$ac_res" >&6; }
-if eval test \"x\$"$as_ac_File"\" = x"yes"; then :
-
-else
-  as_fn_error $? "Couldn't find ${mzlib_dir}/lib/libflashlfq.a. MzLib has to be correctly compiled for HPCMetaMorpheus" "$LINENO" 5
-fi
 
 
 
@@ -3874,6 +3788,8 @@ fi
 
       if test "x$xsdcxx_dir" = "x" ; then
                   xsdcxx_dir=/usr/include
+      else
+         SUBCONFIGURE_FLAGS="$SUBCONFIGURE_FLAGS --with-xsdcxx-dir=${withval}"
       fi
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: ${xsdcxx_dir}" >&5
 $as_echo "${xsdcxx_dir}" >&6; }
@@ -5216,6 +5132,8 @@ fi
 
          if test "x$libxml2_dir" = "x" ; then
                 libxml2_dir=/usr/include/libxml2
+         else
+            SUBCONFIGURE_FLAGS="$SUBCONFIGURE_FLAGS --with-libxml2-dir=${withval}"
          fi
      { $as_echo "$as_me:${as_lineno-$LINENO}: result: ${libxml2_dir}" >&5
 $as_echo "${libxml2_dir}" >&6; }
@@ -5236,6 +5154,17 @@ fi
      CPPFLAGS="$save_CPPFLAGS"
 
 
+echo " "
+mzlib_dir="$mmorpheus_dir/mzlib"
+{ $as_echo "$as_me:${as_lineno-$LINENO}: running configure in mzlib directory in $mzlib_dir " >&5
+$as_echo "$as_me: running configure in mzlib directory in $mzlib_dir " >&6;}
+SUBCONFIGURE_FLAGS="$SUBCONFIGURE_FLAGS --with-mzlib-dir=$mzlib_dir"
+CONFIG_SHELL=$SHELL
+eval $CONFIG_SHELL ./mzlib/configure $SUBCONFIGURE_FLAGS
+
+echo " "
+{ $as_echo "$as_me:${as_lineno-$LINENO}: creating final output files" >&5
+$as_echo "$as_me: creating final output files" >&6;}
 
 #AC_CONFIG_FILES([Makefile.defs])
 

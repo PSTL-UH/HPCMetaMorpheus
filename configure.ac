@@ -10,14 +10,18 @@ m4_include([config/compiler_checks.m4])
 AC_PROG_CXX
 AC_PROG_MAKE_SET
 
+SUBCONFIGURE_FLAGS="CXX='$CXX' "
+
 AC_MSG_CHECKING([if want developer-level debugging flags])
 AC_ARG_ENABLE(debug,
   AC_HELP_STRING([Enable debug flags for compilation (default=yes)]))
 if test "$enable_debug" = yes ; then
+   SUBCONFIGURE_FLAGS="$SUBCONFIGURE_FLAGS --enable-debug"
    AC_MSG_RESULT([yes])
    CXXFLAGS="-g -O0"
    CFLAGS="-g -O0"
 elif test "$enable_debug" = no ; then   
+   SUBCONFIGURE_FLAGS="$SUBCONFIGURE_FLAGS --disable-debug"
    AC_MSG_RESULT([no]) 
    CXXFLAGS="-O3"
    CFLAGS="-O3"
@@ -58,28 +62,6 @@ AC_ARG_WITH(metamorpheus_dir,
      AC_SUBST(mmorpheus_dir)
 dnl ==================================================
 
-AC_MSG_CHECKING(for HPCmzLib main directory)
-AC_ARG_WITH(mzlib_dir,
- [  --with-mzlib-dir=dir            Main HPCmzLib directory (default=$PWD)],
-     mzlib_dir="${withval}", mzlib_dir="")
-         if test "x$mzlib_dir" = "x" ; then
-                mzlib_dir=$PWD
-         fi
-     AC_MSG_RESULT(${mzlib_dir})
-     AC_SUBST(mzlib_dir)
-dnl ==================================================
-dnl == sanity checks for Mzlib: we need source code and libraries
-AC_CHECK_FILE([${mzlib_dir}/Proteomics/Proteomics.h],
-              [],
-              [AC_MSG_ERROR(Couldn't find ${mzlib_dir}/Proteomics/Proteomics.h. HPCmzLib source code required to compile HPCMetaMorpheus)])
-
-AC_CHECK_FILE([${mzlib_dir}/lib/libmzlib.a],
-              [],
-              [AC_MSG_ERROR(Couldn't find ${mzlib_dir}/lib/libmzlib.a. MzLib has to be correctly compiled for HPCMetaMorpheus)])
-
-AC_CHECK_FILE([${mzlib_dir}/lib/libflashlfq.a],
-              [],
-              [AC_MSG_ERROR(Couldn't find ${mzlib_dir}/lib/libflashlfq.a. MzLib has to be correctly compiled for HPCMetaMorpheus)])
 
 
 # Checks for header files.
@@ -112,6 +94,8 @@ AC_ARG_WITH(xsdcxx_dir,
       xsdcxx_dir="${withval}", xsdcxx_dir="")
       if test "x$xsdcxx_dir" = "x" ; then
                   xsdcxx_dir=/usr/include
+      else
+         SUBCONFIGURE_FLAGS="$SUBCONFIGURE_FLAGS --with-xsdcxx-dir=${withval}"
       fi
       AC_MSG_RESULT(${xsdcxx_dir})
 
@@ -138,6 +122,8 @@ AC_ARG_WITH(libxml2_dir,
      libxml2_dir="${withval}", libxml2_dir="")
          if test "x$libxml2_dir" = "x" ; then
                 libxml2_dir=/usr/include/libxml2
+         else
+            SUBCONFIGURE_FLAGS="$SUBCONFIGURE_FLAGS --with-libxml2-dir=${withval}"
          fi
      AC_MSG_RESULT(${libxml2_dir})
 
@@ -153,6 +139,15 @@ AC_ARG_WITH(libxml2_dir,
      AC_SUBST(libxml2_dir)
 dnl ==================================================
 
+echo " " 
+mzlib_dir="$mmorpheus_dir/mzlib"
+AC_MSG_NOTICE(running configure in mzlib directory in $mzlib_dir )
+SUBCONFIGURE_FLAGS="$SUBCONFIGURE_FLAGS --with-mzlib-dir=$mzlib_dir"
+CONFIG_SHELL=$SHELL
+eval $CONFIG_SHELL ./mzlib/configure $SUBCONFIGURE_FLAGS
+
+echo " "
+AC_MSG_NOTICE(creating final output files)
 
 #AC_CONFIG_FILES([Makefile.defs])
 AC_SUBST(CXX)

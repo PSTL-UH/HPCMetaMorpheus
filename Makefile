@@ -10,11 +10,13 @@ include Makefile.defs
 
 
 all:    
+	cd mzlib ; $(MAKE) ; cd ..
 	cd EngineLayer ; $(MAKE) ; cd ..
 	cd TaskLayer ; $(MAKE) ; cd ..
 	cd CMD ; $(MAKE) ; cd ..
 
 clean:  
+	cd mzlib ; $(MAKE) clean ; cd ..
 	cd EngineLayer ; $(MAKE) clean ; cd ..
 	cd TaskLayer ; $(MAKE) clean ; cd ..
 	cd CMD ; $(MAKE) clean ; cd ..
