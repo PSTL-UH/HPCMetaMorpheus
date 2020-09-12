@@ -35,7 +35,7 @@ CFLAGS      = @CFLAGS@
 
 
 CXX         = @CXX@              
-CXXFLAGS    = @CXXFLAGS@ -I$(MMORPHEUS_INC_DIR) -I$(MZLIB_INC_DIR) -I$(MZLIB_DIR) -I$(MZLIB_DIR)/MzLibUtil -I$(XSD_INC_DIR)/ -I$(XSD_INC_DIR)/xercesc -I@libxml2_dir@
+CXXFLAGS    = @CXXFLAGS@ -fopenmp -I$(MMORPHEUS_INC_DIR) -I$(MZLIB_INC_DIR) -I$(MZLIB_DIR) -I$(MZLIB_DIR)/MzLibUtil -I$(XSD_INC_DIR)/ -I$(XSD_INC_DIR)/xercesc -I@libxml2_dir@
 CXXLOCALFLAGS = -DNDEBUG
-LDFLAGS     = -L$(MMORPHEUS_LIB_DIR) -lmmorpheus $(MZLIB_LIB) $(FLASHLFQ_LIB) -lz -lstdc++fs -L$(XSD_LIB_DIR) $(XSD_LIB) -lxml2
+LDFLAGS     = fopenmp -L$(MMORPHEUS_LIB_DIR) -lmmorpheus $(MZLIB_LIB) $(FLASHLFQ_LIB) -lz -lstdc++fs -L$(XSD_LIB_DIR) $(XSD_LIB) -lxml2
 
