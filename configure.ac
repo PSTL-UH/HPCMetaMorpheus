@@ -10,7 +10,7 @@ m4_include([config/compiler_checks.m4])
 AC_PROG_CXX
 AC_PROG_MAKE_SET
 
-SUBCONFIGURE_FLAGS="CXX='$CXX' "
+SUBCONFIGURE_FLAGS="CXX=$CXX "
 
 AC_MSG_CHECKING([if want developer-level debugging flags])
 AC_ARG_ENABLE(debug,
@@ -36,10 +36,8 @@ AC_LANG_PUSH([C++])
 GET_CXX_COMPILER_VENDOR(compiler_vendor)
 if test "$compiler_vendor" = "gnu" ; then
   CXXFLAGS="$CXXFLAGS -Wno-delete-non-virtual-dtor -std=gnu++17"
-  CPPFLAGS="$CXXFLAGS"
 elif test "$compiler_vendor" = "intel" ; then
   CXXFLAGS="$CXXFLAGS -std=c++17"
-  CPPFLAGS="$CXXFLAGS"
 fi
 
 PROG_CXX_CXX17_HELPER([],[have_cxx17_support])
@@ -62,22 +60,14 @@ AC_ARG_WITH(metamorpheus_dir,
      AC_SUBST(mmorpheus_dir)
 dnl ==================================================
 
-
-
-# Checks for header files.
-AC_CHECK_HEADER([zlib.h],
-[],
-[AC_MSG_ERROR(Couldn't find zlib.h)])
-
-AC_CHECK_HEADER([math.h],
-[],
-[AC_MSG_ERROR(Couldn't find math.h)])
 AC_CHECK_HEADER([boost/math/special_functions/gamma.hpp],
 [],
 [AC_MSG_ERROR(Couldn't find boost math library)])
-
-# Checks for typedefs, structures, and compiler characteristics.
 AC_CHECK_HEADER_STDBOOL
+
+AC_LANG_POP([C++])
+AC_LANG_PUSH([C])
+# Checks for typedefs, structures, and compiler characteristics.
 AC_C_INLINE
 AC_CHECK_TYPES([ptrdiff_t])
 
@@ -87,6 +77,17 @@ AC_FUNC_MALLOC
 AC_FUNC_REALLOC
 AC_CHECK_FUNCS([fesetround floor pow sqrt])
 
+# Checks for header files.
+AC_CHECK_HEADER([zlib.h],
+[],
+[AC_MSG_ERROR(Couldn't find zlib.h)])
+
+AC_CHECK_HEADER([math.h],
+[],
+[AC_MSG_ERROR(Couldn't find math.h)])
+
+AC_LANG_POP([C])
+AC_LANG_PUSH([C++])
 dnl ==================================================
 AC_MSG_CHECKING(for xsdcxx)
 AC_ARG_WITH(xsdcxx_dir,
@@ -114,7 +115,6 @@ dnl ==================================================
 
 AX_XERCESC
 
-
 dnl ==================================================
 AC_MSG_CHECKING(for libxml2)
 AC_ARG_WITH(libxml2_dir,
@@ -139,13 +139,6 @@ AC_ARG_WITH(libxml2_dir,
      AC_SUBST(libxml2_dir)
 dnl ==================================================
 
-echo " " 
-mzlib_dir="$mmorpheus_dir/mzlib"
-AC_MSG_NOTICE(running configure in mzlib directory in $mzlib_dir )
-SUBCONFIGURE_FLAGS="$SUBCONFIGURE_FLAGS --with-mzlib-dir=$mzlib_dir"
-CONFIG_SHELL=$SHELL
-eval $CONFIG_SHELL ./mzlib/configure $SUBCONFIGURE_FLAGS
-
 echo " "
 AC_MSG_NOTICE(creating final output files)
 
@@ -155,3 +148,16 @@ AC_SUBST(CC)
 AC_SUBST(CFLAGS)
 AC_SUBST(CXXFLAGS)
 AC_OUTPUT(Makefile.defs)
+
+dnl ==================================================
+dnl configure mzlib subdirectory
+
+echo " " 
+mzlib_dir="$mmorpheus_dir/mzlib"
+mmorpheus_lib_dir="$mmorpheus_dir/lib"
+AC_MSG_NOTICE(running configure in mzlib directory in $mzlib_dir )
+SUBCONFIGURE_FLAGS="$SUBCONFIGURE_FLAGS --with-mzlib-dir=$mzlib_dir --with-mzlib-lib-dir=$mmorpheus_lib_dir"
+eval cd ./mzlib && ./configure $SUBCONFIGURE_FLAGS && cd -
+
+dnl done configuring mzlib
+dnl ==================================================
