@@ -621,10 +621,11 @@ namespace TaskLayer
         {
             int emptyProteinEntriesForThisDb = 0;
             std::unordered_map<std::string, Modification*> unknownModifications;
-            proteinList = LoadProteinDb(db->getFilePath(), searchTarget, decoyType,
-                                        localizeableModificationTypes, db->getIsContaminant(),
-                                        unknownModifications, emptyProteinEntriesForThisDb,
-                                        commonParameters);
+            auto dbProteinList = LoadProteinDb(db->getFilePath(), searchTarget, decoyType,
+                                               localizeableModificationTypes, db->getIsContaminant(),
+                                               unknownModifications, emptyProteinEntriesForThisDb,
+                                               commonParameters);
+            proteinList.insert(proteinList.end(), dbProteinList.begin(), dbProteinList.end() );
             emptyProteinEntries += emptyProteinEntriesForThisDb;
         }
         if (proteinList.empty())
