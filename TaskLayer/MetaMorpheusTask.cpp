@@ -230,8 +230,9 @@ namespace TaskLayer
                 ms2Scans.push_back(x);
             }
         }
-        
-        std::vector<std::vector<Ms2ScanWithSpecificMass*>> scansWithPrecursors(ms2Scans.size());
+
+        int ms2Scanssize = (int)ms2Scans.size();
+        std::vector<std::vector<Ms2ScanWithSpecificMass*>> scansWithPrecursors(ms2Scanssize);
         
 #ifdef ORIG
         //ParallelOptions *tempVar = new ParallelOptions();
@@ -239,7 +240,8 @@ namespace TaskLayer
         //Parallel::ForEach(Partitioner::Create(0, ms2Scans.size()), tempVar, [&] (partitionRange, loopState)       {
         //        for (int i = partitionRange::Item1; i < partitionRange::Item2; i++)
 #endif
-        for ( int i = 0; i < (int)ms2Scans.size(); i++ ) {
+        #pragma omp parallel for 
+        for ( int i = 0; i < ms2Scanssize; i++ ) {
             
             MsDataScan *ms2scan = ms2Scans[i];
             

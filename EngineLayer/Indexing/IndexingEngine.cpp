@@ -8,6 +8,8 @@
 #include "IndexingResults.h"
 #include "bankersrounding.h"
 
+#include "omp.h"
+
 using namespace Proteomics;
 using namespace Proteomics::Fragmentation;
 using namespace Proteomics::ProteolyticDigestion;
@@ -95,37 +97,45 @@ namespace EngineLayer
 
         MetaMorpheusEngineResults *IndexingEngine::RunSpecific()
         {
-            double progress = 0;
             int oldPercentProgress = 0;
             ReportEngineProgress("Digesting proteins...", oldPercentProgress);            
 
             auto result = new IndexingResults(this);
             std::vector<PeptideWithSetModifications*>& peptidesSortedByMass = result->getPeptideIndex();            
-#ifdef ORIG
-            //ParallelOptions *tempVar = new ParallelOptions();
-            //tempVar->MaxDegreeOfParallelism = commonParameters->getMaxThreadsToUsePerFile();
-            //Parallel::ForEach(Partitioner::Create(0, ProteinList.size()), tempVar, [&] (range, loopState)  {
-            //        std::vector<PeptideWithSetModifications*> localPeptides;
-#endif
+            int ProteinListsize  = (int) ProteinList.size();
+            
             // digest database
-            for ( int i = 0; i < (int)ProteinList.size(); i++ ) {
-                progress++;
-                std::vector<Modification*> *fixedmodis = const_cast<std::vector<Modification*>*> (&FixedModifications);
-                std::vector<Modification*> *varmodis = const_cast<std::vector<Modification*>*>(&VariableModifications);
-                auto localPeptides = ProteinList[i]->Digest(commonParameters->getDigestionParams(),
-                                                            *fixedmodis, *varmodis);
-
-                peptidesSortedByMass.insert(peptidesSortedByMass.end(), localPeptides.begin(), localPeptides.end() );
-
-                auto percentProgress = static_cast<int>((progress / ProteinList.size()) * 100);                        
-                if (percentProgress > oldPercentProgress)
-                {
-                    oldPercentProgress = percentProgress;
-                    ReportEngineProgress("Digesting proteins...", percentProgress);
+#pragma omp parallel
+            {
+                int tid = omp_get_thread_num();
+                int num_threads = omp_get_num_threads();
+                double progress = 0;
+            
+#pragma omp for schedule(guided)
+                for ( int i = 0; i < ProteinListsize; i++ ) {
+                    progress++;
+                    std::vector<Modification*> *fixedmodis = const_cast<std::vector<Modification*>*> (&FixedModifications);
+                    std::vector<Modification*> *varmodis = const_cast<std::vector<Modification*>*>(&VariableModifications);
+                    auto localPeptides = ProteinList[i]->Digest(commonParameters->getDigestionParams(),
+                                                                *fixedmodis, *varmodis);
+                    
+#pragma omp critical
+                    {
+                        peptidesSortedByMass.insert(peptidesSortedByMass.end(), localPeptides.begin(), localPeptides.end() );
+                    }
+                    
+                    if ( tid == 0 )
+                    {
+                        auto percentProgress = static_cast<int>(((progress* num_threads) / ProteinListsize) * 100);                        
+                        if (percentProgress > oldPercentProgress)
+                        {
+                            oldPercentProgress = percentProgress;
+                            ReportEngineProgress("Digesting proteins...", percentProgress);
+                        }
+                    }
                 }
             }
-            //});
-            
+                
             // sort peptides by mass
             std::sort(peptidesSortedByMass.begin(), peptidesSortedByMass.end(), [&]
                       (PeptideWithSetModifications* l, PeptideWithSetModifications* r) {
@@ -147,43 +157,75 @@ namespace EngineLayer
             }
             
             // populate fragment index
-            progress = 0;
             oldPercentProgress = 0;
             ReportEngineProgress("Fragmenting peptides...", oldPercentProgress);
-            for (int peptideId = 0; peptideId < (int) peptidesSortedByMass.size(); peptideId++)
+
+            int peptidesSortedByMasssize = (int) peptidesSortedByMass.size();
+
+#pragma omp parallel
             {
-                auto t = peptidesSortedByMass[peptideId]->Fragment(commonParameters->getDissociationType(),
-                                        commonParameters->getDigestionParams()->getFragmentationTerminus());
-                std::vector<double> fragmentMasses;
-                for ( auto m: t ) {
-                    fragmentMasses.push_back(m->NeutralMass);
-                    delete m;
-                }
-                for (auto theoreticalFragmentMass : fragmentMasses)
+                int tid = omp_get_thread_num();
+                int num_threads = omp_get_num_threads();
+                std::map<int, std::vector<int>> local_fragmentIndex;
+                double progress = 0;
+
+#pragma omp for schedule(guided)
+                for (int peptideId = 0; peptideId < peptidesSortedByMasssize; peptideId++)
                 {
-                    if (theoreticalFragmentMass < MaxFragmentSize && theoreticalFragmentMass > 0)
+                    auto t = peptidesSortedByMass[peptideId]->Fragment(commonParameters->getDissociationType(),
+                                           commonParameters->getDigestionParams()->getFragmentationTerminus());
+                    std::vector<double> fragmentMasses;
+                    for ( auto m: t ) {
+                        fragmentMasses.push_back(m->NeutralMass);
+                        delete m;
+                    }
+                    for (auto theoreticalFragmentMass : fragmentMasses)
                     {
-                        int fragmentBin = static_cast<int>(BankersRounding::round(theoreticalFragmentMass * FragmentBinsPerDalton));
-                        
-                        if (fragmentIndex[fragmentBin].empty())
+                        if (theoreticalFragmentMass < MaxFragmentSize && theoreticalFragmentMass > 0)
                         {
-                            fragmentIndex[fragmentBin] = {peptideId};
+                            int fragmentBin = static_cast<int>(BankersRounding::round(theoreticalFragmentMass * FragmentBinsPerDalton));
+                            
+                            if ( local_fragmentIndex.find(fragmentBin) == local_fragmentIndex.end())
+                            {
+                                local_fragmentIndex[fragmentBin] = {peptideId};
+                            }
+                            else
+                            {
+                                local_fragmentIndex[fragmentBin].push_back(peptideId);
+                            }
                         }
-                        else
+                    }
+                    
+                    if ( tid == 0 )
+                    {
+                        progress++;
+                        auto percentProgress = static_cast<int>(((progress* num_threads) / peptidesSortedByMasssize) * 100);
+                        if (percentProgress > oldPercentProgress)
                         {
-                            fragmentIndex[fragmentBin].push_back(peptideId);
+                            oldPercentProgress = percentProgress;
+                            ReportEngineProgress("Fragmenting peptides...", oldPercentProgress);
                         }
                     }
                 }
-                
-                progress++;
-                auto percentProgress = static_cast<int>((progress / peptidesSortedByMass.size()) * 100);
-                if (percentProgress > oldPercentProgress)
+
+#pragma omp critical
                 {
-                    oldPercentProgress = percentProgress;
-                    ReportEngineProgress("Fragmenting peptides...", oldPercentProgress);
+                    for ( auto p = local_fragmentIndex.begin(); p != local_fragmentIndex.end() ; p++ ) {
+                        int key = p->first;
+                        fragmentIndex[key].insert(fragmentIndex[key].end(), p->second.begin(), p->second.end() );
+                    }
                 }
             }
+
+            // fragmentIndex needs to be sorted to match the result of the sequential case. Not sure whether it is
+            // required for correctness though.
+#pragma omp parallel for schedule(guided)
+            for ( int i = 0; i < fragmentIndex.size(); i++  ) {
+                if (!fragmentIndex[i].empty() ) {
+                    std::sort(fragmentIndex[i].begin(), fragmentIndex[i].end() );
+                }
+            }
+
             
             std::vector<std::vector<int>>& precursorIndex = result->getPrecursorIndex();
             
@@ -202,10 +244,12 @@ namespace EngineLayer
                     throw MetaMorpheusException(s);
                 }
 
-                progress = 0;
+                double progress = 0;
                 oldPercentProgress = 0;
                 ReportEngineProgress ("Creating precursor index...", oldPercentProgress);
-                for (int i = 0; i < (int)peptidesSortedByMass.size(); i++)
+
+                // no OpenMP directives for this loop because of the break statement below.
+                for (int i = 0; i < peptidesSortedByMasssize; i++)
                 {
                     double mass = peptidesSortedByMass[i]->getMonoisotopicMass();
                     if (!std::isnan(mass))
@@ -226,8 +270,9 @@ namespace EngineLayer
                             precursorIndex[precursorBin].push_back(i);
                         }
                     }
+
                     progress++;
-                    auto percentProgress = static_cast<int>((progress / peptidesSortedByMass.size()) * 100);
+                    auto percentProgress = static_cast<int>(((progress) / peptidesSortedByMasssize) * 100);
                     if (percentProgress > oldPercentProgress)
                     {
                         oldPercentProgress = percentProgress;
@@ -235,7 +280,7 @@ namespace EngineLayer
                     }
                 }
             }
-            
+
             return result;
         }
     }
