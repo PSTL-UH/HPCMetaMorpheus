@@ -49,7 +49,7 @@ namespace Test
             std::string line;
             while ( getline(fs, line ) ) {
                 resultsPath.push_back(line);
-                std::cout << line << std::endl;
+                //std::cout << line << std::endl;
             }
         }
         else {
