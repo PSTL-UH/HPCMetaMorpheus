@@ -4,7 +4,7 @@
 #include "OkBin.h"
 #include "MyInfo.h"
 
-#include "Math.h"
+#include "MzLibMath.h"
 
 using namespace MassSpectrometry;
 using namespace Proteomics::Fragmentation;
