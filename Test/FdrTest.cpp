@@ -44,7 +44,7 @@ using namespace Proteomics::ProteolyticDigestion;
 #include "UsefulProteomicsDatabases/UsefulProteomicsDatabases.h"
 using namespace UsefulProteomicsDatabases;
 
-#include "Assert.h"
+#include "MzLibAssert.h"
 #include <filesystem>
 #include <iostream>
 #include <fstream>
