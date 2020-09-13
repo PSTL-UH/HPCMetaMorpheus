@@ -2,7 +2,7 @@
 #include "LabeledDataPoint.h"
 #include "../MetaMorpheusEngine.h"
 #include "../PeptideSpectralMatch.h"
-#include "Math.h"
+#include "MzLibMath.h"
 
 #include "Chemistry/ClassExtensions.h"
 using namespace Chemistry;

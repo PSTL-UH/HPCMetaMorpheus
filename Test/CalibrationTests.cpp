@@ -10,7 +10,7 @@ using namespace TaskLayer;
 #include "UsefulProteomicsDatabases/UsefulProteomicsDatabases.h"
 using namespace UsefulProteomicsDatabases;
 
-#include "Assert.h"
+#include "MzLibAssert.h"
 #include <experimental/filesystem>
 #include <iostream>
 #include <fstream>

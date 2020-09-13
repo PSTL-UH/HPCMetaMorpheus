@@ -12,7 +12,7 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
-#include "Assert.h"
+#include "MzLibAssert.h"
 
 using namespace EngineLayer;
 using namespace MzLibUtil;

@@ -21,7 +21,7 @@ using namespace UsefulProteomicsDatabases;
 #include "../MzML/Mzml.h"
 #include "../MzML/MzmlMethods.h"
 
-#include "Assert.h"
+#include "MzLibAssert.h"
 #include <experimental/filesystem>
 
 

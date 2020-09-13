@@ -14,9 +14,7 @@ An example configuration line could look as follows:
 make -j 8
 ```
 
-The software has been tested with gcc 8.2, gcc 10.2, and intel icpc 19.0.5 compilers, on multiple Linux systems (Redhat 7.6, OpenSuSe 15.2, Arch Linux)
-Note: since this is still work in progres, the library is compiled by default with debug symbols and without optimization. For any form of performance evaluation,
-the user has to disable these setting by using the ```--disable-debug``` option during the configure step. Configuration values and options might change in the future.
+The software has been tested with gcc 8.2, gcc9.3, gcc 10.2, and intel icpc 19.0.5 compilers, on multiple Linux systems (Redhat 7.6, OpenSuSe 15.2, Arch Linux, Ubuntu). Note: since this is still work in progres, the library is compiled by default with debug symbols and without optimization. For any form of performance evaluation, the user has to disable these setting by using the ```--disable-debug``` option during the configure step. Configuration options and default values might change in the future.
 
 The HPCMzlib library is incorporated as a git submodule in HPCMetaMorpheus. There are a few items to consider when using git submodules, the most important ones being that is not sufficient to simply `git clone <GIT_URL_REPO>` a repository.  Instead, you must add the `--recursive` option to your clone command, e.g.:
 
