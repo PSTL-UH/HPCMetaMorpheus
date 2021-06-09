@@ -13,8 +13,10 @@ namespace EngineLayer
     namespace CrosslinkSearch
     {
         
-        CrosslinkSpectralMatch::CrosslinkSpectralMatch(PeptideWithSetModifications *theBestPeptide, int notch, double score, int scanIndex,
-                                                       Ms2ScanWithSpecificMass *scan, DigestionParams *digestionParams,
+        CrosslinkSpectralMatch::CrosslinkSpectralMatch(PeptideWithSetModifications *theBestPeptide, int notch,
+                                                       double score, int scanIndex,
+                                                       Ms2ScanWithSpecificMass *scan,
+                                                       DigestionParams *digestionParams,
                                                        std::vector<MatchedFragmentIon*> &matchedFragmentIons) :
             PeptideSpectralMatch(theBestPeptide, notch, score, scanIndex, scan, digestionParams, matchedFragmentIons)
         {
@@ -121,14 +123,11 @@ namespace EngineLayer
             privateCrossType = value;
         }
         
-        std::vector<int> CrosslinkSpectralMatch::GetPossibleCrosslinkerModSites(std::vector<char> &crosslinkerModSites, PeptideWithSetModifications *peptide)
+        std::vector<int> CrosslinkSpectralMatch::GetPossibleCrosslinkerModSites(std::vector<char> &crosslinkerModSites,
+                                                                                PeptideWithSetModifications *peptide)
         {
             std::vector<int> possibleXlPositions;
-#ifdef ORIG
-            bool wildcard = crosslinkerModSites.Any([&] (std::any p)   {
-                    return p == 'X';
-                });
-#endif
+
             bool wildcard =false;
             for ( char p: crosslinkerModSites ){
                 if (  p == 'X' ) {
@@ -476,6 +475,304 @@ namespace EngineLayer
             AddMatchedIonsData(s, psm);
             return s;
         }
+
+
+        int CrosslinkSpectralMatch::Pack(char *buf, size_t &buf_len,
+                                         const std::vector<CrosslinkSpectralMatch *> &csmVec)
+        {
+            size_t pos = 0;
+            int ret;
+
+            for ( auto csm: csmVec ) {
+                size_t len = buf_len - pos;
+                ret = CrosslinkSpectralMatch::Pack_internal(buf+pos, len, csm);
+                if ( ret == -1 ) {
+                    buf_len = pos + len;
+                    return ret;
+                }
+                pos += len;
+                auto betaPeptide = csm->getBetaPeptide();
+                if ( betaPeptide != nullptr ) {
+                    len = buf_len - pos;
+                    ret = CrosslinkSpectralMatch::Pack_internal(buf+pos, len, betaPeptide);
+                    if ( ret == -1 ) {
+                        buf_len = pos + len;
+                        return ret;
+                    }
+                    pos += len;                    
+                }
+            }
+            buf_len = pos;
+            return pos;
+        }
+
+        int CrosslinkSpectralMatch::Pack(char *buf, size_t &buf_len, CrosslinkSpectralMatch *csm)
+        {
+            size_t pos = 0;
+            int ret;
+
+            size_t len = buf_len - pos;
+            ret = CrosslinkSpectralMatch::Pack_internal(buf+pos, len, csm);
+            if ( ret == -1 ) {
+                buf_len = pos + len;
+                return ret;
+            }
+            pos += len;
+            auto betaPeptide = csm->getBetaPeptide();
+            if ( betaPeptide != nullptr ) {
+                len = buf_len - pos;
+                ret = CrosslinkSpectralMatch::Pack_internal(buf+pos, len, betaPeptide);
+                if ( ret == -1 ) {
+                    buf_len = pos + len;
+                    return ret;
+                }
+                pos += len;                    
+            }
+            buf_len = pos;
+            return pos;            
+        }
+        
+        int CrosslinkSpectralMatch::Pack_internal(char *buf, size_t &buf_len, CrosslinkSpectralMatch *csm)
+        {
+            size_t total_len = 0;
+            size_t pos = 0;
+            std::stringstream output;
+
+            auto mFrIons = csm->getMatchedFragmentIons ();
+            auto dp = csm->digestionParams;
+            auto uMapPep = csm->getPeptidesToMatchingFragments();
+            std::vector<int> lPositions  = csm->getLinkPositions;;
+            std::vector<int> xlRanks = csm->getXlRank();
+            bool has_beta_peptide = csm->getBetaPeptide != nullptr;
+            
+            // line 1
+            output << csm->getNotch().has_value() << "\t";
+            if ( csm->getNotch().has_value() ) {
+                output << csm->getNotch().value() << "\t";
+            }
+            else {
+                output << "-\t";
+            }
+            output << csm->getXLTotalScore() << "\t" <<
+                csm->getDeltaScore() << "\t" <<
+                csm->getScanIndex() << "\t" <<
+                csm->getXlProteinPos() << "\t" <<
+                csm->getRunnerUpScore() << "\t";
+            PsmCrossType ctype = csm->getCrossType();
+            output << PsmCrossTypeToString(ctype) << "\t" <<
+                csm->getMatchedFragmentIons().size() << "\t" << 
+                lPositions.size() << "\t" <<
+                xlRanks.size() << "\t" <<
+                has_beta_peptide << std::endl;
+                
+            std::string s = output.str();
+            total_len += s.length();
+            if ( total_len > buf_len ) {
+                buf_len = total_len;
+                return -1;
+            }
+            memcpy ( buf, s.c_str(), total_len );
+            pos = total_len;
+
+            //line 2: LinkPositions
+            output.str("");
+            for ( auto lp: lPositions ) {
+                output << lp << "\t";
+            }
+            output << std::endl;
+            
+            s = output.str();
+            total_len += s.length();
+            if ( total_len > buf_len ) {
+                buf_len = total_len;
+                return -1;
+            }
+            memcpy ( buf+pos, s.c_str(), total_len );
+            pos += total_len;
+            
+            //line 3: xlRank
+            output.str("");
+            for ( auto xl: xlRanks) {
+                output << xl << "\t";
+            }
+            output << std::endl;
+
+            s = output.str();
+            total_len += s.length();
+            if ( total_len > buf_len ) {
+                buf_len = total_len;
+                return -1;
+            }
+            memcpy ( buf+pos, s.c_str(), total_len );
+            pos += total_len;
+            
+            //line 4: DigestionParams();
+            s = dp->ToString() + "\n";
+            total_len += s.length();
+            if ( total_len > buf_len ) {
+                buf_len = total_len;
+                return -1;
+            }
+            memcpy ( buf+pos, s.c_str(), s.length() );
+            pos = total_len;
+            
+            //line 5-9: PeptideWithSetModifications;
+            //Assuming right now only a single PeptideWithSetModifications
+            if ( uMapPep.size() != 1 ) {
+                std::cout << "CrosslinkSpectralMatch::Pack: Error - unordered_map has more than one entry!\n";
+            }
+            auto pep = std::get<0>(*uMapPep.begin());
+            size_t tmp_len = buf_len - total_len;
+            int ret = PeptideWithSetModifications::Pack(buf+pos, tmp_len, pep );
+            if ( ret == -1 ) {
+                buf_len += tmp_len - (buf_len - total_len);
+                return -1;
+            }
+            total_len += tmp_len;
+            pos += tmp_len;
+            
+            //line 10-x: one line for each MatchedFragmentIon
+            for ( auto i=0; i< mFrIons.size(); i++ ) {
+                tmp_len = buf_len - total_len;
+                ret = MatchedFragmentIon::Pack ( buf+pos, tmp_len, mFrIons[i]);
+                if ( ret == -1 ) {
+                    buf_len += tmp_len - (buf_len - total_len);
+                    return -1;
+                }
+                total_len += tmp_len;
+                pos += tmp_len;
+            }
+            
+            return (int)total_len;
+        }
+
+        void CrosslinkSpectralMatch::Unpack (char *buf, size_t buf_len, size_t &len,
+                                             std::vector<CrosslinkSpectralMatch*> &pepVec,
+                                             std::vector<Ms2ScanWithSpecificMass*> &ms2Scans,
+                                             int count)
+        {
+            std::string input_buf (buf);
+            std::vector<std::string> lines = StringHelper::split(input_buf, '\n');
+
+            size_t total_len=0;
+            int counter=0;
+            for (auto  i=0; i < lines.size();  ) {
+                size_t tmp_len;
+                CrosslinkSpectralMatch *pep;
+                bool has_beta_peptide=false;
+                CrosslinkSpectralMatch::Unpack(lines, i, tmp_len, &pep, ms2Scans, has_beta_peptide );
+                total_len += tmp;
+                pepVec.push_back(pep);
+                if ( has_beta_peptide ) {
+                    CrosslinkSpectralMatch *beta_pep;
+                    CrosslinkSpectralMatch::Unpack(lines, i, tmp_len, &beta_pep, ms2Scans, has_beta_peptide );
+                    pep->setBetaPeptide(beta_pep);
+                    total_len += tmp_len;
+                }
+                counter ++;
+                if ( counter == count ) break;
+            }
+            len = total_len;
+        }
+
+        void CrosslinkSpectralMatch::Unpack (char *buf, size_t buf_len, size_t &len,
+                                             CrosslinkSpectralMatch** newCsm,
+                                             std::vector<Ms2ScanWithSpecificMass*> &ms2Scans )
+        {
+            std::string input(buf);
+            std::vector<std::string> lines = StringHelper::split(input, '\n');
+            int index=0;
+            if ( lines.size() < 8 ) {
+                std::cout << "CrosslinkSpectralMatch::Unpack : input does not contains enough information to " <<
+                    "reconstruct the CrosslinkSpectralMatch. " << std::endl;
+                return;
+            }
+            bool has_beta_peptide=false;            
+            CrosslinkSpectralMatch::Unpack_internal ( lines, index, len, newCsm, ms2Scans, has_beta_peptide );
+            if ( has_beta_peptide) {
+                CrosslinkSpectralMatch* beta_pep;
+                size_t tmp_len=0;
+                CrosslinkSpectralMatch::Unpack_internal ( lines, index, len, &beta_pep, ms2Scans, has_beta_peptide );
+                newCsm->setBetaPeptide(beta_pep);
+                len += temp_len;
+            }            
+        }
+
+        void CrosslinkSpectralMatch::Unpack_internal (std::vector<std::string> &input,
+                                                      int &index, size_t &len,
+                                                      CrosslinkSpectralMatch** newCsm,
+                                                      std::vector<Ms2ScanWithSpecificMass*> &ms2Scans,
+                                                      bool &has_beta_peptide )
+        {
+            size_t total_len = 0;
+
+            //Dissect line 1: generic information
+            std::vector<std::string> splits = StringHelper::split(input[index], '\t');
+            //+1 for the endl symbol removed when converting the char* into a std::vector<std::string>
+            total_len += input[index].length() + 1; 
+            index++;
+            int notch=-1, scanindex, proteinPos, matchedFragmentIonsVecsize, lpositionsize, xlranksize;
+            double  deltaScore, XLTotalScore, runnerUpScore;
+
+            if ( splits[0] == "true" ) {
+                notch = std::stoi(splits[1]);
+            }
+            XLTotalScore = std::stod (splits[2]);
+            deltaScore   = std::stod (splits[3]);
+            proteinPos   = std::stoi (splits[4]);
+            PsmCrossType ctype = PSmCrossTypeFromString(splits[5]);
+            matchedFragmentIonsVecsize = std::stoi(splits[6]);
+            lpositionssize = std::stoi(splits[7]);
+            xlranksize     = std::stoi(splits[8]);
+            if ( splits[9] == "true" ) {
+                has_beta_peptide = true;
+            }
+            
+            //line 2: linkPositions
+            std::vector<int> linkPosvec;
+
+            //line 3: xlRank
+            std::vector<int> xlRankVec;
+            
+            //line 4: DigestionParams
+            DigestionParams *dp = DigestionParams::FromString(input[index]);
+            total_len += input[index].length() + 1; 
+            index++;
+
+            //line 5-9: PeptideWithSetModifications
+            PeptideWithSetModifications* pep;
+            size_t tmp_len;
+            PeptideWithSetModifications::Unpack(input, index, tmp_len, *pep);
+            total_len += tmp_len+1;
+            index += 4;
+            
+            // line 10-x: Vector of MatchedFragmentIons
+            std::vector<MatchedFragmentIon*> matchedFragmentIonsVec;
+            for ( auto i=0; i< matchedFragmentIonsVecsize; i++ ) {
+                MatchedFragmentIon *ion;
+                MatchedFragmentIon::Unpack(input[index], tmp_len, &ion);
+                matchedFragmentIonsVec.push_back(ion);
+                index++;
+                total_len += tmp_len+1;                    
+            }
+
+            Ms2ScanWithSpecificMass *scan = ms2Scans[scanindex];
+            CrosslinkSpectralMatch *csm = new CrosslinkSpectralMatch ( pep, notch, XLTotalScore, scanIndex, scan, dp,
+                                                                       matchedFragmentIonsVec );
+            //csm->setXLTotalScore(XLTotalScore);
+            csm->setDeltaScore(deltaScore);
+            csm->setXlProteinPos(proteinPos);
+            csm->setCrossType (ctype);
+
+            csm->setXlRank(xlRankvec);
+            csm->setLinkPositions(linkPosvec);
+            //csm->ResolveAllAmbiguities();
+
+            
+            len = total_len;
+            return ;
+        }
+        
     }
 }
 

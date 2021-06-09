@@ -76,6 +76,55 @@ namespace EngineLayer
             std::string ToString();
             
             static std::vector<std::tuple<std::string, std::string>> MatchedIonDataDictionary(PeptideSpectralMatch *psm);
+
+            /// <summary>
+            /// Pack a CrosslinkSpectralMatch into a character buffer.
+            /// Required for Communication Operations
+            ///
+            /// Arguments:
+            /// buf :     INOUT buffer used for packing
+            /// buf_size: IN size of the allocated buffer provided by the upper layer
+            ///           OUT size of required buffer if not large enough (return value -1)
+            ///               or number of bytes used for packgin (return value > 0)
+            /// MaF :     IN (vector of) MatchedFragmentIon(s) to pack
+            ///
+            /// Return value:
+            ///   -1 : input buffer was not large enough. buf_size will contain the required number
+            ///        of bytes in this case
+            ///   >0 : packing successful, number of bytes used up.
+            /// </summary>
+            static int Pack ( char *buf, size_t &buf_size, CrosslinkSpectralMatch *csm);
+            static int Pack ( char *buf, size_t &buf_size, const std::vector<CrosslinkSpectralMatch *> &csmVec);
+
+            static int Pack_internal ( char *buf, size_t &buf_size, CrosslinkSpectralMatch *csm);
+
+            
+            
+            /// <summary>
+            /// Functionality used to reconstruct a CrosslinkSpectralMatch based on a
+            /// packed buffer.
+            ///
+            /// Arguments
+            /// ---------
+            /// buf:      IN input character buffer
+            /// buf_size: IN size of input buffer
+            /// len:      OUT number of bytes used for unpacking 'count' elements
+            /// newMaF:   OUT (vector of) new CrosslinkSpectralMatch(s) .
+            /// count:    IN how many elements to unpack.
+            ///           default : -1 (until end of buffer is reached)
+            /// </summary>
+            static void Unpack ( char *buf, size_t buf_size, size_t &len,
+                                 std::vector<CrosslinkSpectralMatch *> &newCsmVec,
+                                 std::vector<Ms2ScanWithSpecificMass*> &ms2Scans, int count = -1 );
+            static void Unpack ( char *buf, size_t buf_size, size_t &len,
+                                 CrosslinkSpectralMatch **newCsm,
+                                 std::vector<Ms2ScanWithSpecificMass*> &ms2Scans );
+
+            static void Unpack_internal ( std::vector<std::string> &input, int &index, size_t &len,
+                                          CrosslinkSpectralMatch** newCsm,
+                                          std::vector<Ms2ScanWithSpecificMass*> &ms2Scans,
+                                          bool &has_beta_peptide);
+            
         };
     }
 }
