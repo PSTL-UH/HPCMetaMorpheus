@@ -34,7 +34,7 @@ using namespace Proteomics::Fragmentation;
 //Hard coding for now the timing break down of the XLSearchTask, since this
 //is the main area of interest right now.
 
-#define TIMING_INFO 1
+//#define TIMING_INFO 1
 
 #ifdef TIMING_INFO
 #include <sys/time.h>
