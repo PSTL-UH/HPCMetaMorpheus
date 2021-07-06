@@ -587,8 +587,8 @@ namespace EngineLayer
                 buf_len = total_len;
                 return -1;
             }
-            memcpy ( buf+pos, s.c_str(), total_len );
-            pos += total_len;
+            memcpy ( buf+pos, s.c_str(), s.length() );
+            pos = total_len;
             
             //line 3: xlRank
             output.str("");
@@ -603,8 +603,8 @@ namespace EngineLayer
                 buf_len = total_len;
                 return -1;
             }
-            memcpy ( buf+pos, s.c_str(), total_len );
-            pos += total_len;
+            memcpy ( buf+pos, s.c_str(), s.length() );
+            pos = total_len;
             
             //line 4: DigestionParams();
             s = dp->ToString() + "\n";
@@ -623,6 +623,7 @@ namespace EngineLayer
             }
             auto pep = std::get<0>(*uMapPep.begin());
             size_t tmp_len = buf_len - total_len;
+            // need to check whether the routine below adds a \n at the end!
             int ret = PeptideWithSetModifications::Pack(buf+pos, tmp_len, pep );
             if ( ret == -1 ) {
                 buf_len += tmp_len - (buf_len - total_len);
@@ -634,6 +635,7 @@ namespace EngineLayer
             //line 10-x: one line for each MatchedFragmentIon
             for ( auto i=0; i< mFrIons.size(); i++ ) {
                 tmp_len = buf_len - total_len;
+                // need to check whether the routine below adds a \n at the end!
                 ret = MatchedFragmentIon::Pack ( buf+pos, tmp_len, mFrIons[i]);
                 if ( ret == -1 ) {
                     buf_len += tmp_len - (buf_len - total_len);
@@ -730,9 +732,21 @@ namespace EngineLayer
             
             //line 2: linkPositions
             std::vector<int> linkPosvec;
-
+            splits.clear();
+            splits = StringHelper::split(input[index], '\t');
+            index++;
+            for ( auto i=0; i<lpositionssize, i++ ) {
+                linkPosvec.push_back(std::stoi(splits[i]));
+            }
+            
             //line 3: xlRank
             std::vector<int> xlRankVec;
+            splits.clear();
+            splits = StringHelper::split(input[index], '\t');
+            index++;
+            for ( auto i=0; i<xlranksize; i++ ) {
+                linkPosvec.push_back(std::stoi(splits[i]));
+            }
             
             //line 4: DigestionParams
             DigestionParams *dp = DigestionParams::FromString(input[index]);
@@ -756,8 +770,11 @@ namespace EngineLayer
                 total_len += tmp_len+1;                    
             }
 
+            // need to double check that PeptideWithSetModifications pack/unpack does
+            // include scanindex;
+            int scanindex = pep->getScanIndex();
             Ms2ScanWithSpecificMass *scan = ms2Scans[scanindex];
-            CrosslinkSpectralMatch *csm = new CrosslinkSpectralMatch ( pep, notch, XLTotalScore, scanIndex, scan, dp,
+            CrosslinkSpectralMatch *csm = new CrosslinkSpectralMatch ( pep, notch, XLTotalScore, scanindex, scan, dp,
                                                                        matchedFragmentIonsVec );
             //csm->setXLTotalScore(XLTotalScore);
             csm->setDeltaScore(deltaScore);

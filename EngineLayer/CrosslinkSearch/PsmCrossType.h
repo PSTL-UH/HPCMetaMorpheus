@@ -51,5 +51,38 @@ namespace EngineLayer
                     return s;
                 }
 
+                static PsmCrossType PsmCrossTypeFromString( std::string &s ) {
+                    PsmCrossType t;
+                    if ( s == "Single" ) {
+                        t = PsmCrossType::Single;
+                    }
+                    else if ( s == "Cross" ) {
+                        t =  PsmCrossType::Cross;
+                    }
+                    else if ( s == "DeadEnd" ) {
+                        t = PsmCrossType::DeadEnd;
+                    }
+                    else if ( s == "Loop" ) {
+                        t = PsmCrossType::Loop;
+                    }
+                    else if ( s == "Inter" ) {
+                        t = PsmCrossType::Inter;
+                    }
+                    else if ( s == "Intra" ) {
+                        t = PsmCrossType::Intra ;
+                    }
+                    else if ( s == "DeadEndH2O" ) {
+                        t = PsmCrossType::DeadEndH2O ;
+                    }
+                    else if ( s == "DeadEndNH2" ) {
+                        t = PsmCrossType::DeadEndNH2;
+                    }
+                    else if ( s == "DeadEndTris" ) {
+                        t = PsmCrossType::DeadEndTris;
+                    }
+                    return t;
+                }
+
+                
         }
 }
