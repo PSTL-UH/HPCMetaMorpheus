@@ -8,13 +8,14 @@
 #
 include ../Makefile.defs
 
-CEXECS = BinGenerationTest  \
-	 CalibrationTests   \
-	 XLTest             \
-	 XLSearchOutputTest \
-	 SearchEngineTests  \
-	 IndexEngineTest    \
-	 FdrTest            \
+CEXECS = BinGenerationTest    \
+	 CalibrationTests     \
+	 XLTest               \
+	 XLSearchOutputTest   \
+	 SearchEngineTests    \
+	 IndexEngineTest      \
+	 FdrTest              \
+	 CSMSerializationTest \
 	 TestToml
 
 .SUFFIXES: .cxx .h  
@@ -39,6 +40,9 @@ XLTest: XLTest.o
 	$(CXX) $^ -o $@ $(LDFLAGS)
 
 XLSearchOutputTest: XLSearchOutputTest.o 
+	$(CXX) $^ -o $@ $(LDFLAGS)
+
+CSMSerializationTest: CSMSerializationTest.o 
 	$(CXX) $^ -o $@ $(LDFLAGS)
 
 SearchEngineTests: SearchEngineTests.o 
