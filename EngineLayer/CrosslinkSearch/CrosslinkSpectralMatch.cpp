@@ -791,7 +791,7 @@ namespace EngineLayer
             csm->setLinkPositions(linkPosvec);
             //csm->ResolveAllAmbiguities();
 
-            
+            *newCsm = csm;
             len = total_len;
             return ;
         }
