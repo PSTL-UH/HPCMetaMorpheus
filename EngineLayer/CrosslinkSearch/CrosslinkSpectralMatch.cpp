@@ -1,6 +1,7 @@
 ﻿#include "CrosslinkSpectralMatch.h"
 #include "../Ms2ScanWithSpecificMass.h"
 #include "Crosslinker.h"
+
 #include "Sort.h"
 
 #include <numeric>
@@ -565,7 +566,40 @@ namespace EngineLayer
             memcpy ( buf, s.c_str(), total_len );
             pos = total_len;
 
-            //line 2: LinkPositions
+            //Line 2: FdrInfo related Data
+            FdrInfo *fdr = csm->getFdrInfo();
+            output.str("");
+            if ( fdr != nullptr ) {
+                output <<  fdr->getCumulativeTarget() <<  "\t" <<
+                    fdr->getCumulativeDecoy() <<  "\t" <<
+                    fdr->getQValue() <<  "\t" <<
+                    fdr->getCumulativeTargetNotch() <<  "\t" <<
+                    fdr->getCumulativeDecoyNotch() <<  "\t" <<
+                    fdr->getQValueNotch() <<  "\t" <<
+                    fdr->getMaximumLikelihood() <<  "\t" <<
+                    fdr->getEValue() <<  "\t" <<
+                    fdr->getEScore() <<  "\t";
+                if ( fdr->getCalculateEValue() ) {
+                    output << "true\n";
+                }
+                else {
+                    output << "false\n";
+                }
+            }
+            else {
+                output << "null\n";
+            }
+            
+            s = output.str();
+            total_len += s.length();
+            if ( total_len > buf_len ) {
+                buf_len = total_len;
+                return -1;
+            }
+            memcpy ( buf+pos, s.c_str(), s.length() );
+            pos = total_len;
+            
+            //line 3: LinkPositions
             output.str("");
             for ( auto lp: lPositions ) {
                 output << lp << "\t";
@@ -581,7 +615,7 @@ namespace EngineLayer
             memcpy ( buf+pos, s.c_str(), s.length() );
             pos = total_len;
             
-            //line 3: xlRank
+            //line 4: xlRank
             output.str("");
             for ( auto xl: xlRanks) {
                 output << xl << "\t";
@@ -597,7 +631,7 @@ namespace EngineLayer
             memcpy ( buf+pos, s.c_str(), s.length() );
             pos = total_len;
             
-            //line 4: DigestionParams();
+            //line 5: DigestionParams();
             s = dp->ToString() + "\n";
             total_len += s.length();
             if ( total_len > buf_len ) {
@@ -607,7 +641,7 @@ namespace EngineLayer
             memcpy ( buf+pos, s.c_str(), s.length() );
             pos = total_len;
             
-            //line 5-9: PeptideWithSetModifications;
+            //line 6-10: PeptideWithSetModifications;
             //Assuming right now only a single PeptideWithSetModifications
             if ( uMapPep.size() != 1 ) {
                 std::cout << "CrosslinkSpectralMatch::Pack: Error - unordered_map has more than one entry!\n";
@@ -623,7 +657,7 @@ namespace EngineLayer
             total_len += tmp_len;
             pos += tmp_len;
             
-            //line 10-x: one line for each MatchedFragmentIon
+            //line 11-x: one line for each MatchedFragmentIon
             for ( auto i=0; i< mFrIons.size(); i++ ) {
                 tmp_len = buf_len - total_len;
                 // need to check whether the routine below adds a \n at the end!
@@ -675,7 +709,7 @@ namespace EngineLayer
             std::string input(buf);
             std::vector<std::string> lines = StringHelper::split(input, '\n');
             int index=0;
-            if ( lines.size() < 8 ) {
+            if ( lines.size() < 10 ) {
                 std::cout << "CrosslinkSpectralMatch::Unpack : input does not contains enough information to " <<
                     "reconstruct the CrosslinkSpectralMatch. " << std::endl;
                 return;
@@ -722,8 +756,35 @@ namespace EngineLayer
             if ( splits[11] == "true" ) {
                 has_beta_peptide = true;
             }
+
+            //line 2: FdrInfo related data
+            double cumulativeTarget, cumulativeDecoy, qValue, cumulativeTargetNotch;
+            double cumulativeDecoyNotch, qValueNotch, maximumLikelihood, eValue, eScore;
+            bool calculateEValue=false;
+            bool have_fdr = false;
             
-            //line 2: linkPositions
+            splits.clear();
+            splits = StringHelper::split(input[index], '\t');
+            total_len += input[index].length() + 1;            
+            index++;
+            if ( splits.size() > 1 ) {
+                have_fdr = true;
+                
+                cumulativeTarget = std::stod(splits[0]);
+                cumulativeDecoy  = std::stod(splits[1]);
+                qValue           = std::stod(splits[2]);
+                cumulativeTargetNotch = std::stod(splits[3]);
+                cumulativeDecoyNotch  = std::stod(splits[4]);
+                qValueNotch           = std::stod(splits[5]);
+                maximumLikelihood     = std::stod(splits[6]);
+                eValue                = std::stod(splits[7]);
+                eScore                = std::stod(splits[8]);
+                if ( splits[9] == "true" ) {
+                    calculateEValue = true;
+                }
+            }
+
+            //line 3: linkPositions
             std::vector<int> linkPosvec;
             splits.clear();
             splits = StringHelper::split(input[index], '\t');
@@ -733,29 +794,29 @@ namespace EngineLayer
                 linkPosvec.push_back(std::stoi(splits[i]));
             }
             
-            //line 3: xlRank
+            //line 4: xlRank
             std::vector<int> xlRankVec;
             splits.clear();
             splits = StringHelper::split(input[index], '\t');
             total_len += input[index].length() + 1; 
             index++;
             for ( auto i=0; i<xlranksize; i++ ) {
-                linkPosvec.push_back(std::stoi(splits[i]));
+                xlRankVec.push_back(std::stoi(splits[i]));
             }
             
-            //line 4: DigestionParams
+            //line 5: DigestionParams
             DigestionParams *dp = DigestionParams::FromString(input[index]);
             total_len += input[index].length() + 1; 
             index++;
 
-            //line 5-9: PeptideWithSetModifications
+            //line 6-10: PeptideWithSetModifications
             PeptideWithSetModifications* pep;
             size_t tmp_len=0;
             PeptideWithSetModifications::Unpack(input, index, tmp_len, &pep);
             total_len += tmp_len+1;
             index += 4;
             
-            // line 10-x: Vector of MatchedFragmentIons
+            // line 11-x: Vector of MatchedFragmentIons
             std::vector<MatchedFragmentIon*> matchedFragmentIonsVec;
             for ( auto i=0; i< matchedFragmentIonsVecsize; i++ ) {
                 MatchedFragmentIon *ion;
@@ -776,6 +837,12 @@ namespace EngineLayer
             csm->setCrossType (ctype);
             csm->setXlRank(xlRankVec);
             csm->setLinkPositions(linkPosvec);
+
+            if ( have_fdr) {
+                csm->SetFdrValues(cumulativeTarget, cumulativeDecoy, qValue, cumulativeTargetNotch,
+                                  cumulativeDecoyNotch, qValueNotch, maximumLikelihood, 
+                                  eValue, eScore, calculateEValue);
+            }
             //csm->ResolveAllAmbiguities();
 
             *newCsm = csm;

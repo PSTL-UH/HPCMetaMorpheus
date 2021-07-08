@@ -211,6 +211,12 @@ namespace Test
         output << sbuf;
         output.close();
 
+        output.open("CsmOrig.out");
+        for ( auto psms : newPsms ) {
+            output << psms->ToString() << std::endl;
+        }
+        output.close();
+        
         
         if ( ret > 0 ) {
             std::vector<CrosslinkSpectralMatch*> unpackedPsms;
@@ -218,13 +224,20 @@ namespace Test
             size_t len=0;
             CrosslinkSpectralMatch::Unpack( sbuf, bufsize, len, unpackedPsms, listOfSortedms2Scans, count );
             std::cout << "len = " << len << " veclen = " << unpackedPsms.size() << std::endl;
-        
-            task->WritePepXML_xl(unpackedPsms, proteinList, "", variableModifications, fixedModifications, vs,
-                                 testdir, "pep.XML", vs2);
+
+            output.open("CsmSerialized.out");
+            for ( auto psms : unpackedPsms ) {
+                output << psms->ToString() << std::endl;
+            }
+            output.close();
+
+            
+            //task->WritePepXML_xl(unpackedPsms, proteinList, "", variableModifications, fixedModifications, vs,
+            //                     testdir, "pep.XML", vs2);
 
             //Assert::IsTrue(CompareFiles("singlePsms.tsv", "singlePsms.orig.tsv"));
             //Assert::IsTrue(CompareFiles("allPsms.tsv", "allPsms.orig.tsv"));
-            Assert::IsTrue(CompareFiles("pep.XML.pep.XM", "pep.orig.xml"));
+            //Assert::IsTrue(CompareFiles("pep.XML.pep.XM", "pep.orig.xml"));
         }
 
         delete[] sbuf;
