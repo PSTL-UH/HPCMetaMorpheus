@@ -490,7 +490,7 @@ namespace EngineLayer
                     buf_len = pos + len;
                     return ret;
                 }
-                pos += len;
+                pos += ret;
                 auto betaPeptide = csm->getBetaPeptide();
                 if ( betaPeptide != nullptr ) {
                     len = buf_len - pos;
@@ -499,7 +499,7 @@ namespace EngineLayer
                         buf_len = pos + len;
                         return ret;
                     }
-                    pos += len;                    
+                    pos += ret;                    
                 }
             }
             buf_len = pos;
@@ -517,7 +517,7 @@ namespace EngineLayer
                 buf_len = pos + len;
                 return ret;
             }
-            pos += len;
+            pos += ret;
             auto betaPeptide = csm->getBetaPeptide();
             if ( betaPeptide != nullptr ) {
                 len = buf_len - pos;
@@ -526,7 +526,7 @@ namespace EngineLayer
                     buf_len = pos + len;
                     return ret;
                 }
-                pos += len;                    
+                pos += ret;                    
             }
             buf_len = pos;
             return pos;            
@@ -541,17 +541,16 @@ namespace EngineLayer
             auto mFrIons = csm->getMatchedFragmentIons ();
             auto dp = csm->digestionParams;
             auto uMapPep = csm->getPeptidesToMatchingFragments();
-            std::vector<int> lPositions  = csm->getLinkPositions;;
+            std::vector<int> lPositions  = csm->getLinkPositions();
             std::vector<int> xlRanks = csm->getXlRank();
-            bool has_beta_peptide = csm->getBetaPeptide != nullptr;
+            bool has_beta_peptide = csm->getBetaPeptide() != nullptr;
             
             // line 1
-            output << csm->getNotch().has_value() << "\t";
             if ( csm->getNotch().has_value() ) {
-                output << csm->getNotch().value() << "\t";
+                output << "true\t" << csm->getNotch().value() << "\t";
             }
             else {
-                output << "-\t";
+                output << "false\t-\t";
             }
             output << csm->getXLTotalScore() << "\t" <<
                 csm->getDeltaScore() << "\t" <<
@@ -562,8 +561,13 @@ namespace EngineLayer
             output << PsmCrossTypeToString(ctype) << "\t" <<
                 csm->getMatchedFragmentIons().size() << "\t" << 
                 lPositions.size() << "\t" <<
-                xlRanks.size() << "\t" <<
-                has_beta_peptide << std::endl;
+                xlRanks.size() << "\t";
+            if ( has_beta_peptide ) {
+                output << "true" << std::endl;
+            }
+            else {
+                output << "false" << std::endl;
+            }                
                 
             std::string s = output.str();
             total_len += s.length();
@@ -650,7 +654,7 @@ namespace EngineLayer
 
         void CrosslinkSpectralMatch::Unpack (char *buf, size_t buf_len, size_t &len,
                                              std::vector<CrosslinkSpectralMatch*> &pepVec,
-                                             std::vector<Ms2ScanWithSpecificMass*> &ms2Scans,
+                                             const std::vector<Ms2ScanWithSpecificMass*> &ms2Scans,
                                              int count)
         {
             std::string input_buf (buf);
@@ -659,15 +663,15 @@ namespace EngineLayer
             size_t total_len=0;
             int counter=0;
             for (auto  i=0; i < lines.size();  ) {
-                size_t tmp_len;
+                size_t tmp_len=0;
                 CrosslinkSpectralMatch *pep;
                 bool has_beta_peptide=false;
-                CrosslinkSpectralMatch::Unpack(lines, i, tmp_len, &pep, ms2Scans, has_beta_peptide );
-                total_len += tmp;
+                CrosslinkSpectralMatch::Unpack_internal(lines, i, tmp_len, &pep, ms2Scans, has_beta_peptide );
+                total_len += tmp_len;
                 pepVec.push_back(pep);
                 if ( has_beta_peptide ) {
                     CrosslinkSpectralMatch *beta_pep;
-                    CrosslinkSpectralMatch::Unpack(lines, i, tmp_len, &beta_pep, ms2Scans, has_beta_peptide );
+                    CrosslinkSpectralMatch::Unpack_internal(lines, i, tmp_len, &beta_pep, ms2Scans, has_beta_peptide );
                     pep->setBetaPeptide(beta_pep);
                     total_len += tmp_len;
                 }
@@ -679,7 +683,7 @@ namespace EngineLayer
 
         void CrosslinkSpectralMatch::Unpack (char *buf, size_t buf_len, size_t &len,
                                              CrosslinkSpectralMatch** newCsm,
-                                             std::vector<Ms2ScanWithSpecificMass*> &ms2Scans )
+                                             const std::vector<Ms2ScanWithSpecificMass*> &ms2Scans )
         {
             std::string input(buf);
             std::vector<std::string> lines = StringHelper::split(input, '\n');
@@ -694,16 +698,16 @@ namespace EngineLayer
             if ( has_beta_peptide) {
                 CrosslinkSpectralMatch* beta_pep;
                 size_t tmp_len=0;
-                CrosslinkSpectralMatch::Unpack_internal ( lines, index, len, &beta_pep, ms2Scans, has_beta_peptide );
-                newCsm->setBetaPeptide(beta_pep);
-                len += temp_len;
+                CrosslinkSpectralMatch::Unpack_internal ( lines, index, tmp_len, &beta_pep, ms2Scans, has_beta_peptide );
+                (*newCsm)->setBetaPeptide(beta_pep);
+                len += tmp_len;
             }            
         }
 
         void CrosslinkSpectralMatch::Unpack_internal (std::vector<std::string> &input,
                                                       int &index, size_t &len,
                                                       CrosslinkSpectralMatch** newCsm,
-                                                      std::vector<Ms2ScanWithSpecificMass*> &ms2Scans,
+                                                      const std::vector<Ms2ScanWithSpecificMass*> &ms2Scans,
                                                       bool &has_beta_peptide )
         {
             size_t total_len = 0;
@@ -721,12 +725,14 @@ namespace EngineLayer
             }
             XLTotalScore = std::stod (splits[2]);
             deltaScore   = std::stod (splits[3]);
-            proteinPos   = std::stoi (splits[4]);
-            PsmCrossType ctype = PSmCrossTypeFromString(splits[5]);
-            matchedFragmentIonsVecsize = std::stoi(splits[6]);
-            lpositionssize = std::stoi(splits[7]);
-            xlranksize     = std::stoi(splits[8]);
-            if ( splits[9] == "true" ) {
+            scanindex    = std::stoi (splits[4]);
+            proteinPos   = std::stoi (splits[5]);
+            runnerUpScore = std::stod(splits[6]);
+            PsmCrossType ctype = PsmCrossTypeFromString(splits[7]);
+            matchedFragmentIonsVecsize = std::stoi(splits[8]);
+            lpositionsize = std::stoi(splits[9]);
+            xlranksize     = std::stoi(splits[10]);
+            if ( splits[11] == "true" ) {
                 has_beta_peptide = true;
             }
             
@@ -734,8 +740,9 @@ namespace EngineLayer
             std::vector<int> linkPosvec;
             splits.clear();
             splits = StringHelper::split(input[index], '\t');
+            total_len += input[index].length() + 1; 
             index++;
-            for ( auto i=0; i<lpositionssize, i++ ) {
+            for ( auto i=0; i<lpositionsize; i++ ) {
                 linkPosvec.push_back(std::stoi(splits[i]));
             }
             
@@ -743,6 +750,7 @@ namespace EngineLayer
             std::vector<int> xlRankVec;
             splits.clear();
             splits = StringHelper::split(input[index], '\t');
+            total_len += input[index].length() + 1; 
             index++;
             for ( auto i=0; i<xlranksize; i++ ) {
                 linkPosvec.push_back(std::stoi(splits[i]));
@@ -755,8 +763,8 @@ namespace EngineLayer
 
             //line 5-9: PeptideWithSetModifications
             PeptideWithSetModifications* pep;
-            size_t tmp_len;
-            PeptideWithSetModifications::Unpack(input, index, tmp_len, *pep);
+            size_t tmp_len=0;
+            PeptideWithSetModifications::Unpack(input, index, tmp_len, &pep);
             total_len += tmp_len+1;
             index += 4;
             
@@ -764,24 +772,22 @@ namespace EngineLayer
             std::vector<MatchedFragmentIon*> matchedFragmentIonsVec;
             for ( auto i=0; i< matchedFragmentIonsVecsize; i++ ) {
                 MatchedFragmentIon *ion;
+                tmp_len=0;
                 MatchedFragmentIon::Unpack(input[index], tmp_len, &ion);
                 matchedFragmentIonsVec.push_back(ion);
                 index++;
                 total_len += tmp_len+1;                    
             }
 
-            // need to double check that PeptideWithSetModifications pack/unpack does
-            // include scanindex;
-            int scanindex = pep->getScanIndex();
             Ms2ScanWithSpecificMass *scan = ms2Scans[scanindex];
             CrosslinkSpectralMatch *csm = new CrosslinkSpectralMatch ( pep, notch, XLTotalScore, scanindex, scan, dp,
                                                                        matchedFragmentIonsVec );
-            //csm->setXLTotalScore(XLTotalScore);
+            csm->setXLTotalScore(XLTotalScore);
             csm->setDeltaScore(deltaScore);
             csm->setXlProteinPos(proteinPos);
+            csm->setRunnerUpScore(runnerUpScore);
             csm->setCrossType (ctype);
-
-            csm->setXlRank(xlRankvec);
+            csm->setXlRank(xlRankVec);
             csm->setLinkPositions(linkPosvec);
             //csm->ResolveAllAmbiguities();
 

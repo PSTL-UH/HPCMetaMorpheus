@@ -106,23 +106,24 @@ namespace EngineLayer
             ///
             /// Arguments
             /// ---------
-            /// buf:      IN input character buffer
-            /// buf_size: IN size of input buffer
-            /// len:      OUT number of bytes used for unpacking 'count' elements
-            /// newMaF:   OUT (vector of) new CrosslinkSpectralMatch(s) .
-            /// count:    IN how many elements to unpack.
-            ///           default : -1 (until end of buffer is reached)
+            /// buf:       IN input character buffer
+            /// buf_size:  IN size of input buffer
+            /// len:       OUT number of bytes used for unpacking 'count' elements
+            /// newCsmVec: OUT (vector of) new CrosslinkSpectralMatch(s) .
+            /// ms2Scans:  IN vector of Ms2Scans required to reconstruct a Csm
+            /// count:     IN how many elements to unpack.
+            ///            default : -1 (until end of buffer is reached)
             /// </summary>
             static void Unpack ( char *buf, size_t buf_size, size_t &len,
                                  std::vector<CrosslinkSpectralMatch *> &newCsmVec,
-                                 std::vector<Ms2ScanWithSpecificMass*> &ms2Scans, int count = -1 );
+                                 const std::vector<Ms2ScanWithSpecificMass*> &ms2Scans, int count = -1 );
             static void Unpack ( char *buf, size_t buf_size, size_t &len,
                                  CrosslinkSpectralMatch **newCsm,
-                                 std::vector<Ms2ScanWithSpecificMass*> &ms2Scans );
+                                 const std::vector<Ms2ScanWithSpecificMass*> &ms2Scans );
 
             static void Unpack_internal ( std::vector<std::string> &input, int &index, size_t &len,
                                           CrosslinkSpectralMatch** newCsm,
-                                          std::vector<Ms2ScanWithSpecificMass*> &ms2Scans,
+                                          const std::vector<Ms2ScanWithSpecificMass*> &ms2Scans,
                                           bool &has_beta_peptide);
             
         };
