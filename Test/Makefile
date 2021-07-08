@@ -15,7 +15,7 @@ CEXECS = BinGenerationTest    \
 	 SearchEngineTests    \
 	 IndexEngineTest      \
 	 FdrTest              \
-	 CSMSerializationTest \
+	 CsmSerializationTest \
 	 TestToml
 
 .SUFFIXES: .cxx .h  
@@ -42,7 +42,7 @@ XLTest: XLTest.o
 XLSearchOutputTest: XLSearchOutputTest.o 
 	$(CXX) $^ -o $@ $(LDFLAGS)
 
-CSMSerializationTest: CSMSerializationTest.o 
+CsmSerializationTest: CsmSerializationTest.o 
 	$(CXX) $^ -o $@ $(LDFLAGS)
 
 SearchEngineTests: SearchEngineTests.o 
@@ -66,7 +66,7 @@ clean:
 	rm -rf *.o *~
 
 	rm -f TestToml BinGenerationTest CalibrationTests XLTest XLSearchOutputTest
-	rm -f SearchEngineTests IndexEngineTest FdrTest
+	rm -f SearchEngineTests IndexEngineTest FdrTest CsmSerializationTest
 	rm -f TestProteinSplitAcrossFiles.xml TestProteinSplitAcrossFiles1.ind
 	rm -f TestProteinSplitAcrossFiles1.mzML TestProteinSplitAcrossFiles2.mzML
 	rm -f pep.XML.pep.XM BinGenerationTest.xml BinGenerationTest.mzML
