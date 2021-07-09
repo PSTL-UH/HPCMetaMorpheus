@@ -111,7 +111,7 @@ namespace Test
         auto xlSearchParameters = new XlSearchParameters();
         
         //Create databases contain two protein.
-        auto proteinList = std::vector<Protein*>
+        std::vector<Protein*> proteinList = 
             {
                 new Protein("EKVLTSSAR", "Fake01"),
                 new Protein("LSQKFPK", "Fake02")
@@ -217,13 +217,13 @@ namespace Test
         }
         output.close();
 
-        std::vector<Protein *> pList = task->getProteinList();
+        //std::vector<Protein *> pList = task->getProteinList();
         
         if ( ret > 0 ) {
             std::vector<CrosslinkSpectralMatch*> unpackedPsms;
             int count=-1;
             size_t len=0;
-            CrosslinkSpectralMatch::Unpack( sbuf, bufsize, count, len, unpackedPsms, listOfSortedms2Scans, pList);
+            CrosslinkSpectralMatch::Unpack( sbuf, bufsize, count, len, unpackedPsms, listOfSortedms2Scans, proteinList);
             std::cout << "len = " << len << " veclen = " << unpackedPsms.size() << std::endl;
 
             output.open("CsmSerialized.out");
