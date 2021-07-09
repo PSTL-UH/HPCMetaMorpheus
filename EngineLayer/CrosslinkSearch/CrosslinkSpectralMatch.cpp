@@ -1,6 +1,7 @@
 ﻿#include "CrosslinkSpectralMatch.h"
 #include "../Ms2ScanWithSpecificMass.h"
 #include "Crosslinker.h"
+
 #include "Sort.h"
 
 #include <numeric>
@@ -13,8 +14,10 @@ namespace EngineLayer
     namespace CrosslinkSearch
     {
         
-        CrosslinkSpectralMatch::CrosslinkSpectralMatch(PeptideWithSetModifications *theBestPeptide, int notch, double score, int scanIndex,
-                                                       Ms2ScanWithSpecificMass *scan, DigestionParams *digestionParams,
+        CrosslinkSpectralMatch::CrosslinkSpectralMatch(PeptideWithSetModifications *theBestPeptide, int notch,
+                                                       double score, int scanIndex,
+                                                       Ms2ScanWithSpecificMass *scan,
+                                                       DigestionParams *digestionParams,
                                                        std::vector<MatchedFragmentIon*> &matchedFragmentIons) :
             PeptideSpectralMatch(theBestPeptide, notch, score, scanIndex, scan, digestionParams, matchedFragmentIons)
         {
@@ -121,14 +124,11 @@ namespace EngineLayer
             privateCrossType = value;
         }
         
-        std::vector<int> CrosslinkSpectralMatch::GetPossibleCrosslinkerModSites(std::vector<char> &crosslinkerModSites, PeptideWithSetModifications *peptide)
+        std::vector<int> CrosslinkSpectralMatch::GetPossibleCrosslinkerModSites(std::vector<char> &crosslinkerModSites,
+                                                                                PeptideWithSetModifications *peptide)
         {
             std::vector<int> possibleXlPositions;
-#ifdef ORIG
-            bool wildcard = crosslinkerModSites.Any([&] (std::any p)   {
-                    return p == 'X';
-                });
-#endif
+
             bool wildcard =false;
             for ( char p: crosslinkerModSites ){
                 if (  p == 'X' ) {
@@ -180,55 +180,55 @@ namespace EngineLayer
         std::string CrosslinkSpectralMatch::GetTabSepHeaderCross()
         {
             auto sb = new StringBuilder();
-            sb->append("File Name" + StringHelper::toString('\t'));
-            sb->append("Scan Number" + StringHelper::toString('\t'));
-            sb->append("Precursor Scan Number" + StringHelper::toString('\t'));
-            sb->append("Precursor MZ" + StringHelper::toString('\t'));
-            sb->append("Precursor Charge" + StringHelper::toString('\t'));
-            sb->append("Precursor Mass" + StringHelper::toString('\t'));
-            sb->append("Cross Type" + StringHelper::toString('\t'));
-            sb->append(std::string("Link Residues") + "\t");
+            sb->append("File Name\t");
+            sb->append("Scan Number\t");
+            sb->append("Precursor Scan Number\t");
+            sb->append("Precursor MZ\t");
+            sb->append("Precursor Charge\t");
+            sb->append("Precursor Mass\t");
+            sb->append("Cross Type\t");
+            sb->append("Link Residues\t");
             
-            sb->append("Peptide" + StringHelper::toString('\t'));
-            sb->append("Protein Accession" + StringHelper::toString('\t'));
-            sb->append("Protein Link Site" + StringHelper::toString('\t'));
-            sb->append("Base Sequence" + StringHelper::toString('\t'));
-            sb->append("Full Sequence" + StringHelper::toString('\t'));
-            sb->append("Peptide Monoisotopic Mass" + StringHelper::toString('\t'));
-            sb->append("Score" + StringHelper::toString('\t'));
-            sb->append("Rank" + StringHelper::toString('\t'));
+            sb->append("Peptide\t");
+            sb->append("Protein Accession\t");
+            sb->append("Protein Link Site\t");
+            sb->append("Base Sequence\t");
+            sb->append("Full Sequence\t");
+            sb->append("Peptide Monoisotopic Mass\t");
+            sb->append("Score\t");
+            sb->append("Rank\t");
             
-            sb->append("Matched Ion Series" + StringHelper::toString('\t'));
-            sb->append("Matched Ion Mass-To-Charge Ratios" + StringHelper::toString('\t'));
-            sb->append("Matched Ion Mass Diff (Da)" + StringHelper::toString('\t'));
-            sb->append("Matched Ion Mass Diff (Ppm)" + StringHelper::toString('\t'));
-            sb->append("Matched Ion Intensities" + StringHelper::toString('\t'));
-            sb->append("Matched Ion Counts" + StringHelper::toString('\t'));
+            sb->append("Matched Ion Series\t");
+            sb->append("Matched Ion Mass-To-Charge Ratios\t");
+            sb->append("Matched Ion Mass Diff (Da)\t");
+            sb->append("Matched Ion Mass Diff (Ppm)\t");
+            sb->append("Matched Ion Intensities\t");
+            sb->append("Matched Ion Counts\t");
             
-            sb->append("Beta Peptide" + StringHelper::toString('\t'));
-            sb->append("Beta Peptide Protein Accession" + StringHelper::toString('\t'));
-            sb->append("Beta Peptide Protein LinkSite" + StringHelper::toString('\t'));
-            sb->append("Beta Peptide Base Sequence" + StringHelper::toString('\t'));
-            sb->append("Beta Peptide Full Sequence" + StringHelper::toString('\t'));
-            sb->append("Beta Peptide Theoretical Mass" + StringHelper::toString('\t'));
-            sb->append("Beta Peptide Score" + StringHelper::toString('\t'));
-            sb->append("Beta Peptide Rank" + StringHelper::toString('\t'));
+            sb->append("Beta Peptide\t");
+            sb->append("Beta Peptide Protein Accession\t");
+            sb->append("Beta Peptide Protein LinkSite\t");
+            sb->append("Beta Peptide Base Sequence\t");
+            sb->append("Beta Peptide Full Sequence\t");
+            sb->append("Beta Peptide Theoretical Mass\t");
+            sb->append("Beta Peptide Score\t");
+            sb->append("Beta Peptide Rank\t");
             
-            sb->append("Beta Peptide Matched Ion Series" + StringHelper::toString('\t'));
-            sb->append("Beta Peptide Matched Ion Mass-To-Charge Ratios" + StringHelper::toString('\t'));
-            sb->append("Beta Peptide Matched Ion Mass Diff (Da)" + StringHelper::toString('\t'));
-            sb->append("Beta Peptide Matched Ion Mass Diff (Ppm)" + StringHelper::toString('\t'));
-            sb->append("Beta Peptide Matched Ion Intensities" + StringHelper::toString('\t'));
-            sb->append("Beta Peptide Matched Ion Counts" + StringHelper::toString('\t'));
+            sb->append("Beta Peptide Matched Ion Series\t");
+            sb->append("Beta Peptide Matched Ion Mass-To-Charge Ratios\t");
+            sb->append("Beta Peptide Matched Ion Mass Diff (Da)\t");
+            sb->append("Beta Peptide Matched Ion Mass Diff (Ppm)\t");
+            sb->append("Beta Peptide Matched Ion Intensities\t");
+            sb->append("Beta Peptide Matched Ion Counts\t");
             
-            sb->append("Summary" + StringHelper::toString('\t'));
-            sb->append("XL Total Score" + StringHelper::toString('\t'));
-            sb->append("Mass Diff (Da)" + StringHelper::toString('\t'));
-            sb->append("Parent Ions" + StringHelper::toString('\t'));
-            sb->append("ParentIonsNum" + StringHelper::toString('\t'));
-            sb->append("ParentIonMaxIntensityRank" + StringHelper::toString('\t'));
-            sb->append("Decoy/Contaminant/Target" + StringHelper::toString('\t'));
-            sb->append("QValue" + StringHelper::toString('\t'));
+            sb->append("Summary\t");
+            sb->append("XL Total Score\t");
+            sb->append("Mass Diff (Da)\t");
+            sb->append("Parent Ions\t");
+            sb->append("ParentIonsNum\t");
+            sb->append("ParentIonMaxIntensityRank\t");
+            sb->append("Decoy/Contaminant/Target\t");
+            sb->append("QValue\t");
             
             
             std::string s = sb->toString();
@@ -239,32 +239,31 @@ namespace EngineLayer
         std::string CrosslinkSpectralMatch::GetTabSepHeaderSingle()
         {
             auto sb = new StringBuilder();
-            sb->append("File Name" + StringHelper::toString('\t'));
-            sb->append("Scan Number" + StringHelper::toString('\t'));
-            sb->append("Precursor Scan Number" + StringHelper::toString('\t'));
-            sb->append("Precursor MZ" + StringHelper::toString('\t'));
-            sb->append("Precursor Charge" + StringHelper::toString('\t'));
-            sb->append("Precursor Mass" + StringHelper::toString('\t'));
-            sb->append("Cross Type" + StringHelper::toString('\t'));
-            sb->append(std::string("Link Residues") + "\t");
+            sb->append("File Name\t");
+            sb->append("Scan Number\t");
+            sb->append("Precursor Scan Number\t");
+            sb->append("Precursor MZ\t");
+            sb->append("Precursor Charge\t");
+            sb->append("Precursor Mass\t");
+            sb->append("Cross Type\t");
+            sb->append("Link Residues\t");
+
+            sb->append("Protein Accession\t");
+            sb->append("Protein Link Site\t");
+            sb->append("Base Sequence\t");
+            sb->append("Full Sequence\t");
+            sb->append("Peptide Monoisotopic Mass\t");
+            sb->append("Score\t");
+            sb->append("Rank\t");
             
-            sb->append("Peptide" + StringHelper::toString('\t'));
-            sb->append("Protein Accession" + StringHelper::toString('\t'));
-            sb->append("Protein Link Site" + StringHelper::toString('\t'));
-            sb->append("Base Sequence" + StringHelper::toString('\t'));
-            sb->append("Full Sequence" + StringHelper::toString('\t'));
-            sb->append("Peptide Monoisotopic Mass" + StringHelper::toString('\t'));
-            sb->append("Score" + StringHelper::toString('\t'));
-            sb->append("Rank" + StringHelper::toString('\t'));
-            
-            sb->append("Matched Ion Series" + StringHelper::toString('\t'));
-            sb->append("Matched Ion Mass-To-Charge Ratios" + StringHelper::toString('\t'));
-            sb->append("Matched Ion Mass Diff (Da)" + StringHelper::toString('\t'));
-            sb->append("Matched Ion Mass Diff (Ppm)" + StringHelper::toString('\t'));
-            sb->append("Matched Ion Intensities" + StringHelper::toString('\t'));
-            sb->append("Matched Ion Counts" + StringHelper::toString('\t'));
-            sb->append("Decoy/Contaminant/Target" + StringHelper::toString('\t'));
-            sb->append("QValue" + StringHelper::toString('\t'));
+            sb->append("Matched Ion Series\t");
+            sb->append("Matched Ion Mass-To-Charge Ratios\t");
+            sb->append("Matched Ion Mass Diff (Da)\t");
+            sb->append("Matched Ion Mass Diff (Ppm)\t");
+            sb->append("Matched Ion Intensities\t");
+            sb->append("Matched Ion Counts\t");
+            sb->append("Decoy/Contaminant/Target\t");
+            sb->append("QValue\t");
             
             std::string s = sb->toString();
             delete sb;
@@ -274,37 +273,36 @@ namespace EngineLayer
         std::string CrosslinkSpectralMatch::GetTabSepHeaderGlyco()
         {
             auto sb = new StringBuilder();
-            sb->append("File Name" + StringHelper::toString('\t'));
-            sb->append("Scan Number" + StringHelper::toString('\t'));
-            sb->append("Precursor Scan Number" + StringHelper::toString('\t'));
-            sb->append("Precursor MZ" + StringHelper::toString('\t'));
-            sb->append("Precursor Charge" + StringHelper::toString('\t'));
-            sb->append("Precursor Mass" + StringHelper::toString('\t'));
-            sb->append("Cross Type" + StringHelper::toString('\t'));
-            sb->append(std::string("Link Residues") + "\t");
+            sb->append("File Name\t");
+            sb->append("Scan Number\t");
+            sb->append("Precursor Scan Number\t");
+            sb->append("Precursor MZ\t");
+            sb->append("Precursor Charge\t");
+            sb->append("Precursor Mass\t");
+            sb->append("Cross Type\t");
+            sb->append("Link Residues\t");
+
+            sb->append("Protein Accession\t");
+            sb->append("Protein Link Site\t");
+            sb->append("Base Sequence\t");
+            sb->append("Full Sequence\t");
+            sb->append("Peptide Monoisotopic Mass\t");
+            sb->append("Score\t");
+            sb->append("Rank\t");
             
-            sb->append("Peptide" + StringHelper::toString('\t'));
-            sb->append("Protein Accession" + StringHelper::toString('\t'));
-            sb->append("Protein Link Site" + StringHelper::toString('\t'));
-            sb->append("Base Sequence" + StringHelper::toString('\t'));
-            sb->append("Full Sequence" + StringHelper::toString('\t'));
-            sb->append("Peptide Monoisotopic Mass" + StringHelper::toString('\t'));
-            sb->append("Score" + StringHelper::toString('\t'));
-            sb->append("Rank" + StringHelper::toString('\t'));
+            sb->append("Matched Ion Series\t");
+            sb->append("Matched Ion Mass-To-Charge Ratios\t");
+            sb->append("Matched Ion Mass Diff (Da)\t");
+            sb->append("Matched Ion Mass Diff (Ppm)\t");
+            sb->append("Matched Ion Intensities\t");
+            sb->append("Matched Ion Counts\t");
             
-            sb->append("Matched Ion Series" + StringHelper::toString('\t'));
-            sb->append("Matched Ion Mass-To-Charge Ratios" + StringHelper::toString('\t'));
-            sb->append("Matched Ion Mass Diff (Da)" + StringHelper::toString('\t'));
-            sb->append("Matched Ion Mass Diff (Ppm)" + StringHelper::toString('\t'));
-            sb->append("Matched Ion Intensities" + StringHelper::toString('\t'));
-            sb->append("Matched Ion Counts" + StringHelper::toString('\t'));
+            sb->append("Decoy/Contaminant/Target\t");
+            sb->append("QValue\t");
             
-            sb->append("Decoy/Contaminant/Target" + StringHelper::toString('\t'));
-            sb->append("QValue" + StringHelper::toString('\t'));
-            
-            sb->append("GlyID" + StringHelper::toString('\t'));
-            sb->append("GlyMass" + StringHelper::toString('\t'));
-            sb->append("GlyStruct(H,N,A,G,F)" + StringHelper::toString('\t'));
+            sb->append("GlyID\t");
+            sb->append("GlyMass\t");
+            sb->append("GlyStruct(H,N,A,G,F)\t");
             
             std::string s = sb->toString();
             delete sb;
@@ -391,14 +389,16 @@ namespace EngineLayer
             
             if (getBetaPeptide() != nullptr)
             {
+                auto betaPeptide = getBetaPeptide();
+                
                 sb->append("\t");
-                sb->append(getBetaPeptide()->getProteinAccession() + "\t");
-                sb->append(std::to_string(getBetaPeptide()->getXlProteinPos()) + "\t");
-                sb->append(getBetaPeptide()->getBaseSequence() + "\t");
-                sb->append(getBetaPeptide()->getFullSequence() + "(" + std::to_string(getBetaPeptide()->getLinkPositions()[0]) +
+                sb->append(betaPeptide->getProteinAccession() + "\t");
+                sb->append(std::to_string(betaPeptide->getXlProteinPos()) + "\t");
+                sb->append(betaPeptide->getBaseSequence() + "\t");
+                sb->append(betaPeptide->getFullSequence() + "(" + std::to_string(betaPeptide->getLinkPositions()[0]) +
                            ")" + "\t");
-                sb->append(std::to_string(getBetaPeptide()->getPeptideMonisotopicMass().value()) + "\t");
-                sb->append(std::to_string(getBetaPeptide()->getScore()) + "\t");
+                sb->append(std::to_string(betaPeptide->getPeptideMonisotopicMass().value()) + "\t");
+                sb->append(std::to_string(betaPeptide->getScore()) + "\t");
                 sb->append(std::to_string(getXlRank()[1]) + "\t");
                 
                 for (auto betamid : MatchedIonDataDictionary(this->getBetaPeptide()))
@@ -412,29 +412,18 @@ namespace EngineLayer
                 
                 // mass of crosslinker
                 sb->append(((getPeptideMonisotopicMass().has_value()) ? std::to_string(getScanPrecursorMass() -
-                            getBetaPeptide()->getPeptideMonisotopicMass().value() - getPeptideMonisotopicMass().value()) : "---"));
+                            betaPeptide->getPeptideMonisotopicMass().value() - getPeptideMonisotopicMass().value()) : "---"));
                 sb->append("\t");
                 
-#ifdef ORIG
-                int alphaNumParentIons = getMatchedFragmentIons().size()([&] (std::any p)    {
-                        delete sb;
-                        return p::NeutralTheoreticalProduct->ProductType == ProductType::M;
-                    });
-#endif
                 int alphaNumParentIons = 0;
                 for ( auto p : getMatchedFragmentIons() ) {
                     if ( p->NeutralTheoreticalProduct->productType == ProductType::M ) {
                         alphaNumParentIons++;
                     }
                 }
-#ifdef ORIG
-                int betaNumParentIons = getBetaPeptide()->getMatchedFragmentIons().size()([&] (std::any p) {
-                        delete sb;
-                        return p::NeutralTheoreticalProduct->ProductType == ProductType::M;
-                    });
-#endif
+
                 int betaNumParentIons = 0;
-                for ( auto p :  getBetaPeptide()->getMatchedFragmentIons() ) {
+                for ( auto p :  betaPeptide->getMatchedFragmentIons() ) {
                     if ( p->NeutralTheoreticalProduct->productType == ProductType::M ) {
                         alphaNumParentIons++;
                     }
@@ -476,6 +465,401 @@ namespace EngineLayer
             AddMatchedIonsData(s, psm);
             return s;
         }
+
+
+        int CrosslinkSpectralMatch::Pack(char *buf, size_t &buf_len,
+                                         const std::vector<CrosslinkSpectralMatch *> &csmVec)
+        {
+            size_t pos = 0;
+            int ret;
+
+            for ( auto csm: csmVec ) {
+                size_t len = buf_len - pos;
+                ret = CrosslinkSpectralMatch::Pack_internal(buf+pos, len, csm);
+                if ( ret == -1 ) {
+                    buf_len = pos + len;
+                    return ret;
+                }
+                pos += ret;
+                auto betaPeptide = csm->getBetaPeptide();
+                if ( betaPeptide != nullptr ) {
+                    len = buf_len - pos;
+                    ret = CrosslinkSpectralMatch::Pack_internal(buf+pos, len, betaPeptide);
+                    if ( ret == -1 ) {
+                        buf_len = pos + len;
+                        return ret;
+                    }
+                    pos += ret;                    
+                }
+            }
+            buf_len = pos;
+            return pos;
+        }
+
+        int CrosslinkSpectralMatch::Pack(char *buf, size_t &buf_len, CrosslinkSpectralMatch *csm)
+        {
+            size_t pos = 0;
+            int ret;
+
+            size_t len = buf_len - pos;
+            ret = CrosslinkSpectralMatch::Pack_internal(buf+pos, len, csm);
+            if ( ret == -1 ) {
+                buf_len = pos + len;
+                return ret;
+            }
+            pos += ret;
+            auto betaPeptide = csm->getBetaPeptide();
+            if ( betaPeptide != nullptr ) {
+                len = buf_len - pos;
+                ret = CrosslinkSpectralMatch::Pack_internal(buf+pos, len, betaPeptide);
+                if ( ret == -1 ) {
+                    buf_len = pos + len;
+                    return ret;
+                }
+                pos += ret;                    
+            }
+            buf_len = pos;
+            return pos;            
+        }
+        
+        int CrosslinkSpectralMatch::Pack_internal(char *buf, size_t &buf_len, CrosslinkSpectralMatch *csm)
+        {
+            size_t total_len = 0;
+            size_t pos = 0;
+            std::stringstream output;
+
+            auto mFrIons = csm->getMatchedFragmentIons ();
+            auto dp = csm->digestionParams;
+            auto uMapPep = csm->getPeptidesToMatchingFragments();
+            std::vector<int> lPositions  = csm->getLinkPositions();
+            std::vector<int> xlRanks = csm->getXlRank();
+            bool has_beta_peptide = csm->getBetaPeptide() != nullptr;
+            
+            // line 1
+            if ( csm->getNotch().has_value() ) {
+                output << "true\t" << csm->getNotch().value() << "\t";
+            }
+            else {
+                output << "false\t-\t";
+            }
+            output << csm->getXLTotalScore() << "\t" <<
+                csm->getDeltaScore() << "\t" <<
+                csm->getScanIndex() << "\t" <<
+                csm->getXlProteinPos() << "\t" <<
+                csm->getRunnerUpScore() << "\t";
+            PsmCrossType ctype = csm->getCrossType();
+            output << PsmCrossTypeToString(ctype) << "\t" <<
+                csm->getMatchedFragmentIons().size() << "\t" << 
+                lPositions.size() << "\t" <<
+                xlRanks.size() << "\t";
+            if ( has_beta_peptide ) {
+                output << "true" << std::endl;
+            }
+            else {
+                output << "false" << std::endl;
+            }                
+                
+            std::string s = output.str();
+            total_len += s.length();
+            if ( total_len > buf_len ) {
+                buf_len = total_len;
+                return -1;
+            }
+            memcpy ( buf, s.c_str(), total_len );
+            pos = total_len;
+
+            //Line 2: FdrInfo related Data
+            FdrInfo *fdr = csm->getFdrInfo();
+            output.str("");
+            if ( fdr != nullptr ) {
+                output <<  fdr->getCumulativeTarget() <<  "\t" <<
+                    fdr->getCumulativeDecoy() <<  "\t" <<
+                    fdr->getQValue() <<  "\t" <<
+                    fdr->getCumulativeTargetNotch() <<  "\t" <<
+                    fdr->getCumulativeDecoyNotch() <<  "\t" <<
+                    fdr->getQValueNotch() <<  "\t" <<
+                    fdr->getMaximumLikelihood() <<  "\t" <<
+                    fdr->getEValue() <<  "\t" <<
+                    fdr->getEScore() <<  "\t";
+                if ( fdr->getCalculateEValue() ) {
+                    output << "true\n";
+                }
+                else {
+                    output << "false\n";
+                }
+            }
+            else {
+                output << "null\n";
+            }
+            
+            s = output.str();
+            total_len += s.length();
+            if ( total_len > buf_len ) {
+                buf_len = total_len;
+                return -1;
+            }
+            memcpy ( buf+pos, s.c_str(), s.length() );
+            pos = total_len;
+            
+            //line 3: LinkPositions
+            output.str("");
+            for ( auto lp: lPositions ) {
+                output << lp << "\t";
+            }
+            output << std::endl;
+            
+            s = output.str();
+            total_len += s.length();
+            if ( total_len > buf_len ) {
+                buf_len = total_len;
+                return -1;
+            }
+            memcpy ( buf+pos, s.c_str(), s.length() );
+            pos = total_len;
+            
+            //line 4: xlRank
+            output.str("");
+            for ( auto xl: xlRanks) {
+                output << xl << "\t";
+            }
+            output << std::endl;
+
+            s = output.str();
+            total_len += s.length();
+            if ( total_len > buf_len ) {
+                buf_len = total_len;
+                return -1;
+            }
+            memcpy ( buf+pos, s.c_str(), s.length() );
+            pos = total_len;
+            
+            //line 5: DigestionParams();
+            s = dp->ToString() + "\n";
+            total_len += s.length();
+            if ( total_len > buf_len ) {
+                buf_len = total_len;
+                return -1;
+            }
+            memcpy ( buf+pos, s.c_str(), s.length() );
+            pos = total_len;
+            
+            //line 6-10: PeptideWithSetModifications;
+            //Assuming right now only a single PeptideWithSetModifications
+            if ( uMapPep.size() != 1 ) {
+                std::cout << "CrosslinkSpectralMatch::Pack: Error - unordered_map has more than one entry!\n";
+            }
+            auto pep = std::get<0>(*uMapPep.begin());
+            size_t tmp_len = buf_len - total_len;
+            // need to check whether the routine below adds a \n at the end!
+            int ret = PeptideWithSetModifications::Pack(buf+pos, tmp_len, pep );
+            if ( ret == -1 ) {
+                buf_len += tmp_len - (buf_len - total_len);
+                return -1;
+            }
+            total_len += tmp_len;
+            pos += tmp_len;
+            
+            //line 11-x: one line for each MatchedFragmentIon
+            for ( auto i=0; i< mFrIons.size(); i++ ) {
+                tmp_len = buf_len - total_len;
+                // need to check whether the routine below adds a \n at the end!
+                ret = MatchedFragmentIon::Pack ( buf+pos, tmp_len, mFrIons[i]);
+                if ( ret == -1 ) {
+                    buf_len += tmp_len - (buf_len - total_len);
+                    return -1;
+                }
+                total_len += tmp_len;
+                pos += tmp_len;
+            }
+            
+            return (int)total_len;
+        }
+
+        void CrosslinkSpectralMatch::Unpack (char *buf, size_t buf_len, int count, size_t &len,
+                                             std::vector<CrosslinkSpectralMatch*> &pepVec,
+                                             const std::vector<Ms2ScanWithSpecificMass*> &ms2Scans,
+                                             const std::vector<Protein *> &proteinList )
+        {
+            std::string input_buf (buf);
+            std::vector<std::string> lines = StringHelper::split(input_buf, '\n');
+
+            size_t total_len=0;
+            int counter=0;
+            for (auto  i=0; i < lines.size();  ) {
+                size_t tmp_len=0;
+                CrosslinkSpectralMatch *pep;
+                bool has_beta_peptide=false;
+                CrosslinkSpectralMatch::Unpack_internal(lines, i, tmp_len, &pep, ms2Scans, proteinList,
+                                                        has_beta_peptide );
+                total_len += tmp_len;
+                pepVec.push_back(pep);
+                if ( has_beta_peptide ) {
+                    CrosslinkSpectralMatch *beta_pep;
+                    CrosslinkSpectralMatch::Unpack_internal(lines, i, tmp_len, &beta_pep, ms2Scans, proteinList,
+                                                            has_beta_peptide );
+                    pep->setBetaPeptide(beta_pep);
+                    total_len += tmp_len;
+                }
+                counter ++;
+                if ( counter == count ) break;
+            }
+            len = total_len;
+        }
+
+        void CrosslinkSpectralMatch::Unpack (char *buf, size_t buf_len, size_t &len,
+                                             CrosslinkSpectralMatch** newCsm,
+                                             const std::vector<Ms2ScanWithSpecificMass*> &ms2Scans,
+                                             const std::vector<Protein *> &proteinList )
+        {
+            std::string input(buf);
+            std::vector<std::string> lines = StringHelper::split(input, '\n');
+            int index=0;
+            if ( lines.size() < 10 ) {
+                std::cout << "CrosslinkSpectralMatch::Unpack : input does not contains enough information to " <<
+                    "reconstruct the CrosslinkSpectralMatch. " << std::endl;
+                return;
+            }
+            bool has_beta_peptide=false;            
+            CrosslinkSpectralMatch::Unpack_internal ( lines, index, len, newCsm, ms2Scans, proteinList,
+                                                      has_beta_peptide );
+            if ( has_beta_peptide) {
+                CrosslinkSpectralMatch* beta_pep;
+                size_t tmp_len=0;
+                CrosslinkSpectralMatch::Unpack_internal ( lines, index, tmp_len, &beta_pep, ms2Scans, proteinList,
+                                                          has_beta_peptide );
+                (*newCsm)->setBetaPeptide(beta_pep);
+                len += tmp_len;
+            }            
+        }
+
+        void CrosslinkSpectralMatch::Unpack_internal (std::vector<std::string> &input,
+                                                      int &index, size_t &len,
+                                                      CrosslinkSpectralMatch** newCsm,
+                                                      const std::vector<Ms2ScanWithSpecificMass*> &ms2Scans,
+                                                      const std::vector<Protein *> &proteinList,
+                                                      bool &has_beta_peptide )
+        {
+            size_t total_len = 0;
+
+            //Dissect line 1: generic information
+            std::vector<std::string> splits = StringHelper::split(input[index], '\t');
+            //+1 for the endl symbol removed when converting the char* into a std::vector<std::string>
+            total_len += input[index].length() + 1; 
+            index++;
+            int notch=-1, scanindex, proteinPos, matchedFragmentIonsVecsize, lpositionsize, xlranksize;
+            double  deltaScore, XLTotalScore, runnerUpScore;
+
+            if ( splits[0] == "true" ) {
+                notch = std::stoi(splits[1]);
+            }
+            XLTotalScore = std::stod (splits[2]);
+            deltaScore   = std::stod (splits[3]);
+            scanindex    = std::stoi (splits[4]);
+            proteinPos   = std::stoi (splits[5]);
+            runnerUpScore = std::stod(splits[6]);
+            PsmCrossType ctype = PsmCrossTypeFromString(splits[7]);
+            matchedFragmentIonsVecsize = std::stoi(splits[8]);
+            lpositionsize = std::stoi(splits[9]);
+            xlranksize     = std::stoi(splits[10]);
+            if ( splits[11] == "true" ) {
+                has_beta_peptide = true;
+            }
+
+            //line 2: FdrInfo related data
+            double cumulativeTarget, cumulativeDecoy, qValue, cumulativeTargetNotch;
+            double cumulativeDecoyNotch, qValueNotch, maximumLikelihood, eValue, eScore;
+            bool calculateEValue=false;
+            bool have_fdr = false;
+            
+            splits.clear();
+            splits = StringHelper::split(input[index], '\t');
+            total_len += input[index].length() + 1;            
+            index++;
+            if ( splits.size() > 1 ) {
+                have_fdr = true;
+                
+                cumulativeTarget = std::stod(splits[0]);
+                cumulativeDecoy  = std::stod(splits[1]);
+                qValue           = std::stod(splits[2]);
+                cumulativeTargetNotch = std::stod(splits[3]);
+                cumulativeDecoyNotch  = std::stod(splits[4]);
+                qValueNotch           = std::stod(splits[5]);
+                maximumLikelihood     = std::stod(splits[6]);
+                eValue                = std::stod(splits[7]);
+                eScore                = std::stod(splits[8]);
+                if ( splits[9] == "true" ) {
+                    calculateEValue = true;
+                }
+            }
+
+            //line 3: linkPositions
+            std::vector<int> linkPosvec;
+            splits.clear();
+            splits = StringHelper::split(input[index], '\t');
+            total_len += input[index].length() + 1; 
+            index++;
+            for ( auto i=0; i<lpositionsize; i++ ) {
+                linkPosvec.push_back(std::stoi(splits[i]));
+            }
+            
+            //line 4: xlRank
+            std::vector<int> xlRankVec;
+            splits.clear();
+            splits = StringHelper::split(input[index], '\t');
+            total_len += input[index].length() + 1; 
+            index++;
+            for ( auto i=0; i<xlranksize; i++ ) {
+                xlRankVec.push_back(std::stoi(splits[i]));
+            }
+            
+            //line 5: DigestionParams
+            DigestionParams *dp = DigestionParams::FromString(input[index]);
+            total_len += input[index].length() + 1; 
+            index++;
+
+            //line 6-10: PeptideWithSetModifications
+            PeptideWithSetModifications* pep;
+            size_t tmp_len=0;
+            PeptideWithSetModifications::Unpack(input, index, tmp_len, &pep);
+            pep->SetNonSerializedPeptideInfo ( proteinList );
+            total_len += tmp_len+1;
+            index += 4;
+
+            
+            // line 11-x: Vector of MatchedFragmentIons
+            std::vector<MatchedFragmentIon*> matchedFragmentIonsVec;
+            for ( auto i=0; i< matchedFragmentIonsVecsize; i++ ) {
+                MatchedFragmentIon *ion;
+                tmp_len=0;
+                MatchedFragmentIon::Unpack(input[index], tmp_len, &ion);
+                matchedFragmentIonsVec.push_back(ion);
+                index++;
+                total_len += tmp_len+1;                    
+            }
+
+            Ms2ScanWithSpecificMass *scan = ms2Scans[scanindex];
+            CrosslinkSpectralMatch *csm = new CrosslinkSpectralMatch ( pep, notch, XLTotalScore, scanindex, scan, dp,
+                                                                       matchedFragmentIonsVec );
+            csm->setXLTotalScore(XLTotalScore);
+            csm->setDeltaScore(deltaScore);
+            csm->setXlProteinPos(proteinPos);
+            csm->setRunnerUpScore(runnerUpScore);
+            csm->setCrossType (ctype);
+            csm->setXlRank(xlRankVec);
+            csm->setLinkPositions(linkPosvec);
+
+            if ( have_fdr) {
+                csm->SetFdrValues(cumulativeTarget, cumulativeDecoy, qValue, cumulativeTargetNotch,
+                                  cumulativeDecoyNotch, qValueNotch, maximumLikelihood, 
+                                  eValue, eScore, calculateEValue);
+            }
+            csm->ResolveAllAmbiguities();
+
+            *newCsm = csm;
+            len = total_len;
+            return ;
+        }
+        
     }
 }
 

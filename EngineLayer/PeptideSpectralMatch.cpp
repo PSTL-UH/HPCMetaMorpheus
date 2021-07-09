@@ -434,17 +434,17 @@ namespace EngineLayer
                                             double eScore, bool calculateEValue)
     {
         FdrInfo* tempVar= new FdrInfo();
+        tempVar->setCumulativeTarget(cumulativeTarget);
+        tempVar->setCumulativeDecoy(cumulativeDecoy);
+        tempVar->setQValue(qValue);
+        tempVar->setCumulativeTargetNotch(cumulativeTargetNotch);
+        tempVar->setCumulativeDecoyNotch(cumulativeDecoyNotch);
+        tempVar->setQValueNotch(qValueNotch);
+        tempVar->setMaximumLikelihood(maximumLikelihood);
+        tempVar->setEScore(eScore);
+        tempVar->setEValue(eValue);
+        tempVar->setCalculateEValue(calculateEValue);
         setFdrInfo(tempVar);
-        getFdrInfo()->setCumulativeTarget(cumulativeTarget);
-        getFdrInfo()->setCumulativeDecoy(cumulativeDecoy);
-        getFdrInfo()->setQValue(qValue);
-        getFdrInfo()->setCumulativeTargetNotch(cumulativeTargetNotch);
-        getFdrInfo()->setCumulativeDecoyNotch(cumulativeDecoyNotch);
-        getFdrInfo()->setQValueNotch(qValueNotch);
-        getFdrInfo()->setMaximumLikelihood(maximumLikelihood);
-        getFdrInfo()->setEScore(eScore);
-        getFdrInfo()->setEValue(eValue);
-        getFdrInfo()->setCalculateEValue(calculateEValue);
     }
     
     void PeptideSpectralMatch::ResolveAllAmbiguities()
