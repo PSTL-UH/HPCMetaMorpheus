@@ -47,6 +47,10 @@ namespace TaskLayer
     {
     private:
         TaskLayer::XlSearchParameters *privateXlSearchParameters=nullptr;
+        // need access to proteinList for reconstruction of CrosslinkSpectralMatches in the MPI
+        // version, hence they are stored as part of the class now, not just internally in the
+        // RunSpecific() method
+        std::vector<Protein*> proteinList;
         
     public:
         XLSearchTask();
@@ -58,6 +62,7 @@ namespace TaskLayer
         TaskLayer::XlSearchParameters *getXlSearchParameters() const;
         void setXlSearchParameters(TaskLayer::XlSearchParameters *value);
         void writeTomlConfig(std::string &filename, std::ofstream &tomlFd );
+        std::vector<Protein*> getProteinList () const;
         
     protected:
         MyTaskResults *RunSpecific(const std::string &OutputFolder, std::vector<DbForTask*> &dbFilenameList,

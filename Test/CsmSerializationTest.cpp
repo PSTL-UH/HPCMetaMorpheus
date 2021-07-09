@@ -216,13 +216,14 @@ namespace Test
             output << psms->ToString() << std::endl;
         }
         output.close();
-        
+
+        std::vector<Protein *> pList = task->getProteinList();
         
         if ( ret > 0 ) {
             std::vector<CrosslinkSpectralMatch*> unpackedPsms;
             int count=-1;
             size_t len=0;
-            CrosslinkSpectralMatch::Unpack( sbuf, bufsize, len, unpackedPsms, listOfSortedms2Scans, count );
+            CrosslinkSpectralMatch::Unpack( sbuf, bufsize, count, len, unpackedPsms, listOfSortedms2Scans, pList);
             std::cout << "len = " << len << " veclen = " << unpackedPsms.size() << std::endl;
 
             output.open("CsmSerialized.out");

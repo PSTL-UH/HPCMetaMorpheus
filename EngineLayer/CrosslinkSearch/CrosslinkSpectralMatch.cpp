@@ -389,14 +389,16 @@ namespace EngineLayer
             
             if (getBetaPeptide() != nullptr)
             {
+                auto betaPeptide = getBetaPeptide();
+                
                 sb->append("\t");
-                sb->append(getBetaPeptide()->getProteinAccession() + "\t");
-                sb->append(std::to_string(getBetaPeptide()->getXlProteinPos()) + "\t");
-                sb->append(getBetaPeptide()->getBaseSequence() + "\t");
-                sb->append(getBetaPeptide()->getFullSequence() + "(" + std::to_string(getBetaPeptide()->getLinkPositions()[0]) +
+                sb->append(betaPeptide->getProteinAccession() + "\t");
+                sb->append(std::to_string(betaPeptide->getXlProteinPos()) + "\t");
+                sb->append(betaPeptide->getBaseSequence() + "\t");
+                sb->append(betaPeptide->getFullSequence() + "(" + std::to_string(betaPeptide->getLinkPositions()[0]) +
                            ")" + "\t");
-                sb->append(std::to_string(getBetaPeptide()->getPeptideMonisotopicMass().value()) + "\t");
-                sb->append(std::to_string(getBetaPeptide()->getScore()) + "\t");
+                sb->append(std::to_string(betaPeptide->getPeptideMonisotopicMass().value()) + "\t");
+                sb->append(std::to_string(betaPeptide->getScore()) + "\t");
                 sb->append(std::to_string(getXlRank()[1]) + "\t");
                 
                 for (auto betamid : MatchedIonDataDictionary(this->getBetaPeptide()))
@@ -410,7 +412,7 @@ namespace EngineLayer
                 
                 // mass of crosslinker
                 sb->append(((getPeptideMonisotopicMass().has_value()) ? std::to_string(getScanPrecursorMass() -
-                            getBetaPeptide()->getPeptideMonisotopicMass().value() - getPeptideMonisotopicMass().value()) : "---"));
+                            betaPeptide->getPeptideMonisotopicMass().value() - getPeptideMonisotopicMass().value()) : "---"));
                 sb->append("\t");
                 
                 int alphaNumParentIons = 0;
@@ -421,7 +423,7 @@ namespace EngineLayer
                 }
 
                 int betaNumParentIons = 0;
-                for ( auto p :  getBetaPeptide()->getMatchedFragmentIons() ) {
+                for ( auto p :  betaPeptide->getMatchedFragmentIons() ) {
                     if ( p->NeutralTheoreticalProduct->productType == ProductType::M ) {
                         alphaNumParentIons++;
                     }
@@ -673,10 +675,10 @@ namespace EngineLayer
             return (int)total_len;
         }
 
-        void CrosslinkSpectralMatch::Unpack (char *buf, size_t buf_len, size_t &len,
+        void CrosslinkSpectralMatch::Unpack (char *buf, size_t buf_len, int count, size_t &len,
                                              std::vector<CrosslinkSpectralMatch*> &pepVec,
                                              const std::vector<Ms2ScanWithSpecificMass*> &ms2Scans,
-                                             int count)
+                                             const std::vector<Protein *> &proteinList )
         {
             std::string input_buf (buf);
             std::vector<std::string> lines = StringHelper::split(input_buf, '\n');
@@ -687,12 +689,14 @@ namespace EngineLayer
                 size_t tmp_len=0;
                 CrosslinkSpectralMatch *pep;
                 bool has_beta_peptide=false;
-                CrosslinkSpectralMatch::Unpack_internal(lines, i, tmp_len, &pep, ms2Scans, has_beta_peptide );
+                CrosslinkSpectralMatch::Unpack_internal(lines, i, tmp_len, &pep, ms2Scans, proteinList,
+                                                        has_beta_peptide );
                 total_len += tmp_len;
                 pepVec.push_back(pep);
                 if ( has_beta_peptide ) {
                     CrosslinkSpectralMatch *beta_pep;
-                    CrosslinkSpectralMatch::Unpack_internal(lines, i, tmp_len, &beta_pep, ms2Scans, has_beta_peptide );
+                    CrosslinkSpectralMatch::Unpack_internal(lines, i, tmp_len, &beta_pep, ms2Scans, proteinList,
+                                                            has_beta_peptide );
                     pep->setBetaPeptide(beta_pep);
                     total_len += tmp_len;
                 }
@@ -704,7 +708,8 @@ namespace EngineLayer
 
         void CrosslinkSpectralMatch::Unpack (char *buf, size_t buf_len, size_t &len,
                                              CrosslinkSpectralMatch** newCsm,
-                                             const std::vector<Ms2ScanWithSpecificMass*> &ms2Scans )
+                                             const std::vector<Ms2ScanWithSpecificMass*> &ms2Scans,
+                                             const std::vector<Protein *> &proteinList )
         {
             std::string input(buf);
             std::vector<std::string> lines = StringHelper::split(input, '\n');
@@ -715,11 +720,13 @@ namespace EngineLayer
                 return;
             }
             bool has_beta_peptide=false;            
-            CrosslinkSpectralMatch::Unpack_internal ( lines, index, len, newCsm, ms2Scans, has_beta_peptide );
+            CrosslinkSpectralMatch::Unpack_internal ( lines, index, len, newCsm, ms2Scans, proteinList,
+                                                      has_beta_peptide );
             if ( has_beta_peptide) {
                 CrosslinkSpectralMatch* beta_pep;
                 size_t tmp_len=0;
-                CrosslinkSpectralMatch::Unpack_internal ( lines, index, tmp_len, &beta_pep, ms2Scans, has_beta_peptide );
+                CrosslinkSpectralMatch::Unpack_internal ( lines, index, tmp_len, &beta_pep, ms2Scans, proteinList,
+                                                          has_beta_peptide );
                 (*newCsm)->setBetaPeptide(beta_pep);
                 len += tmp_len;
             }            
@@ -729,6 +736,7 @@ namespace EngineLayer
                                                       int &index, size_t &len,
                                                       CrosslinkSpectralMatch** newCsm,
                                                       const std::vector<Ms2ScanWithSpecificMass*> &ms2Scans,
+                                                      const std::vector<Protein *> &proteinList,
                                                       bool &has_beta_peptide )
         {
             size_t total_len = 0;
@@ -813,8 +821,10 @@ namespace EngineLayer
             PeptideWithSetModifications* pep;
             size_t tmp_len=0;
             PeptideWithSetModifications::Unpack(input, index, tmp_len, &pep);
+            pep->SetNonSerializedPeptideInfo ( proteinList );
             total_len += tmp_len+1;
             index += 4;
+
             
             // line 11-x: Vector of MatchedFragmentIons
             std::vector<MatchedFragmentIon*> matchedFragmentIonsVec;
@@ -843,7 +853,7 @@ namespace EngineLayer
                                   cumulativeDecoyNotch, qValueNotch, maximumLikelihood, 
                                   eValue, eScore, calculateEValue);
             }
-            //csm->ResolveAllAmbiguities();
+            csm->ResolveAllAmbiguities();
 
             *newCsm = csm;
             len = total_len;

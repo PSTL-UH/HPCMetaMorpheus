@@ -106,24 +106,27 @@ namespace EngineLayer
             ///
             /// Arguments
             /// ---------
-            /// buf:       IN input character buffer
-            /// buf_size:  IN size of input buffer
-            /// len:       OUT number of bytes used for unpacking 'count' elements
-            /// newCsmVec: OUT (vector of) new CrosslinkSpectralMatch(s) .
-            /// ms2Scans:  IN vector of Ms2Scans required to reconstruct a Csm
-            /// count:     IN how many elements to unpack.
-            ///            default : -1 (until end of buffer is reached)
+            /// buf:         IN input character buffer
+            /// buf_size:    IN size of input buffer
+            /// count:       IN how many elements to unpack.  -1 indicates until end of buffer is reached
+            /// len:         OUT number of bytes used for unpacking 'count' elements
+            /// newCsmVec:   OUT (vector of) new CrosslinkSpectralMatch(s) .
+            /// ms2Scans:    IN vector of Ms2Scans. Required to reconstruct a Csm
+            /// proteinList: IN vector of Protein*. Required to reconstruct a Csm
             /// </summary>
-            static void Unpack ( char *buf, size_t buf_size, size_t &len,
+            static void Unpack ( char *buf, size_t buf_size, int count, size_t &len, 
                                  std::vector<CrosslinkSpectralMatch *> &newCsmVec,
-                                 const std::vector<Ms2ScanWithSpecificMass*> &ms2Scans, int count = -1 );
+                                 const std::vector<Ms2ScanWithSpecificMass*> &ms2Scans,
+                                 const std::vector<Protein*> &proteinList );
             static void Unpack ( char *buf, size_t buf_size, size_t &len,
                                  CrosslinkSpectralMatch **newCsm,
-                                 const std::vector<Ms2ScanWithSpecificMass*> &ms2Scans );
+                                 const std::vector<Ms2ScanWithSpecificMass*> &ms2Scans,
+                                 const std::vector<Protein *> &proteinList );
 
             static void Unpack_internal ( std::vector<std::string> &input, int &index, size_t &len,
                                           CrosslinkSpectralMatch** newCsm,
                                           const std::vector<Ms2ScanWithSpecificMass*> &ms2Scans,
+                                          const std::vector<Protein* > &proteinList,
                                           bool &has_beta_peptide);
             
         };

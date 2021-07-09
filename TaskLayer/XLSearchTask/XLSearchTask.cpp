@@ -194,6 +194,11 @@ namespace TaskLayer
     {
         return privateXlSearchParameters;
     }
+
+    std::vector<Protein*> XLSearchTask::getProteinList () const
+    {
+        return proteinList;
+    }
     
     void XLSearchTask::setXlSearchParameters(TaskLayer::XlSearchParameters *value)
     {
@@ -239,10 +244,10 @@ namespace TaskLayer
 #ifdef TIMING_INFO
         gettimeofday (&t2, NULL);
 #endif
-        std::vector<Protein*> proteinList = LoadProteins(taskId, dbFilenameList, true,
-                                                         getXlSearchParameters()->getDecoyType(),
-                                                         localizeableModificationTypes,
-                                                         getCommonParameters());
+        proteinList = LoadProteins(taskId, dbFilenameList, true,
+                                   getXlSearchParameters()->getDecoyType(),
+                                   localizeableModificationTypes,
+                                   getCommonParameters());
 #ifdef TIMING_INFO
         gettimeofday (&t2e, NULL);
 #endif
