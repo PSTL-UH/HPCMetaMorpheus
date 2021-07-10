@@ -206,7 +206,7 @@ namespace Test
         char *sbuf  = new char[bufsize];
 
         int ret = CrosslinkSpectralMatch::Pack(sbuf, bufsize, newPsms);
-        std::cout << "After Pack, ret = " << ret << " bufsize = " << bufsize << std::endl;
+        //std::cout << "After Pack, ret = " << ret << " bufsize = " << bufsize << std::endl;
         std::ofstream output("CSM.out");
         output << sbuf;
         output.close();
@@ -224,7 +224,7 @@ namespace Test
             int count=-1;
             size_t len=0;
             CrosslinkSpectralMatch::Unpack( sbuf, bufsize, count, len, unpackedPsms, listOfSortedms2Scans, proteinList);
-            std::cout << "len = " << len << " veclen = " << unpackedPsms.size() << std::endl;
+            //std::cout << "len = " << len << " veclen = " << unpackedPsms.size() << std::endl;
 
             output.open("CsmSerialized.out");
             for ( auto psms : unpackedPsms ) {
