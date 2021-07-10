@@ -7,6 +7,8 @@
 #include <numeric>
 #include <algorithm>
 #include <sstream>
+#include <iomanip>
+
 using namespace Proteomics::Fragmentation;
 using namespace Proteomics::ProteolyticDigestion;
 namespace EngineLayer
@@ -542,11 +544,12 @@ namespace EngineLayer
             else {
                 output << "false\t-\t";
             }
-            output << csm->getXLTotalScore() << "\t" <<
+            output << std::setprecision(12) << csm->getXLTotalScore() << "\t" <<
                 csm->getDeltaScore() << "\t" <<
                 csm->getScanIndex() << "\t" <<
                 csm->getScanNumber() << "\t" <<
                 csm->getXlProteinPos() << "\t" <<
+                csm->getScore() << "\t" <<
                 csm->getRunnerUpScore() << "\t";
             PsmCrossType ctype = csm->getCrossType();
             output << PsmCrossTypeToString(ctype) << "\t" <<
@@ -748,7 +751,7 @@ namespace EngineLayer
             total_len += input[index].length() + 1; 
             index++;
             int notch=-1, scanindex, scannumber, proteinPos, matchedFragmentIonsVecsize, lpositionsize, xlranksize;
-            double  deltaScore, XLTotalScore, runnerUpScore;
+            double  deltaScore, XLTotalScore, score, runnerUpScore;
 
             if ( splits[0] == "true" ) {
                 notch = std::stoi(splits[1]);
@@ -758,12 +761,13 @@ namespace EngineLayer
             scanindex    = std::stoi (splits[4]);
             scannumber   = std::stoi (splits[5]);
             proteinPos   = std::stoi (splits[6]);
-            runnerUpScore = std::stod(splits[7]);
-            PsmCrossType ctype = PsmCrossTypeFromString(splits[8]);
-            matchedFragmentIonsVecsize = std::stoi(splits[9]);
-            lpositionsize = std::stoi(splits[10]);
-            xlranksize     = std::stoi(splits[11]);
-            if ( splits[12] == "true" ) {
+            score        = std::stod (splits[7]);
+            runnerUpScore = std::stod(splits[8]);
+            PsmCrossType ctype = PsmCrossTypeFromString(splits[9]);
+            matchedFragmentIonsVecsize = std::stoi(splits[10]);
+            lpositionsize = std::stoi(splits[11]);
+            xlranksize     = std::stoi(splits[12]);
+            if ( splits[13] == "true" ) {
                 has_beta_peptide = true;
             }
 
@@ -851,6 +855,7 @@ namespace EngineLayer
             csm->setXLTotalScore(XLTotalScore);
             csm->setDeltaScore(deltaScore);
             csm->setXlProteinPos(proteinPos);
+            csm->setScore(score);
             csm->setRunnerUpScore(runnerUpScore);
             csm->setCrossType (ctype);
             csm->setXlRank(xlRankVec);
