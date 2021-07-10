@@ -545,6 +545,7 @@ namespace EngineLayer
             output << csm->getXLTotalScore() << "\t" <<
                 csm->getDeltaScore() << "\t" <<
                 csm->getScanIndex() << "\t" <<
+                csm->getScanNumber() << "\t" <<
                 csm->getXlProteinPos() << "\t" <<
                 csm->getRunnerUpScore() << "\t";
             PsmCrossType ctype = csm->getCrossType();
@@ -746,7 +747,7 @@ namespace EngineLayer
             //+1 for the endl symbol removed when converting the char* into a std::vector<std::string>
             total_len += input[index].length() + 1; 
             index++;
-            int notch=-1, scanindex, proteinPos, matchedFragmentIonsVecsize, lpositionsize, xlranksize;
+            int notch=-1, scanindex, scannumber, proteinPos, matchedFragmentIonsVecsize, lpositionsize, xlranksize;
             double  deltaScore, XLTotalScore, runnerUpScore;
 
             if ( splits[0] == "true" ) {
@@ -755,13 +756,14 @@ namespace EngineLayer
             XLTotalScore = std::stod (splits[2]);
             deltaScore   = std::stod (splits[3]);
             scanindex    = std::stoi (splits[4]);
-            proteinPos   = std::stoi (splits[5]);
-            runnerUpScore = std::stod(splits[6]);
-            PsmCrossType ctype = PsmCrossTypeFromString(splits[7]);
-            matchedFragmentIonsVecsize = std::stoi(splits[8]);
-            lpositionsize = std::stoi(splits[9]);
-            xlranksize     = std::stoi(splits[10]);
-            if ( splits[11] == "true" ) {
+            scannumber   = std::stoi (splits[5]);
+            proteinPos   = std::stoi (splits[6]);
+            runnerUpScore = std::stod(splits[7]);
+            PsmCrossType ctype = PsmCrossTypeFromString(splits[8]);
+            matchedFragmentIonsVecsize = std::stoi(splits[9]);
+            lpositionsize = std::stoi(splits[10]);
+            xlranksize     = std::stoi(splits[11]);
+            if ( splits[12] == "true" ) {
                 has_beta_peptide = true;
             }
 
@@ -822,7 +824,7 @@ namespace EngineLayer
             size_t tmp_len=0;
             PeptideWithSetModifications::Unpack(input, index, tmp_len, &pep);
             pep->SetNonSerializedPeptideInfo ( proteinList );
-            total_len += tmp_len+1;
+            total_len += tmp_len;
             index += 4;
 
             
@@ -834,10 +836,16 @@ namespace EngineLayer
                 MatchedFragmentIon::Unpack(input[index], tmp_len, &ion);
                 matchedFragmentIonsVec.push_back(ion);
                 index++;
-                total_len += tmp_len+1;                    
+                total_len += tmp_len;                    
             }
 
-            Ms2ScanWithSpecificMass *scan = ms2Scans[scanindex];
+            Ms2ScanWithSpecificMass *scan = nullptr;
+            for ( auto i = 0; i < ms2Scans.size() ; i ++ ) {
+                if ( ms2Scans[i]->getOneBasedScanNumber() == scannumber ) {
+                    scan = ms2Scans[i];
+                    break;
+                }
+            }
             CrosslinkSpectralMatch *csm = new CrosslinkSpectralMatch ( pep, notch, XLTotalScore, scanindex, scan, dp,
                                                                        matchedFragmentIonsVec );
             csm->setXLTotalScore(XLTotalScore);
