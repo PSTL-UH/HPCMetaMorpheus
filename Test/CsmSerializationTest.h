@@ -42,6 +42,7 @@ namespace Test
     {
     public:
         static void CSMSerializationTest_BSA_DSSO();
+        static void TestDeadendTrisSerialized();
     };
 
     class XLTestDataFile : public MsDataFile

@@ -88,8 +88,11 @@ int main ( int argc, char **argv )
     //Chemistry::PeriodicTable::Load (elr);
     UsefulProteomicsDatabases::PeriodicTableLoader::Load (elr);
 
-    std::cout << ++i << ". CSMSerialization_BSA_DSSO" << std::endl;
-    Test::CSMSerializationTest::CSMSerializationTest_BSA_DSSO();
+    //std::cout << ++i << ". CSMSerialization_BSA_DSSO" << std::endl;
+    //Test::CSMSerializationTest::CSMSerializationTest_BSA_DSSO();
+
+    std::cout << ++i << ". TestDeadendTrisSerialized" << std::endl;
+    Test::CSMSerializationTest::TestDeadendTrisSerialized();
 
     return 0;
 }
@@ -198,54 +201,40 @@ namespace Test
         task->WritePepXML_xl(newPsms, proteinList, "", variableModifications, fixedModifications, vs,
                              testdir, "pep.XML", vs2);
 
-        //std::filesystem::rename("singlePsms.tsv", "singlePsms.orig.tsv");
-        //std::filesystem::rename("allPsms.tsv", "allPsms.orig.tsv");
         std::filesystem::rename("pep.XML.pep.XM", "pep.orig.xml");
         
         size_t bufsize= 1024*1024;
         char *sbuf  = new char[bufsize];
-
         int ret = CrosslinkSpectralMatch::Pack(sbuf, bufsize, newPsms);
-        //std::cout << "After Pack, ret = " << ret << " bufsize = " << bufsize << std::endl;
-        std::ofstream output("CSM.out");
-        output << sbuf;
-        output.close();
-
-        output.open("CsmOrig.out");
+        
+        std::ofstream output("CsmOrig.out");
         for ( auto psms : newPsms ) {
             output << psms->ToString() << std::endl;
         }
         output.close();
 
-        //std::vector<Protein *> pList = task->getProteinList();
-        
         if ( ret > 0 ) {
             std::vector<CrosslinkSpectralMatch*> unpackedPsms;
             int count=-1;
             size_t len=0;
             CrosslinkSpectralMatch::Unpack( sbuf, bufsize, count, len, unpackedPsms, listOfSortedms2Scans, proteinList);
-            //std::cout << "len = " << len << " veclen = " << unpackedPsms.size() << std::endl;
 
             output.open("CsmSerialized.out");
             for ( auto psms : unpackedPsms ) {
                 output << psms->ToString() << std::endl;
             }
             output.close();
-
             
-            //task->WritePepXML_xl(unpackedPsms, proteinList, "", variableModifications, fixedModifications, vs,
-            //                     testdir, "pep.XML", vs2);
+            task->WritePepXML_xl(unpackedPsms, proteinList, "", variableModifications, fixedModifications, vs,
+                                 testdir, "pep.XML", vs2);
 
-            //Assert::IsTrue(CompareFiles("singlePsms.tsv", "singlePsms.orig.tsv"));
-            //Assert::IsTrue(CompareFiles("allPsms.tsv", "allPsms.orig.tsv"));
-            //Assert::IsTrue(CompareFiles("pep.XML.pep.XM", "pep.orig.xml"));
+            Assert::IsTrue(CompareFiles("pep.XML.pep.XM", "pep.orig.xml"));
+            Assert::IsTrue(CompareFiles("CsmOrig.out", "CsmSerialized.out"));
         }
 
         delete[] sbuf;
-        //std::filesystem::remove("singlePsms.tsv");
-        //std::filesystem::remove("singlePsms.orig.tsv");
-        //std::filesystem::remove("allPsms.tsv");
-        //std::filesystem::remove("allPsms.orig.tsv");
+        std::filesystem::remove("CsmOrig.out");
+        std::filesystem::remove("CsmSerialized.out");
         std::filesystem::remove("pep.XML.pep.XM");
         std::filesystem::remove("pep.orig.xml");
 
@@ -258,6 +247,116 @@ namespace Test
         delete commonParameters;
     }
 
+    void CSMSerializationTest::TestDeadendTrisSerialized()
+    {
+        Protein *protein = new Protein("PEPTIDE", "");
+        std::vector<CrosslinkSpectralMatch*> csms(1);
+        
+        // generate the scan with the deadend mod peptide's fragments
+        std::vector<Ms2ScanWithSpecificMass*> scans(1);
+        ModificationMotif *motif;
+        ModificationMotif::TryGetMotif("T", &motif);
+        auto crosslinker = new Crosslinker("T", "T", "test", false, 100, 0, 0, 0, 0, 0, 50);
+        Modification *deadend = new Modification("TestId", "", "Test", "", motif, "Anywhere.",
+                                                 nullptr, std::make_optional(crosslinker->getDeadendMassTris()));
+        
+        auto  tempVar = new DigestionParams("trypsin");
+        std::vector<Modification*> vec1 = {deadend};
+        std::vector<Modification*> vec2;
+        auto deadendPeptide = protein->Digest(tempVar, vec1, vec2).front();
+        
+        auto tmpvec = deadendPeptide->Fragment(DissociationType::HCD, FragmentationTerminus::Both);
+        std::vector<double> mz;
+        for (auto p: tmpvec ) {
+            mz.push_back(Chemistry::ClassExtensions::ToMz(p->NeutralMass, 1));
+        }
+        
+        std::vector<double> intensities = {1.0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+        
+        MzSpectrum *spectrum = new MzSpectrum(mz, intensities, false);
+        std::vector<std::vector<double>> dvvec;
+        MsDataScan *sc = new MsDataScan(spectrum, 1, 2, true, Polarity::Positive, 1, spectrum->getRange(), "",
+                                        MZAnalyzerType::Orbitrap,
+                                        12, 1.0, dvvec, "");
+        auto tempVar2 = new CommonParameters();
+        std::vector<MassSpectrometry::IsotopicEnvelope*> ievec;
+        scans[0] = new Ms2ScanWithSpecificMass(sc, Chemistry::ClassExtensions::ToMz(deadendPeptide->getMonoisotopicMass(),2),
+                                               2, "", tempVar2, ievec);
+        
+        // search the data with the peptide WITHOUT the deadend mod annotated in the search database.
+        // the search engine should be able to correctly identify the deadend mod on T
+        std::vector<Modification*> vec3, vec4;
+        std::vector<std::string> fvec;
+        std::vector<std::string> svec, svec2;
+        std::vector<Proteomics::Protein*> pvec = {protein};
+        IndexingEngine tempVar3(pvec, vec3, vec4 , 0, DecoyType::None,
+                                new CommonParameters(), 1000, false, fvec, svec );
+                                
+        auto indexingResults = static_cast<IndexingResults*>((&tempVar3)->Run());
+
+        auto tvec = indexingResults->getPeptideIndex();
+        auto tvec2 = indexingResults->getFragmentIndex();
+        CrosslinkSearchEngine tempVar4(csms, scans, tvec, tvec2, 0,
+                                       new CommonParameters(), crosslinker, false, 0, false,
+                                       false, true, svec2);
+        (&tempVar4)->Run();
+        
+        CrosslinkSpectralMatch *csm = csms.front();
+        Assert::IsTrue(csm->getCrossType() == PsmCrossType::DeadEndTris);
+        Assert::IsTrue((int)csm->getMatchedFragmentIons().size() == 12);
+
+        for (auto item : csms)		{
+            item->SetFdrValues(0, 0, 0, 0, 0, 0, 0, 0, 0, false);
+        }
+
+        
+        size_t bufsize= 1024*1024;
+        char *sbuf  = new char[bufsize];
+        int ret = CrosslinkSpectralMatch::Pack(sbuf, bufsize, csms);
+        std::ofstream output("CsmOrig.out");
+        for ( auto psms : csms ) {
+            output << psms->ToString() << std::endl;
+        }
+        output.close();
+
+
+        output.open("CSM.out");
+        output.write(sbuf, bufsize);
+        output.close();
+        
+        if ( ret > 0 ) {
+            std::vector<CrosslinkSpectralMatch*> unpackedPsms;
+            int count=-1;
+            size_t len=0;
+            CrosslinkSpectralMatch::Unpack( sbuf, bufsize, count, len, unpackedPsms, scans, pvec);
+
+            Assert::AreEqual(csms.size(), unpackedPsms.size());
+            CrosslinkSpectralMatch *csm2 = unpackedPsms.front();
+            Assert::IsTrue(csm2->getCrossType() == PsmCrossType::DeadEndTris);
+            Assert::IsTrue((int)csm2->getMatchedFragmentIons().size() == 12);            
+
+            output.open("CsmSerialized.out");
+            for ( auto psms : unpackedPsms ) {
+                output << psms->ToString() << std::endl;
+            }
+            output.close();
+            Assert::IsTrue(CompareFiles("CsmOrig.out", "CsmSerialized.out"));            
+        }
+
+        delete[] sbuf;
+        //std::filesystem::remove("CsmOrig.out");
+        //std::filesystem::remove("CsmSerialized.out");
+        
+        delete sc;
+        delete spectrum;
+        delete deadend;
+        delete crosslinker;
+        delete protein;
+        delete tempVar;
+        delete tempVar2;
+    }
+
+    
     XLTestDataFile::XLTestDataFile() : MsDataFile(2, new MassSpectrometry::SourceFile("", "", "", "", "" ))
     {
         auto mz1 = std::vector<double> {Chemistry::ClassExtensions::ToMz(1994.05,3), Chemistry::ClassExtensions::ToMz(846.4963,1),
