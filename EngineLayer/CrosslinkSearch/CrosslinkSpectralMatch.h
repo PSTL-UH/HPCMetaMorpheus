@@ -123,7 +123,7 @@ namespace EngineLayer
                                  const std::vector<Ms2ScanWithSpecificMass*> &ms2Scans,
                                  const std::vector<Protein *> &proteinList );
 
-            static void Unpack_internal ( std::vector<std::string> &input, int &index, size_t &len,
+            static void Unpack_internal ( std::vector<char *> &input, int &index, size_t &len,
                                           CrosslinkSpectralMatch** newCsm,
                                           const std::vector<Ms2ScanWithSpecificMass*> &ms2Scans,
                                           const std::vector<Protein* > &proteinList,
