@@ -3,6 +3,7 @@
 #include "Crosslinker.h"
 
 #include "Sort.h"
+#include "BinaryPack.h"
 
 #include <numeric>
 #include <algorithm>
@@ -526,157 +527,164 @@ namespace EngineLayer
         
         int CrosslinkSpectralMatch::Pack_internal(char *buf, size_t &buf_len, CrosslinkSpectralMatch *csm)
         {
-            size_t total_len = 0;
-            size_t pos = 0;
-            std::stringstream output;
+            size_t bufpos = 0;
 
             auto mFrIons = csm->getMatchedFragmentIons ();
             auto dp = csm->digestionParams;
             auto uMapPep = csm->getPeptidesToMatchingFragments();
             std::vector<int> lPositions  = csm->getLinkPositions();
             std::vector<int> xlRanks = csm->getXlRank();
-            bool has_beta_peptide = csm->getBetaPeptide() != nullptr;
+            bool has_beta_peptide = csm->getBetaPeptide() != nullptr;          
+
+            size_t pos = BinaryPack::LineStartOffset;
+            char tmpbuf[256];
+            int retlen;
             
             // line 1
+            retlen = BinaryPack::PackBool(tmpbuf+pos, csm->getNotch().has_value());
+            pos += retlen;
             if ( csm->getNotch().has_value() ) {
-                output << "true\t" << csm->getNotch().value() << "\t";
+                retlen = BinaryPack::PackInt(tmpbuf+pos, csm->getNotch().value());
+                pos += retlen;
             }
-            else {
-                output << "false\t-\t";
-            }
-            output << std::setprecision(12) << csm->getXLTotalScore() << "\t" <<
-                csm->getDeltaScore() << "\t" <<
-                csm->getScanIndex() << "\t" <<
-                csm->getScanNumber() << "\t" <<
-                csm->getXlProteinPos() << "\t" <<
-                csm->getScore() << "\t" <<
-                csm->getRunnerUpScore() << "\t";
+            
+            retlen = BinaryPack::PackDouble(tmpbuf+pos, csm->getXLTotalScore() );
+            pos += retlen;
+            retlen = BinaryPack::PackDouble(tmpbuf+pos, csm->getDeltaScore() );
+            pos += retlen;
+            retlen = BinaryPack::PackDouble(tmpbuf+pos, csm->getScore() );
+            pos += retlen;
+            retlen = BinaryPack::PackDouble(tmpbuf+pos, csm->getRunnerUpScore() );
+            pos += retlen;
+            retlen = BinaryPack::PackInt(tmpbuf+pos, csm->getScanIndex() );
+            pos += retlen;
+            retlen = BinaryPack::PackInt(tmpbuf+pos, csm->getScanNumber() );
+            pos += retlen;
+            retlen = BinaryPack::PackInt(tmpbuf+pos, csm->getXlProteinPos() );
+            pos += retlen;
+            
             PsmCrossType ctype = csm->getCrossType();
-            output << PsmCrossTypeToString(ctype) << "\t" <<
-                csm->getMatchedFragmentIons().size() << "\t" << 
-                lPositions.size() << "\t" <<
-                xlRanks.size() << "\t";
-            if ( has_beta_peptide ) {
-                output << "true" << std::endl;
-            }
-            else {
-                output << "false" << std::endl;
-            }                
-                
-            std::string s = output.str();
-            total_len += s.length();
-            if ( total_len > buf_len ) {
-                buf_len = total_len;
-                return -1;
-            }
-            memcpy ( buf, s.c_str(), total_len );
-            pos = total_len;
+            retlen = BinaryPack::PackString(tmpbuf+pos, PsmCrossTypeToString(ctype) );
+            pos += retlen;
+            retlen = BinaryPack::PackInt(tmpbuf+pos, (int)csm->getMatchedFragmentIons().size() );
+            pos += retlen;
+            retlen = BinaryPack::PackInt(tmpbuf+pos, (int)lPositions.size() );
+            pos += retlen;
+            retlen = BinaryPack::PackInt(tmpbuf+pos, (int)xlRanks.size() );
+            pos += retlen;
+                        
+            retlen = BinaryPack::PackBool(tmpbuf+pos, has_beta_peptide );
+            pos += retlen;
+            
+            // set lenght of line right at the beginning.
+            BinaryPack::SetLineLength(tmpbuf, pos);
 
-            //Line 2: FdrInfo related Data
+            if ( bufpos+pos > buf_len ) {
+                buf_len = bufpos+pos;
+                return -1;
+            }
+            memcpy ( buf+bufpos, tmpbuf, pos );
+            bufpos += pos;
+
+            //Line 2: pack FdrInfo 
             FdrInfo *fdr = csm->getFdrInfo();
-            output.str("");
-            if ( fdr != nullptr ) {
-                output <<  fdr->getCumulativeTarget() <<  "\t" <<
-                    fdr->getCumulativeDecoy() <<  "\t" <<
-                    fdr->getQValue() <<  "\t" <<
-                    fdr->getCumulativeTargetNotch() <<  "\t" <<
-                    fdr->getCumulativeDecoyNotch() <<  "\t" <<
-                    fdr->getQValueNotch() <<  "\t" <<
-                    fdr->getMaximumLikelihood() <<  "\t" <<
-                    fdr->getEValue() <<  "\t" <<
-                    fdr->getEScore() <<  "\t";
-                if ( fdr->getCalculateEValue() ) {
-                    output << "true\n";
-                }
-                else {
-                    output << "false\n";
-                }
-            }
-            else {
-                output << "null\n";
-            }
-            
-            s = output.str();
-            total_len += s.length();
-            if ( total_len > buf_len ) {
-                buf_len = total_len;
+            size_t tmp_len = buf_len - bufpos;
+
+            // this routine sets all the required aspects of a packed line (e.g. header, length)
+            int ret = FdrInfo::Pack(buf+bufpos, tmp_len, fdr );
+            if ( ret == -1 ) {
+                buf_len += tmp_len - (buf_len - bufpos);
                 return -1;
             }
-            memcpy ( buf+pos, s.c_str(), s.length() );
-            pos = total_len;
-            
+            bufpos += tmp_len;
+
             //line 3: LinkPositions
-            output.str("");
+            pos = BinaryPack::LineStartOffset;
+            memset(tmpbuf, 0, 256);
+
             for ( auto lp: lPositions ) {
-                output << lp << "\t";
+                //output << lp << "\t";
+                retlen = BinaryPack::PackInt(tmpbuf+pos, lp );
+                pos += retlen;
             }
-            output << std::endl;
-            
-            s = output.str();
-            total_len += s.length();
-            if ( total_len > buf_len ) {
-                buf_len = total_len;
+            // set lenght of line right at the beginning.
+            BinaryPack::SetLineLength(tmpbuf, pos);
+
+            if ( bufpos+pos > buf_len ) {
+                buf_len = bufpos+pos;
                 return -1;
             }
-            memcpy ( buf+pos, s.c_str(), s.length() );
-            pos = total_len;
+            memcpy ( buf+bufpos, tmpbuf, pos );
+            bufpos += pos;
             
             //line 4: xlRank
-            output.str("");
-            for ( auto xl: xlRanks) {
-                output << xl << "\t";
-            }
-            output << std::endl;
+            pos = BinaryPack::LineStartOffset;
+            memset(tmpbuf, 0, 256);
 
-            s = output.str();
-            total_len += s.length();
-            if ( total_len > buf_len ) {
-                buf_len = total_len;
+            for ( auto xl: xlRanks) {
+                //output << xl << "\t";
+                retlen = BinaryPack::PackInt(tmpbuf+pos, xl );
+                pos += retlen;
+            }
+
+            // set lenght of line right at the beginning.
+            BinaryPack::SetLineLength(tmpbuf, pos);
+
+            if ( bufpos+pos > buf_len ) {
+                buf_len = bufpos+pos;
                 return -1;
             }
-            memcpy ( buf+pos, s.c_str(), s.length() );
-            pos = total_len;
+            memcpy ( buf+bufpos, tmpbuf, pos );
+            bufpos += pos;
             
             //line 5: DigestionParams();
-            s = dp->ToString() + "\n";
-            total_len += s.length();
-            if ( total_len > buf_len ) {
-                buf_len = total_len;
+            pos = BinaryPack::LineStartOffset;
+            memset(tmpbuf, 0, 256);
+            
+            std::string s = dp->ToString();
+            retlen = BinaryPack::PackString(tmpbuf+pos, s);
+            pos += retlen;
+
+            // set lenght of line right at the beginning.
+            BinaryPack::SetLineLength(tmpbuf, pos);
+
+            if ( bufpos+pos > buf_len ) {
+                buf_len = bufpos+pos;
                 return -1;
             }
-            memcpy ( buf+pos, s.c_str(), s.length() );
-            pos = total_len;
-            
+            memcpy ( buf+bufpos, tmpbuf, pos );
+            bufpos += pos;
+                        
             //line 6-10: PeptideWithSetModifications;
             //Assuming right now only a single PeptideWithSetModifications
             if ( uMapPep.size() != 1 ) {
                 std::cout << "CrosslinkSpectralMatch::Pack: Error - unordered_map has more than one entry!\n";
             }
             auto pep = std::get<0>(*uMapPep.begin());
-            size_t tmp_len = buf_len - total_len;
-            // need to check whether the routine below adds a \n at the end!
-            int ret = PeptideWithSetModifications::Pack(buf+pos, tmp_len, pep );
+            tmp_len = buf_len - bufpos;
+
+            // this routine sets all the required aspects of a packed line (e.g. header, length)
+            ret = PeptideWithSetModifications::Pack(buf+bufpos, tmp_len, pep );
             if ( ret == -1 ) {
-                buf_len += tmp_len - (buf_len - total_len);
+                buf_len += tmp_len - (buf_len - bufpos);
                 return -1;
             }
-            total_len += tmp_len;
-            pos += tmp_len;
+            bufpos += tmp_len;
             
             //line 11-x: one line for each MatchedFragmentIon
             for ( auto i=0; i< mFrIons.size(); i++ ) {
-                tmp_len = buf_len - total_len;
-                // need to check whether the routine below adds a \n at the end!
-                ret = MatchedFragmentIon::Pack ( buf+pos, tmp_len, mFrIons[i]);
+                tmp_len = buf_len - bufpos;
+
+                // dito here, header and length should be set
+                ret = MatchedFragmentIon::Pack ( buf+bufpos, tmp_len, mFrIons[i]);
                 if ( ret == -1 ) {
-                    buf_len += tmp_len - (buf_len - total_len);
+                    buf_len += tmp_len - (buf_len - bufpos);
                     return -1;
                 }
-                total_len += tmp_len;
-                pos += tmp_len;
+                bufpos += tmp_len;
             }
             
-            return (int)total_len;
+            return (int)bufpos;
         }
 
         void CrosslinkSpectralMatch::Unpack (char *buf, size_t buf_len, int count, size_t &len,
@@ -684,8 +692,7 @@ namespace EngineLayer
                                              const std::vector<Ms2ScanWithSpecificMass*> &ms2Scans,
                                              const std::vector<Protein *> &proteinList )
         {
-            std::string input_buf (buf);
-            std::vector<std::string> lines = StringHelper::split(input_buf, '\n');
+            std::vector<char *> lines = BinaryPack::SplitLines(buf, buf_len);
 
             size_t total_len=0;
             int counter=0;
@@ -715,11 +722,10 @@ namespace EngineLayer
                                              const std::vector<Ms2ScanWithSpecificMass*> &ms2Scans,
                                              const std::vector<Protein *> &proteinList )
         {
-            std::string input(buf);
-            std::vector<std::string> lines = StringHelper::split(input, '\n');
+            std::vector<char *> lines = BinaryPack::SplitLines(buf, buf_len);
             int index=0;
             if ( lines.size() < 10 ) {
-                std::cout << "CrosslinkSpectralMatch::Unpack : input does not contains enough information to " <<
+                std::cout << "CrosslinkSpectralMatch::Unpack : input does not contain enough information to " <<
                     "reconstruct the CrosslinkSpectralMatch. " << std::endl;
                 return;
             }
@@ -736,7 +742,7 @@ namespace EngineLayer
             }            
         }
 
-        void CrosslinkSpectralMatch::Unpack_internal (std::vector<std::string> &input,
+        void CrosslinkSpectralMatch::Unpack_internal (std::vector<char*> &input,
                                                       int &index, size_t &len,
                                                       CrosslinkSpectralMatch** newCsm,
                                                       const std::vector<Ms2ScanWithSpecificMass*> &ms2Scans,
@@ -744,88 +750,112 @@ namespace EngineLayer
                                                       bool &has_beta_peptide )
         {
             size_t total_len = 0;
-
+            int linelen=0;
+            int retlen, pos=0;
+            char *buf=NULL;
             //Dissect line 1: generic information
-            std::vector<std::string> splits = StringHelper::split(input[index], '\t');
-            //+1 for the endl symbol removed when converting the char* into a std::vector<std::string>
-            total_len += input[index].length() + 1; 
+            buf = input[index];
+            retlen = BinaryPack::GetLineLength( buf, linelen);
+            pos += retlen;
+            total_len += linelen; 
             index++;
+            
             int notch=-1, scanindex, scannumber, proteinPos, matchedFragmentIonsVecsize, lpositionsize, xlranksize;
             double  deltaScore, XLTotalScore, score, runnerUpScore;
-
-            if ( splits[0] == "true" ) {
-                notch = std::stoi(splits[1]);
-            }
-            XLTotalScore = std::stod (splits[2]);
-            deltaScore   = std::stod (splits[3]);
-            scanindex    = std::stoi (splits[4]);
-            scannumber   = std::stoi (splits[5]);
-            proteinPos   = std::stoi (splits[6]);
-            score        = std::stod (splits[7]);
-            runnerUpScore = std::stod(splits[8]);
-            PsmCrossType ctype = PsmCrossTypeFromString(splits[9]);
-            matchedFragmentIonsVecsize = std::stoi(splits[10]);
-            lpositionsize = std::stoi(splits[11]);
-            xlranksize     = std::stoi(splits[12]);
-            if ( splits[13] == "true" ) {
-                has_beta_peptide = true;
-            }
-
-            //line 2: FdrInfo related data
-            double cumulativeTarget, cumulativeDecoy, qValue, cumulativeTargetNotch;
-            double cumulativeDecoyNotch, qValueNotch, maximumLikelihood, eValue, eScore;
-            bool calculateEValue=false;
-            bool have_fdr = false;
+            bool  tmpvar;
             
-            splits.clear();
-            splits = StringHelper::split(input[index], '\t');
-            total_len += input[index].length() + 1;            
-            index++;
-            if ( splits.size() > 1 ) {
-                have_fdr = true;
-                
-                cumulativeTarget = std::stod(splits[0]);
-                cumulativeDecoy  = std::stod(splits[1]);
-                qValue           = std::stod(splits[2]);
-                cumulativeTargetNotch = std::stod(splits[3]);
-                cumulativeDecoyNotch  = std::stod(splits[4]);
-                qValueNotch           = std::stod(splits[5]);
-                maximumLikelihood     = std::stod(splits[6]);
-                eValue                = std::stod(splits[7]);
-                eScore                = std::stod(splits[8]);
-                if ( splits[9] == "true" ) {
-                    calculateEValue = true;
-                }
+            retlen = BinaryPack::UnpackBool ( buf+pos, tmpvar );
+            pos += retlen;
+            if ( tmpvar ) {
+                retlen = BinaryPack::UnpackInt(buf+pos, notch );
+                pos += retlen;
             }
+            retlen = BinaryPack::UnpackDouble ( buf+pos, XLTotalScore );
+            pos += retlen;
+            retlen = BinaryPack::UnpackDouble ( buf+pos, deltaScore );
+            pos += retlen;
+            retlen = BinaryPack::UnpackDouble ( buf+pos, score );
+            pos += retlen;
+            retlen = BinaryPack::UnpackDouble ( buf+pos, runnerUpScore );
+            pos += retlen;
+
+            retlen = BinaryPack::UnpackInt ( buf+pos, scanindex );
+            pos += retlen;
+            retlen = BinaryPack::UnpackInt ( buf+pos, scannumber );
+            pos += retlen;
+            retlen = BinaryPack::UnpackInt ( buf+pos, proteinPos );
+            pos += retlen;
+
+            std::string tmpstring;
+            retlen = BinaryPack::UnpackString ( buf+pos, tmpstring );
+            pos += retlen;
+            PsmCrossType ctype = PsmCrossTypeFromString(tmpstring);
+
+            retlen = BinaryPack::UnpackInt ( buf+pos, matchedFragmentIonsVecsize );
+            pos += retlen;
+            retlen = BinaryPack::UnpackInt ( buf+pos, lpositionsize );
+            pos += retlen;
+            retlen = BinaryPack::UnpackInt ( buf+pos, xlranksize );
+            pos += retlen;
+
+            retlen = BinaryPack::UnpackBool ( buf+pos, has_beta_peptide );
+            pos += retlen;
+            
+            //line 2: FdrInfo related data
+            FdrInfo* fdr=nullptr;
+            size_t tmp_len=0;
+            FdrInfo::Unpack(input[index], tmp_len, &fdr);
+            total_len += tmp_len;
+            index ++;
 
             //line 3: linkPositions
-            std::vector<int> linkPosvec;
-            splits.clear();
-            splits = StringHelper::split(input[index], '\t');
-            total_len += input[index].length() + 1; 
+            pos = 0;
+            buf = input[index];
             index++;
+            retlen = BinaryPack::GetLineLength(buf, linelen);
+            pos += retlen;
+            total_len += linelen;            
+
+            std::vector<int> linkPosvec;
             for ( auto i=0; i<lpositionsize; i++ ) {
-                linkPosvec.push_back(std::stoi(splits[i]));
+                int tmpint;
+                retlen = BinaryPack::UnpackInt ( buf+pos, tmpint );
+                pos += retlen;
+                linkPosvec.push_back(tmpint);
             }
             
             //line 4: xlRank
-            std::vector<int> xlRankVec;
-            splits.clear();
-            splits = StringHelper::split(input[index], '\t');
-            total_len += input[index].length() + 1; 
+            pos = 0;
+            buf = input[index];
             index++;
+            retlen = BinaryPack::GetLineLength(buf, linelen);
+            pos += retlen;
+            total_len += linelen;            
+
+            std::vector<int> xlRankVec;
             for ( auto i=0; i<xlranksize; i++ ) {
-                xlRankVec.push_back(std::stoi(splits[i]));
+                int tmpint;
+                retlen = BinaryPack::UnpackInt ( buf+pos, tmpint );
+                pos += retlen;
+                xlRankVec.push_back(tmpint);
             }
             
             //line 5: DigestionParams
-            DigestionParams *dp = DigestionParams::FromString(input[index]);
-            total_len += input[index].length() + 1; 
+            pos = 0;
+            buf = input[index];
             index++;
+            retlen = BinaryPack::GetLineLength(buf, linelen);
+            pos += retlen;
+            total_len += linelen;            
+
+            std::string dpstring;
+            retlen = BinaryPack::UnpackString(buf+pos, dpstring);
+            pos += retlen;
+            DigestionParams *dp = DigestionParams::FromString(dpstring);
 
             //line 6-10: PeptideWithSetModifications
             PeptideWithSetModifications* pep;
-            size_t tmp_len=0;
+            tmp_len=0;
             PeptideWithSetModifications::Unpack(input, index, tmp_len, &pep);
             pep->SetNonSerializedPeptideInfo ( proteinList );
             total_len += tmp_len;
@@ -861,10 +891,8 @@ namespace EngineLayer
             csm->setXlRank(xlRankVec);
             csm->setLinkPositions(linkPosvec);
 
-            if ( have_fdr) {
-                csm->SetFdrValues(cumulativeTarget, cumulativeDecoy, qValue, cumulativeTargetNotch,
-                                  cumulativeDecoyNotch, qValueNotch, maximumLikelihood, 
-                                  eValue, eScore, calculateEValue);
+            if ( fdr != nullptr ) {
+                csm->setFdrInfo(fdr);
             }
             csm->ResolveAllAmbiguities();
 
