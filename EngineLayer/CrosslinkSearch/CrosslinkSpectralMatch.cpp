@@ -586,46 +586,18 @@ namespace EngineLayer
             memcpy ( buf+bufpos, tmpbuf, pos );
             bufpos += pos;
 
-            //Line 2: FdrInfo related Data
-            pos = BinaryPack::LineStartOffset;
-            memset(tmpbuf, 0, 256);
-            
+            //Line 2: pack FdrInfo 
             FdrInfo *fdr = csm->getFdrInfo();
-            retlen = BinaryPack::PackBool(tmpbuf+pos, (fdr != nullptr) );
-            pos += retlen;
-            
-            if ( fdr != nullptr ) {
-                retlen = BinaryPack::PackDouble(tmpbuf+pos, fdr->getCumulativeTarget() );
-                pos += retlen;
-                retlen = BinaryPack::PackDouble(tmpbuf+pos, fdr->getCumulativeDecoy() );
-                pos += retlen;
-                retlen = BinaryPack::PackDouble(tmpbuf+pos, fdr->getQValue() );
-                pos += retlen;
-                retlen = BinaryPack::PackDouble(tmpbuf+pos, fdr->getCumulativeTargetNotch() );
-                pos += retlen;
-                retlen = BinaryPack::PackDouble(tmpbuf+pos, fdr->getCumulativeDecoyNotch() );
-                pos += retlen;
-                retlen = BinaryPack::PackDouble(tmpbuf+pos, fdr->getQValueNotch() );
-                pos += retlen;
-                retlen = BinaryPack::PackDouble(tmpbuf+pos, fdr->getMaximumLikelihood() );
-                pos += retlen;
-                retlen = BinaryPack::PackDouble(tmpbuf+pos, fdr->getEValue() );
-                pos += retlen;
-                retlen = BinaryPack::PackDouble(tmpbuf+pos, fdr->getEScore() );
-                pos += retlen;
-                retlen = BinaryPack::PackBool(tmpbuf+pos, fdr->getCalculateEValue() );
-                pos += retlen;                
-            }
-            // set lenght of line right at the beginning.
-            BinaryPack::SetLineLength(tmpbuf, pos);
+            size_t tmp_len = buf_len - bufpos;
 
-            if ( bufpos+pos > buf_len ) {
-                buf_len = bufpos+pos;
+            // this routine sets all the required aspects of a packed line (e.g. header, length)
+            int ret = FdrInfo::Pack(buf+bufpos, tmp_len, fdr );
+            if ( ret == -1 ) {
+                buf_len += tmp_len - (buf_len - bufpos);
                 return -1;
             }
-            memcpy ( buf+bufpos, tmpbuf, pos );
-            bufpos += pos;
-                        
+            bufpos += tmp_len;
+
             //line 3: LinkPositions
             pos = BinaryPack::LineStartOffset;
             memset(tmpbuf, 0, 256);
@@ -689,10 +661,10 @@ namespace EngineLayer
                 std::cout << "CrosslinkSpectralMatch::Pack: Error - unordered_map has more than one entry!\n";
             }
             auto pep = std::get<0>(*uMapPep.begin());
-            size_t tmp_len = buf_len - bufpos;
+            tmp_len = buf_len - bufpos;
 
             // this routine sets all the required aspects of a packed line (e.g. header, length)
-            int ret = PeptideWithSetModifications::Pack(buf+bufpos, tmp_len, pep );
+            ret = PeptideWithSetModifications::Pack(buf+bufpos, tmp_len, pep );
             if ( ret == -1 ) {
                 buf_len += tmp_len - (buf_len - bufpos);
                 return -1;
@@ -798,10 +770,6 @@ namespace EngineLayer
                 retlen = BinaryPack::UnpackInt(buf+pos, notch );
                 pos += retlen;
             }
-            //XLTotalScore = std::stod (splits[2]);
-            //deltaScore   = std::stod (splits[3]);
-            //score        = std::stod (splits[4]);
-            //runnerUpScore = std::stod(splits[5]);
             retlen = BinaryPack::UnpackDouble ( buf+pos, XLTotalScore );
             pos += retlen;
             retlen = BinaryPack::UnpackDouble ( buf+pos, deltaScore );
@@ -811,9 +779,6 @@ namespace EngineLayer
             retlen = BinaryPack::UnpackDouble ( buf+pos, runnerUpScore );
             pos += retlen;
 
-            //scanindex    = std::stoi (splits[6]);
-            //scannumber   = std::stoi (splits[7]);
-            //proteinPos   = std::stoi (splits[8]);
             retlen = BinaryPack::UnpackInt ( buf+pos, scanindex );
             pos += retlen;
             retlen = BinaryPack::UnpackInt ( buf+pos, scannumber );
@@ -821,15 +786,11 @@ namespace EngineLayer
             retlen = BinaryPack::UnpackInt ( buf+pos, proteinPos );
             pos += retlen;
 
-            //PsmCrossType ctype = PsmCrossTypeFromString(splits[9]);
             std::string tmpstring;
             retlen = BinaryPack::UnpackString ( buf+pos, tmpstring );
             pos += retlen;
             PsmCrossType ctype = PsmCrossTypeFromString(tmpstring);
 
-            //matchedFragmentIonsVecsize = std::stoi(splits[10]);
-            //lpositionsize = std::stoi(splits[11]);
-            //xlranksize     = std::stoi(splits[12]);
             retlen = BinaryPack::UnpackInt ( buf+pos, matchedFragmentIonsVecsize );
             pos += retlen;
             retlen = BinaryPack::UnpackInt ( buf+pos, lpositionsize );
@@ -837,60 +798,15 @@ namespace EngineLayer
             retlen = BinaryPack::UnpackInt ( buf+pos, xlranksize );
             pos += retlen;
 
-            //if ( splits[13] == "true" ) {
-            //    has_beta_peptide = true;
-            //}
             retlen = BinaryPack::UnpackBool ( buf+pos, has_beta_peptide );
             pos += retlen;
             
             //line 2: FdrInfo related data
-            double cumulativeTarget, cumulativeDecoy, qValue, cumulativeTargetNotch;
-            double cumulativeDecoyNotch, qValueNotch, maximumLikelihood, eValue, eScore;
-            bool calculateEValue=false;
-            bool has_fdr = false;
-
-            pos = 0;
-            buf = input[index];
-            index++;
-            retlen = BinaryPack::GetLineLength(buf, linelen);
-            pos += retlen;
-            total_len += linelen;            
-
-            retlen = BinaryPack::UnpackBool ( buf+pos, has_fdr );
-            pos += retlen;
-            
-            if ( has_fdr ) {
-                //cumulativeTarget = std::stod(splits[0]);
-                //cumulativeDecoy  = std::stod(splits[1]);
-                //qValue           = std::stod(splits[2]);
-                //cumulativeTargetNotch = std::stod(splits[3]);
-                //cumulativeDecoyNotch  = std::stod(splits[4]);
-                //qValueNotch           = std::stod(splits[5]);
-                //maximumLikelihood     = std::stod(splits[6]);
-                //eValue                = std::stod(splits[7]);
-                //eScore                = std::stod(splits[8]);
-                retlen = BinaryPack::UnpackDouble ( buf+pos, cumulativeTarget );
-                pos += retlen;
-                retlen = BinaryPack::UnpackDouble ( buf+pos, cumulativeDecoy );
-                pos += retlen;
-                retlen = BinaryPack::UnpackDouble ( buf+pos, qValue );
-                pos += retlen;
-                retlen = BinaryPack::UnpackDouble ( buf+pos, cumulativeTargetNotch );
-                pos += retlen;
-                retlen = BinaryPack::UnpackDouble ( buf+pos, cumulativeDecoyNotch );
-                pos += retlen;
-                retlen = BinaryPack::UnpackDouble ( buf+pos, qValueNotch );
-                pos += retlen;
-                retlen = BinaryPack::UnpackDouble ( buf+pos, maximumLikelihood );
-                pos += retlen;
-                retlen = BinaryPack::UnpackDouble ( buf+pos, eValue );
-                pos += retlen;
-                retlen = BinaryPack::UnpackDouble ( buf+pos, eScore );
-                pos += retlen;
-
-                retlen = BinaryPack::UnpackBool ( buf+pos, calculateEValue);
-                pos += retlen;
-            }
+            FdrInfo* fdr=nullptr;
+            size_t tmp_len=0;
+            FdrInfo::Unpack(input[index], tmp_len, &fdr);
+            total_len += tmp_len;
+            index ++;
 
             //line 3: linkPositions
             pos = 0;
@@ -939,7 +855,7 @@ namespace EngineLayer
 
             //line 6-10: PeptideWithSetModifications
             PeptideWithSetModifications* pep;
-            size_t tmp_len=0;
+            tmp_len=0;
             PeptideWithSetModifications::Unpack(input, index, tmp_len, &pep);
             pep->SetNonSerializedPeptideInfo ( proteinList );
             total_len += tmp_len;
@@ -975,10 +891,8 @@ namespace EngineLayer
             csm->setXlRank(xlRankVec);
             csm->setLinkPositions(linkPosvec);
 
-            if ( has_fdr) {
-                csm->SetFdrValues(cumulativeTarget, cumulativeDecoy, qValue, cumulativeTargetNotch,
-                                  cumulativeDecoyNotch, qValueNotch, maximumLikelihood, 
-                                  eValue, eScore, calculateEValue);
+            if ( fdr != nullptr ) {
+                csm->setFdrInfo(fdr);
             }
             csm->ResolveAllAmbiguities();
 
