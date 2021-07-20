@@ -556,15 +556,14 @@ namespace EngineLayer
             pos += retlen;
             retlen = BinaryPack::PackDouble(tmpbuf+pos, csm->getRunnerUpScore() );
             pos += retlen;
+            retlen = BinaryPack::PackDouble(tmpbuf+pos, csm->getPeptideMonisotopicMass().value() );
+            pos += retlen;
+
             retlen = BinaryPack::PackInt(tmpbuf+pos, csm->getScanIndex() );
             pos += retlen;
             retlen = BinaryPack::PackInt(tmpbuf+pos, csm->getScanNumber() );
             pos += retlen;
             retlen = BinaryPack::PackInt(tmpbuf+pos, csm->getXlProteinPos() );
-            pos += retlen;
-            
-            PsmCrossType ctype = csm->getCrossType();
-            retlen = BinaryPack::PackString(tmpbuf+pos, PsmCrossTypeToString(ctype) );
             pos += retlen;
             retlen = BinaryPack::PackInt(tmpbuf+pos, (int)csm->getMatchedFragmentIons().size() );
             pos += retlen;
@@ -575,6 +574,11 @@ namespace EngineLayer
                         
             retlen = BinaryPack::PackBool(tmpbuf+pos, has_beta_peptide );
             pos += retlen;
+
+            PsmCrossType ctype = csm->getCrossType();
+            retlen = BinaryPack::PackString(tmpbuf+pos, PsmCrossTypeToString(ctype) );
+            pos += retlen;
+
             
             // set lenght of line right at the beginning.
             BinaryPack::SetLineLength(tmpbuf, pos);
@@ -689,6 +693,7 @@ namespace EngineLayer
 
         void CrosslinkSpectralMatch::Unpack (char *buf, size_t buf_len, int count, size_t &len,
                                              std::vector<CrosslinkSpectralMatch*> &pepVec,
+                                             const std::vector<Modification*> &mods,                                             
                                              const std::vector<Ms2ScanWithSpecificMass*> &ms2Scans,
                                              const std::vector<Protein *> &proteinList )
         {
@@ -700,13 +705,13 @@ namespace EngineLayer
                 size_t tmp_len=0;
                 CrosslinkSpectralMatch *pep;
                 bool has_beta_peptide=false;
-                CrosslinkSpectralMatch::Unpack_internal(lines, i, tmp_len, &pep, ms2Scans, proteinList,
+                CrosslinkSpectralMatch::Unpack_internal(lines, i, tmp_len, &pep, mods, ms2Scans, proteinList,
                                                         has_beta_peptide );
                 total_len += tmp_len;
                 pepVec.push_back(pep);
                 if ( has_beta_peptide ) {
                     CrosslinkSpectralMatch *beta_pep;
-                    CrosslinkSpectralMatch::Unpack_internal(lines, i, tmp_len, &beta_pep, ms2Scans, proteinList,
+                    CrosslinkSpectralMatch::Unpack_internal(lines, i, tmp_len, &beta_pep, mods, ms2Scans, proteinList,
                                                             has_beta_peptide );
                     pep->setBetaPeptide(beta_pep);
                     total_len += tmp_len;
@@ -719,6 +724,7 @@ namespace EngineLayer
 
         void CrosslinkSpectralMatch::Unpack (char *buf, size_t buf_len, size_t &len,
                                              CrosslinkSpectralMatch** newCsm,
+                                             const std::vector<Modification*> &mods,
                                              const std::vector<Ms2ScanWithSpecificMass*> &ms2Scans,
                                              const std::vector<Protein *> &proteinList )
         {
@@ -730,12 +736,12 @@ namespace EngineLayer
                 return;
             }
             bool has_beta_peptide=false;            
-            CrosslinkSpectralMatch::Unpack_internal ( lines, index, len, newCsm, ms2Scans, proteinList,
+            CrosslinkSpectralMatch::Unpack_internal ( lines, index, len, newCsm, mods, ms2Scans, proteinList,
                                                       has_beta_peptide );
             if ( has_beta_peptide) {
                 CrosslinkSpectralMatch* beta_pep;
                 size_t tmp_len=0;
-                CrosslinkSpectralMatch::Unpack_internal ( lines, index, tmp_len, &beta_pep, ms2Scans, proteinList,
+                CrosslinkSpectralMatch::Unpack_internal ( lines, index, tmp_len, &beta_pep, mods, ms2Scans, proteinList,
                                                           has_beta_peptide );
                 (*newCsm)->setBetaPeptide(beta_pep);
                 len += tmp_len;
@@ -745,6 +751,7 @@ namespace EngineLayer
         void CrosslinkSpectralMatch::Unpack_internal (std::vector<char*> &input,
                                                       int &index, size_t &len,
                                                       CrosslinkSpectralMatch** newCsm,
+                                                      const std::vector<Modification*> &mods,
                                                       const std::vector<Ms2ScanWithSpecificMass*> &ms2Scans,
                                                       const std::vector<Protein *> &proteinList,
                                                       bool &has_beta_peptide )
@@ -761,7 +768,7 @@ namespace EngineLayer
             index++;
             
             int notch=-1, scanindex, scannumber, proteinPos, matchedFragmentIonsVecsize, lpositionsize, xlranksize;
-            double  deltaScore, XLTotalScore, score, runnerUpScore;
+            double  deltaScore, XLTotalScore, score, runnerUpScore, peptideMonisotopicMass;
             bool  tmpvar;
             
             retlen = BinaryPack::UnpackBool ( buf+pos, tmpvar );
@@ -778,6 +785,8 @@ namespace EngineLayer
             pos += retlen;
             retlen = BinaryPack::UnpackDouble ( buf+pos, runnerUpScore );
             pos += retlen;
+            retlen = BinaryPack::UnpackDouble ( buf+pos, peptideMonisotopicMass );
+            pos += retlen;
 
             retlen = BinaryPack::UnpackInt ( buf+pos, scanindex );
             pos += retlen;
@@ -785,12 +794,6 @@ namespace EngineLayer
             pos += retlen;
             retlen = BinaryPack::UnpackInt ( buf+pos, proteinPos );
             pos += retlen;
-
-            std::string tmpstring;
-            retlen = BinaryPack::UnpackString ( buf+pos, tmpstring );
-            pos += retlen;
-            PsmCrossType ctype = PsmCrossTypeFromString(tmpstring);
-
             retlen = BinaryPack::UnpackInt ( buf+pos, matchedFragmentIonsVecsize );
             pos += retlen;
             retlen = BinaryPack::UnpackInt ( buf+pos, lpositionsize );
@@ -800,6 +803,11 @@ namespace EngineLayer
 
             retlen = BinaryPack::UnpackBool ( buf+pos, has_beta_peptide );
             pos += retlen;
+
+            std::string tmpstring;
+            retlen = BinaryPack::UnpackString ( buf+pos, tmpstring );
+            pos += retlen;
+            PsmCrossType ctype = PsmCrossTypeFromString(tmpstring);
             
             //line 2: FdrInfo related data
             FdrInfo* fdr=nullptr;
@@ -857,10 +865,18 @@ namespace EngineLayer
             PeptideWithSetModifications* pep;
             tmp_len=0;
             PeptideWithSetModifications::Unpack(input, index, tmp_len, &pep);
-            pep->SetNonSerializedPeptideInfo ( proteinList );
+            pep->SetNonSerializedPeptideInfo ( mods, proteinList );
             total_len += tmp_len;
             index += 4;
 
+#ifdef DEBUG
+            // Safety check:
+            double monIsotopicMass = pep->getMonoisotopicMass();
+            if ( monIsotopicMass != peptideMonisotopicMass ) {
+                std::cout << "Safety check failed when reconstructing PeptideWithSetMOdifications in CrosslinkSpectralMatch::Unpack(). " <<
+                    "monIsotopicMass is " << monIsotopicMass << " should be " << peptideMonisotopicMass << std::endl;
+            }
+#endif
             
             // line 11-x: Vector of MatchedFragmentIons
             std::vector<MatchedFragmentIon*> matchedFragmentIonsVec;
@@ -890,12 +906,17 @@ namespace EngineLayer
             csm->setCrossType (ctype);
             csm->setXlRank(xlRankVec);
             csm->setLinkPositions(linkPosvec);
-
             if ( fdr != nullptr ) {
                 csm->setFdrInfo(fdr);
             }
             csm->ResolveAllAmbiguities();
 
+            // This is a hack. Need to find a proper solution.
+            // In some situations involving Mods, the PeptideMonoisotopicMass
+            // is not correct after deserialization.
+            csm->setPeptideMonisotopicMass(std::make_optional(peptideMonisotopicMass));
+
+            
             *newCsm = csm;
             len = total_len;
             return ;

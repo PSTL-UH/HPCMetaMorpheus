@@ -88,8 +88,8 @@ int main ( int argc, char **argv )
     //Chemistry::PeriodicTable::Load (elr);
     UsefulProteomicsDatabases::PeriodicTableLoader::Load (elr);
 
-    //std::cout << ++i << ". CSMSerialization_BSA_DSSO" << std::endl;
-    //Test::CSMSerializationTest::CSMSerializationTest_BSA_DSSO();
+    std::cout << ++i << ". CSMSerialization_BSA_DSSO" << std::endl;
+    Test::CSMSerializationTest::CSMSerializationTest_BSA_DSSO();
 
     std::cout << ++i << ". TestDeadendTrisSerialized" << std::endl;
     Test::CSMSerializationTest::TestDeadendTrisSerialized();
@@ -215,9 +215,11 @@ namespace Test
 
         if ( ret > 0 ) {
             std::vector<CrosslinkSpectralMatch*> unpackedPsms;
+            std::vector<Modification*> modList;
             int count=-1;
             size_t len=0;
-            CrosslinkSpectralMatch::Unpack( sbuf, bufsize, count, len, unpackedPsms, listOfSortedms2Scans, proteinList);
+            CrosslinkSpectralMatch::Unpack( sbuf, bufsize, count, len, unpackedPsms,
+                                            modList, listOfSortedms2Scans, proteinList);
 
             output.open("CsmSerialized.out");
             for ( auto psms : unpackedPsms ) {
@@ -328,7 +330,7 @@ namespace Test
             std::vector<CrosslinkSpectralMatch*> unpackedPsms;
             int count=-1;
             size_t len=0;
-            CrosslinkSpectralMatch::Unpack( sbuf, bufsize, count, len, unpackedPsms, scans, pvec);
+            CrosslinkSpectralMatch::Unpack( sbuf, bufsize, count, len, unpackedPsms, vec2, scans, pvec);
 
             Assert::AreEqual(csms.size(), unpackedPsms.size());
             CrosslinkSpectralMatch *csm2 = unpackedPsms.front();
