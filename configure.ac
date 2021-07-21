@@ -46,6 +46,13 @@ if test "x$have_cxx17_support" = xno ; then
    AC_MSG_ERROR([Aborting.])
 fi
 
+PROG_CXX_MPI_HELPER([],[have_mpi_support])
+if test "x$have_mpi_support" = xno ; then
+   AC_MSG_WARN([MPI version of HPCMetaMorpheus requires an MPI installation.])
+   AC_MSG_ERROR([Aborting.])
+fi
+
+
 # Checks for libraries.
 
 dnl ==================================================
