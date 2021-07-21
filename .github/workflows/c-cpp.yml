@@ -1,25 +1,57 @@
 name: C/C++ CI
 
 on:
-  push:
-    branches: [ master ]
   pull_request:
-    branches: [ master ]
+    branches:
+    - master
+    - topic/MPI
+    - topic/OpenMP     
 
 jobs:
-  build:
-
+  build-mpi:
+    if: github.base_ref == 'topic/MPI'
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@master
+    - uses: actions/checkout@v2
       with:
            submodules: true
     - name: configure
       run: |
          sudo apt-get update
-         sudo apt-get install -y --fix-missing g++-9 xsdcxx libxerces-c-dev libboost-dev
+         sudo apt-get install -y --fix-missing xsdcxx libxerces-c-dev libboost-dev openmpi-bin libopenmpi-dev
+         ./configure CXX=mpicxx
+    - name: make
+      run: make -j4
+    
+  build-sequential:
+    if: github.base_ref == 'master'
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+           submodules: true
+    - name: configure
+      run: |
+         sudo apt-get update
+         sudo apt-get install -y --fix-missing xsdcxx libxerces-c-dev libboost-dev g++-9
          ./configure CXX=g++-9
     - name: make
       run: make -j4
     
+  build-OpenMP:
+    if: github.base_ref == 'topic/OpenMP'
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+           submodules: true
+    - name: configure
+      run: |
+         sudo apt-get update
+         sudo apt-get install -y --fix-missing xsdcxx libxerces-c-dev libboost-dev g++-9
+         ./configure CXX=g++-9
+    - name: make
+      run: make -j4
