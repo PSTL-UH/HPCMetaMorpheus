@@ -2534,6 +2534,9 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
+
+
+
 # Checks for programs.
 ac_ext=cpp
 ac_cpp='$CXXCPP $CPPFLAGS'
@@ -3281,6 +3284,58 @@ if test "x$have_cxx17_support" = xno ; then
 $as_echo "$as_me: WARNING: HPCMetaMorpheus requires a C++ 2017 (or newer) compiler." >&2;}
    as_fn_error $? "Aborting." "$LINENO" 5
 fi
+
+
+
+    prog_cxx_cxx17_helper_CXXFLAGS_save=$CXXFLAGS
+        CXXFLAGS="$CXXFLAGS "
+
+
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking if $CXX  supports MPI" >&5
+$as_echo_n "checking if $CXX  supports MPI... " >&6; }
+
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include "mpi.h"
+int
+main ()
+{
+MPI_Finalize();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  prog_cxx_cxx17_helper__mpi=1
+                        cxx_helper_result=yes
+else
+  prog_cxx_cxx17_helper__mpi=0
+                        cxx_helper_result=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $cxx_helper_result" >&5
+$as_echo "$cxx_helper_result" >&6; }
+
+
+    #add other features as required
+
+    if test $prog_cxx_cxx17_helper__mpi -eq 1; then :
+  have_mpi_support="yes"
+else
+  have_mpi_support="no"
+fi
+
+    CXXFLAGS=$prog_cxx_cxx17_helper_CXXFLAGS_save
+
+if test "x$have_mpi_support" = xno ; then
+   { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: MPI version of HPCMetaMorpheus requires an MPI installation." >&5
+$as_echo "$as_me: WARNING: MPI version of HPCMetaMorpheus requires an MPI installation." >&2;}
+   as_fn_error $? "Aborting." "$LINENO" 5
+fi
+
 
 # Checks for libraries.
 

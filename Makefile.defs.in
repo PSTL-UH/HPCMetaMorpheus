@@ -11,8 +11,8 @@ MMORPHEUS_DIR      = @mmorpheus_dir@
 MMORPHEUS_INC_DIR  = $(MMORPHEUS_DIR)/include 
 MMORPHEUS_LIB_DIR  = $(MMORPHEUS_DIR)/lib
 MMORPHEUS_BIN_DIR  = $(MMORPHEUS_DIR)/bin
-MMORPHEUS_LIB      = libmmorpheus.a
-MMORPHEUS_EXEC     = HPCMetaMorpheus
+MMORPHEUS_LIB      = libmmorpheus_mpi.a
+MMORPHEUS_EXEC     = HPCMetaMorpheus_MPI
 
 MZLIB_DIR      = $(MMORPHEUS_DIR)/mzlib
 MZLIB_INC_DIR  = $(MZLIB_DIR)/include 
@@ -37,5 +37,5 @@ CFLAGS      = @CFLAGS@
 CXX         = @CXX@              
 CXXFLAGS    = @CXXFLAGS@ -I$(MMORPHEUS_INC_DIR) -I$(MZLIB_INC_DIR) -I$(MZLIB_DIR) -I$(MZLIB_DIR)/MzLibUtil -I$(XSD_INC_DIR)/ -I$(XSD_INC_DIR)/xercesc -I@libxml2_dir@
 CXXLOCALFLAGS = -DNDEBUG
-LDFLAGS     = -L$(MMORPHEUS_LIB_DIR) -lmmorpheus $(MZLIB_LIB) $(FLASHLFQ_LIB) -lz -lstdc++fs -L$(XSD_LIB_DIR) $(XSD_LIB) -lxml2
+LDFLAGS     = -L$(MMORPHEUS_LIB_DIR) -lmmorpheus_mpi $(MZLIB_LIB) $(FLASHLFQ_LIB) -lz -lstdc++fs -L$(XSD_LIB_DIR) $(XSD_LIB) -lxml2
 
