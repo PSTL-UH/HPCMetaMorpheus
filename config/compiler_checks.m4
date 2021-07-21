@@ -102,3 +102,22 @@ AC_DEFUN([PROG_CXX_CXX17_HELPER],[
 
     CXXFLAGS=$prog_cxx_cxx17_helper_CXXFLAGS_save
 ])
+
+
+AC_DEFUN([PROG_CXX_MPI_HELPER],[
+
+    prog_cxx_cxx17_helper_CXXFLAGS_save=$CXXFLAGS
+        CXXFLAGS="$CXXFLAGS $1"
+
+
+    CXX_HELPER([if $CXX $1 supports MPI], [prog_cxx_cxx17_helper__mpi],
+                       [[#include "mpi.h"]],[MPI_Finalize();])
+
+    #add other features as required
+
+    AS_IF([test $prog_cxx_cxx17_helper__mpi -eq 1],
+           [$2="yes"],
+           [$2="no"])
+
+    CXXFLAGS=$prog_cxx_cxx17_helper_CXXFLAGS_save
+])

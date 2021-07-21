@@ -18,6 +18,8 @@
 
 #include "stringhelper.h"
 
+#include "mpi.h"
+
 using namespace EngineLayer;
 using namespace TaskLayer;
 
@@ -90,10 +92,16 @@ int main( int argc, char *argv[] )
     std::vector<std::string> Spectra;
     std::vector<std::string> MetaTasks;
     std::string OutputFolder;
-    
-    std::cout << "Welcome to HPCMetaMorpheus" << std::endl;
-    std::cout << GlobalVariables::getMetaMorpheusVersion() << std::endl;
 
+    int rank, size;
+    MPI_Init ( &argc, &argv);
+    MPI_Comm_rank ( MPI_COMM_WORLD, &rank );
+    
+    if ( rank == 0 ) {
+        std::cout << "Welcome to HPCMetaMorpheus" << std::endl;
+        std::cout << GlobalVariables::getMetaMorpheusVersion() << std::endl;
+    }
+    
     int verbosity=1; // Setting the default to provide Status updates
     int opt=0;
     static struct option long_options[] = {
@@ -133,8 +141,11 @@ int main( int argc, char *argv[] )
                 exit ( -1);
         }
     }
+
+    if ( rank == 0 ) {
+        print_config(Tasks, MetaTasks, OutputFolder, Spectra, Databases);
+    }
     
-    print_config(Tasks, MetaTasks, OutputFolder, Spectra, Databases);
     
     if ( MetaTasks.size() != 0 || Tasks.size() != 0) {
         for (auto db = Databases.begin(); db != Databases.end(); ++db ) {
@@ -231,6 +242,8 @@ int main( int argc, char *argv[] )
         }
             
         delete a;
+
+        MPI_Finalize ();
     }
 
 }
