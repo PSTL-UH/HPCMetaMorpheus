@@ -20,8 +20,6 @@ jobs:
       run: |
          sudo apt-get update
          sudo apt-get install -y --fix-missing xsdcxx libxerces-c-dev libboost-dev openmpi-bin libopenmpi-dev
-         git branch
-         git checkout topic/MPI
          ./configure CXX=mpicxx
     - name: make
       run: make -j4
