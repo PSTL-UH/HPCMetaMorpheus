@@ -8,8 +8,8 @@ on:
      
 
 jobs:
-  build:
-
+  build-mpi:
+    if: github.ref == "refs/heads/topic/MPI"
     runs-on: ubuntu-latest
 
     steps:
@@ -21,6 +21,22 @@ jobs:
          sudo apt-get update
          sudo apt-get install -y --fix-missing xsdcxx libxerces-c-dev libboost-dev openmpi-bin libopenmpi-dev
          ./configure CXX=mpicxx
+    - name: make
+      run: make -j4
+    
+  build:
+    if: github.ref == "refs/heads/master"
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+           submodules: true
+    - name: configure
+      run: |
+         sudo apt-get update
+         sudo apt-get install -y --fix-missing xsdcxx libxerces-c-dev libboost-dev g++-0
+         ./configure CXX=g++-9
     - name: make
       run: make -j4
     
