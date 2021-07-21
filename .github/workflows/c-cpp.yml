@@ -2,7 +2,10 @@ name: C/C++ CI
 
 on:
   pull_request:
-    branches: [ topic/MPI ]
+    branches:
+    - master
+    - topic/MPI
+     
 
 jobs:
   build:
@@ -10,13 +13,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@master
+    - uses: actions/checkout@v2
       with:
            submodules: true
     - name: configure
       run: |
          sudo apt-get update
          sudo apt-get install -y --fix-missing xsdcxx libxerces-c-dev libboost-dev openmpi-bin libopenmpi-dev
+         git branch
          git checkout topic/MPI
          ./configure CXX=mpicxx
     - name: make
