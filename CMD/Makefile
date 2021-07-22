@@ -10,7 +10,7 @@ include ../Makefile.defs
 
 OBJ = 	 Program.o
 
-LINKLIBS = $(MMORPHEUS_LIB_DIR)/libmmorpheus.a
+LINKLIBS = $(MMORPHEUS_LIB_DIR)/$(MMORPHEUS_LIB)
 
 .SUFFIXES: .o.cpp
 
