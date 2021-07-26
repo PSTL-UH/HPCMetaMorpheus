@@ -77,6 +77,11 @@ namespace TaskLayer
         void DoCrosslinkFdrAnalysis(std::vector<CrosslinkSpectralMatch*> &csms);
         
         //Generate user defined crosslinker
+
+        void XLSearchTask::Gather_Psms ( std::vector<CrosslinkSpectralMatch*> &allPsms,
+                                         std::vector<Protein *> &proteinList,
+                                         MPI_Comm comm)
+
     public:
         static Crosslinker *GenerateUserDefinedCrosslinker(TaskLayer::XlSearchParameters *xlSearchParameters);
         
@@ -89,14 +94,14 @@ namespace TaskLayer
                                               Crosslinker *crosslinker,
                                               std::vector<std::string> &nestedIds);
 
-		void WritePepXML_xl(std::vector<CrosslinkSpectralMatch*> &items,
-                                    std::vector<Protein*> &proteinList,
-                                    const std::string &databasePath,
-                                    std::vector<Modification*> &variableModifications,
-                                    std::vector<Modification*> &fixedModifications,
-                                    std::vector<std::string> &localizeableModificationTypes,
-                                    const std::string &outputFolder,
-                                    const std::string &fileName,
-                                    std::vector<std::string> &nestedIds);
-	};
+        void WritePepXML_xl(std::vector<CrosslinkSpectralMatch*> &items,
+                            std::vector<Protein*> &proteinList,
+                            const std::string &databasePath,
+                            std::vector<Modification*> &variableModifications,
+                            std::vector<Modification*> &fixedModifications,
+                            std::vector<std::string> &localizeableModificationTypes,
+                            const std::string &outputFolder,
+                            const std::string &fileName,
+                            std::vector<std::string> &nestedIds);
+    };
 }
