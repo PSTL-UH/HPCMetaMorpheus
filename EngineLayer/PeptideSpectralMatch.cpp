@@ -26,7 +26,10 @@ using namespace Proteomics::ProteolyticDigestion;
 namespace EngineLayer
 {
 
-    PeptideSpectralMatch::PeptideSpectralMatch(PeptideWithSetModifications *peptide, int notch, double score, int scanIndex, IScan *scan, DigestionParams *digestionParams, std::vector<MatchedFragmentIon*> &matchedFragmentIons) 
+    PeptideSpectralMatch::PeptideSpectralMatch(PeptideWithSetModifications *peptide, int notch,
+                                               double score, int scanIndex,
+                                               IScan *scan, DigestionParams *digestionParams,
+                                               std::vector<MatchedFragmentIon*> &matchedFragmentIons) 
     {
         _bestMatchingPeptides = std::vector<std::tuple<int, PeptideWithSetModifications*>>();
         privateScanIndex = scanIndex;
@@ -45,6 +48,37 @@ namespace EngineLayer
         
         AddOrReplace(peptide, score, notch, true, matchedFragmentIons);
     }
+
+    PeptideSpectralMatch::PeptideSpectralMatch(PeptideWithSetModifications *peptide, int notch,
+                                               double score, int scanIndex,
+                                               std::string scanFullFilePath, int scanOneBasedScanNumber,
+                                               std::optional<int> scanOneBasedPrecursorScanNumber,
+                                               double scanRetentionTime, int scanNumPeaks, double scanTotalIonCurrent,
+                                               int scanPrecursorCharge, double scanPrecursorMonoisotopicPeakMz,
+                                               double scanPrecursorMass,
+                                               DigestionParams *digestionParams,
+                                               std::vector<MatchedFragmentIon*> &matchedFragmentIons) 
+    {
+        _bestMatchingPeptides = std::vector<std::tuple<int, PeptideWithSetModifications*>>();
+        privateScanIndex = scanIndex;
+
+        privateFullFilePath = scanFullFilePath;
+        privateScanNumber = scanOneBasedScanNumber;
+        privatePrecursorScanNumber = scanOneBasedPrecursorScanNumber;
+        privateScanRetentionTime = scanRetentionTime;
+        privateScanExperimentalPeaks = scanNumPeaks;
+        privateTotalIonCurrent = scanTotalIonCurrent;
+        privateScanPrecursorCharge = scanPrecursorCharge;
+        privateScanPrecursorMonoisotopicPeakMz = scanPrecursorMonoisotopicPeakMz;
+        privateScanPrecursorMass = scanPrecursorMass;
+
+        setAllScores(std::vector<double>());
+        setPeptidesToMatchingFragments(std::unordered_map<PeptideWithSetModifications*, std::vector<MatchedFragmentIon*>>());
+        this->digestionParams = new DigestionParams(*digestionParams);
+        
+        AddOrReplace(peptide, score, notch, true, matchedFragmentIons);
+    }
+
     
     std::vector<std::tuple<int, PeptideWithSetModifications *>> PeptideSpectralMatch::getBestMatchingPeptides() const
     {
