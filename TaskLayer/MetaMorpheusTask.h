@@ -5,9 +5,9 @@
 #include <vector>
 #include <algorithm>
 #include <stdexcept>
-#include <any>
 #include <typeinfo>
 #include <fstream>
+#include <tuple>
 
 #include "exceptionhelper.h"
 #include "stringhelper.h"
@@ -47,6 +47,8 @@ using namespace Proteomics::ProteolyticDigestion;
 
 #include "UsefulProteomicsDatabases/UsefulProteomicsDatabases.h"
 using namespace UsefulProteomicsDatabases;
+
+#include "mpi.h"
 
 namespace TaskLayer
 {
@@ -103,7 +105,8 @@ namespace TaskLayer
             
             static std::vector<Ms2ScanWithSpecificMass*> GetMs2Scans(MsDataFile *myMSDataFile,
                                                                      const std::string &fullFilePath,
-                                                                     EngineLayer::CommonParameters *commonParameters);
+                                                                     EngineLayer::CommonParameters *commonParameters,
+                                                                     int firstIndex, int lastIndex );
             
             static EngineLayer::CommonParameters *SetAllFileSpecificCommonParams(EngineLayer::CommonParameters *commonParams,
                                                                                  FileSpecificParameters *fileSpecificParams);
@@ -189,6 +192,11 @@ namespace TaskLayer
                                  std::vector<std::vector<int>> &precursorIndex,
                                  std::vector<Protein*> &allKnownProteins,
                                  std::vector<Modification*> &allKnownModifications,
-                                 const std::string &taskId);
-	};
+                                 const std::string &taskId,
+                                 MPI_Comm comm);
+
+            void DataFilePartitioning ( std::vector<std::string> &allFiles, MPI_Comm comm,
+                                        std::vector<std::string> &myFile,                     
+                                        std::vector<std::tuple<int, int>> &myFirstLastIndex );
+        };
 }
