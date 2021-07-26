@@ -45,6 +45,7 @@ namespace EngineLayer
         std::unordered_map<std::string, int> privateModsIdentified;
         std::vector<double> privateLocalizedScores;
         int privateScanNumber = 0;
+
         std::optional<int> privatePrecursorScanNumber;
         double privateScanRetentionTime = 0;
         int privateScanExperimentalPeaks = 0;
@@ -53,6 +54,7 @@ namespace EngineLayer
         double privateScanPrecursorMonoisotopicPeakMz = 0;
         double privateScanPrecursorMass = 0;
         std::string privateFullFilePath;
+
         int privateScanIndex = 0;
         FdrInfo *privateFdrInfo=nullptr;
         double privateScore = 0;
@@ -82,6 +84,16 @@ namespace EngineLayer
                              int scanIndex, IScan *scan,
                              DigestionParams *digestionParams,
                              std::vector<MatchedFragmentIon*> &matchedFragmentIons);
+
+        PeptideSpectralMatch(PeptideWithSetModifications *peptide, int notch,
+                             double score, int scanIndex,
+                             std::string scanFullFilePath, int scanOneBasedScanNumber,
+                             std::optional<int> scanOneBasedPrecursorScanNumber,
+                             double scanRetentionTime, int scanNumPeaks, double scanTotalIonCurrent,
+                             int scanPrecursorCharge, double scanPrecursorMonoisotopicPeakMz,
+                             double scanPrecursorMass,
+                             DigestionParams *digestionParams,
+                             std::vector<MatchedFragmentIon*> &matchedFragmentIons);         
         
         std::vector<std::tuple<int, PeptideWithSetModifications *>> getBestMatchingPeptides() const;
 
