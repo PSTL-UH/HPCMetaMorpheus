@@ -106,7 +106,7 @@ namespace TaskLayer
             static std::vector<Ms2ScanWithSpecificMass*> GetMs2Scans(MsDataFile *myMSDataFile,
                                                                      const std::string &fullFilePath,
                                                                      EngineLayer::CommonParameters *commonParameters,
-                                                                     int firstIndex, int lastIndex );
+                                                                     int firstIndex=-1, int lastIndex=-1 );
             
             static EngineLayer::CommonParameters *SetAllFileSpecificCommonParams(EngineLayer::CommonParameters *commonParams,
                                                                                  FileSpecificParameters *fileSpecificParams);
@@ -193,7 +193,9 @@ namespace TaskLayer
                                  std::vector<Protein*> &allKnownProteins,
                                  std::vector<Modification*> &allKnownModifications,
                                  const std::string &taskId,
-                                 MPI_Comm comm);
+                                 MPI_Comm comm=MPI_COMM_WORLD);
+
+            int getNumScans ( std::string &filename );
 
             void DataFilePartitioning ( std::vector<std::string> &allFiles, MPI_Comm comm,
                                         std::vector<std::string> &myFile,                     
