@@ -12,6 +12,7 @@
 #include "../../EngineLayer/CrosslinkSearch/PsmCrossType.h"
 
 #include <sstream>
+#include <stdlib.h>
 
 #include "MassSpectrometry/Enums/DissociationType.h"
 #include "UsefulProteomicsDatabases/DecoyType.h"
@@ -19,7 +20,7 @@
 #include "pepXML/pepXML_v120.h"
 #include "stringhelper.h"
 #include "time.h"
-
+#include "mpi.h"
 
 using namespace EngineLayer;
 using namespace EngineLayer::CrosslinkSearch;
@@ -272,8 +273,6 @@ namespace TaskLayer
         }
         
         int completedFiles = 0;
-        //std::any indexLock = std::any();
-        //std::any psmLock = std::any();
         
         Status("Searching files...", taskId, getVerbose() );
         
@@ -322,20 +321,32 @@ namespace TaskLayer
         ProseCreatedWhileRunning->append("The combined search database contained " + std::to_string(proteinList.size()) +
                                          " total entries including " + std::to_string(c1) + " contaminant sequences. ");
 
+        //This routine performs the paritioning of the spectra files across the processes.
+        int rank, numProcs;
+        MPI_Comm comm = MPI_COMM_WORLD;
+        MPI_Comm_rank ( comm, &rank );
+        MPI_Comm_size ( comm, &numProcs );
+        
+        std::vector<std::string> myFiles;
+        std::vector<std::tuple<int, int>> myFirstLastIndex;
+        DataFilePartitioning ( currentRawFileList, comm, myFiles, myFirstLastIndex );
+
         // The following vectors are only required for memory management at the end of the Task
         std::vector<CrosslinkSearchEngine *> csengines;
         std::vector<Ms2ScanWithSpecificMass*> Ms2Scans;
         std::unordered_set<PeptideWithSetModifications*> peptides;
         
-        for (int spectraFileIndex = 0; spectraFileIndex < (int)currentRawFileList.size(); spectraFileIndex++)
+        for (int spectraFileIndex = 0; spectraFileIndex < (int)myFiles.size(); spectraFileIndex++)
         {
-            auto origDataFile = currentRawFileList[spectraFileIndex];
+            auto origDataFile = myFiles[spectraFileIndex];
+            int firstIndex = std::get<0>(myFirstLastIndex[spectraFileIndex]);
+            int lastIndex  = std::get<1>(myFirstLastIndex[spectraFileIndex]);
             EngineLayer::CommonParameters *combinedParams = SetAllFileSpecificCommonParams(getCommonParameters(),
-                                                                              fileSettingsList[spectraFileIndex]);
-            
-            auto thisId = std::vector<std::string> {taskId, "Individual Spectra Files", origDataFile};
-            
-            Status("Loading spectra file...", thisId,  getVerbose() );
+                                                                               fileSettingsList[spectraFileIndex]);
+            if ( rank == 0 ) {
+                auto thisId = std::vector<std::string> {taskId, "Individual Spectra Files", origDataFile};
+                Status("Loading spectra file...", thisId,  getVerbose() );
+            }
 #ifdef TIMING_INFO
             gettimeofday (&t3, NULL);
 #endif
@@ -349,12 +360,16 @@ namespace TaskLayer
             t3total += timediff(t3, t3e);
 #endif
             
-            Status("Getting ms2 scans...", thisId, getVerbose());
+            if ( rank == 0 ) {
+                auto thisId = std::vector<std::string> {taskId, "Individual Spectra Files", origDataFile};
+                Status("Getting ms2 scans...", thisId, getVerbose());
+            }
 
 #ifdef TIMING_INFO
             gettimeofday (&t4, NULL);
 #endif
-            std::vector<Ms2ScanWithSpecificMass*> arrayOfMs2ScansSortedByMass= GetMs2Scans(myMsDataFile, origDataFile, combinedParams);  
+            std::vector<Ms2ScanWithSpecificMass*> arrayOfMs2ScansSortedByMass= GetMs2Scans(myMsDataFile, origDataFile,
+                                                                                           combinedParams, firstIndex, lastIndex);  
             std::sort(arrayOfMs2ScansSortedByMass.begin(), arrayOfMs2ScansSortedByMass.end(), [&]
                       (Ms2ScanWithSpecificMass* l, Ms2ScanWithSpecificMass* r) {
                           return l->getPrecursorMass() < r->getPrecursorMass();
@@ -378,9 +393,11 @@ namespace TaskLayer
                     proteinListSubset.push_back(proteinList[start+p]);
                 }
                 
-                std::vector<std::string> vs = {taskId};
-                Status("Getting fragment dictionary...", vs, getVerbose());
-
+                if ( rank == 0 ) {
+                    std::vector<std::string> vs = {taskId};
+                    Status("Getting fragment dictionary...", vs, getVerbose());
+                }
+                
                 std::vector<std::string> filenameList;
                 for ( auto p: dbFilenameList )
                 {
@@ -398,15 +415,17 @@ namespace TaskLayer
 
                 auto allmods = GlobalVariables::getAllModsKnown();
                 GenerateIndexes(indexEngine, dbFilenameList, peptideIndex, fragmentIndex, precursorIndex, proteinList,
-                                allmods, taskId);
+                                allmods, taskId, comm);
 
 #ifdef TIMING_INFO
                 gettimeofday (&t5e, NULL);
                 t5total += timediff(t5, t5e );
 #endif
                 
-                Status("Searching files...", taskId, getVerbose());
-
+                if ( rank == 0 ) {
+                    std::vector<std::string> vs = {taskId};
+                    Status("Searching files...", taskId, getVerbose());
+                }
 #ifdef TIMING_INFO
                 gettimeofday (&t6, NULL);
 #endif
@@ -423,11 +442,14 @@ namespace TaskLayer
                 gettimeofday (&t6e, NULL);
                 t6total += timediff (t6, t6e );
 #endif
-                std::string s1 = "Done with search " + std::to_string(currentPartition + 1) + "/" +
+                if ( rank == 0 ) {
+                    auto thisId = std::vector<std::string> {taskId, "Individual Spectra Files", origDataFile};
+                    std::string s1 = "Done with search " + std::to_string(currentPartition + 1) + "/" +
                     std::to_string(getCommonParameters()->getTotalPartitions()) + "!";
-                ProgressEventArgs tempVar2(100, s1, thisId);
-                ReportProgress(&tempVar2, getVerbose() );
-
+                    ProgressEventArgs tempVar2(100, s1, thisId);
+                    ReportProgress(&tempVar2, getVerbose() );
+                }
+                
                 // Store the pointers for later deletion
                 for ( auto p =  peptideIndex.begin(); p != peptideIndex.end(); p++  ){
                     peptides.emplace(*p);
@@ -441,291 +463,305 @@ namespace TaskLayer
                 }
             }
             
-            completedFiles++;
-            std::vector<std::string> vs2 = {taskId, "Individual Spectra Files"};
-            ProgressEventArgs tempVar3(completedFiles / currentRawFileList.size(), "Searching...", vs2); 
-            ReportProgress(&tempVar3, getVerbose());
-        }
-        
-        std::vector<std::string> vs3 = {taskId, "Individual Spectra Files"};
-        ProgressEventArgs tempVar4(100, "Done with all searches!", vs3);
-        ReportProgress(&tempVar4, getVerbose());
-
-        std::sort(allPsms.begin(), allPsms.end(), [&] (CrosslinkSpectralMatch *l, CrosslinkSpectralMatch *r) {
-                return l->getXLTotalScore() > r->getXLTotalScore();
-            });
-
-        std::vector<CrosslinkSpectralMatch *> allPsmsXL;
-        for ( auto p : allPsms ) {
-            if ( p->getCrossType() == PsmCrossType::Cross ){
-                allPsmsXL.push_back(p);
+            if ( rank == 0 ) {
+                completedFiles++;
+                std::vector<std::string> vs2 = {taskId, "Individual Spectra Files"};
+                ProgressEventArgs tempVar3(completedFiles / currentRawFileList.size(), "Searching...", vs2); 
+                ReportProgress(&tempVar3, getVerbose());
             }
         }
         
-        // inter-crosslinks; different proteins are linked
-        std::vector<CrosslinkSpectralMatch *> interCsms;
-        for ( auto p: allPsmsXL ) {
-            if ( p->getProteinAccession() != p->getBetaPeptide()->getProteinAccession() ) {
-                interCsms.push_back(p);
-            }
+        if ( rank == 0 ) {
+            std::vector<std::string> vs3 = {taskId, "Individual Spectra Files"};
+            ProgressEventArgs tempVar4(100, "Done with all searches!", vs3);
+            ReportProgress(&tempVar4, getVerbose());
         }
 
-        for (auto item : interCsms)
-        {
-            item->setCrossType(PsmCrossType::Inter);
-        }
-        
-        // intra-crosslinks; crosslinks within a protein
-        std::vector<CrosslinkSpectralMatch *> intraCsms;
-        for ( auto p: allPsmsXL ) {
-            if ( p->getProteinAccession() == p->getBetaPeptide()->getProteinAccession() ) {
-                intraCsms.push_back(p);
-            }
-        }
-        
-        for (auto item : intraCsms)
-        {
-            item->setCrossType(PsmCrossType::Intra);
-        }
-        
-        // calculate FDR
-#ifdef TIMING_INFO
-        gettimeofday (&t7, NULL);
-#endif
-        DoCrosslinkFdrAnalysis(interCsms);
-        DoCrosslinkFdrAnalysis(intraCsms);
-        std::vector<std::string> sv1 = {"FdrAnalysisEngine", taskId};
-        SingleFDRAnalysis(allPsms, sv1 );
-#ifdef TIMING_INFO
-        gettimeofday (&t7e, NULL);
-#endif
+        // Gather Psms from all processes on rank 0
+        Gather_Psms ( allPsms, proteinList, comm );
 
-        // calculate protein crosslink residue numbers
-#ifdef TIMING_INFO
-        gettimeofday (&t8, NULL);
-#endif
-        for (auto csm : allPsmsXL)
-        {
-            // alpha peptide crosslink residue in the protein
-            csm->setXlProteinPos(csm->getOneBasedStartResidueInProtein().value() + csm->getLinkPositions()[0] - 1);
-            
-            // beta crosslink residue in protein
-            csm->getBetaPeptide()->setXlProteinPos(csm->getBetaPeptide()->getOneBasedStartResidueInProtein().value() +
-                                                   csm->getBetaPeptide()->getLinkPositions()[0] - 1);
-        }
-#ifdef TIMING_INFO
-        gettimeofday (&t8e, NULL);
-#endif        
-
-        // write interlink CSMs
-#ifdef TIMING_INFO
-        gettimeofday (&t9, NULL);
-#endif        
-        if (!interCsms.empty())
-        {
-            std::string file = OutputFolder + "/XL_Interlinks.tsv";
-            WritePsmCrossToTsv(interCsms, file, 2);
-            std::vector<std::string> vs2 = {taskId};
-            FinishedWritingFile(file, vs2, getVerbose());
-        }
-
-        int interCsms_size=0;
-        for ( auto p: interCsms ) {
-            if ( p->getFdrInfo()->getQValue() <= 0.01 && !p->getIsDecoy() && !p->getBetaPeptide()->getIsDecoy() ) {
-                interCsms_size++;
-            }
-        }
-        myTaskResults->AddNiceText("Target inter-crosslinks within 1% FDR: " + std::to_string(interCsms_size));
-        
-        if (getXlSearchParameters()->getWriteOutputForPercolator())
-        {
-            std::vector<CrosslinkSpectralMatch *> interPsmsXLPercolator ;
-            for ( auto p: interCsms ) {
-                if (p->getScore() >= 2 && p->getBetaPeptide()->getScore() >= 2 ) {
-                    interPsmsXLPercolator.push_back(p);
-                }
-            }
-            std::sort(interPsmsXLPercolator.begin(), interPsmsXLPercolator.end(), [&]
-                      (CrosslinkSpectralMatch *l , CrosslinkSpectralMatch *r ) {
-                          return l->getScanNumber() < r->getScanNumber();
-                      });
-            
-            std::vector<std::string> vs2a = {taskId};
-            WriteCrosslinkToTxtForPercolator(interPsmsXLPercolator, OutputFolder, "XL_Interlinks_Percolator",
-                                             crosslinker, vs2a);
-        }
-        
-        // write intralink CSMs
-        if (!intraCsms.empty())
-        {
-            std::string file = OutputFolder + "/XL_Intralinks.tsv";
-            WritePsmCrossToTsv(intraCsms, file, 2);
-            std::vector<std::string> vs3 = {taskId};
-            FinishedWritingFile(file, vs3, getVerbose());
-        }
-
-        int intraCsms_size=0;
-        for ( auto p: intraCsms ) {
-            if ( p->getFdrInfo()->getQValue() <= 0.01 && !p->getIsDecoy() && !p->getBetaPeptide()->getIsDecoy() ) {
-                intraCsms_size++;
-            }
-        }
-        myTaskResults->AddNiceText("Target intra-crosslinks within 1% FDR: " +std::to_string(intraCsms_size));
-        
-        if (getXlSearchParameters()->getWriteOutputForPercolator())
-        {
-            std::vector<CrosslinkSpectralMatch *> intraPsmsXLPercolator ;
-            for ( auto p: intraCsms ) {
-                if (p->getScore() >= 2 && p->getBetaPeptide()->getScore() >= 2 ) {
-                    intraPsmsXLPercolator.push_back(p);
-                }
-            }
-            std::sort(intraPsmsXLPercolator.begin(), intraPsmsXLPercolator.end(), [&]
-                      (CrosslinkSpectralMatch *l , CrosslinkSpectralMatch *r ) {
-                          return l->getScanNumber() < r->getScanNumber();
-                      });
-            
-            std::vector<std::string> vs3a = {taskId};
-            WriteCrosslinkToTxtForPercolator(intraPsmsXLPercolator, OutputFolder, "XL_Intralinks_Percolator",
-                                             crosslinker, vs3a);
-        }
-        
-        // write single peptides
-        std::vector<CrosslinkSpectralMatch *> singlePsms;
-        for ( auto p: allPsms ) {
-            if ( p->getCrossType() == PsmCrossType::Single )  {
-                singlePsms.push_back(p);
-            }
-        }
-
-        if (!singlePsms.empty())
-        {
-            std::string writtenFileSingle = OutputFolder + "/SinglePeptides" + ".tsv";
-            WritePsmCrossToTsv(singlePsms, writtenFileSingle, 1);
-            std::vector<std::string> vs4 = {taskId};
-            FinishedWritingFile(writtenFileSingle, vs4, getVerbose());
-        }
-
-        int singlePsms_size=0;
-        for ( auto p: singlePsms ) {
-            if (p->getFdrInfo()->getQValue() <= 0.01 && !p->getIsDecoy()) {
-                singlePsms_size++;
-            }
-        }
-        myTaskResults->AddNiceText("Target single peptides within 1% FDR: " + std::to_string(singlePsms_size));
-        
-        // write loops
-        std::vector<CrosslinkSpectralMatch *> loopPsms;
-        for ( auto p : allPsms ) {
-            if ( p->getCrossType() == PsmCrossType::Loop ) {
-                loopPsms.push_back(p);
-            }
-        }
-
-        if (!loopPsms.empty())
-        {
-            std::string writtenFileLoop = OutputFolder + "/Looplinks" + ".tsv";
-            WritePsmCrossToTsv(loopPsms, writtenFileLoop, 1);
-            std::vector<std::string> vs4a = {taskId};
-            FinishedWritingFile(writtenFileLoop, vs4a, getVerbose());
-        }
-
-        int loopPsms_size =0;
-        for ( auto p : loopPsms ) {
-            if ( p->getFdrInfo()->getQValue() <= 0.01 && !p->getIsDecoy())  {
-                loopPsms_size++;
-            }
-        }
-        myTaskResults->AddNiceText("Target loop-linked peptides within 1% FDR: " + std::to_string(loopPsms_size));
-        
-        // write deadends
-        std::vector<CrosslinkSpectralMatch *> deadendPsms;
-        for ( auto p : allPsms ) {
-            if ( p->getCrossType() == PsmCrossType::DeadEnd ||
-                 p->getCrossType() == PsmCrossType::DeadEndH2O ||
-                 p->getCrossType() == PsmCrossType::DeadEndNH2 ||
-                 p->getCrossType() == PsmCrossType::DeadEndTris) {
-                deadendPsms.push_back(p);
-            }
-        }
-
-        if (!deadendPsms.empty())
-        {
-            std::string writtenFileDeadend = OutputFolder + "/Deadends" + ".tsv";
-            WritePsmCrossToTsv(deadendPsms, writtenFileDeadend, 1);
-            std::vector<std::string> vs5a = {taskId};
-            FinishedWritingFile(writtenFileDeadend, vs5a, getVerbose());
-        }
-
-        int deadendPsms_size =0;
-        for ( auto p : deadendPsms ) {
-            if ( p->getFdrInfo()->getQValue() <= 0.01 && !p->getIsDecoy())  {
-                deadendPsms_size++;
-            }
-        }
-        myTaskResults->AddNiceText("Target deadend peptides within 1% FDR: " + std::to_string(deadendPsms_size));
-        
-        // write pepXML
-        if (getXlSearchParameters()->getWritePepXml())
-        {
-            std::vector<CrosslinkSpectralMatch*> writeToXml;
-
-            for ( auto p: intraCsms ) {
-                if ( !p->getIsDecoy() && !p->getBetaPeptide()->getIsDecoy() && p->getFdrInfo()->getQValue() <= 0.05) {
-                    writeToXml.push_back(p);
-                }
-            }
-            for ( auto p: interCsms ) {
-                if ( !p->getIsDecoy() && !p->getBetaPeptide()->getIsDecoy() && p->getFdrInfo()->getQValue() <= 0.05 ) {
-                    writeToXml.push_back(p);
-                }
-            }
-            for ( auto p: singlePsms ) {
-                if (!p->getIsDecoy() && p->getFdrInfo()->getQValue() <= 0.05) {
-                    writeToXml.push_back(p);
-                }
-            }
-            for ( auto p: loopPsms ) {
-                if ( !p->getIsDecoy() && p->getFdrInfo()->getQValue() <= 0.05 ) {
-                    writeToXml.push_back(p);
-                }
-            }
-            for ( auto p: deadendPsms ) {
-                if ( !p->getIsDecoy() && p->getFdrInfo()->getQValue() <= 0.05 ) {
-                    writeToXml.push_back(p);
-                }
-            }
-
-            std::sort(writeToXml.begin(), writeToXml.end(), [&] (CrosslinkSpectralMatch *l, CrosslinkSpectralMatch *r ) {
-                    return l->getScanNumber() < r->getScanNumber();
+        if ( rank == 0 ) {
+            std::sort(allPsms.begin(), allPsms.end(), [&] (CrosslinkSpectralMatch *l, CrosslinkSpectralMatch *r) {
+                    return l->getXLTotalScore() > r->getXLTotalScore();
                 });
-
-            for (auto fullFilePath : currentRawFileList)
+            
+            std::vector<CrosslinkSpectralMatch *> allPsmsXL;
+            for ( auto p : allPsms ) {
+                if ( p->getCrossType() == PsmCrossType::Cross ){
+                    allPsmsXL.push_back(p);
+                }
+            }
+            
+            // inter-crosslinks; different proteins are linked
+            std::vector<CrosslinkSpectralMatch *> interCsms;
+            for ( auto p: allPsmsXL ) {
+                if ( p->getProteinAccession() != p->getBetaPeptide()->getProteinAccession() ) {
+                    interCsms.push_back(p);
+                }
+            }
+            
+            for (auto item : interCsms)
             {
-                std::string fileName =  fullFilePath.substr(0, fullFilePath.find_last_of("."));
-                std::string fileNameNoExtension = fileName.substr(fileName.find_last_of("/"));
-
-                std::vector<std::string> vs6 = {taskId};
-                std::vector<CrosslinkSpectralMatch*> tmpwriteToXml;
-                for ( auto p: writeToXml ) {
-                    if ( p->getFullFilePath() == fullFilePath )  {
-                        tmpwriteToXml.push_back(p);
+                item->setCrossType(PsmCrossType::Inter);
+            }
+            
+            // intra-crosslinks; crosslinks within a protein
+            std::vector<CrosslinkSpectralMatch *> intraCsms;
+            for ( auto p: allPsmsXL ) {
+                if ( p->getProteinAccession() == p->getBetaPeptide()->getProteinAccession() ) {
+                    intraCsms.push_back(p);
+                }
+            }
+            
+            for (auto item : intraCsms)
+            {
+                item->setCrossType(PsmCrossType::Intra);
+            }
+            
+            // calculate FDR
+#ifdef TIMING_INFO
+            gettimeofday (&t7, NULL);
+#endif
+            DoCrosslinkFdrAnalysis(interCsms);
+            DoCrosslinkFdrAnalysis(intraCsms);
+            std::vector<std::string> sv1 = {"FdrAnalysisEngine", taskId};
+            SingleFDRAnalysis(allPsms, sv1 );
+#ifdef TIMING_INFO
+            gettimeofday (&t7e, NULL);
+#endif
+            
+            // calculate protein crosslink residue numbers
+#ifdef TIMING_INFO
+            gettimeofday (&t8, NULL);
+#endif
+            for (auto csm : allPsmsXL)
+            {
+                // alpha peptide crosslink residue in the protein
+                csm->setXlProteinPos(csm->getOneBasedStartResidueInProtein().value() + csm->getLinkPositions()[0] - 1);
+                
+                // beta crosslink residue in protein
+                csm->getBetaPeptide()->setXlProteinPos(csm->getBetaPeptide()->getOneBasedStartResidueInProtein().value() +
+                                                       csm->getBetaPeptide()->getLinkPositions()[0] - 1);
+            }
+#ifdef TIMING_INFO
+            gettimeofday (&t8e, NULL);
+#endif        
+            
+            // write interlink CSMs
+#ifdef TIMING_INFO
+            gettimeofday (&t9, NULL);
+#endif        
+            if (!interCsms.empty())
+            {
+                std::string file = OutputFolder + "/XL_Interlinks.tsv";
+                WritePsmCrossToTsv(interCsms, file, 2);
+                std::vector<std::string> vs2 = {taskId};
+                FinishedWritingFile(file, vs2, getVerbose());
+            }
+            
+            int interCsms_size=0;
+            for ( auto p: interCsms ) {
+                if ( p->getFdrInfo()->getQValue() <= 0.01 && !p->getIsDecoy() && !p->getBetaPeptide()->getIsDecoy() ) {
+                    interCsms_size++;
+                }
+            }
+            myTaskResults->AddNiceText("Target inter-crosslinks within 1% FDR: " + std::to_string(interCsms_size));
+            
+            if (getXlSearchParameters()->getWriteOutputForPercolator())
+            {
+                std::vector<CrosslinkSpectralMatch *> interPsmsXLPercolator ;
+                for ( auto p: interCsms ) {
+                    if (p->getScore() >= 2 && p->getBetaPeptide()->getScore() >= 2 ) {
+                        interPsmsXLPercolator.push_back(p);
                     }
                 }
-                WritePepXML_xl(tmpwriteToXml, proteinList, dbFilenameList[0]->getFilePath(), variableModifications,
-                               fixedModifications, localizeableModificationTypes, OutputFolder, fileNameNoExtension,
-                               vs6);
+                std::sort(interPsmsXLPercolator.begin(), interPsmsXLPercolator.end(), [&]
+                          (CrosslinkSpectralMatch *l , CrosslinkSpectralMatch *r ) {
+                              return l->getScanNumber() < r->getScanNumber();
+                          });
+                
+                std::vector<std::string> vs2a = {taskId};
+                WriteCrosslinkToTxtForPercolator(interPsmsXLPercolator, OutputFolder, "XL_Interlinks_Percolator",
+                                                 crosslinker, vs2a);
             }
-        }
+            
+            // write intralink CSMs
+            if (!intraCsms.empty())
+            {
+                std::string file = OutputFolder + "/XL_Intralinks.tsv";
+                WritePsmCrossToTsv(intraCsms, file, 2);
+                std::vector<std::string> vs3 = {taskId};
+                FinishedWritingFile(file, vs3, getVerbose());
+            }
+            
+            int intraCsms_size=0;
+            for ( auto p: intraCsms ) {
+                if ( p->getFdrInfo()->getQValue() <= 0.01 && !p->getIsDecoy() && !p->getBetaPeptide()->getIsDecoy() ) {
+                    intraCsms_size++;
+                }
+            }
+            myTaskResults->AddNiceText("Target intra-crosslinks within 1% FDR: " +std::to_string(intraCsms_size));
+            
+            if (getXlSearchParameters()->getWriteOutputForPercolator())
+            {
+                std::vector<CrosslinkSpectralMatch *> intraPsmsXLPercolator ;
+                for ( auto p: intraCsms ) {
+                    if (p->getScore() >= 2 && p->getBetaPeptide()->getScore() >= 2 ) {
+                        intraPsmsXLPercolator.push_back(p);
+                    }
+                }
+                std::sort(intraPsmsXLPercolator.begin(), intraPsmsXLPercolator.end(), [&]
+                          (CrosslinkSpectralMatch *l , CrosslinkSpectralMatch *r ) {
+                              return l->getScanNumber() < r->getScanNumber();
+                          });
+                
+                std::vector<std::string> vs3a = {taskId};
+                WriteCrosslinkToTxtForPercolator(intraPsmsXLPercolator, OutputFolder, "XL_Intralinks_Percolator",
+                                                 crosslinker, vs3a);
+            }
+            
+            // write single peptides
+            std::vector<CrosslinkSpectralMatch *> singlePsms;
+            for ( auto p: allPsms ) {
+                if ( p->getCrossType() == PsmCrossType::Single )  {
+                    singlePsms.push_back(p);
+                }
+            }
+            
+            if (!singlePsms.empty())
+            {
+                std::string writtenFileSingle = OutputFolder + "/SinglePeptides" + ".tsv";
+                WritePsmCrossToTsv(singlePsms, writtenFileSingle, 1);
+                std::vector<std::string> vs4 = {taskId};
+                FinishedWritingFile(writtenFileSingle, vs4, getVerbose());
+            }
+            
+            int singlePsms_size=0;
+            for ( auto p: singlePsms ) {
+                if (p->getFdrInfo()->getQValue() <= 0.01 && !p->getIsDecoy()) {
+                    singlePsms_size++;
+                }
+            }
+            myTaskResults->AddNiceText("Target single peptides within 1% FDR: " + std::to_string(singlePsms_size));
+            
+            // write loops
+            std::vector<CrosslinkSpectralMatch *> loopPsms;
+            for ( auto p : allPsms ) {
+                if ( p->getCrossType() == PsmCrossType::Loop ) {
+                    loopPsms.push_back(p);
+                }
+            }
+            
+            if (!loopPsms.empty())
+            {
+                std::string writtenFileLoop = OutputFolder + "/Looplinks" + ".tsv";
+                WritePsmCrossToTsv(loopPsms, writtenFileLoop, 1);
+                std::vector<std::string> vs4a = {taskId};
+                FinishedWritingFile(writtenFileLoop, vs4a, getVerbose());
+            }
+            
+            int loopPsms_size =0;
+            for ( auto p : loopPsms ) {
+                if ( p->getFdrInfo()->getQValue() <= 0.01 && !p->getIsDecoy())  {
+                    loopPsms_size++;
+                }
+            }
+            myTaskResults->AddNiceText("Target loop-linked peptides within 1% FDR: " + std::to_string(loopPsms_size));
+            
+            // write deadends
+            std::vector<CrosslinkSpectralMatch *> deadendPsms;
+            for ( auto p : allPsms ) {
+                if ( p->getCrossType() == PsmCrossType::DeadEnd ||
+                     p->getCrossType() == PsmCrossType::DeadEndH2O ||
+                     p->getCrossType() == PsmCrossType::DeadEndNH2 ||
+                     p->getCrossType() == PsmCrossType::DeadEndTris) {
+                    deadendPsms.push_back(p);
+                }
+            }
+            
+            if (!deadendPsms.empty())
+            {
+                std::string writtenFileDeadend = OutputFolder + "/Deadends" + ".tsv";
+                WritePsmCrossToTsv(deadendPsms, writtenFileDeadend, 1);
+                std::vector<std::string> vs5a = {taskId};
+                FinishedWritingFile(writtenFileDeadend, vs5a, getVerbose());
+            }
+            
+            int deadendPsms_size =0;
+            for ( auto p : deadendPsms ) {
+                if ( p->getFdrInfo()->getQValue() <= 0.01 && !p->getIsDecoy())  {
+                    deadendPsms_size++;
+                }
+            }
+            myTaskResults->AddNiceText("Target deadend peptides within 1% FDR: " + std::to_string(deadendPsms_size));
+            
+            // write pepXML
+            if (getXlSearchParameters()->getWritePepXml())
+            {
+                std::vector<CrosslinkSpectralMatch*> writeToXml;
+                
+                for ( auto p: intraCsms ) {
+                    if ( !p->getIsDecoy() && !p->getBetaPeptide()->getIsDecoy() && p->getFdrInfo()->getQValue() <= 0.05) {
+                        writeToXml.push_back(p);
+                    }
+                }
+                for ( auto p: interCsms ) {
+                    if ( !p->getIsDecoy() && !p->getBetaPeptide()->getIsDecoy() && p->getFdrInfo()->getQValue() <= 0.05 ) {
+                        writeToXml.push_back(p);
+                    }
+                }
+                for ( auto p: singlePsms ) {
+                    if (!p->getIsDecoy() && p->getFdrInfo()->getQValue() <= 0.05) {
+                        writeToXml.push_back(p);
+                    }
+                }
+                for ( auto p: loopPsms ) {
+                    if ( !p->getIsDecoy() && p->getFdrInfo()->getQValue() <= 0.05 ) {
+                        writeToXml.push_back(p);
+                    }
+                }
+                for ( auto p: deadendPsms ) {
+                    if ( !p->getIsDecoy() && p->getFdrInfo()->getQValue() <= 0.05 ) {
+                        writeToXml.push_back(p);
+                    }
+                }
+                
+                std::sort(writeToXml.begin(), writeToXml.end(), [&] (CrosslinkSpectralMatch *l, CrosslinkSpectralMatch *r ) {
+                        return l->getScanNumber() < r->getScanNumber();
+                    });
+                
+                for (auto fullFilePath : currentRawFileList)
+                {
+                    std::string fileName =  fullFilePath.substr(0, fullFilePath.find_last_of("."));
+                    std::string fileNameNoExtension = fileName.substr(fileName.find_last_of("/"));
+                    
+                    std::vector<std::string> vs6 = {taskId};
+                    std::vector<CrosslinkSpectralMatch*> tmpwriteToXml;
+                    for ( auto p: writeToXml ) {
+                        if ( p->getFullFilePath() == fullFilePath )  {
+                            tmpwriteToXml.push_back(p);
+                        }
+                    }
+                    WritePepXML_xl(tmpwriteToXml, proteinList, dbFilenameList[0]->getFilePath(), variableModifications,
+                                   fixedModifications, localizeableModificationTypes, OutputFolder, fileNameNoExtension,
+                                   vs6);
+                }
+            }
 #ifdef TIMING_INFO
         gettimeofday (&t9e, NULL);
+#endif
 
+        }
+#ifdef TIMING_INFO
+        // These require an Allreduce
         std::cout << "Load Modifications        : " << timediff(t1, t1e ) << " sec \n";
         std::cout << "Load Proteins             : " << timediff(t2, t2e ) << " sec \n";
         std::cout << "Load Files                : " << t3total << " sec \n";
         std::cout << "GetMs2Scans               : " << t4total << " sec \n";
         std::cout << "GenerateIndixes           : " << t5total << " sec \n";
         std::cout << "CrosslinkSearch           : " << t6total << " sec \n";
+
+        // These are just on rank 0
         std::cout << "FdrAnalysis               : " << timediff(t7, t7e) << " sec \n";
         std::cout << "Calculate Residue numbers : " << timediff(t8, t8e) << " sec \n";
         std::cout << "Write results             : " << timediff(t9, t9e) << " sec \n";
@@ -752,6 +788,91 @@ namespace TaskLayer
         return myTaskResults;        
     }
 
+    void XLSearchTask::Gather_Psms ( std::vector<CrosslinkSpectralMatch*> &allPsms,
+                                     std::vector<Protein *> &proteinList,
+                                     MPI_Comm comm)
+    {
+        int rank, numProcs, index;
+        MPI_Comm_rank ( comm, &rank);
+        MPI_Comm_size ( comm, &numProcs);
+        
+        // Send side: pack allPsms, send msg size to rank 0 followed by
+        //            the actual data
+        if ( rank > 0 ) {
+            size_t bufsize = allPsms.size() * AVG_PSMS_SERIALIZED_SIZE;
+            char *sendbuf=NULL;
+            if ( allPsms.size() > 0 ) {
+                char *sendbuf = (char *) malloc ( bufsize );
+                if ( NULL == sendbuf ) {
+                    std::cout << "XLSearchTask: Could not allocate memory " << bufsize << " bytes. Aborting.\n";
+                    MPI_Abort ( comm, 1 ) ;
+                }
+                int ret = 0;
+                do {
+                    ret = CrosslinkSpectralMatch::Pack ( sendbuf, bufsize, allPsms );
+                    if ( ret == -1 ) {
+                        free ( sendbuf);
+                        char *sendbuf = (char *) malloc ( bufsize );
+                        if ( NULL == sendbuf ) {
+                            std::cout << "XLSearchTask: Could not allocate memory " << bufsize << " bytes. Aborting.\n";
+                            MPI_Abort ( comm, 1 ) ;
+                        }
+                    }
+                } while ( ret < 0 );
+            }
+            else {
+                bufsize = 0;
+            }
+            
+            MPI_Send ( &bufsize, 1, MPI_UNSIGNED_LONG, 0, 10, comm );
+            if ( bufsize > 0 ) {
+                MPI_Send ( sendbuf, bufsize, MPI_BYTE, 0, 20, comm );
+                free ( sendbuf);
+            }
+        }
+        else {
+            // Recv side: 
+            MPI_Request *reqs = (MPI_Request *) malloc ( sizeof(MPI_Request) * (numProcs-1) );
+            if ( NULL == reqs ) {
+                std::cout << "XLSearchTask: Could not allocate Request array. Aborting.\n";
+                MPI_Abort ( comm, 1 ) ;
+            }
+            size_t *bufsizes = (size_t *) malloc ( sizeof(size_t) * (numProcs - 1));
+            if ( NULL == bufsizes ) {
+                std::cout << "XLSearchTask: Could not allocate bufsizes array. Aborting.\n";
+                MPI_Abort ( comm, 1 ) ;
+            }
+            
+            for ( int i=1; i < numProcs; i++ ) {
+                MPI_Irecv ( &bufsizes[i-1], 1, MPI_UNSIGNED_LONG, i, 10, comm, &reqs[i-1]);
+            }
+
+            for ( int i=1; i < numProcs; i++ ) {
+                int index;
+                MPI_Waitany   (numProcs-1, reqs, &index, MPI_STATUS_IGNORE );
+
+                if ( bufsizes[index] > 0 ) {
+                    char *recvbuf = (char *) malloc (bufsizes[index] );
+                    if ( NULL == recvbuf ) {
+                        std::cout << "XLSearchTask: Could not allocate recvbuf of size " << bufsizes[index] << ". Aborting.\n";
+                        MPI_Abort ( comm, 1 ) ;
+                    }
+                    MPI_Recv ( recvbuf, bufsizes[index], MPI_BYTE, index+1, 20, comm, MPI_STATUS_IGNORE );
+                    std::vector<CrosslinkSpectralMatch*> unpackedPsms;
+                    std::vector<Modification*> modList;
+                    int count=-1;
+                    size_t len=0;
+                    CrosslinkSpectralMatch::Unpack ( recvbuf, bufsizes[index], count, len, unpackedPsms,
+                                                     modList, proteinList );
+                    for ( auto p : unpackedPsms ) {
+                        allPsms.push_back(p);
+                    }
+                    free ( recvbuf );
+                }
+            }
+        }
+    }
+    
     void XLSearchTask::SingleFDRAnalysis(std::vector<CrosslinkSpectralMatch*> &items, std::vector<std::string> &taskIds)
     {
         // calculate single PSM FDR

@@ -37,6 +37,17 @@ namespace EngineLayer
             CrosslinkSpectralMatch(PeptideWithSetModifications *theBestPeptide, int notch, double score, int scanIndex,
                                    Ms2ScanWithSpecificMass *scan, DigestionParams *digestionParams,
                                    std::vector<MatchedFragmentIon*> &matchedFragmentIons);
+
+            CrosslinkSpectralMatch(PeptideWithSetModifications *theBestPeptide, int notch,
+                                   double score, int scanIndex,
+                                   std::string scanFullFilePath, int scanOneBasedScanNumber,
+                                   std::optional<int> scanOneBasedPrecursorScanNumber,
+                                   double scanRetentionTime, int scanNumPeaks, double scanTotalIonCurrent,
+                                   int scanPrecursorCharge, double scanPrecursorMonoisotopicPeakMz,
+                                   double scanPrecursorMass,                                                       
+                                   DigestionParams *digestionParams,
+                                   std::vector<MatchedFragmentIon*> &matchedFragmentIons);
+            
             
             CrosslinkSpectralMatch *getBetaPeptide() const;
             void setBetaPeptide(CrosslinkSpectralMatch *value);
@@ -112,24 +123,20 @@ namespace EngineLayer
             /// len:         OUT number of bytes used for unpacking 'count' elements
             /// newCsmVec:   OUT (vector of) new CrosslinkSpectralMatch(s) .
             /// mods:        IN unordered_map of mods applied to Protein. Required to reconstruct a Csm
-            /// ms2Scans:    IN vector of Ms2Scans. Required to reconstruct a Csm
             /// proteinList: IN vector of Protein*. Required to reconstruct a Csm
             /// </summary>
             static void Unpack ( char *buf, size_t buf_size, int count, size_t &len, 
                                  std::vector<CrosslinkSpectralMatch *> &newCsmVec,
                                  const std::vector<Modification*> &mods,
-                                 const std::vector<Ms2ScanWithSpecificMass*> &ms2Scans,
                                  const std::vector<Protein*> &proteinList );
             static void Unpack ( char *buf, size_t buf_size, size_t &len,
                                  CrosslinkSpectralMatch **newCsm,
                                  const std::vector<Modification*> &mods,
-                                 const std::vector<Ms2ScanWithSpecificMass*> &ms2Scans,
                                  const std::vector<Protein *> &proteinList );
 
             static void Unpack_internal ( std::vector<char *> &input, int &index, size_t &len,
                                           CrosslinkSpectralMatch** newCsm,
                                           const std::vector<Modification*> &mods,
-                                          const std::vector<Ms2ScanWithSpecificMass*> &ms2Scans,
                                           const std::vector<Protein* > &proteinList,
                                           bool &has_beta_peptide);
             

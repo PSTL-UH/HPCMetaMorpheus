@@ -30,6 +30,8 @@
 #include <iostream>
 #include <fstream>
 #include <typeinfo>
+#include <cmath>
+#include <limits>
 
 #include <stdio.h>
 
@@ -216,7 +218,8 @@ namespace TaskLayer
     
     std::vector<Ms2ScanWithSpecificMass*> MetaMorpheusTask::GetMs2Scans(MsDataFile *myMSDataFile,
                                                                         const std::string &fullFilePath,
-                                                                        EngineLayer::CommonParameters *commonParameters)
+                                                                        EngineLayer::CommonParameters *commonParameters,
+                                                                        int firstIndex, int lastIndex )
     {
 #ifdef TIMING_INFO
         struct timeval t1, t1e;
@@ -225,22 +228,24 @@ namespace TaskLayer
         gettimeofday (&t1, NULL);
 #endif
         std::vector<MsDataScan*> ms2Scans;
-        for ( auto x : myMSDataFile->GetAllScansList() ) {
-            if ( x->getMsnOrder() > 1 ) {
-                ms2Scans.push_back(x);
+        if ( lastIndex == -1 ) {
+            // Read entire file.
+            for ( auto x : myMSDataFile->GetAllScansList() ) {
+                if ( x->getMsnOrder() > 1 ) {
+                    ms2Scans.push_back(x);
+                }
+            }
+        }
+        else {
+            for ( auto x : myMSDataFile->GetMsScansSubset(firstIndex, lastIndex ) ) {
+                if ( x->getMsnOrder() > 1 ) {
+                    ms2Scans.push_back(x);
+                }
             }
         }
         
         std::vector<std::vector<Ms2ScanWithSpecificMass*>> scansWithPrecursors(ms2Scans.size());
-        
-#ifdef ORIG
-        //ParallelOptions *tempVar = new ParallelOptions();
-        //tempVar->MaxDegreeOfParallelism = commonParameters->getMaxThreadsToUsePerFile();
-        //Parallel::ForEach(Partitioner::Create(0, ms2Scans.size()), tempVar, [&] (partitionRange, loopState)       {
-        //        for (int i = partitionRange::Item1; i < partitionRange::Item2; i++)
-#endif
-        for ( int i = 0; i < (int)ms2Scans.size(); i++ ) {
-            
+        for ( int i = 0; i < (int)ms2Scans.size(); i++ ) {            
             MsDataScan *ms2scan = ms2Scans[i];
             
             std::vector<std::pair<double, int>> precursors;
@@ -1124,84 +1129,269 @@ namespace TaskLayer
                                            std::vector<std::vector<int>> &precursorIndex,
                                            std::vector<Protein*> &allKnownProteins,
                                            std::vector<Modification*> &allKnownModifications,
-                                           const std::string &taskId)
+                                           const std::string &taskId,
+                                           MPI_Comm comm )
     {
         std::vector<std::string> svec1 = {taskId};        
         Status("Running Index Engine...", svec1,  privateVerbosityLevel);
+
+        int rank;
+        MPI_Comm_rank ( comm, &rank );
+        if ( rank == 0 ) {
+            std::string pathToFolderWithIndices = GetExistingFolderWithIndices(indexEngine, dbFilenameList);
+            
+            if (pathToFolderWithIndices == "")
+            {
+                auto output_folderForIndices = GenerateOutputFolderForIndices(dbFilenameList);
+                Status("Writing params...", svec1,  privateVerbosityLevel);
+                
+                std::string paramsFile = output_folderForIndices + "/indexEngine.params";
+                WriteIndexEngineParams(indexEngine, paramsFile);
+                FinishedWritingFile(paramsFile, svec1,  privateVerbosityLevel );
+                
+                Status("Running Index Engine...", svec1,  privateVerbosityLevel);
+                auto indexResults = static_cast<IndexingResults*>(indexEngine->Run());
+                peptideIndex = indexResults->getPeptideIndex();
+                fragmentIndex = indexResults->getFragmentIndex();
+                precursorIndex = indexResults->getPrecursorIndex();
+                
+                Status("Writing peptide index...", svec1,  privateVerbosityLevel);
+                std::string peptideIndexFile = output_folderForIndices + "/peptideIndex.ind";
+                WritePeptideIndex(peptideIndex, peptideIndexFile);
+                FinishedWritingFile(peptideIndexFile, svec1,  privateVerbosityLevel);
+                
+                Status("Writing fragment index...", svec1,  privateVerbosityLevel);
+                std::string fragmentIndexFile = output_folderForIndices + "/fragmentIndex.ind";
+                WriteFragmentIndexSerializer(fragmentIndex, fragmentIndexFile);
+                FinishedWritingFile(fragmentIndexFile, svec1,  privateVerbosityLevel );
+                
+                if (indexEngine->GeneratePrecursorIndex)
+                {
+                    Status("Writing precursor index...", svec1,  privateVerbosityLevel );
+                    std::string precursorIndexFile = output_folderForIndices + "/precursorIndex.ind";
+                    WriteFragmentIndexSerializer(precursorIndex, precursorIndexFile);
+                    FinishedWritingFile(precursorIndexFile, svec1,  privateVerbosityLevel );
+                }
+            }
+        }
+
+        // This Barrier is required to ensure that the files are written by rank 0
+        // if they didn't already exist
+        MPI_Barrier ( comm);
         
         std::string pathToFolderWithIndices = GetExistingFolderWithIndices(indexEngine, dbFilenameList);
-            
-        if (pathToFolderWithIndices == "")
+        Status("Reading fragment index...", svec1,  privateVerbosityLevel );
+        std::string file = pathToFolderWithIndices + "/fragmentIndex.ind";
+        ReadFragmentIndexDeserializer(fragmentIndex, file );
+        
+        if (indexEngine->GeneratePrecursorIndex)
         {
-            auto output_folderForIndices = GenerateOutputFolderForIndices(dbFilenameList);
-            Status("Writing params...", svec1,  privateVerbosityLevel);
-
-            std::string paramsFile = output_folderForIndices + "/indexEngine.params";
-            WriteIndexEngineParams(indexEngine, paramsFile);
-            FinishedWritingFile(paramsFile, svec1,  privateVerbosityLevel );
-            
-            Status("Running Index Engine...", svec1,  privateVerbosityLevel);
-            auto indexResults = static_cast<IndexingResults*>(indexEngine->Run());
-            peptideIndex = indexResults->getPeptideIndex();
-            fragmentIndex = indexResults->getFragmentIndex();
-            precursorIndex = indexResults->getPrecursorIndex();
-            
-            Status("Writing peptide index...", svec1,  privateVerbosityLevel);
-            std::string peptideIndexFile = output_folderForIndices + "/peptideIndex.ind";
-            WritePeptideIndex(peptideIndex, peptideIndexFile);
-            FinishedWritingFile(peptideIndexFile, svec1,  privateVerbosityLevel);
-            
-            Status("Writing fragment index...", svec1,  privateVerbosityLevel);
-            std::string fragmentIndexFile = output_folderForIndices + "/fragmentIndex.ind";
-            WriteFragmentIndexSerializer(fragmentIndex, fragmentIndexFile);
-            FinishedWritingFile(fragmentIndexFile, svec1,  privateVerbosityLevel );
-            
-            if (indexEngine->GeneratePrecursorIndex)
+            Status("Reading precursor index...", svec1,  privateVerbosityLevel );
+            file = pathToFolderWithIndices + "/precursorIndex.ind";
+            ReadFragmentIndexDeserializer(precursorIndex, file );
+        }
+        
+        Status("Reading peptide index...", svec1,  privateVerbosityLevel);
+        file = pathToFolderWithIndices + "/peptideIndex.ind";
+        PeptideWithSetModifications::Deserialize(file, peptideIndex );
+        
+        // populate dictionaries of known proteins for deserialization
+        std::unordered_map<std::string, Protein*> proteinDictionary;
+        
+        for (auto protein : allKnownProteins)
+        {
+            if (proteinDictionary.find(protein->getAccession()) == proteinDictionary.end())
             {
-                Status("Writing precursor index...", svec1,  privateVerbosityLevel );
-                std::string precursorIndexFile = output_folderForIndices + "/precursorIndex.ind";
-                WriteFragmentIndexSerializer(precursorIndex, precursorIndexFile);
-                FinishedWritingFile(precursorIndexFile, svec1,  privateVerbosityLevel );
+                proteinDictionary.emplace(protein->getAccession(), protein);
+            }
+            else if (proteinDictionary[protein->getAccession()]->getBaseSequence() != protein->getBaseSequence())
+            {
+                throw MetaMorpheusException(StringHelper::formatSimple("The protein database contained multiple proteins with "
+                                                                       "accession {0} ! This is not allowed for index-based searches "
+                                                                       "(modern, non-specific, crosslink searches)",
+                                                                       protein->getAccession()));
             }
         }
-        else
+        
+        // get non-serialized information for the peptides (proteins, mod info)
+        auto tmp = GlobalVariables::getAllModsKnownDictionary();
+        for (auto peptide : peptideIndex)
         {
-            Status("Reading fragment index...", svec1,  privateVerbosityLevel );
-            std::string file = pathToFolderWithIndices + "/fragmentIndex.ind";
-            ReadFragmentIndexDeserializer(fragmentIndex, file );
+            peptide->SetNonSerializedPeptideInfo( tmp, proteinDictionary);
+        }    
+    }
 
-            if (indexEngine->GeneratePrecursorIndex)
-            {
-                Status("Reading precursor index...", svec1,  privateVerbosityLevel );
-                file = pathToFolderWithIndices + "/precursorIndex.ind";
-                ReadFragmentIndexDeserializer(precursorIndex, file );
-            }
+    // This next routine is just a temporary hack until we find a way to get this information
+    // from MsDataFile
+    int MetaMorpheusTask::getNumScans ( std::string &filename )
+    {
+        int size=10;
+        if ( filename.find("BSADSSO200-1-08032018_Slot1-12_01_520modified.mgf") != std::string::npos ){
+            size = 67711;            
+        }
+        else if ( filename.find("RibosomeA-10182018_Slot2-01_01_628modified.mgf") != std::string::npos ){
+            size = 41642;            
+        }
+        else if ( filename.find("Shaun-Exp-AP-10122019.mgf") != std::string::npos ){
+            size = 23474;            
+        }
+        else if ( filename.find("B170110_02_Lumos_PR_IN_190_mito-DSS_18A15") != std::string::npos ){
+            size = 21614;            
+        }
+        else if ( filename.find("B170110_03_Lumos_PR_IN_190_mito-DSS_18A16") != std::string::npos ){
+            size = 34659;            
+        }
+        else if ( filename.find("B170110_04_Lumos_PR_IN_190_mito-DSS_18A17") != std::string::npos ){
+            size = 32574;            
+        }
+        else if ( filename.find("B170110_06_Lumos_PR_IN_190_mito-DSS_18A19") != std::string::npos ){
+            size = 16169;            
+        }
+        else {
+            std::cout << "MetaMorpheusTask::getNumScans(): file " << filename << " unknown. Returning default value of 10 Spectras\n";
+        }
+        
+        return size;
+    }
 
-            Status("Reading peptide index...", svec1,  privateVerbosityLevel);
-            file = pathToFolderWithIndices + "/peptideIndex.ind";
-            PeptideWithSetModifications::Deserialize(file, peptideIndex );
-            
-            // populate dictionaries of known proteins for deserialization
-            std::unordered_map<std::string, Protein*> proteinDictionary;
-            
-            for (auto protein : allKnownProteins)
-            {
-                if (proteinDictionary.find(protein->getAccession()) == proteinDictionary.end())
-                {
-                    proteinDictionary.emplace(protein->getAccession(), protein);
-                }
-                else if (proteinDictionary[protein->getAccession()]->getBaseSequence() != protein->getBaseSequence())
-                {
-                    throw MetaMorpheusException(StringHelper::formatSimple("The protein database contained multiple proteins with accession {0} ! This is not allowed for index-based searches (modern, non-specific, crosslink searches)", protein->getAccession()));
-                }
+    void MetaMorpheusTask::DataFilePartitioning ( std::vector<std::string> &allFiles,                   // IN
+                                                  MPI_Comm comm,                                        // IN
+                                                  std::vector<std::string> &myFile,                     // OUT
+                                                  std::vector<std::tuple<int, int>> &myFirstLastIndex ) // OUT
+
+    {
+        int rank, numProcs;
+        MPI_Comm_rank ( comm, &rank );
+        MPI_Comm_size ( comm, &numProcs );
+        
+        int numFiles = (int) allFiles.size();
+        
+        if ( numFiles > numProcs ) {
+            // currently not handled. Interfaces are however ready to deal with this scenario if
+            // we have to later on.
+            std::cout << "Number of files exceeds number of process. This scenario is currently " <<
+                "not supported. Returning.\n";
+            return;
+        }
+        
+        // Generic partitioning is based on the number of Scans per file.   
+        // Step 1: determine ideal avg. num. Scans per proc.
+        std::vector<int> numScansPerFile (numFiles);
+        int totalNumScans = 0;
+        for ( int i =0; i < numFiles; i++  ) {
+            numScansPerFile[i] = getNumScans ( allFiles[i] );
+            totalNumScans     += numScansPerFile[i];
+        }
+        
+        int avgNumScans = std::round(totalNumScans / numProcs );
+        
+        // Step 2: determine number of Processes assigned to each file.
+        //         total sum has to match numProcs
+        std::vector<int> avgScansPerFile(numFiles);
+        std::vector<int> procsPerFile(numFiles);
+        int totalProcs = 0;
+        for ( int i=0; i < numFiles; i++ ) {
+            procsPerFile[i]    = numScansPerFile[i] / avgNumScans;
+            if ( procsPerFile[i] == 0 ) {
+                procsPerFile[i] = 1;
             }
-            
-            // get non-serialized information for the peptides (proteins, mod info)
-            auto tmp = GlobalVariables::getAllModsKnownDictionary();
-            for (auto peptide : peptideIndex)
-            {
-                peptide->SetNonSerializedPeptideInfo( tmp, proteinDictionary);
+            avgScansPerFile[i] = numScansPerFile[i] / procsPerFile[i];
+            totalProcs        += procsPerFile[i];
+        }
+        
+        if ( totalProcs < numProcs ) {
+            // Assign more procs to the files with largers avg Scans per File
+            while ( totalProcs != numProcs ) {
+                // Find file with largest avg. and assign an additional process to this file.
+                int max_val   = avgScansPerFile[0];
+                int max_index = 0;
+                for ( int j=1; j< numFiles; j++ ) {
+                    if ( avgScansPerFile[j] > max_val ) {
+                        max_val   = avgScansPerFile[j];
+                        max_index = j;
+                    }
+                }
+                
+                procsPerFile[max_index]++;
+                avgScansPerFile[max_index] = numScansPerFile[max_index]/procsPerFile[max_index];
+                
+                totalProcs++;
             }
         }
+        else if ( totalProcs > numProcs ) {
+            while ( totalProcs != numProcs ) {
+                // Find file with smallest avg. and remove a proc from this file.
+                // Make sure to not remove a proc from a file that has only one 
+                // proc assigned.
+                int min_val   = std::numeric_limits<int>::max();
+                int min_index = -1;
+                
+                for ( int j=1; j < numFiles; j++ ) {
+                    if ( avgScansPerFile[j] < min_val &&
+                         procsPerFile[j] > 1 ) {
+                        min_val   = avgScansPerFile[j];
+                        min_index = j;
+                    }
+                }
+                
+                procsPerFile[min_index]--;
+                avgScansPerFile[min_index] = numScansPerFile[min_index]/procsPerFile[min_index];
+                
+                totalProcs--;           
+            }
+        }
+        
+        // Step3: make the assignments for each proc
+        //       
+        // 3a: which file is assigned to a proc
+        std::vector<std::string> filePerProc(numProcs);
+        int currentFile=0, procCount=0;
+        for ( int i=0; i<numProcs; i++ ) {
+            filePerProc[i] = allFiles[currentFile];
+            procCount++;
+            if ( procCount == procsPerFile[currentFile] ) {
+                currentFile++;
+                procCount=0;
+            }
+        }
+        
+        // 3b: which ranks are assigned to a file
+        std::vector<std::vector<int>> ranksPerFile(numFiles);
+        int currentRank=0;
+        for ( int i=0; i<numFiles; i++ ) {
+            for ( int k =0; k < procsPerFile[i]; k++ ) {
+                ranksPerFile[i].push_back(currentRank);
+                currentRank++;
+            }        
+        }
+        
+        // 3c: first and last indices for each rank.
+        std::vector<std::tuple<int, int>> indecesPerProc;
+        for ( int i =0; i < numFiles; i++ ) {
+            int firstIndex=0, lastIndex=0;
+            for ( int j=0; j < procsPerFile[i]; j++ ) {
+                firstIndex  = lastIndex;
+                lastIndex  +=  avgScansPerFile[i];
+                if ( j == procsPerFile[i]-1 ) {
+                    lastIndex = numScansPerFile[i];
+                }
+                
+                indecesPerProc.push_back(std::make_tuple(firstIndex, lastIndex));
+            }
+        }
+        
+#ifdef DEBUG
+        //Print out information for debugging
+        for (int i=0; i < numProcs; i++ ) {
+            std::cout << "Rank: " << i << " file: " << filePerProc[i] << " firstIndex: " <<
+                std::get<0>(indecesPerProc[i]) << " lastIndex: " << std::get<1>(indecesPerProc[i])
+                      << std::endl;
+        }
+#endif
+        // Step 4: extract information for my rank.
+        myFile.push_back(filePerProc[rank]);
+        myFirstLastIndex.push_back(indecesPerProc[rank]);
+        
+        return;
     }
 }

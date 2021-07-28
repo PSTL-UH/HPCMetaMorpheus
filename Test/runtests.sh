@@ -1,4 +1,7 @@
 #!/bin/bash
+if [ ! -f "elements.dat" ]; then
+    ln -s ../mzlib/UsefulProteomicsDatabases/Datafiles/elements.dat .
+fi
 
 echo " "
 echo "  BinGenerationTest"
