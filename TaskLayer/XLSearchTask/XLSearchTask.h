@@ -51,6 +51,8 @@ namespace TaskLayer
         // version, hence they are stored as part of the class now, not just internally in the
         // RunSpecific() method
         std::vector<Protein*> proteinList;
+
+        static constexpr int AVG_PSMS_SERIALIZED_SIZE = 1280; //10 lines a 128 bytes.
         
     public:
         XLSearchTask();
@@ -69,8 +71,8 @@ namespace TaskLayer
                                    std::vector<std::string> &currentRawFileList, const std::string &taskId,
                                    std::vector<FileSpecificParameters*> &fileSettingsList) override;
 
-        //Calculate the FDR of single peptide FP/TP
     private:
+        //Calculate the FDR of single peptide FP/TP
         void SingleFDRAnalysis(std::vector<CrosslinkSpectralMatch*> &items, std::vector<std::string> &taskIds);
         
         //Calculate the FDR of crosslinked peptide FP/TP
@@ -78,9 +80,9 @@ namespace TaskLayer
         
         //Generate user defined crosslinker
 
-        void XLSearchTask::Gather_Psms ( std::vector<CrosslinkSpectralMatch*> &allPsms,
-                                         std::vector<Protein *> &proteinList,
-                                         MPI_Comm comm)
+        void Gather_Psms ( std::vector<CrosslinkSpectralMatch*> &allPsms,
+                           std::vector<Protein *> &proteinList,
+                           MPI_Comm comm);
 
     public:
         static Crosslinker *GenerateUserDefinedCrosslinker(TaskLayer::XlSearchParameters *xlSearchParameters);

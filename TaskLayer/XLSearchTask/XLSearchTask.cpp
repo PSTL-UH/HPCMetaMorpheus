@@ -12,6 +12,7 @@
 #include "../../EngineLayer/CrosslinkSearch/PsmCrossType.h"
 
 #include <sstream>
+#include <stdlib.h>
 
 #include "MassSpectrometry/Enums/DissociationType.h"
 #include "UsefulProteomicsDatabases/DecoyType.h"
@@ -360,6 +361,7 @@ namespace TaskLayer
 #endif
             
             if ( rank == 0 ) {
+                auto thisId = std::vector<std::string> {taskId, "Individual Spectra Files", origDataFile};
                 Status("Getting ms2 scans...", thisId, getVerbose());
             }
 
@@ -421,6 +423,7 @@ namespace TaskLayer
 #endif
                 
                 if ( rank == 0 ) {
+                    std::vector<std::string> vs = {taskId};
                     Status("Searching files...", taskId, getVerbose());
                 }
 #ifdef TIMING_INFO
@@ -440,6 +443,7 @@ namespace TaskLayer
                 t6total += timediff (t6, t6e );
 #endif
                 if ( rank == 0 ) {
+                    auto thisId = std::vector<std::string> {taskId, "Individual Spectra Files", origDataFile};
                     std::string s1 = "Done with search " + std::to_string(currentPartition + 1) + "/" +
                     std::to_string(getCommonParameters()->getTotalPartitions()) + "!";
                     ProgressEventArgs tempVar2(100, s1, thisId);
@@ -788,6 +792,9 @@ namespace TaskLayer
                                      std::vector<Protein *> &proteinList,
                                      MPI_Comm comm)
     {
+        int rank, numProcs, index;
+        MPI_Comm_rank ( comm, &rank);
+        MPI_Comm_size ( comm, &numProcs);
         
         // Send side: pack allPsms, send msg size to rank 0 followed by
         //            the actual data
@@ -795,7 +802,7 @@ namespace TaskLayer
             size_t bufsize = allPsms.size() * AVG_PSMS_SERIALIZED_SIZE;
             char *sendbuf=NULL;
             if ( allPsms.size() > 0 ) {
-                char *sendbuf = malloc ( bufsize );
+                char *sendbuf = (char *) malloc ( bufsize );
                 if ( NULL == sendbuf ) {
                     std::cout << "XLSearchTask: Could not allocate memory " << bufsize << " bytes. Aborting.\n";
                     MPI_Abort ( comm, 1 ) ;
@@ -805,7 +812,7 @@ namespace TaskLayer
                     ret = CrosslinkSpectralMatch::Pack ( sendbuf, bufsize, allPsms );
                     if ( ret == -1 ) {
                         free ( sendbuf);
-                        char *sendbuf = malloc ( bufsize );
+                        char *sendbuf = (char *) malloc ( bufsize );
                         if ( NULL == sendbuf ) {
                             std::cout << "XLSearchTask: Could not allocate memory " << bufsize << " bytes. Aborting.\n";
                             MPI_Abort ( comm, 1 ) ;
@@ -825,32 +832,32 @@ namespace TaskLayer
         }
         else {
             // Recv side: 
-            MPI_Request *reqs = malloc ( sizeof(MPI_Request) * (numProcs-1) );
+            MPI_Request *reqs = (MPI_Request *) malloc ( sizeof(MPI_Request) * (numProcs-1) );
             if ( NULL == reqs ) {
                 std::cout << "XLSearchTask: Could not allocate Request array. Aborting.\n";
                 MPI_Abort ( comm, 1 ) ;
             }
-            size_t *bufsizes = malloc ( sizeof(size_t) * (numProcs - 1));
+            size_t *bufsizes = (size_t *) malloc ( sizeof(size_t) * (numProcs - 1));
             if ( NULL == bufsizes ) {
                 std::cout << "XLSearchTask: Could not allocate bufsizes array. Aborting.\n";
                 MPI_Abort ( comm, 1 ) ;
             }
             
             for ( int i=1; i < numProcs; i++ ) {
-                MPI_Irecv ( bufsizes[i-1], 1, MPI_UNISGNED_LONG, i, 10, comm, &reqs[i-1]);
+                MPI_Irecv ( &bufsizes[i-1], 1, MPI_UNSIGNED_LONG, i, 10, comm, &reqs[i-1]);
             }
 
             for ( int i=1; i < numProcs; i++ ) {
                 int index;
-                MPI_Waitany   (reqs, numProcs-1, &index, MPI_STATUS_IGNORE );
+                MPI_Waitany   (numProcs-1, reqs, &index, MPI_STATUS_IGNORE );
 
                 if ( bufsizes[index] > 0 ) {
-                    char *recvbuf = malloc (bufsizes[index] );
+                    char *recvbuf = (char *) malloc (bufsizes[index] );
                     if ( NULL == recvbuf ) {
                         std::cout << "XLSearchTask: Could not allocate recvbuf of size " << bufsizes[index] << ". Aborting.\n";
                         MPI_Abort ( comm, 1 ) ;
                     }
-                    MPI_Recv ( recvbuf, bufsizes[index], index+1, 20, comm, MPI_STATUS_IGNORE );
+                    MPI_Recv ( recvbuf, bufsizes[index], MPI_BYTE, index+1, 20, comm, MPI_STATUS_IGNORE );
                     std::vector<CrosslinkSpectralMatch*> unpackedPsms;
                     std::vector<Modification*> modList;
                     int count=-1;

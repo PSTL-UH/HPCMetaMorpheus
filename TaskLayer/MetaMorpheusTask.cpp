@@ -228,10 +228,19 @@ namespace TaskLayer
         gettimeofday (&t1, NULL);
 #endif
         std::vector<MsDataScan*> ms2Scans;
-        //for ( auto x : myMSDataFile->GetAllScansList() ) {
-        for ( auto x : myMSDataFile->getMsScansSubset(firstIndex, lastIndex ) ) {
-            if ( x->getMsnOrder() > 1 ) {
-                ms2Scans.push_back(x);
+        if ( lastIndex == -1 ) {
+            // Read entire file.
+            for ( auto x : myMSDataFile->GetAllScansList() ) {
+                if ( x->getMsnOrder() > 1 ) {
+                    ms2Scans.push_back(x);
+                }
+            }
+        }
+        else {
+            for ( auto x : myMSDataFile->GetMsScansSubset(firstIndex, lastIndex ) ) {
+                if ( x->getMsnOrder() > 1 ) {
+                    ms2Scans.push_back(x);
+                }
             }
         }
         
@@ -1170,6 +1179,7 @@ namespace TaskLayer
         // if they didn't already exist
         MPI_Barrier ( comm);
         
+        std::string pathToFolderWithIndices = GetExistingFolderWithIndices(indexEngine, dbFilenameList);
         Status("Reading fragment index...", svec1,  privateVerbosityLevel );
         std::string file = pathToFolderWithIndices + "/fragmentIndex.ind";
         ReadFragmentIndexDeserializer(fragmentIndex, file );
@@ -1196,8 +1206,8 @@ namespace TaskLayer
             }
             else if (proteinDictionary[protein->getAccession()]->getBaseSequence() != protein->getBaseSequence())
             {
-                throw MetaMorpheusException(StringHelper::formatSimple("The protein database contained multiple proteins with "+
-                                                                       "accession {0} ! This is not allowed for index-based searches "+
+                throw MetaMorpheusException(StringHelper::formatSimple("The protein database contained multiple proteins with "
+                                                                       "accession {0} ! This is not allowed for index-based searches "
                                                                        "(modern, non-specific, crosslink searches)",
                                                                        protein->getAccession()));
             }
@@ -1211,9 +1221,42 @@ namespace TaskLayer
         }    
     }
 
-    void MetaMorpheusTask::DataFilePartitioning ( std::vector<std::string> &allFiles,      // IN
-                                                  MPI_Comm comm,                           // IN
-                                                  std::vector<std::string> &myFile,        // OUT
+    // This next routine is just a temporary hack until we find a way to get this information
+    // from MsDataFile
+    int MetaMorpheusTask::getNumScans ( std::string &filename )
+    {
+        int size=10;
+        if ( filename.find("BSADSSO200-1-08032018_Slot1-12_01_520modified.mgf") != std::string::npos ){
+            size = 67711;            
+        }
+        else if ( filename.find("RibosomeA-10182018_Slot2-01_01_628modified.mgf") != std::string::npos ){
+            size = 41642;            
+        }
+        else if ( filename.find("Shaun-Exp-AP-10122019.mgf") != std::string::npos ){
+            size = 23474;            
+        }
+        else if ( filename.find("B170110_02_Lumos_PR_IN_190_mito-DSS_18A15") != std::string::npos ){
+            size = 21614;            
+        }
+        else if ( filename.find("B170110_03_Lumos_PR_IN_190_mito-DSS_18A16") != std::string::npos ){
+            size = 34659;            
+        }
+        else if ( filename.find("B170110_04_Lumos_PR_IN_190_mito-DSS_18A17") != std::string::npos ){
+            size = 32574;            
+        }
+        else if ( filename.find("B170110_06_Lumos_PR_IN_190_mito-DSS_18A19") != std::string::npos ){
+            size = 16169;            
+        }
+        else {
+            std::cout << "MetaMorpheusTask::getNumScans(): file " << filename << " unknown. Returning default value of 10 Spectras\n";
+        }
+        
+        return size;
+    }
+
+    void MetaMorpheusTask::DataFilePartitioning ( std::vector<std::string> &allFiles,                   // IN
+                                                  MPI_Comm comm,                                        // IN
+                                                  std::vector<std::string> &myFile,                     // OUT
                                                   std::vector<std::tuple<int, int>> &myFirstLastIndex ) // OUT
 
     {
