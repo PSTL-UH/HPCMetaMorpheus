@@ -341,6 +341,9 @@ namespace TaskLayer
             auto origDataFile = myFiles[spectraFileIndex];
             int firstIndex = std::get<0>(myFirstLastIndex[spectraFileIndex]);
             int lastIndex  = std::get<1>(myFirstLastIndex[spectraFileIndex]);
+
+            std::cout << "[" << rank << "]: processing file " <<  origDataFile << " firstIndex = " << firstIndex  << " lastIndex " << lastIndex << std::endl; 
+               
             EngineLayer::CommonParameters *combinedParams = SetAllFileSpecificCommonParams(getCommonParameters(),
                                                                                fileSettingsList[spectraFileIndex]);
             if ( rank == 0 ) {
@@ -802,7 +805,7 @@ namespace TaskLayer
             size_t bufsize = allPsms.size() * AVG_PSMS_SERIALIZED_SIZE;
             char *sendbuf=NULL;
             if ( allPsms.size() > 0 ) {
-                char *sendbuf = (char *) malloc ( bufsize );
+                sendbuf = (char *) malloc ( bufsize );
                 if ( NULL == sendbuf ) {
                     std::cout << "XLSearchTask: Could not allocate memory " << bufsize << " bytes. Aborting.\n";
                     MPI_Abort ( comm, 1 ) ;
@@ -823,10 +826,11 @@ namespace TaskLayer
             else {
                 bufsize = 0;
             }
-            
+
+            std::cout << "[" << rank << "]: sending " <<  allPsms.size() << " elements in " << bufsize  << " bytes." << std::endl;  
             MPI_Send ( &bufsize, 1, MPI_UNSIGNED_LONG, 0, 10, comm );
             if ( bufsize > 0 ) {
-                MPI_Send ( sendbuf, bufsize, MPI_BYTE, 0, 20, comm );
+                MPI_Send ( sendbuf, (int)bufsize, MPI_BYTE, 0, 20, comm );
                 free ( sendbuf);
             }
         }
@@ -857,13 +861,14 @@ namespace TaskLayer
                         std::cout << "XLSearchTask: Could not allocate recvbuf of size " << bufsizes[index] << ". Aborting.\n";
                         MPI_Abort ( comm, 1 ) ;
                     }
-                    MPI_Recv ( recvbuf, bufsizes[index], MPI_BYTE, index+1, 20, comm, MPI_STATUS_IGNORE );
+                    MPI_Recv ( recvbuf, (int)bufsizes[index], MPI_BYTE, index+1, 20, comm, MPI_STATUS_IGNORE );
                     std::vector<CrosslinkSpectralMatch*> unpackedPsms;
                     std::vector<Modification*> modList;
                     int count=-1;
                     size_t len=0;
                     CrosslinkSpectralMatch::Unpack ( recvbuf, bufsizes[index], count, len, unpackedPsms,
                                                      modList, proteinList );
+                    std::cout << "[" << rank << "]: index " << index << " recving " <<  unpackedPsms.size() << " elements in " << bufsizes[index]  << " bytes." << std::endl;  
                     for ( auto p : unpackedPsms ) {
                         allPsms.push_back(p);
                     }
