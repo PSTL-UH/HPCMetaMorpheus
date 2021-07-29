@@ -468,18 +468,24 @@ namespace TaskLayer
         StartingSingleTask(displayName, privateVerbosityLevel);
         
         GlobalVariables::GlobalVariables_init();
+
+        int rank;
+        MPI_Comm_rank ( MPI_COMM_WORLD, &rank );
         
         std::filesystem::path output_directory = output_folder;
         std::string output_dir = output_directory.parent_path().string() + "/Task Settings";
-        if ( !std::filesystem::exists(output_dir ) ){
-            std::filesystem::create_directory(output_dir);
-        }       
+        if ( rank == 0 ) {
+            if ( !std::filesystem::exists(output_dir ) ){
+                std::filesystem::create_directory(output_dir);
+            }       
         
-        std::string output_path = output_dir + "/config.toml";
-        this->writeTomlConfig(output_path, tomlFile);
-        std::vector<std::string> vtd = {displayName};
-        FinishedWritingFile(output_path, vtd, privateVerbosityLevel );
-
+            std::string output_path = output_dir + "/config.toml";
+            this->writeTomlConfig(output_path, tomlFile);
+            std::vector<std::string> vtd = {displayName};
+            FinishedWritingFile(output_path, vtd, privateVerbosityLevel );
+        }
+        MPI_Barrier ( MPI_COMM_WORLD );
+        
         try
         {
             clock_t begin = clock();

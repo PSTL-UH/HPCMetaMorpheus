@@ -52,7 +52,7 @@ namespace TaskLayer
         // RunSpecific() method
         std::vector<Protein*> proteinList;
 
-        static constexpr int AVG_PSMS_SERIALIZED_SIZE = 1280; //10 lines a 128 bytes.
+        static constexpr int AVG_PSMS_SERIALIZED_SIZE = 2560; //10 lines a 128 bytes * 2 (bc. of betapeptides).
         
     public:
         XLSearchTask();
