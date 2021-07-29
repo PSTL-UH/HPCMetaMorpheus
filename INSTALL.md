@@ -34,3 +34,11 @@ Note that `git pull ...` is also no longer sufficient to update your source tree
 ```shell
 $ git pull --recurse-submodules
 ```
+
+To checkout and compile the MPI version, please checkout the ```topic/MPI``` branch and provide an MPI capable compile environment. For example:
+```
+$ git checkout topic/MPI
+$ ./configure CXX=mpicxx --disable-debug
+```
+
+Similarly, for the OpenMP version checkout the ```topic/OpenMP``` branch, and provide an OpenMP capable compiler.
