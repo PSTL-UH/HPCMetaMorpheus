@@ -28,6 +28,7 @@ clean:
 links:
 	@test -s $(MMORPHEUS_BIN_DIR)/elements.dat || ln -s $(MMORPHEUS_DIR)/Test/Data/elements.dat $(MMORPHEUS_BIN_DIR)
 	@test -s $(MMORPHEUS_BIN_DIR)/proteases.tsv || ln -s $(MMORPHEUS_DIR)/Test/proteases.tsv $(MMORPHEUS_BIN_DIR)
+	@test -s $(MMORPHEUS_BIN_DIR)/settings.toml || ln -s $(MMORPHEUS_DIR)/Test/settings.toml $(MMORPHEUS_BIN_DIR)
 	@test -s "$(MMORPHEUS_BIN_DIR)/Data" || ln -s $(MMORPHEUS_DIR)/Test/Data/ $(MMORPHEUS_BIN_DIR)
 	@test -s "$(MMORPHEUS_BIN_DIR)/Mods" || ln -s $(MMORPHEUS_DIR)/Test/Mods/ $(MMORPHEUS_BIN_DIR)
 	@test -s "$(MMORPHEUS_BIN_DIR)/Contaminants" || ln -s $(MMORPHEUS_DIR)/Test/Contaminants/ $(MMORPHEUS_BIN_DIR)
