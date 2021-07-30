@@ -103,6 +103,11 @@ int main( int argc, char *argv[] )
     }
     
     int verbosity=1; // Setting the default to provide Status updates
+    if ( rank > 0 ) {
+        // for MPI executions, only rank 0 will provide status updates.
+        verbosity = 0;
+    }
+
     int opt=0;
     static struct option long_options[] = {
         {"tasks", required_argument, 0, 't'},
