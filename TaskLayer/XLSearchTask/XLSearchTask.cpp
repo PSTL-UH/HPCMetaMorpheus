@@ -805,7 +805,7 @@ namespace TaskLayer
             size_t bufsize = allPsms.size() * AVG_PSMS_SERIALIZED_SIZE;
             char *sendbuf=NULL;
             if ( allPsms.size() > 0 ) {
-                char *sendbuf = (char *) malloc ( bufsize );
+                sendbuf = (char *) malloc ( bufsize );
                 if ( NULL == sendbuf ) {
                     std::cout << "XLSearchTask: Could not allocate memory " << bufsize << " bytes. Aborting.\n";
                     MPI_Abort ( comm, 1 ) ;
