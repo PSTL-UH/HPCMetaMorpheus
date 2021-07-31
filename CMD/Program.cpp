@@ -58,16 +58,22 @@ static void print_config ( std::vector<std::string> &taskname,
             std::cout << "Outputfolder: " << outputfolder << std::endl;    
         }
         
-        if ( spectra.size() == 0 ) {
-            std::cout << "Spectra: Not set" << std::endl;    
-        }
-        else {
-            std::cout << "Spectra: " << spectra.at(0).c_str() << std::endl;    
+        std::cout << "Number of Spectra Files: " << spectra.size() << std::endl;
+        if ( spectra.size() > 0 ) {
+            std::cout << "  Spectra Files: ";
+            for ( int i=0; i < (int)spectra.size(); i++ ) {
+                std::cout << spectra.at(i).c_str() << " ";    
+            }
+            std::cout << std::endl;
         }
         std::cout << "Number of Databases: " << dbases.size() << std::endl;
-        for ( int i=0; i< (int)dbases.size(); i ++ ) {
-            std::cout << "  Databasename " << i << " : " << dbases.at(i).c_str()
-                      << std::endl;
+        if ( dbases.size() > 0 ) {
+            std::cout << "  Databases: " ;
+            for ( int i=0; i< (int)dbases.size(); i ++ ) {
+                std::cout <<  dbases.at(i).c_str() << " ";
+            }
+            std::cout << std::endl;
+
         }
         
         return;
@@ -107,6 +113,7 @@ int main( int argc, char *argv[] )
     };
     
     int long_index=0;
+    int index=0;
     while ((opt = getopt_long (argc, argv, "t:o:m:s:d:v:",
                                long_options, &long_index)) != -1 ) {
         switch (opt) {
@@ -120,10 +127,32 @@ int main( int argc, char *argv[] )
                 MetaTasks.push_back (std::string(optarg));
                 break;
             case 's':
-                Spectra.push_back (std::string(optarg));
+                index = optind-1;
+                while(index < argc){
+                    auto next = strdup(argv[index]); /* get login */
+                    index++;
+                    if ( next[0] != '-') {   /* check if optarg is next switch */
+                        Spectra.push_back (std::string(next));
+                    }
+                    else {
+                        break;
+                    }
+                }
+                optind = index-1;
                 break;
             case 'd':
-                Databases.push_back (std::string(optarg));
+                index = optind-1;
+                while(index < argc){
+                    auto next = strdup(argv[index]); /* get login */
+                    index++;
+                    if ( next[0] != '-') {   /* check if optarg is next switch */
+                        Databases.push_back (std::string(next));
+                    }
+                    else {
+                        break;
+                    }
+                }
+                optind = index-1;
                 break;
             case 'v':
                 verbosity = std::stoi(optarg);
