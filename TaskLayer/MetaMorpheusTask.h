@@ -18,6 +18,7 @@
 #include "DbForTask.h"
 
 #include "MyTaskResults.h"
+#include "MyFileManager.h"
 #include "FileSpecificParameters.h"
 
 #include "../EngineLayer/CommonParameters.h"
@@ -195,9 +196,10 @@ namespace TaskLayer
                                  const std::string &taskId,
                                  MPI_Comm comm=MPI_COMM_WORLD);
 
-            int getNumScans ( std::string &filename );
-
-            void DataFilePartitioning ( std::vector<std::string> &allFiles, MPI_Comm comm,
+            void DataFilePartitioning ( std::vector<std::string> &allFiles,
+                                        MPI_Comm comm,
+                                        MyFileManager *fileManager,                             
+                                        std::vector<FileSpecificParameters*> &fileSettingsList, 
                                         std::vector<std::string> &myFile,                     
                                         std::vector<std::tuple<int, int>> &myFirstLastIndex );
         };
