@@ -329,7 +329,8 @@ namespace TaskLayer
         
         std::vector<std::string> myFiles;
         std::vector<std::tuple<int, int>> myFirstLastIndex;
-        DataFilePartitioning ( currentRawFileList, comm, myFiles, myFirstLastIndex );
+        DataFilePartitioning ( currentRawFileList, comm, myFileManager, fileSettingsList,
+                               myFiles, myFirstLastIndex );
 
         // The following vectors are only required for memory management at the end of the Task
         std::vector<CrosslinkSearchEngine *> csengines;

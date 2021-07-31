@@ -1,5 +1,6 @@
 ﻿#include "MetaMorpheusTask.h"
 #include "MyTaskResults.h"
+#include "MyFileManager.h"
 #include "FileSpecificParameters.h"
 #include "DbForTask.h"
 #include "EventArgs/SingleTaskEventArgs.h"
@@ -1227,43 +1228,13 @@ namespace TaskLayer
         }    
     }
 
-    // This next routine is just a temporary hack until we find a way to get this information
-    // from MsDataFile
-    int MetaMorpheusTask::getNumScans ( std::string &filename )
-    {
-        int size=10;
-        if ( filename.find("BSADSSO200-1-08032018_Slot1-12_01_520modified.mgf") != std::string::npos ){
-            size = 67711;            
-        }
-        else if ( filename.find("RibosomeA-10182018_Slot2-01_01_628modified.mgf") != std::string::npos ){
-            size = 41642;            
-        }
-        else if ( filename.find("Shaun-Exp-AP-10122019.mgf") != std::string::npos ){
-            size = 23474;            
-        }
-        else if ( filename.find("B170110_02_Lumos_PR_IN_190_mito-DSS_18A15") != std::string::npos ){
-            size = 21614;            
-        }
-        else if ( filename.find("B170110_03_Lumos_PR_IN_190_mito-DSS_18A16") != std::string::npos ){
-            size = 34659;            
-        }
-        else if ( filename.find("B170110_04_Lumos_PR_IN_190_mito-DSS_18A17") != std::string::npos ){
-            size = 32574;            
-        }
-        else if ( filename.find("B170110_06_Lumos_PR_IN_190_mito-DSS_18A19") != std::string::npos ){
-            size = 16169;            
-        }
-        else {
-            std::cout << "MetaMorpheusTask::getNumScans(): file " << filename << " unknown. Returning default value of 10 Spectras\n";
-        }
-        
-        return size;
-    }
 
-    void MetaMorpheusTask::DataFilePartitioning ( std::vector<std::string> &allFiles,                   // IN
-                                                  MPI_Comm comm,                                        // IN
-                                                  std::vector<std::string> &myFile,                     // OUT
-                                                  std::vector<std::tuple<int, int>> &myFirstLastIndex ) // OUT
+    void MetaMorpheusTask::DataFilePartitioning ( std::vector<std::string> &allFiles,                     // IN
+                                                  MPI_Comm comm,                                          // IN
+                                                  MyFileManager *fileManager,                             // IN
+                                                  std::vector<FileSpecificParameters*> &fileSettingsList, // IN
+                                                  std::vector<std::string> &myFile,                       // OUT
+                                                  std::vector<std::tuple<int, int>> &myFirstLastIndex )   // OUT
 
     {
         int rank, numProcs;
@@ -1279,15 +1250,102 @@ namespace TaskLayer
                 "not supported. Returning.\n";
             return;
         }
-        
+
         // Generic partitioning is based on the number of Scans per file.   
         // Step 1: determine ideal avg. num. Scans per proc.
         std::vector<int> numScansPerFile (numFiles);
-        int totalNumScans = 0;
-        for ( int i =0; i < numFiles; i++  ) {
-            numScansPerFile[i] = getNumScans ( allFiles[i] );
-            totalNumScans     += numScansPerFile[i];
+        std::map<std::string, unsigned long> allKnownSpectraFiles;
+        std::string filename = "allknownspectrafiles.txt";
+        
+        std::vector<std::string> filePerProc(numProcs);
+        std::vector<int> initNumProcsPerFile (numFiles, 0);
+        std::vector<std::vector<int>> ranksPerFile(numFiles);
+        
+        std::ifstream input(filename);
+        if ( input.is_open() ) {
+            std::string spectraFile;
+            unsigned long numScans;
+            while (input >> spectraFile >> numScans ) {
+                allKnownSpectraFiles.emplace(spectraFile, numScans);
+            }
+            input.close();
         }
+        
+        int totalNumScans = 0;
+        std::vector<int> needNumScansIndex;
+        for ( int i=0; i < numFiles; i++  ) {
+            bool found = false;
+            std::string tmps      = allFiles[i];
+            std::string tmpsNoExt = tmps.substr(0, tmps.find_last_of(".") );
+            std::string thisFile = tmpsNoExt;
+            if ( tmpsNoExt.find_last_of("/") != std::string::npos ){
+                thisFile = tmpsNoExt.substr(tmpsNoExt.find_last_of("/")+1);
+            }
+            for ( auto ft : allKnownSpectraFiles ) {
+                if ( ft.first.find(thisFile) != std::string::npos ) {
+                    numScansPerFile[i] = ft.second;
+                    totalNumScans     += numScansPerFile[i];
+                    found = true;
+                    break;
+                }
+            }
+            if ( !found ) {
+                needNumScansIndex.push_back(i);
+                //std::cout << "Spectra file " << thisFile << " not found in " << filename << std::endl;
+            }            
+        }
+        
+        unsigned long thisNumScans, tmpNumScans;
+        for ( int i=0; i < (int)needNumScansIndex.size(); i++ ) {
+            filePerProc[i] = allFiles[needNumScansIndex[i]];
+            initNumProcsPerFile[needNumScansIndex[i]] = 1;
+            ranksPerFile[needNumScansIndex[i]].push_back(i);
+            if ( rank == i ) {
+                // Read file and get NumSpectra
+                // If the algorithm works as designed, the fact that a process reads in a full
+                // data file is acceptable, since a process reads at this point a maximum of 1
+                // file and we make sure that this file is assigned to the process later for processing.
+                EngineLayer::CommonParameters *combinedParams = SetAllFileSpecificCommonParams(getCommonParameters(),
+                                                                               fileSettingsList[needNumScansIndex[i]]);
+                MsDataFile *myMsDataFile = fileManager->LoadFile (allFiles[needNumScansIndex[i]],
+                                                                  std::make_optional(combinedParams->getTopNpeaks()),
+                                                                  std::make_optional(combinedParams->getMinRatio()),
+                                                                  combinedParams->getTrimMs1Peaks(),
+                                                                  combinedParams->getTrimMsMsPeaks(),
+                                                                  combinedParams);
+                thisNumScans = (unsigned long) myMsDataFile->getNumSpectra();
+            }
+            
+        }
+        
+        if ( needNumScansIndex.size()> 0 &&  rank == 0 ) {
+            std::cout << "For faster processing in the future, please add the following lines to the file " <<
+                filename << ":\n";
+        }
+        
+        for ( int i=0; i < (int)needNumScansIndex.size(); i++ ) {
+            if ( rank == i ) {
+                // will be root in this round and need to provide the data
+                tmpNumScans = thisNumScans;
+            }
+            MPI_Bcast (&tmpNumScans, 1, MPI_UNSIGNED_LONG, i, comm);
+            
+            numScansPerFile[needNumScansIndex[i]] = tmpNumScans;
+            totalNumScans     += numScansPerFile[i];                        
+            if ( rank == 0 ) {
+                std::string tmps = allFiles[needNumScansIndex[i]];
+                std::string tmpsNoExt = tmps.substr(0, tmps.find_last_of(".") );
+                std::string thisFile = tmpsNoExt;
+                if ( tmpsNoExt.find_last_of("/") != std::string::npos ){
+                    thisFile = tmpsNoExt.substr(tmpsNoExt.find_last_of("/")+1);
+                }
+                std::cout << thisFile << " " << tmpNumScans << std::endl;
+            }
+        }
+        if ( needNumScansIndex.size()> 0 &&  rank == 0 ) {
+            std::cout << std::endl;
+        }
+        
         
         int avgNumScans = std::round(totalNumScans / numProcs );
         
@@ -1308,7 +1366,7 @@ namespace TaskLayer
         if ( totalProcs < numProcs ) {
             // Assign more procs to the files with largers avg Scans per File
             while ( totalProcs != numProcs ) {
-                // Find file with largest avg. and assign an additional process to this file.
+                // find file with largest avg. and assign an additional process to this file.
                 int max_val   = avgScansPerFile[0];
                 int max_index = 0;
                 for ( int j=1; j< numFiles; j++ ) {
@@ -1326,9 +1384,9 @@ namespace TaskLayer
         }
         else if ( totalProcs > numProcs ) {
             while ( totalProcs != numProcs ) {
-                // Find file with smallest avg. and remove a proc from this file.
-                // Make sure to not remove a proc from a file that has only one 
-                // proc assigned.
+                // find file with smallest avg. and remove a proc from this file.
+                // make sure not remove a proc from a file that only has one proc
+                // assigned already.
                 int min_val   = std::numeric_limits<int>::max();
                 int min_index = -1;
                 
@@ -1349,30 +1407,26 @@ namespace TaskLayer
         
         // Step3: make the assignments for each proc
         //       
-        // 3a: which file is assigned to a proc
-        std::vector<std::string> filePerProc(numProcs);
+        
+        // 3a: assign file to a each proc taking the potential
+        //     previous assignment to determine the number of scans
+        //     of a file into account to reduce memory consmuption
+        //     Create the list of procs working on a file along the way
         int currentFile=0, procCount=0;
-        for ( int i=0; i<numProcs; i++ ) {
-            filePerProc[i] = allFiles[currentFile];
-            procCount++;
-            if ( procCount == procsPerFile[currentFile] ) {
-                currentFile++;
-                procCount=0;
+        for ( int i=0; i < numFiles; i++ ) {
+            for ( int j = initNumProcsPerFile[i]; j <procsPerFile[i]; j++ ) {
+                for ( int k=0; k < numProcs; k++ ) {
+                    if ( filePerProc[k].empty() ) {
+                        filePerProc[k] = allFiles[i];
+                        ranksPerFile[i].push_back(k);
+                        break;
+                    }
+                }
             }
         }
         
-        // 3b: which ranks are assigned to a file
-        std::vector<std::vector<int>> ranksPerFile(numFiles);
-        int currentRank=0;
-        for ( int i=0; i<numFiles; i++ ) {
-            for ( int k =0; k < procsPerFile[i]; k++ ) {
-                ranksPerFile[i].push_back(currentRank);
-                currentRank++;
-            }        
-        }
-        
-        // 3c: first and last indices for each rank.
-        std::vector<std::tuple<int, int>> indecesPerProc;
+        // 3b: first and last indices for each rank.
+        std::vector<std::tuple<int, int>> indecesPerProc(numProcs);
         for ( int i =0; i < numFiles; i++ ) {
             int firstIndex=0, lastIndex=0;
             for ( int j=0; j < procsPerFile[i]; j++ ) {
@@ -1381,10 +1435,12 @@ namespace TaskLayer
                 if ( j == procsPerFile[i]-1 ) {
                     lastIndex = numScansPerFile[i];
                 }
-                
-                indecesPerProc.push_back(std::make_tuple(firstIndex, lastIndex));
+                std::tuple<int,int> tmp = std::make_tuple(firstIndex, lastIndex);
+                indecesPerProc[ranksPerFile[i][j]] = tmp;
             }
         }
+        
+        
         
 #ifdef DEBUG
         //Print out information for debugging
